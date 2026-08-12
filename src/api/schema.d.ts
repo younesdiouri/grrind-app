@@ -399,7 +399,7 @@ export interface components {
          *     en scène.
          *
          *     **Un seul aller-retour.** Rien ici ne demande de recharger quoi que ce soit avant de
-         *     jouer l'animation — d'où le niveau donné avant *et* après, et les titres déjà
+         *     jouer l'animation — d'où le palier donné avant *et* après, et les titres déjà
          *     traduits.
          *
          *     `loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux Lots 6, 5
@@ -420,6 +420,16 @@ export interface components {
             level: {
                 /** @example 1 */
                 before: number;
+                /**
+                 * @description Où en était la barre avant la séance. Le client l'y place, **puis** la remplit.
+                 * @example 30
+                 */
+                xpIntoLevelBefore: number;
+                /**
+                 * @description Avec le précédent, la largeur du palier de départ. Elle ne se redéduit pas du reste dès que plusieurs niveaux sont franchis, et sans elle la barre repart de zéro pour un joueur qui n'y était pas. `null` au niveau maximum.
+                 * @example 70
+                 */
+                xpToNextLevelBefore: number | null;
                 /** @example 2 */
                 after: number;
                 /** @description Les niveaux franchis, dans l'ordre. En gagner plusieurs d'un coup est un cas normal — le client les anime tous. Vide quand rien ne bouge. */

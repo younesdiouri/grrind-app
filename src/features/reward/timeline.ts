@@ -64,44 +64,33 @@ export type Timeline = {
 };
 
 /**
- * La taille du niveau d'arrivée, en XP. Déductible du payload : `xpIntoLevel` est ce qui est
- * déjà acquis dans ce niveau, `xpToNextLevel` ce qu'il reste à faire.
+ * La largeur d'un palier, en XP : ce qui y est déjà acquis plus ce qu'il reste à faire.
  *
- * `xpToNextLevel === null` signifie le niveau maximum — la barre est pleine et le reste.
+ * Un `xpToNext` à `null` signifie le niveau maximum — la barre est pleine et le reste.
  */
-function spanOfLevelAfter(level: RewardSummary['level']): number | null {
-  return level.xpToNextLevel === null ? null : level.xpIntoLevel + level.xpToNextLevel;
+function spanOfLevel(xpInto: number, xpToNext: number | null): number | null {
+  return xpToNext === null ? null : xpInto + xpToNext;
 }
 
 /**
  * Où en était la barre avant la séance.
  *
- * Quand **aucun niveau n'est franchi**, c'est exact : le niveau d'avant est celui d'après,
- * on connaît sa taille, et il suffit de retirer l'XP accordée.
- *
- * Quand un niveau **est** franchi, le payload ne porte pas la taille du niveau de départ —
- * seulement celle du niveau d'arrivée. On part donc de zéro, ce qui est juste pour un compte
- * neuf et faux au milieu d'un niveau. Le remplissage manquant est un vrai trou du contrat,
- * pas une approximation de confort : il faudrait `xpIntoLevelBefore` dans le `RewardSummary`.
- * Voir le ticket ouvert côté back.
+ * Le payload porte désormais le palier de **départ** (`xpIntoLevelBefore` /
+ * `xpToNextLevelBefore`), donc c'est exact dans tous les cas, y compris quand un niveau est
+ * franchi. Ça ne se redéduit pas de l'arrivée : dès que plusieurs niveaux tombent d'un coup,
+ * le palier de départ n'a plus rien à voir avec celui d'arrivée.
  */
-function fillBefore(summary: RewardSummary): number {
-  const { level, xp } = summary;
-
-  if (level.reached.length > 0) {
-    return 0;
-  }
-
-  const span = spanOfLevelAfter(level);
+function fillBefore(level: RewardSummary['level']): number {
+  const span = spanOfLevel(level.xpIntoLevelBefore, level.xpToNextLevelBefore);
   if (span === null || span === 0) {
     return 1;
   }
 
-  return clamp01((level.xpIntoLevel - xp.awarded) / span);
+  return clamp01(level.xpIntoLevelBefore / span);
 }
 
 function fillAfter(level: RewardSummary['level']): number {
-  const span = spanOfLevelAfter(level);
+  const span = spanOfLevel(level.xpIntoLevel, level.xpToNextLevel);
   if (span === null || span === 0) {
     return 1;
   }
@@ -163,7 +152,7 @@ export function buildTimeline(summary: RewardSummary): Timeline {
 
   push({ kind: 'rest', duration: BEATS.tail });
 
-  const before = fillBefore(summary);
+  const before = fillBefore(summary.level);
   const after = fillAfter(summary.level);
   // Un niveau franchi veut dire que la barre bute en haut avant de basculer. Sinon elle
   // s'arrête simplement là où elle finit.
@@ -176,38 +165,31 @@ export function buildTimeline(summary: RewardSummary): Timeline {
     fillAfter: after,
     fillPeak: peak,
     cumulative,
-    fills: fillsAlong(summary, cumulative, before),
+    fills: fillsAlong(summary.level, cumulative),
   };
 }
 
 /**
  * Où en est la barre après chaque ligne du breakdown.
  *
- * Deux régimes, parce que le payload ne dit pas la même chose dans les deux cas :
+ * Toute la phase XP se joue dans le palier de **départ** : on part d'où le joueur était et
+ * on avance en XP réelle. Un seul régime, parce que le payload donne enfin ce palier — plus
+ * de normalisation sur l'XP accordée pour masquer ce qu'on ne savait pas.
  *
- * - **Aucun niveau franchi** : on connaît la taille du niveau courant, donc on place la barre
- *   en XP réelle. Une ligne négative fait *redescendre* la barre — c'est le cas `plat`, où
- *   elle grimpe sur le socle puis se fait reprendre par les rendements décroissants, et
- *   finit exactement là où elle avait commencé. C'est la vérité, et elle se raconte bien.
+ * Deux conséquences, et ce sont les deux qu'on veut :
  *
- * - **Un niveau franchi** : la taille du niveau de *départ* est absente du payload (voir
- *   {@link fillBefore}). On normalise donc sur l'XP accordée, ce qui garantit que la barre
- *   atteint le haut à la dernière ligne — le temps fort avant le basculement — sans prétendre
- *   à une exactitude qu'on n'a pas.
+ * - Une ligne négative fait *redescendre* la barre — c'est le cas `plat`, où elle grimpe sur
+ *   le socle puis se fait reprendre par les rendements décroissants, et finit exactement là
+ *   où elle avait commencé.
+ * - Le `clamp` fait buter la barre en haut **au moment précis** où le cumul franchit le
+ *   palier, et non à la dernière ligne par construction. Elle s'y tient jusqu'au
+ *   basculement, qui la remet à zéro : c'est le temps fort, et il tombe au bon endroit.
  */
-function fillsAlong(summary: RewardSummary, cumulative: number[], before: number): number[] {
-  const { level, xp } = summary;
-
-  if (level.reached.length > 0) {
-    return cumulative.map((total) => (xp.awarded === 0 ? before : clamp01(total / xp.awarded)));
-  }
-
-  const span = spanOfLevelAfter(level);
+function fillsAlong(level: RewardSummary['level'], cumulative: number[]): number[] {
+  const span = spanOfLevel(level.xpIntoLevelBefore, level.xpToNextLevelBefore);
   if (span === null || span === 0) {
     return cumulative.map(() => 1);
   }
 
-  const xpBefore = level.xpIntoLevel - xp.awarded;
-
-  return cumulative.map((total) => clamp01((xpBefore + total) / span));
+  return cumulative.map((total) => clamp01((level.xpIntoLevelBefore + total) / span));
 }
