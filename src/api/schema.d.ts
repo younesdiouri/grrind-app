@@ -251,9 +251,18 @@ export interface components {
         ProblemDetails: {
             /**
              * Format: uri
+             * @description **L'énumération est exhaustive** : tout ce que le back sait émettre est ici,
+             *     pannes de transport comprises. C'est ce qui permet au client d'en faire un
+             *     `switch` exhaustif et de laisser son compilateur réclamer un cas quand une
+             *     panne s'ajoute — brancher un message sur le statut HTTP à la place ne
+             *     marcherait pas, un même statut couvrant des pannes qui n'appellent pas la
+             *     même phrase.
+             *
+             *     `OpenApiContractTest` compare cette liste à ce que le code produit, dans les
+             *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/session-not-found" | "https://grrind.app/problems/session-not-active" | "https://grrind.app/problems/session-already-active" | "https://grrind.app/problems/session-too-short" | "https://grrind.app/problems/session-cooldown" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/session-not-found" | "https://grrind.app/problems/session-not-active" | "https://grrind.app/problems/session-already-active" | "https://grrind.app/problems/session-too-short" | "https://grrind.app/problems/session-cooldown" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -602,7 +611,12 @@ export interface components {
                 "application/problem+json": components["schemas"]["ProblemDetails"];
             };
         };
-        /** @description Jeton absent, expiré ou invalide. */
+        /**
+         * @description Le jeton d'accès n'a pas fait son travail, et le `type` dit lequel des trois cas
+         *     c'est — `access-token-missing`, `access-token-expired` ou `access-token-invalid`.
+         *     La distinction est le tout : **expiré** dit de rafraîchir et de rejouer la requête,
+         *     **invalide** et **absent** disent de renvoyer le joueur sur l'écran de connexion.
+         */
         Unauthorized: {
             headers: {
                 [name: string]: unknown;
@@ -685,7 +699,7 @@ export interface operations {
                     "application/json": components["schemas"]["AuthSession"];
                 };
             };
-            /** @description Identifiants refusés. La réponse ne distingue pas une adresse inconnue d'un mot de passe faux, et le temps de réponse non plus (#39). */
+            /** @description Identifiants refusés (`invalid-credentials`). La réponse ne distingue pas une adresse inconnue d'un mot de passe faux, et le temps de réponse non plus (#39) — c'est aussi ce que reçoit un compte né d'un social sign-in, qui n'a pas de mot de passe. */
             401: {
                 headers: {
                     [name: string]: unknown;

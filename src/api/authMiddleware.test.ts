@@ -3,6 +3,7 @@ import { beforeEach, describe, it } from 'node:test';
 
 import createClient from 'openapi-fetch';
 
+import { asProblem, meansSessionOver } from '../features/auth/problems.ts';
 import { createRefreshCoordinator } from '../features/auth/refreshCoordinator.ts';
 import { createAuthMiddleware } from './authMiddleware.ts';
 import type { paths } from './schema';
@@ -20,8 +21,14 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type Call = { url: string; method: string; authorization: string | null; body: string };
 
-/** Un serveur qui n'accepte qu'un jeton, et le dit en 401 `problem+json` comme le vrai. */
-function makeServer(accepted: () => string) {
+/**
+ * Un serveur qui n'accepte qu'un jeton, et distingue les trois refus comme le vrai.
+ *
+ * Les `type` et les libellés sont ceux relevés sur le back : un jeton absent donne
+ * `access-token-missing`, une chaîne quelconque `access-token-invalid`, et un JWT réel passé
+ * `exp` donne `access-token-expired`. Seul le dernier appelle un rafraîchissement.
+ */
+function makeServer(accepted: () => string, refusal = 'access-token-expired') {
   const calls: Call[] = [];
 
   const fetch = async (input: Request | string | URL): Promise<Response> => {
@@ -38,10 +45,10 @@ function makeServer(accepted: () => string) {
     if (authorization !== `Bearer ${accepted()}`) {
       return new Response(
         JSON.stringify({
-          type: 'https://grrind.app/problems/invalid-refresh-token',
+          type: `https://grrind.app/problems/${authorization === null ? 'access-token-missing' : refusal}`,
           title: 'Unauthorized',
           status: 401,
-          detail: 'Jeton absent, expiré ou invalide.',
+          detail: "Le jeton d'accès n'a pas fait son travail.",
         }),
         { status: 401, headers: { 'Content-Type': 'application/problem+json' } },
       );
@@ -62,21 +69,31 @@ describe("le middleware d'authentification", () => {
 
   let clientToken: string | null;
   let refreshed: number;
+  let ended: number;
 
   beforeEach(() => {
     clientToken = 'stale';
     refreshed = 0;
+    ended = 0;
   });
 
-  /** Le montage complet : client + coordinateur + middleware, comme en production. */
-  function mount(performRefresh?: () => Promise<string | null>) {
-    const server = makeServer(() => SERVER_TOKEN);
+  /**
+   * Le montage complet : client + coordinateur + middleware, câblés comme en production.
+   *
+   * Le `refresh` reproduit `session.refresh` — c'est le contrat qui décide si un 401 se
+   * rafraîchit ou termine la session, et `meansSessionOver` est ici la vraie fonction, pas
+   * une imitation.
+   */
+  function mount(
+    options: { performRefresh?: () => Promise<string | null>; refusal?: string } = {},
+  ) {
+    const server = makeServer(() => SERVER_TOKEN, options.refusal);
     const client = createClient<paths>({ baseUrl: BASE_URL, fetch: server.fetch });
 
     const coordinator = createRefreshCoordinator({
       currentAccessToken: () => clientToken,
       performRefresh:
-        performRefresh ??
+        options.performRefresh ??
         (async () => {
           refreshed += 1;
           // Le vrai rafraîchissement est un aller-retour réseau : sans ce délai, la
@@ -90,7 +107,13 @@ describe("le middleware d'authentification", () => {
     client.use(
       createAuthMiddleware({
         getAccessToken: () => clientToken,
-        refresh: coordinator.refresh,
+        refresh: async (staleToken, problem) => {
+          if (meansSessionOver(asProblem(problem))) {
+            ended += 1;
+            return null;
+          }
+          return coordinator.refresh(staleToken);
+        },
       }),
     );
 
@@ -144,12 +167,74 @@ describe("le middleware d'authentification", () => {
     assert.equal(JSON.parse(server.calls[1].body).displayName, 'Ada');
   });
 
+  it('termine la session sur access-token-invalid, sans brûler de refresh token', async () => {
+    const { client, server } = mount({ refusal: 'access-token-invalid' });
+
+    const { response } = await client.GET('/api/me');
+
+    // Le contrat est explicite : invalide veut dire « renvoie le joueur sur la connexion »,
+    // pas « rafraîchis ». Renouveler ici dépenserait un jeton pour rien.
+    assert.equal(refreshed, 0);
+    assert.equal(ended, 1);
+    assert.equal(response.status, 401);
+    assert.equal(server.calls.length, 1, 'aucun rejeu');
+  });
+
+  it('termine la session sur access-token-missing', async () => {
+    clientToken = null;
+    const { client, server } = mount();
+
+    const { response } = await client.GET('/api/me');
+
+    assert.equal(server.calls[0].authorization, null);
+    assert.equal(refreshed, 0);
+    assert.equal(ended, 1);
+    assert.equal(response.status, 401);
+  });
+
+  it('rafraîchit quand le refus est illisible, plutôt que de déconnecter sur un doute', async () => {
+    const server = makeServer(() => SERVER_TOKEN);
+    const client = createClient<paths>({ baseUrl: BASE_URL, fetch: server.fetch });
+
+    // Un proxy qui renvoie du HTML, une passerelle en 502 : le corps n'est pas un problème
+    // RFC 9457. Au pire un rafraîchissement inutile — qui reste sérialisé ; déconnecter sur
+    // un doute, non.
+    client.use(
+      createAuthMiddleware({
+        getAccessToken: () => clientToken,
+        refresh: async (staleToken, problem) => {
+          assert.equal(asProblem(problem), null);
+          assert.equal(meansSessionOver(asProblem(problem)), false);
+          refreshed += 1;
+          clientToken = SERVER_TOKEN;
+          return clientToken;
+        },
+      }),
+    );
+
+    // Le serveur de ce test-là refuse en texte brut.
+    const original = server.fetch;
+    const { data } = await client.GET('/api/me', {
+      fetch: (async (input: Request) => {
+        const response = await original(input);
+        return response.status === 401
+          ? new Response('<html>502 Bad Gateway</html>', { status: 401 })
+          : response;
+      }) as unknown as typeof globalThis.fetch,
+    });
+
+    assert.equal(refreshed, 1);
+    assert.ok(data, 'le rejeu doit aboutir');
+  });
+
   it("ne rejoue qu'une fois : un 401 sur le rejeu remonte tel quel", async () => {
     // Le rafraîchissement « réussit » mais rend un jeton que le serveur refuse aussi.
-    const { client, server } = mount(async () => {
-      refreshed += 1;
-      clientToken = 'toujours-faux';
-      return clientToken;
+    const { client, server } = mount({
+      performRefresh: async () => {
+        refreshed += 1;
+        clientToken = 'toujours-faux';
+        return clientToken;
+      },
     });
 
     const { error, response } = await client.GET('/api/me');
@@ -161,9 +246,11 @@ describe("le middleware d'authentification", () => {
   });
 
   it('laisse remonter le 401 sans rejeu quand la session est morte', async () => {
-    const { client, server } = mount(async () => {
-      refreshed += 1;
-      return null;
+    const { client, server } = mount({
+      performRefresh: async () => {
+        refreshed += 1;
+        return null;
+      },
     });
 
     const { error, response } = await client.GET('/api/me');

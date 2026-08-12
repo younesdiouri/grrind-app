@@ -1,6 +1,12 @@
 import { publicApi } from '@/api/publicClient';
 import type { components } from '@/api/schema';
-import { failureFrom, OFFLINE, type Failure } from '@/features/auth/problems';
+import {
+  asProblem,
+  failureFrom,
+  meansSessionOver,
+  OFFLINE,
+  type Failure,
+} from '@/features/auth/problems';
 import {
   createRefreshCoordinator,
   type RefreshCoordinator,
@@ -130,7 +136,26 @@ const coordinator: RefreshCoordinator = createRefreshCoordinator({
   performRefresh,
 });
 
-export const refresh = coordinator.refresh;
+/**
+ * Ce que le middleware appelle quand une requête revient en 401.
+ *
+ * **Les trois refus du jeton d'accès n'appellent pas la même réaction**, et c'est le contrat
+ * qui le dit : `access-token-expired` veut dire « rafraîchis et rejoue » ; `invalid` et
+ * `missing` veulent dire « renvoie le joueur sur l'écran de connexion ». Rafraîchir sur ces
+ * deux-là brûlerait un refresh token pour rien — et sur un jeton révoqué, ce serait même le
+ * rejeu qui coupe la famille.
+ *
+ * C'est ici que ça se décide et pas dans le middleware : celui-ci transporte, il ne lit pas
+ * le contrat.
+ */
+export async function refresh(staleToken: string | null, problem: unknown): Promise<string | null> {
+  if (meansSessionOver(asProblem(problem))) {
+    await forget();
+    return null;
+  }
+
+  return coordinator.refresh(staleToken);
+}
 
 /**
  * Au démarrage : le trousseau porte-t-il une session ?
@@ -151,12 +176,12 @@ export async function restore(): Promise<void> {
 
 export async function signIn(email: string, password: string): Promise<AuthOutcome> {
   try {
-    const { data, error, response } = await publicApi.POST('/api/auth/login', {
+    const { data, error } = await publicApi.POST('/api/auth/login', {
       body: { email, password },
     });
 
     if (data === undefined) {
-      return { ok: false, failure: failureFrom(error, response.status) };
+      return { ok: false, failure: failureFrom(error) };
     }
 
     await adopt(data);
@@ -180,12 +205,12 @@ export type RegisterInput = {
 
 export async function register(input: RegisterInput): Promise<AuthOutcome> {
   try {
-    const { data, error, response } = await publicApi.POST('/api/auth/register', {
+    const { data, error } = await publicApi.POST('/api/auth/register', {
       body: input,
     });
 
     if (data === undefined) {
-      return { ok: false, failure: failureFrom(error, response.status) };
+      return { ok: false, failure: failureFrom(error) };
     }
 
     await adopt(data);
@@ -206,30 +231,21 @@ export async function register(input: RegisterInput): Promise<AuthOutcome> {
  * connecté serait le pire des deux mondes.
  */
 /**
- * Le banc de vérification, et pourquoi il est dans le code de production.
+ * Le compteur du banc de l'accueil, et pourquoi il n'y a plus de porte dérobée à côté.
  *
- * « Un seul rafraîchissement part » ne se voit pas à l'œil : les deux issues — un refresh ou
- * deux — affichent le même écran, et la seconde ne se manifeste qu'à l'ouverture suivante,
- * par une déconnexion inexpliquée. Le test unitaire prouve la règle sur les deux modules
- * (`refreshCoordinator.test.ts`, `authMiddleware.test.ts`) ; ce compteur-ci la vérifie sur le
- * vrai back, avec le vrai trousseau, depuis l'écran d'accueil.
+ * « Un seul rafraîchissement part » ne se voit pas à l'œil : les deux issues affichent le
+ * même écran, et la mauvaise ne se manifeste qu'à l'ouverture suivante. Les tests unitaires
+ * prouvent la règle ; ce compteur la donne à voir sur le vrai serveur.
+ *
+ * Une version précédente forçait l'expiration en écrivant un faux jeton en mémoire. Ce n'est
+ * plus possible, et c'est le contrat qui l'interdit : le serveur distingue les trois refus,
+ * et un jeton inventé n'est pas *expiré* mais **invalide** — ce qui déconnecte au lieu de
+ * rafraîchir. Forger l'expiration demanderait la clé de signature du back. Le banc attend
+ * donc la vraie expiration, quinze minutes, ce qui teste le chemin réel plutôt qu'un chemin
+ * voisin.
  */
 export function refreshAttempts(): number {
   return attempts;
-}
-
-/**
- * Périme le JWT sans toucher au refresh token, pour rejouer la situation qui coûte cher :
- * deux requêtes qui expirent en même temps.
- *
- * Sans porte dérobée, il faudrait attendre quinze minutes pour l'observer une fois.
- */
-export function expireAccessTokenForTesting(): void {
-  if (!__DEV__) {
-    return;
-  }
-
-  setAccessToken('perime.pour.le.banc');
 }
 
 export async function signOut(): Promise<void> {

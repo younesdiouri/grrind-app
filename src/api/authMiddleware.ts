@@ -39,11 +39,31 @@ export type AuthMiddlewareDeps = {
   /**
    * Obtient un jeton d'accès utilisable, en partant de celui qui vient d'être refusé.
    *
-   * Rend `null` quand la session est morte — le 401 d'origine remonte alors tel quel à
-   * l'appelant, sans rejeu.
+   * `problem` est le corps du 401, **tel quel**. Le middleware ne l'interprète pas : c'est le
+   * contrat qui dit ce que chaque `type` appelle — rafraîchir sur `access-token-expired`,
+   * rendre la main sur `access-token-invalid` et `access-token-missing` — et cette
+   * connaissance-là appartient à la session, pas au transport.
+   *
+   * Rend `null` quand la session est morte : le 401 d'origine remonte alors tel quel, sans
+   * rejeu.
    */
-  refresh: (staleToken: string | null) => Promise<string | null>;
+  refresh: (staleToken: string | null, problem: unknown) => Promise<string | null>;
 };
+
+/**
+ * Le corps du refus, sans consommer la réponse.
+ *
+ * `openapi-fetch` lira le corps après nous pour le rendre à l'appelant : il faut donc une
+ * copie, sous peine de lui passer un flux déjà vidé. Un corps illisible n'est pas une erreur
+ * ici — c'est `null`, et la session tranchera.
+ */
+async function refusalBody(response: Response): Promise<unknown> {
+  try {
+    return await response.clone().json();
+  } catch {
+    return null;
+  }
+}
 
 export function createAuthMiddleware(deps: AuthMiddlewareDeps): Middleware {
   /**
@@ -82,7 +102,7 @@ export function createAuthMiddleware(deps: AuthMiddlewareDeps): Middleware {
         return undefined;
       }
 
-      const token = await deps.refresh(attempt.token);
+      const token = await deps.refresh(attempt.token, await refusalBody(response));
       if (token === null) {
         // Session morte. Le 401 remonte intact : c'est au provider d'auth d'avoir déjà
         // basculé l'app sur l'écran de connexion, pas au middleware de naviguer.

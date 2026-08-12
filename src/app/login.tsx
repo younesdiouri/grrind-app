@@ -63,7 +63,7 @@ export default function LoginScreen() {
           editable={!busy}
         />
 
-        {failure !== null ? <Text style={styles.failure}>{describe(failure)}</Text> : null}
+        {failure !== null ? <Text style={styles.failure}>{messageFor(failure)}</Text> : null}
 
         <Button label="Se connecter" onPress={() => void submit()} busy={busy} />
 
@@ -76,26 +76,6 @@ export default function LoginScreen() {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
-
-/**
- * Le seul endroit du client qui se branche sur un code HTTP, et c'est un contournement.
- *
- * Le back **envoie** bien un `type` pour ce cas — `https://grrind.app/problems/invalid-credentials`,
- * vérifié sur le serveur — mais l'énumération des `type` du contrat ne le déclare pas. Le
- * client ne peut donc pas l'écrire : ce serait recopier à la main une valeur que
- * `openapi.yaml` ne connaît pas, et le `switch` exhaustif de `problems.ts` la rejetterait.
- *
- * On se rabat sur le statut, au seul endroit où il n'y a aucune ambiguïté possible : cette
- * route n'a que deux réponses. **La correction est côté back** — ajouter la valeur à l'enum
- * du contrat — et ce cas disparaît alors tout seul.
- */
-function describe(failure: Failure): string {
-  if (failure.kind === 'problem' && failure.status === 401) {
-    return 'Adresse ou mot de passe incorrect.';
-  }
-
-  return messageFor(failure);
 }
 
 const styles = StyleSheet.create({
