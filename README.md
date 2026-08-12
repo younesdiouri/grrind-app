@@ -1,56 +1,60 @@
-# Welcome to your Expo app 👋
+# GRRIND — Client
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Client **React Native (Expo)** de GRRIND, l'app qui transforme le sport en RPG. L'API vit dans
+[`younesdiouri/grrind-back`](https://github.com/younesdiouri/grrind-back) et le contrat entre les
+deux est `openapi.yaml`, rien d'autre.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Démarrer
 
 ```bash
-npm run reset-project
+npm install
+npm run api:pull && npm run api:generate   # types depuis le contrat
+npm run ios                                # dev build sur appareil physique
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Le premier `npm run ios` déclenche un `prebuild` et une compilation Xcode. Il faut donc Xcode
+sélectionné (`sudo xcode-select -s /Applications/Xcode.app`) et un iPhone connecté et approuvé.
+Un compte développeur gratuit suffit — le profil dure sept jours.
 
-### Other setup steps
+**Pas de Docker ici**, contrairement au back : Expo pilote Xcode et un appareil physique, qu'un
+conteneur ne peut pas atteindre. C'est le seul point où les deux dépôts divergent sur la méthode.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Le contrat ne s'écrit pas à la main
 
-## Learn more
+`api/openapi.yaml` est une **copie** du fichier généré par le back. On ne l'édite jamais ici :
+on le tire, on régénère les types, et la CI échoue si le résultat dérive — symétrique du
+garde-fou qui protège le fichier côté serveur.
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm run api:pull       # récupère openapi.yaml depuis grrind-back
+npm run api:generate   # openapi-typescript → src/api/schema.d.ts
+npm run api:check      # les deux, et échoue sur un diff
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Aucun DTO écrit à la main, aucun enum recopié.
 
-## Join the community
+## Le spike
 
-Join our community of developers creating universal apps.
+`fixtures/reward-summary/` contient trois **réponses réelles** du back, capturées par
+`scripts/capture-fixtures.sh` sous l'équilibrage `config/game/v1/`. Le back doit tourner :
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+cd ../grrind && make up
+cd ../grrind-app && ./scripts/capture-fixtures.sh
+```
+
+L'écran d'accueil les joue. Le cas `plat` — 0 XP accordé, `BASE 45` puis `DIMINISHING −45` — est
+celui qui décide : une mise en scène qui ne tient que sur le cas joyeux ne tient pas.
+
+## Ce qu'il faut lire avant de coder
+
+- `CLAUDE.md` — les trois invariants du client, et pourquoi les ignorer coûte une déconnexion ou
+  une XP doublée.
+- `AGENTS.md` — Expo a changé ; les docs de mémoire sont fausses d'une majeure à l'autre.
+- `src/features/reward/timeline.ts` — la mise en scène du `RewardSummary`, en fonction pure.
+
+## Suivi
+
+https://github.com/users/younesdiouri/projects/1 — tableau commun aux deux dépôts, avec une
+colonne « Repository » et un champ « Lot » qui traverse. Les jalons et labels, eux, sont par
+dépôt. Aucun commit sans numéro de ticket.
