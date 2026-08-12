@@ -38,7 +38,7 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
+    "android": "expo run:android",
     "ios": "expo run:ios --device",
     "web": "expo start --web",
     "lint": "expo lint",
