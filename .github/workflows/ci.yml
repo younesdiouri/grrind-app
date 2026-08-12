@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  qualite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Types
+        run: npm run typecheck
+
+      # Symétrique du garde-fou du back, qui rejoue `make openapi` et échoue sur un diff.
+      # Sans ce pendant côté client, une dérive du contrat ne se découvre qu'à l'exécution,
+      # sur l'appareil, au pire moment.
+      - name: Contrat API à jour
+        run: npm run api:check
+
+      - name: Lint
+        run: npm run lint
