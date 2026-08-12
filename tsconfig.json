@@ -2,6 +2,13 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    // Les tests tournent sous `node --test`, qui efface les types lui-même et exige donc des
+    // spécificateurs complets — `./authMiddleware.ts`, pas `./authMiddleware`. Metro ne voit
+    // jamais ces fichiers : rien ne les importe depuis l'app.
+    "allowImportingTsExtensions": true,
+    // `node:test` et `node:assert`. Les globales de React Native et d'Expo passent par
+    // ailleurs (`expo-env.d.ts` et les types du paquet `react-native`), pas par `@types`.
+    "types": ["node"],
     "paths": {
       "@/*": [
         "./src/*"

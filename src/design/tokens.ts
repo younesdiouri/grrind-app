@@ -36,6 +36,10 @@ export const color = {
   gain: palette.mint,
   /** Une ligne de breakdown négative : rendements décroissants, plafond quotidien. */
   loss: palette.rust,
+  /** Le trait d'un champ de saisie, et toute séparation qui n'est pas une surface. */
+  border: palette.steel,
+  /** Un refus : saisie invalide, appel rejeté. Distinct de `loss`, qui parle d'XP. */
+  danger: palette.rust,
 } as const;
 
 export const space = {

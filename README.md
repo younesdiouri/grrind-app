@@ -8,6 +8,7 @@ deux est `openapi.yaml`, rien d'autre.
 
 ```bash
 npm install
+cp .env.example .env.local                 # puis y mettre l'IP LAN du Mac
 npm run api:pull && npm run api:generate   # types depuis le contrat
 npm run ios                                # dev build sur appareil physique
 ```
@@ -32,6 +33,28 @@ npm run api:check      # les deux, et échoue sur un diff
 ```
 
 Aucun DTO écrit à la main, aucun enum recopié.
+
+## Le refresh sérialisé, et pourquoi il a des tests
+
+Le refresh token est à usage unique, rotatif et groupé par famille — une famille est un
+appareil. Rejouer un jeton déjà consommé révoque **toute la famille** : le back ne peut pas
+distinguer le voleur du vrai client qui a été doublé, donc il coupe. Deux requêtes qui expirent
+en même temps et rafraîchissent chacune de leur côté déconnectent donc l'appareil.
+
+C'est le seul endroit du client où le bon et le mauvais comportement **affichent le même
+écran**. La différence ne se manifeste qu'à l'ouverture suivante, par une déconnexion que
+personne ne saura relier à ce moment-là. D'où trois filets, du plus proche du code au plus
+proche du réel :
+
+```bash
+npm test        # `node --test`, sans Expo ni appareil — les deux modules purs
+```
+
+- `src/features/auth/refreshCoordinator.ts` — la promesse unique et partagée, plus la règle
+  qui distingue « ma session est morte » de « j'étais en vol pendant qu'on renouvelait ».
+- `src/api/authMiddleware.ts` — le `Bearer`, et **un seul** rejeu par requête.
+- L'écran d'accueil porte un banc : il périme le JWT et lance deux requêtes simultanées sur le
+  vrai back. Le verdict attendu est `2/2 réponses · 1 rafraîchissement`.
 
 ## Le spike
 
