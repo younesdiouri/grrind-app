@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { color, radius, space, type } from '@/design/tokens';
 import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
@@ -23,7 +23,9 @@ export default function SpikeIndex() {
         const summary = FIXTURES[name];
         return (
           <Link key={name} href={{ pathname: '/reward', params: { fixture: name } }} asChild>
-            <View style={styles.card}>
+            {/* `asChild` clone l'enfant avec `onPress` : il faut donc un composant qui l'émette.
+                Une `View` l'ignore silencieusement sur natif — la carte n'est alors pas tapable. */}
+            <Pressable style={styles.card}>
               <Text style={styles.name}>{name}</Text>
               <Text style={styles.detail}>
                 {summary.xp.awarded > 0 ? '+' : ''}
@@ -36,7 +38,7 @@ export default function SpikeIndex() {
                   ? ` · ${summary.titlesUnlocked.length} titre`
                   : ''}
               </Text>
-            </View>
+            </Pressable>
           </Link>
         );
       })}

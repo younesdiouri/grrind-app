@@ -1,13 +1,13 @@
 {
   "session": {
-    "id": "019ff583-f237-71a2-8e8d-8c851f21ab90",
+    "id": "019ff646-4333-72b0-b209-3abf7a214533",
     "discipline": "SWIMMING",
     "status": "COMPLETED",
     "source": "MANUAL_TIMER",
     "trust": "DECLARED",
-    "startedAt": "2026-08-12T08:28:12+00:00",
-    "endedAt": "2026-08-12T10:28:13+00:00",
-    "durationSeconds": 7201
+    "startedAt": "2026-08-12T12:00:27+00:00",
+    "endedAt": "2026-08-12T14:00:27+00:00",
+    "durationSeconds": 7200
   },
   "xp": {
     "awarded": 145,
@@ -24,6 +24,8 @@
   },
   "level": {
     "before": 1,
+    "xpIntoLevelBefore": 0,
+    "xpToNextLevelBefore": 100,
     "after": 2,
     "reached": [
       2
@@ -39,7 +41,7 @@
       "name": "First Steps",
       "hint": "Complete your first session",
       "unlocked": true,
-      "unlockedAt": "2026-08-12T10:28:13+00:00",
+      "unlockedAt": "2026-08-12T14:00:27+00:00",
       "progress": {
         "current": 1,
         "target": 1,
