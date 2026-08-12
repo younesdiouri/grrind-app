@@ -5,12 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { api } from '@/api/client';
 import { Button } from '@/components/Button';
 import { color, radius, space, type } from '@/design/tokens';
-import {
-  expireAccessTokenForTesting,
-  refreshAttempts,
-  signOut,
-  type UserProfile,
-} from '@/features/auth/session';
+import { refreshAttempts, signOut, type UserProfile } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
 import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
 
@@ -63,10 +58,20 @@ export default function SpikeIndex() {
 /**
  * Le banc du refresh sérialisé.
  *
- * Il rejoue la seule situation qui casse la session sans prévenir : le JWT est périmé et
- * **deux requêtes partent en même temps**. Le résultat attendu est « 2/2 réponses ·
- * 1 rafraîchissement ». À deux rafraîchissements, le back a déjà révoqué la famille — la
- * prochaine ouverture de l'app le prouvera en retombant sur l'écran de connexion.
+ * Il lance **deux requêtes en même temps** sur le vrai serveur et compte les
+ * rafraîchissements partis. Ce que ça dit dépend de l'âge du jeton d'accès, et les deux
+ * lectures sont utiles :
+ *
+ * - Jeton frais → `2/2 réponses · 0 rafraîchissement`. Le `Bearer` est posé, les types du
+ *   contrat se décodent.
+ * - Jeton de plus de quinze minutes → `2/2 réponses · 1 rafraîchissement`. C'est *la*
+ *   vérification du ticket. À deux, le back a révoqué la famille, et la prochaine ouverture
+ *   le prouvera en retombant sur l'écran de connexion.
+ *
+ * Il n'y a plus de bouton pour forcer l'expiration : le serveur distingue désormais les trois
+ * refus du jeton d'accès, et un jeton inventé n'est pas *expiré* mais **invalide** — ce qui
+ * déconnecte, à raison. On attend donc la vraie expiration, ce qui a le mérite de tester le
+ * chemin réel plutôt qu'un chemin voisin.
  */
 function SessionBench({ user }: { user: UserProfile }) {
   const [verdict, setVerdict] = useState<string | null>(null);
@@ -77,8 +82,6 @@ function SessionBench({ user }: { user: UserProfile }) {
     setVerdict(null);
 
     const before = refreshAttempts();
-    expireAccessTokenForTesting();
-
     const replies = await Promise.all([api.GET('/api/me'), api.GET('/api/me')]);
 
     const served = replies.filter((reply) => reply.data !== undefined).length;
@@ -86,7 +89,7 @@ function SessionBench({ user }: { user: UserProfile }) {
 
     setVerdict(
       `${served}/2 réponses · ${spent} rafraîchissement${spent > 1 ? 's' : ''}` +
-        (served === 2 && spent === 1 ? ' ✓' : ' ✗'),
+        (served === 2 && spent <= 1 ? ' ✓' : ' ✗'),
     );
     setBusy(false);
   };
@@ -98,12 +101,12 @@ function SessionBench({ user }: { user: UserProfile }) {
         {user.email} · {user.timezone}
       </Text>
 
-      <Button
-        label="Périmer le JWT, lancer deux requêtes"
-        onPress={() => void run()}
-        busy={busy}
-      />
+      <Button label="Lancer deux requêtes simultanées" onPress={() => void run()} busy={busy} />
       {verdict !== null ? <Text style={styles.verdict}>{verdict}</Text> : null}
+      <Text style={styles.detail}>
+        Après quinze minutes d&apos;inactivité, le jeton est réellement expiré : un seul
+        rafraîchissement doit partir.
+      </Text>
 
       <Button label="Se déconnecter" onPress={() => void signOut()} variant="quiet" />
     </View>

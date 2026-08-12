@@ -18,10 +18,14 @@ export type ProblemDetails = components['schemas']['ProblemDetails'];
 export type ProblemType = ProblemDetails['type'];
 export type Violation = { field: string; message: string };
 
-/** Un appel qui a échoué : soit le serveur a nommé la panne, soit il n'a pas répondu. */
-export type Failure =
-  | { kind: 'problem'; problem: ProblemDetails; status: number }
-  | { kind: 'offline' };
+/**
+ * Un appel qui a échoué : soit le serveur a nommé la panne, soit il n'a pas répondu.
+ *
+ * Le statut HTTP n'est **pas** porté ici. Il vit dans `problem.status`, comme le veut la
+ * RFC 9457, et rien dans le client ne s'y branche : le `type` est l'identifiant stable, un
+ * même statut couvrant des pannes qui n'appellent pas la même phrase.
+ */
+export type Failure = { kind: 'problem'; problem: ProblemDetails } | { kind: 'offline' };
 
 export const OFFLINE: Failure = { kind: 'offline' };
 
@@ -45,9 +49,9 @@ export function asProblem(error: unknown): ProblemDetails | null {
   return error as ProblemDetails;
 }
 
-export function failureFrom(error: unknown, status: number): Failure {
+export function failureFrom(error: unknown): Failure {
   const problem = asProblem(error);
-  return problem === null ? OFFLINE : { kind: 'problem', problem, status };
+  return problem === null ? OFFLINE : { kind: 'problem', problem };
 }
 
 /**
@@ -77,6 +81,30 @@ export function violationsByField(failure: Failure): Partial<Record<string, stri
   return byField;
 }
 
+/**
+ * Ce 401 dit-il que la session est finie, ou seulement que le jeton d'accès a vieilli ?
+ *
+ * **La distinction est le tout**, et c'est le contrat qui la pose : `access-token-expired`
+ * dit de rafraîchir et de rejouer la requête ; `access-token-invalid` et
+ * `access-token-missing` disent de renvoyer le joueur sur l'écran de connexion. Rafraîchir
+ * sur ces deux-là brûlerait un refresh token pour rien — et un refresh token, ici, ne se
+ * dépense pas à la légère.
+ *
+ * Tout le reste rend `false` : un corps illisible (un proxy qui renvoie du HTML, une
+ * passerelle en 502) ou un `type` que cette version du client ne connaît pas valent une
+ * tentative de rafraîchissement. C'est le choix le moins destructeur — au pire un
+ * rafraîchissement inutile, qui reste sérialisé ; déconnecter sur un doute, non.
+ *
+ * Les comparaisons portent sur l'union générée : renommer un de ces `type` côté back casse
+ * la compilation ici, TypeScript refusant un `===` entre types disjoints.
+ */
+export function meansSessionOver(problem: ProblemDetails | null): boolean {
+  return (
+    problem?.type === 'https://grrind.app/problems/access-token-invalid' ||
+    problem?.type === 'https://grrind.app/problems/access-token-missing'
+  );
+}
+
 export function messageFor(failure: Failure): string {
   if (failure.kind === 'offline') {
     return 'Impossible de joindre GRRIND. Vérifie ta connexion.';
@@ -92,6 +120,27 @@ function messageForProblem(problem: ProblemDetails): string {
 
     case 'https://grrind.app/problems/internal-error':
       return 'GRRIND a un problème de son côté. Réessaie dans un instant.';
+
+    // Les pannes de transport. Aucune n'est une situation de jeu : elles disent que l'app a
+    // mal formé sa requête, ou qu'elle parle à un serveur qui n'est pas celui qu'elle croit.
+    case 'https://grrind.app/problems/bad-request':
+    case 'https://grrind.app/problems/method-not-allowed':
+    case 'https://grrind.app/problems/unsupported-media-type':
+      return "L'app a envoyé une requête que le serveur ne comprend pas.";
+
+    case 'https://grrind.app/problems/not-found':
+      return "Cette ressource n'existe pas.";
+
+    case 'https://grrind.app/problems/invalid-credentials':
+      return 'Adresse ou mot de passe incorrect.';
+
+    // Les trois refus du jeton d'accès. Ils ne remontent jusqu'à un écran que si le
+    // middleware n'a pas su les traiter — voir `meansSessionOver` juste en dessous, et
+    // `session.refresh`. D'où des messages qui parlent à un joueur, pas à un développeur.
+    case 'https://grrind.app/problems/access-token-expired':
+    case 'https://grrind.app/problems/access-token-invalid':
+    case 'https://grrind.app/problems/access-token-missing':
+      return 'Ta session a expiré. Reconnecte-toi.';
 
     // Les trois pannes d'idempotence sont des bugs du client, pas des situations de jeu :
     // une clé absente ou réutilisée sur une autre requête veut dire que l'app a mal ouvert
