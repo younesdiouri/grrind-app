@@ -1,0 +1,39 @@
+{
+  "session": {
+    "id": "019ff583-f537-7a27-abd7-628592aa3cce",
+    "discipline": "RUNNING",
+    "status": "COMPLETED",
+    "source": "MANUAL_TIMER",
+    "trust": "DECLARED",
+    "startedAt": "2026-08-12T09:58:13+00:00",
+    "endedAt": "2026-08-12T10:28:13+00:00",
+    "durationSeconds": 1800
+  },
+  "xp": {
+    "awarded": 0,
+    "breakdown": [
+      {
+        "source": "BASE",
+        "amount": 45
+      },
+      {
+        "source": "DIMINISHING",
+        "amount": -45
+      }
+    ]
+  },
+  "level": {
+    "before": 2,
+    "after": 2,
+    "reached": [],
+    "totalXp": 130,
+    "xpIntoLevel": 30,
+    "xpToNextLevel": 130,
+    "skillPointsGranted": 0
+  },
+  "titlesUnlocked": [],
+  "loot": [],
+  "streak": null,
+  "unlockableNodes": [],
+  "rulesetVersion": "v1-37c85f2bfc1b"
+}

@@ -1,0 +1,48 @@
+{
+  "session": {
+    "id": "019ff583-eff3-7f8e-b70a-599c4a6ad1e5",
+    "discipline": "RUNNING",
+    "status": "COMPLETED",
+    "source": "MANUAL_TIMER",
+    "trust": "DECLARED",
+    "startedAt": "2026-08-12T09:28:12+00:00",
+    "endedAt": "2026-08-12T10:28:12+00:00",
+    "durationSeconds": 3600
+  },
+  "xp": {
+    "awarded": 90,
+    "breakdown": [
+      {
+        "source": "BASE",
+        "amount": 90
+      }
+    ]
+  },
+  "level": {
+    "before": 1,
+    "after": 1,
+    "reached": [],
+    "totalXp": 90,
+    "xpIntoLevel": 90,
+    "xpToNextLevel": 10,
+    "skillPointsGranted": 0
+  },
+  "titlesUnlocked": [
+    {
+      "id": "first_steps",
+      "name": "First Steps",
+      "hint": "Complete your first session",
+      "unlocked": true,
+      "unlockedAt": "2026-08-12T10:28:12+00:00",
+      "progress": {
+        "current": 1,
+        "target": 1,
+        "unit": "SESSIONS"
+      }
+    }
+  ],
+  "loot": [],
+  "streak": null,
+  "unlockableNodes": [],
+  "rulesetVersion": "v1-37c85f2bfc1b"
+}
