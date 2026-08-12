@@ -29,3 +29,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      # « Un seul rafraîchissement part » ne se voit pas à l'œil : les deux issues affichent
+      # le même écran, et la mauvaise ne se manifeste qu'à l'ouverture suivante, par une
+      # déconnexion. C'est ici que la règle tient, pas sur un appareil.
+      - name: Tests
+        run: npm test

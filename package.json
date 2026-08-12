@@ -33,6 +33,7 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@types/node": "~26.2.0",
     "@types/react": "~19.2.2",
     "eslint": "^9.39.5",
     "eslint-config-expo": "^57.0.1",
@@ -45,6 +46,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
+    "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"src/**/*.test.ts\"",
     "api:pull": "curl -sfL -o api/openapi.yaml https://raw.githubusercontent.com/younesdiouri/grrind-back/main/openapi.yaml",
     "api:generate": "npx --yes openapi-typescript@7.13.0 api/openapi.yaml -o src/api/schema.d.ts",
     "api:check": "npm run api:pull && npm run api:generate && git diff --exit-code --stat api/openapi.yaml src/api/schema.d.ts"
