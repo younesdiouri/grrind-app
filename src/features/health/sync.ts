@@ -7,6 +7,7 @@ import type { WorkoutData } from '@/features/health/provider';
 import { sendUntilAnswered, type Reply } from '@/features/health/replay';
 import { createSyncCoordinator, type SyncOutcome, type SyncTrigger } from '@/features/health/syncCoordinator';
 import { windowStart } from '@/features/health/syncState';
+import { setPending } from '@/features/reward/pending';
 import type { SyncSummary } from '@/features/reward/timeline';
 
 /**
@@ -167,6 +168,16 @@ async function perform(): Promise<SyncResult> {
   // Le lot a son verdict : la clé n'a plus rien à protéger, et la garder ferait rejouer une
   // clé périmée sur un lot différent — un 409 `idempotency-key-reused` gratuit.
   await batchKeys.forget();
+
+  // Une progression qui n'a rien crédité n'est pas un moment : `imported` vide veut dire que
+  // tout était déjà compté ou écarté, et ouvrir un plein écran là-dessus serait une fausse
+  // joie. C'est aussi ce que dit `totals === null`.
+  if (answer.data.imported.length > 0) {
+    // **Avant** de rendre le résultat, et sur le disque : à partir d'ici la progression est
+    // due au joueur, même si l'app meurt dans la seconde. Le serveur, lui, la considère déjà
+    // comptée et ne la renverra jamais.
+    setPending(answer.data);
+  }
 
   return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
 }

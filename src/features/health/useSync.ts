@@ -23,12 +23,14 @@ import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/feature
  * Ce hook ne **détient** rien. L'état vit dans `sync.ts`, hors de l'arbre, comme la session
  * d'authentification et pour la même raison : la synchronisation survit au démontage de
  * l'écran qui l'a lancée, et deux écrans doivent voir le même état sans se le passer.
+ *
+ * Il est monté par la **coquille de l'app**, pas par un écran. Il l'était par l'écran Santé,
+ * ce qui voulait dire qu'ouvrir l'app sans y passer ne synchronisait jamais : le joueur
+ * devait aller chercher sa propre progression.
  */
-export function useSync(): { status: SyncStatus; refresh: () => void } {
+export function useSyncTriggers(): void {
   const auth = useAuth();
   const signedIn = auth.status === 'signedIn';
-
-  const status = useSyncExternalStore(subscribeToSync, getSyncStatus);
 
   const run = useCallback(
     (trigger: Parameters<typeof sync>[0]) => {
@@ -57,8 +59,27 @@ export function useSync(): { status: SyncStatus; refresh: () => void } {
     return () => subscription.remove();
   }, [run]);
 
-  // 3. Le geste.
-  const refresh = useCallback(() => run('manual'), [run]);
+}
+
+/**
+ * Lire l'état, et le redemander.
+ *
+ * Séparé des déclencheurs **exprès** : ceux-ci vivent dans la coquille de l'app et n'y sont
+ * montés qu'une fois, alors que plusieurs écrans veulent lire le résultat. Fondre les deux
+ * ferait partir une synchronisation de plus à chaque écran qui s'ouvre — ce que le
+ * coordinateur absorberait sans broncher, mais qui reste une requête pour rien.
+ */
+export function useSyncStatus(): { status: SyncStatus; refresh: () => void } {
+  const auth = useAuth();
+  const signedIn = auth.status === 'signedIn';
+
+  const status = useSyncExternalStore(subscribeToSync, getSyncStatus);
+
+  const refresh = useCallback(() => {
+    if (signedIn) {
+      void sync('manual');
+    }
+  }, [signedIn]);
 
   return { status, refresh };
 }

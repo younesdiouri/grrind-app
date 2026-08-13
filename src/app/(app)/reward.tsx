@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { color, space, type } from '@/design/tokens';
-import { getSyncStatus } from '@/features/health/sync';
+import { getPending, markPlayed } from '@/features/reward/pending';
 import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
 import { SyncSummaryView } from '@/features/reward/SyncSummaryView';
 
@@ -15,6 +15,8 @@ import { SyncSummaryView } from '@/features/reward/SyncSummaryView';
  *
  * Le résumé se lit dans le magasin plutôt que de traverser la navigation : un `SyncSummary` de
  * quinze workouts ne passe pas par un paramètre de route, et il vit déjà hors de l'arbre.
+ * C'est le magasin des progressions **non jouées** — celui qui survit à la mort de l'app —
+ * et non le résultat de la dernière synchronisation, qui disparaît avec le processus.
  *
  * C'est **ici** que « sortir » prend un sens. L'écran de récompense est plein cadre et sans
  * en-tête — voulu : c'est l'écran signature, un en-tête l'abîmerait — donc la sortie ne peut
@@ -36,6 +38,20 @@ function leave(): void {
 
   router.replace('/');
 }
+
+/**
+ * Sortir d'une **vraie** progression : elle est jouée, elle peut s'effacer du disque.
+ *
+ * C'est ici et pas au montage. Une app tuée pendant l'animation n'a rien montré au joueur,
+ * et il doit la retrouver au lancement suivant — c'est tout l'objet du magasin.
+ *
+ * Les fixtures, elles, n'effacent rien : ce sont des réponses capturées, pas la progression
+ * de quelqu'un.
+ */
+function leavePlayed(): void {
+  markPlayed();
+  leave();
+}
 export default function RewardScreen() {
   const { fixture } = useLocalSearchParams<{ fixture?: FixtureName }>();
 
@@ -51,9 +67,9 @@ export default function RewardScreen() {
     );
   }
 
-  const status = getSyncStatus();
-  const summary =
-    status.phase === 'settled' && status.result.kind === 'summary' ? status.result.summary : null;
+  // Le magasin des progressions non jouées, et non le résultat de la dernière
+  // synchronisation : c'est lui qui survit à la mort de l'app, donc lui qui fait foi.
+  const summary = getPending();
 
   if (summary === null) {
     return (
@@ -63,7 +79,7 @@ export default function RewardScreen() {
     );
   }
 
-  return <SyncSummaryView summary={summary} onDismiss={leave} />;
+  return <SyncSummaryView summary={summary} onDismiss={leavePlayed} />;
 }
 
 const styles = StyleSheet.create({
