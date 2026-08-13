@@ -14,7 +14,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { color, disciplineLabel, radius, space, type, xpSourceLabel } from '@/design/tokens';
+import {
+  color,
+  disciplineLabel,
+  radius,
+  skipReasonLabel,
+  space,
+  type,
+  xpSourceLabel,
+} from '@/design/tokens';
 import { buildTimeline, type RewardSummary, type SkippedWorkout, type SyncSummary } from './timeline';
 
 /**
@@ -316,26 +324,12 @@ function Skipped({ clock, at, until, entries }: BeatProps & { entries: SkippedWo
     <Animated.View style={[styles.skipped, style]} pointerEvents="none">
       {entries.map((entry) => (
         <Text key={entry.externalId} style={styles.skippedRow}>
-          {entry.activityType} · {skippedReason[entry.reason]}
+          {entry.activityType} · {skipReasonLabel[entry.reason]}
         </Text>
       ))}
     </Animated.View>
   );
 }
-
-/**
- * Les cinq refus, traduits.
- *
- * `Record` sur l'union du schéma généré : le jour où le back en ajoute un, le compilateur
- * réclame sa phrase au lieu de laisser un `undefined` s'afficher.
- */
-const skippedReason: Record<SkippedWorkout['reason'], string> = {
-  ALREADY_IMPORTED: 'déjà comptée',
-  UNSUPPORTED_ACTIVITY: "pas encore un sport chez nous",
-  OUT_OF_WINDOW: "trop ancienne pour rapporter, mais gardée",
-  OVERLAPS: 'déjà couverte par une autre séance',
-  TOO_SHORT: 'trop courte pour compter',
-};
 
 function BreakdownRow({
   clock,
