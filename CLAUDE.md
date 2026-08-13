@@ -42,10 +42,13 @@ pas une optimisation, c'est la condition pour que la session survive.
 
 ### 2. `Idempotency-Key` est générée une fois, pas par tentative
 
-Obligatoire sur `POST /api/training/sessions/{id}/complete` et `.../abandon`. La clé est créée
-**à l'ouverture de la séance**, persistée avec elle, et renvoyée **à l'identique** sur chaque
-retry — réseau coupé, app tuée, retour de veille. Une clé neuve par tentative annule tout le
-mécanisme et double l'XP. Un rejeu reconnu revient avec l'en-tête `Idempotent-Replay: true`.
+Obligatoire sur `POST /api/workouts/import`. La clé est créée **à la constitution du lot**,
+persistée avec lui, et renvoyée **à l'identique** sur chaque retry — réseau coupé, app tuée,
+retour de veille. Une clé neuve par tentative annule tout le mécanisme.
+
+Elle ne fait pas doublon avec l'unicité `(source, externalId)` côté serveur : celle-ci empêche le
+**double crédit**, celle-là rend la **réponse d'origine**. Sans clé, un client qui rejoue reçoit
+une synchronisation vide au lieu de sa mise en scène — l'XP serait juste, l'animation perdue.
 
 ### 3. Le JWT vit en mémoire, le refresh token dans le Keychain
 
@@ -68,11 +71,22 @@ Le séquenceur vit dans `src/features/reward/`. Les valeurs animées sont des `u
 l'enchaînement des `withSequence`/`withTiming`, et **rien ne passe par `setState` dans une boucle** :
 les compteurs numériques s'animent sur le thread UI. Le retour vers JS est réservé à l'haptique.
 
-## Le serveur possède l'horloge
+## Le serveur n'a plus l'horloge, il l'arbitre
 
-Le client n'envoie jamais de timestamp. Il ouvre une séance, il la ferme, et c'est le serveur qui
-décide de la durée retenue (`durationSeconds` est déjà écrêté — ce n'est pas `endedAt - startedAt`).
-Le chronomètre affiché est un affichage, pas une mesure.
+**Il n'y a plus de chronomètre.** Un workout est un fait déjà passé quand l'app en entend parler :
+il naît terminé, il n'a pas d'état, et rien ne s'ouvre ni ne se ferme. Les bornes viennent du
+fournisseur santé, et le client les transmet **telles qu'il les a lues**.
+
+Ce que le client n'envoie toujours pas, c'est une **durée** : elle se dérive de `startedAt` et
+`endedAt`, côté serveur. L'accepter en entrée donnerait au client une prise sur ce qu'il gagne. Et
+`durationSeconds` rendu dans un `Workout` est la durée *réellement mesurée* : au-delà du plafond,
+l'XP est calculée sur une durée écrêtée, mais l'historique dit ce qui s'est passé.
+
+Le client ne traduit rien non plus : il envoie l'`activityType` **brut du fournisseur**
+(`HKWorkoutActivityType` côté Apple), jamais une `discipline`. La table de correspondance est
+serveur, ce qui permet d'ouvrir un sport sans publier sur l'App Store. Un type inconnu n'est pas
+une erreur — la séance est écartée et **nommée** dans la réponse. Le client ne filtre donc
+**jamais** sur ce champ.
 
 ## Conventions
 
