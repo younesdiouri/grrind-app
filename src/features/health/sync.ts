@@ -50,8 +50,26 @@ export type SyncStatus =
 let status: SyncStatus = { phase: 'idle' };
 const listeners = new Set<() => void>();
 
+/**
+ * Combien de verdicts sont tombés depuis le démarrage.
+ *
+ * C'est ce à quoi s'abonne un écran qui doit **relire le serveur** quand la synchronisation
+ * a pu changer ses chiffres — l'accueil et ses deux routes. S'abonner au statut lui-même
+ * les ferait recharger au passage `idle → syncing`, c'est-à-dire avant que rien n'ait bougé.
+ *
+ * Le compteur vit ici, avec ce qu'il compte, plutôt que d'être dérivé par le consommateur :
+ * `useSyncExternalStore` exige un `getSnapshot` **pur**, et une dérivation qui mémorise
+ * quelque part sa dernière valeur vue n'en est pas un.
+ */
+let settledRevision = 0;
+
 function publish(next: SyncStatus): void {
   status = next;
+
+  if (next.phase === 'settled') {
+    settledRevision += 1;
+  }
+
   for (const listener of listeners) {
     listener();
   }
@@ -59,6 +77,10 @@ function publish(next: SyncStatus): void {
 
 export function getSyncStatus(): SyncStatus {
   return status;
+}
+
+export function getSettledRevision(): number {
+  return settledRevision;
 }
 
 export function subscribeToSync(listener: () => void): () => void {

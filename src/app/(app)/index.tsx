@@ -1,27 +1,30 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '@/api/client';
 import { Button } from '@/components/Button';
 import { color, radius, space, type } from '@/design/tokens';
+import { messageFor } from '@/features/auth/problems';
 import { refreshAttempts, signOut, type UserProfile } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
+import { LevelCard, WorkoutRow } from '@/features/progression/PlayerHomeView';
+import { usePlayerHome } from '@/features/progression/usePlayerHome';
 import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
 
 /**
- * Le sélecteur de fixtures du spike.
+ * L'accueil : ce que le joueur a gagné, et les séances qui l'ont produit.
  *
- * Il n'a aucune vocation à survivre : c'est un banc d'essai pour jouer les trois cas réels
- * capturés sur le back, sur un appareil physique, sans réseau. Ce qu'on regarde ici, c'est
- * si React Native tient l'écran signature du produit — pas si l'écran est joli.
+ * Le réel d'abord, le banc d'essai ensuite. Les fixtures restent parce qu'elles sont le
+ * seul moyen de rejouer la mise en scène sans aller faire du sport — mais elles ne sont
+ * plus le sujet de l'écran, et l'ordre le dit.
  */
-export default function SpikeIndex() {
+export default function Home() {
   const auth = useAuth();
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
-      {auth.status === 'signedIn' ? <SessionBench user={auth.user} /> : null}
+      {auth.status === 'signedIn' ? <PlayerHome /> : null}
 
       {auth.status === 'signedIn' ? (
         <Link href="/sante" asChild>
@@ -34,6 +37,9 @@ export default function SpikeIndex() {
         </Link>
       ) : null}
 
+      {auth.status === 'signedIn' ? <SessionBench user={auth.user} /> : null}
+
+      <Text style={styles.section}>Banc d&apos;essai</Text>
       <Text style={styles.intro}>
         Quatre réponses réelles du back, capturées sous l&apos;équilibrage v1. Toucher
         l&apos;écran pendant la séquence la saute.
@@ -65,6 +71,63 @@ export default function SpikeIndex() {
       })}
 
     </ScrollView>
+  );
+}
+
+/**
+ * Le niveau, l'XP et l'historique — servis par `usePlayerHome`, rechargés à chaque verdict
+ * de synchronisation.
+ *
+ * L'état vide n'est pas un échec et ne se présente pas comme tel : un compte neuf n'a rien
+ * fait, ce qui est le point de départ normal du produit et pas une panne à réessayer.
+ */
+function PlayerHome() {
+  const { home, reload } = usePlayerHome();
+  // Une seule lecture de l'horloge pour toute la liste : deux séances de la même journée
+  // ne doivent pas tomber de part et d'autre de minuit parce que le rendu a pris du temps.
+  const now = new Date();
+
+  if (home.step === 'loading') {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator color={color.accent} />
+      </View>
+    );
+  }
+
+  if (home.step === 'failed') {
+    return (
+      <View style={styles.bench}>
+        <Text style={styles.name}>Progression indisponible</Text>
+        <Text style={styles.detail}>{messageFor(home.failure)}</Text>
+        <Button label="Réessayer" onPress={reload} variant="quiet" />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <LevelCard progression={home.progression} />
+
+      {home.workouts.length === 0 ? (
+        <View style={styles.bench}>
+          <Text style={styles.name}>Aucune séance</Text>
+          <Text style={styles.detail}>
+            Tes séances apparaîtront ici dès la première synchronisation avec Santé.
+          </Text>
+        </View>
+      ) : (
+        <>
+          <Text style={styles.section}>
+            {home.workouts.length} séance{home.workouts.length > 1 ? 's' : ''}
+            {home.hasMore ? ' (les plus récentes)' : ''}
+          </Text>
+          {home.workouts.map((workout) => (
+            <WorkoutRow key={workout.id} workout={workout} now={now} />
+          ))}
+        </>
+      )}
+    </>
   );
 }
 
@@ -129,6 +192,8 @@ function SessionBench({ user }: { user: UserProfile }) {
 const styles = StyleSheet.create({
   screen: { padding: space.lg, gap: space.md },
   intro: { ...type.body, color: color.textMuted },
+  section: { ...type.label, color: color.textMuted, marginTop: space.md },
+  loading: { paddingVertical: space.xl, alignItems: 'center' },
   bench: {
     backgroundColor: color.surface,
     borderRadius: radius.md,
