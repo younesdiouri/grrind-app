@@ -13,11 +13,20 @@ import { usePlayerHome } from '@/features/progression/usePlayerHome';
 import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
 
 /**
- * L'accueil : ce que le joueur a gagné, et les séances qui l'ont produit.
+ * L'accueil.
  *
- * Le réel d'abord, le banc d'essai ensuite. Les fixtures restent parce qu'elles sont le
- * seul moyen de rejouer la mise en scène sans aller faire du sport — mais elles ne sont
- * plus le sujet de l'écran, et l'ordre le dit.
+ * ————— L'ordre est le sujet de cet écran ————————————————————————————————————————————
+ *
+ * **Ce qu'on peut faire passe avant ce qu'on a fait.** L'historique est un fond de page :
+ * onze séances font trois écrans de défilement, et tout ce qui se retrouve dessous n'existe
+ * plus. C'est arrivé au lien vers Santé, qui est devenu introuvable le jour où le compte de
+ * test a eu des séances — en développement il en avait zéro, donc personne ne l'a vu.
+ *
+ * D'où la règle : le résumé, l'action, **puis** l'archive.
+ *
+ * Les bancs de développement ferment la marche, sous un intitulé qui dit ce qu'ils sont. Ils
+ * restent parce que les fixtures sont le seul moyen de rejouer la mise en scène sans aller
+ * faire du sport, et le banc de session le seul moyen de provoquer un rafraîchissement.
  */
 export default function Home() {
   const auth = useAuth();
@@ -26,20 +35,10 @@ export default function Home() {
     <ScrollView contentContainerStyle={styles.screen}>
       {auth.status === 'signedIn' ? <PlayerHome /> : null}
 
-      {auth.status === 'signedIn' ? (
-        <Link href="/sante" asChild>
-          <Pressable style={styles.card}>
-            <Text style={styles.name}>Santé</Text>
-            <Text style={styles.detail}>
-              Autoriser l&apos;accès à Apple Santé et synchroniser les séances réelles.
-            </Text>
-          </Pressable>
-        </Link>
-      ) : null}
+      <Text style={styles.section}>Outils de développement</Text>
 
       {auth.status === 'signedIn' ? <SessionBench user={auth.user} /> : null}
 
-      <Text style={styles.section}>Banc d&apos;essai</Text>
       <Text style={styles.intro}>
         Quatre réponses réelles du back, capturées sous l&apos;équilibrage v1. Toucher
         l&apos;écran pendant la séquence la saute.
@@ -75,8 +74,10 @@ export default function Home() {
 }
 
 /**
- * Le niveau, l'XP et l'historique — servis par `usePlayerHome`, rechargés à chaque verdict
- * de synchronisation.
+ * Le joueur : son niveau, ce qu'il peut faire, et ce qu'il a fait — **dans cet ordre**.
+ *
+ * Le lien vers Santé est entre le résumé et l'historique, et pas après : c'est la seule
+ * action de l'écran, et une action placée sous onze cartes de séance n'est plus une action.
  *
  * L'état vide n'est pas un échec et ne se présente pas comme tel : un compte neuf n'a rien
  * fait, ce qui est le point de départ normal du produit et pas une panne à réessayer.
@@ -87,36 +88,44 @@ function PlayerHome() {
   // ne doivent pas tomber de part et d'autre de minuit parce que le rendu a pris du temps.
   const now = new Date();
 
-  if (home.step === 'loading') {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator color={color.accent} />
-      </View>
-    );
-  }
-
-  if (home.step === 'failed') {
-    return (
-      <View style={styles.bench}>
-        <Text style={styles.name}>Progression indisponible</Text>
-        <Text style={styles.detail}>{messageFor(home.failure)}</Text>
-        <Button label="Réessayer" onPress={reload} variant="quiet" />
-      </View>
-    );
-  }
-
   return (
     <>
-      <LevelCard progression={home.progression} />
+      {home.step === 'loading' ? (
+        <View style={styles.loading}>
+          <ActivityIndicator color={color.accent} />
+        </View>
+      ) : null}
 
-      {home.workouts.length === 0 ? (
+      {home.step === 'failed' ? (
+        <View style={styles.bench}>
+          <Text style={styles.name}>Progression indisponible</Text>
+          <Text style={styles.detail}>{messageFor(home.failure)}</Text>
+          <Button label="Réessayer" onPress={reload} variant="quiet" />
+        </View>
+      ) : null}
+
+      {home.step === 'ready' ? <LevelCard progression={home.progression} /> : null}
+
+      {/* L'action, toujours au même endroit — qu'il y ait onze séances ou aucune. */}
+      <Link href="/sante" asChild>
+        <Pressable style={styles.card}>
+          <Text style={styles.name}>Santé</Text>
+          <Text style={styles.detail}>
+            Synchroniser tes séances depuis Apple Santé.
+          </Text>
+        </Pressable>
+      </Link>
+
+      {home.step === 'ready' && home.workouts.length === 0 ? (
         <View style={styles.bench}>
           <Text style={styles.name}>Aucune séance</Text>
           <Text style={styles.detail}>
             Tes séances apparaîtront ici dès la première synchronisation avec Santé.
           </Text>
         </View>
-      ) : (
+      ) : null}
+
+      {home.step === 'ready' && home.workouts.length > 0 ? (
         <>
           <Text style={styles.section}>
             {home.workouts.length} séance{home.workouts.length > 1 ? 's' : ''}
@@ -126,7 +135,7 @@ function PlayerHome() {
             <WorkoutRow key={workout.id} workout={workout} now={now} />
           ))}
         </>
-      )}
+      ) : null}
     </>
   );
 }
