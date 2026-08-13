@@ -9,7 +9,13 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "app.grrind"
+      "bundleIdentifier": "app.grrind",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "GRRIND lit tes séances de sport enregistrées dans Apple Santé — leur durée, leur distance, leur dénivelé et tes calories — pour les transformer en expérience et faire progresser ton personnage. Rien n'est lu d'autre, et GRRIND n'écrit jamais dans Santé."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true
+      }
     },
     "android": {
       "package": "app.grrind",
