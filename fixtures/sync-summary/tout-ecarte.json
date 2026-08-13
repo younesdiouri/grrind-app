@@ -1,0 +1,33 @@
+{
+  "syncedAt": "2026-08-13T13:14:46+00:00",
+  "imported": [],
+  "skipped": [
+    {
+      "externalId": "trois-1",
+      "activityType": "running",
+      "reason": "ALREADY_IMPORTED"
+    },
+    {
+      "externalId": "trois-2",
+      "activityType": "cycling",
+      "reason": "ALREADY_IMPORTED"
+    },
+    {
+      "externalId": "ecarte-curling",
+      "activityType": "curling",
+      "reason": "UNSUPPORTED_ACTIVITY"
+    },
+    {
+      "externalId": "ecarte-court",
+      "activityType": "running",
+      "reason": "TOO_SHORT"
+    },
+    {
+      "externalId": "ecarte-vieux",
+      "activityType": "running",
+      "reason": "OUT_OF_WINDOW"
+    }
+  ],
+  "totals": null,
+  "rulesetVersion": "v1-269e3332e726"
+}

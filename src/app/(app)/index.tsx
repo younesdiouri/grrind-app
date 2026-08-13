@@ -24,12 +24,14 @@ export default function SpikeIndex() {
       {auth.status === 'signedIn' ? <SessionBench user={auth.user} /> : null}
 
       <Text style={styles.intro}>
-        Trois réponses réelles du back, capturées sous l&apos;équilibrage v1. Toucher
+        Quatre réponses réelles du back, capturées sous l&apos;équilibrage v1. Toucher
         l&apos;écran pendant la séquence la saute.
       </Text>
 
       {(Object.keys(FIXTURES) as FixtureName[]).map((name) => {
         const summary = FIXTURES[name];
+        const levels = summary.imported.flatMap((workout) => workout.level.reached);
+
         return (
           <Link key={name} href={{ pathname: '/reward', params: { fixture: name } }} asChild>
             {/* `asChild` clone l'enfant avec `onPress` : il faut donc un composant qui l'émette.
@@ -37,20 +39,20 @@ export default function SpikeIndex() {
             <Pressable style={styles.card}>
               <Text style={styles.name}>{name}</Text>
               <Text style={styles.detail}>
-                {summary.xp.awarded > 0 ? '+' : ''}
-                {summary.xp.awarded} XP · {summary.xp.breakdown.length} ligne
-                {summary.xp.breakdown.length > 1 ? 's' : ''} ·{' '}
-                {summary.level.reached.length > 0
-                  ? `niveau ${summary.level.reached.join(', ')}`
-                  : 'aucun niveau'}
-                {summary.titlesUnlocked.length > 0
-                  ? ` · ${summary.titlesUnlocked.length} titre`
+                {summary.imported.length} séance{summary.imported.length > 1 ? 's' : ''} ·{' '}
+                {summary.totals === null
+                  ? 'rien de crédité'
+                  : `+${summary.totals.xpAwarded} XP`}
+                {levels.length > 0 ? ` · niveau ${levels.join(', ')}` : ''}
+                {summary.skipped.length > 0
+                  ? ` · ${summary.skipped.length} écartée${summary.skipped.length > 1 ? 's' : ''}`
                   : ''}
               </Text>
             </Pressable>
           </Link>
         );
       })}
+
     </ScrollView>
   );
 }

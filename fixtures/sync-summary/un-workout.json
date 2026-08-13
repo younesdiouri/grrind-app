@@ -1,0 +1,79 @@
+{
+  "syncedAt": "2026-08-13T13:14:45+00:00",
+  "imported": [
+    {
+      "session": {
+        "id": "019ffb42-c5e8-7983-a265-b64eb0573082",
+        "discipline": "RUNNING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-11T13:14:45+00:00",
+        "endedAt": "2026-08-11T14:24:45+00:00",
+        "durationSeconds": 4200,
+        "distanceMeters": 12000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "un-1"
+      },
+      "xp": {
+        "awarded": 186,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 70
+          },
+          {
+            "source": "DIMINISHING",
+            "amount": -4
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 120
+          }
+        ]
+      },
+      "level": {
+        "before": 1,
+        "xpIntoLevelBefore": 0,
+        "xpToNextLevelBefore": 100,
+        "after": 2,
+        "reached": [
+          2
+        ],
+        "totalXp": 186,
+        "xpIntoLevel": 86,
+        "xpToNextLevel": 74,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [
+        {
+          "id": "first_steps",
+          "name": "First Steps",
+          "hint": "Complete your first session",
+          "unlocked": true,
+          "unlockedAt": "2026-08-13T13:14:45+00:00",
+          "progress": {
+            "current": 1,
+            "target": 1,
+            "unit": "SESSIONS"
+          }
+        }
+      ],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    }
+  ],
+  "skipped": [],
+  "totals": {
+    "levelBefore": 1,
+    "levelAfter": 2,
+    "xpBefore": 0,
+    "xpAfter": 186,
+    "xpAwarded": 186,
+    "workoutCount": 1
+  },
+  "rulesetVersion": "v1-269e3332e726"
+}
