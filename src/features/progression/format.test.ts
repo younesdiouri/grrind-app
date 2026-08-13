@@ -1,0 +1,87 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  formatCalories,
+  formatDistance,
+  formatDuration,
+  formatElevation,
+  formatHeartRate,
+  formatWhen,
+} from './format.ts';
+
+/**
+ * Le contrat dit que `null` veut dire « non mesuré, **jamais zéro** ». Ces tests sont là
+ * pour que ça reste vrai jusqu'à l'écran : c'est la règle qu'on casse en écrivant
+ * `?? 0` sans y penser, et la seule dont l'erreur affiche une donnée fausse plutôt qu'une
+ * donnée absente.
+ */
+describe('une mesure absente ne devient jamais zéro', () => {
+  it('rend null plutôt qu’une chaîne, pour chaque mesure', () => {
+    assert.equal(formatDistance(null), null);
+    assert.equal(formatElevation(null), null);
+    assert.equal(formatCalories(null), null);
+    assert.equal(formatHeartRate(null), null);
+  });
+
+  it('distingue une mesure nulle d’une mesure à zéro', () => {
+    // Un tour de piste plat a bien un dénivelé de zéro, et il s'affiche.
+    assert.equal(formatElevation(0), '0 m D+');
+    assert.equal(formatDistance(0), '0 m');
+  });
+});
+
+describe('les distances', () => {
+  it('restent en mètres sous le kilomètre', () => {
+    assert.equal(formatDistance(754), '754 m');
+    assert.equal(formatDistance(999), '999 m');
+  });
+
+  it('passent au kilomètre au-delà, avec la virgule française', () => {
+    assert.equal(formatDistance(1000), '1,00 km');
+    assert.equal(formatDistance(3046), '3,05 km');
+  });
+});
+
+describe('les durées', () => {
+  it('ne rendent pas « 0 min » pour une séance très courte', () => {
+    assert.equal(formatDuration(40), 'moins d’une minute');
+  });
+
+  it('s’expriment en minutes sous l’heure', () => {
+    // 42 min 54 s, une vraie séance : on tronque plutôt que d'arrondir à 43, parce
+    // qu'une durée affichée ne doit jamais dépasser la durée mesurée.
+    assert.equal(formatDuration(2574), '42 min');
+    assert.equal(formatDuration(3599), '59 min');
+  });
+
+  it('passent en heures au-delà, et taisent les minutes rondes', () => {
+    assert.equal(formatDuration(3600), '1 h');
+    assert.equal(formatDuration(3900), '1 h 05');
+    assert.equal(formatDuration(7500), '2 h 05');
+  });
+});
+
+describe('les dates', () => {
+  it('comparent des jours civils, pas des écarts de 24 heures', () => {
+    const now = new Date(2026, 7, 13, 8, 0);
+
+    // Hier 20 h est à douze heures d'ici, et reste hier.
+    assert.match(formatWhen(new Date(2026, 7, 12, 20, 0).toISOString(), now), /^Hier, 20:00$/);
+    // Ce matin 7 h est à une heure d'ici, et reste aujourd'hui.
+    assert.match(
+      formatWhen(new Date(2026, 7, 13, 7, 0).toISOString(), now),
+      /^Aujourd’hui, 07:00$/,
+    );
+  });
+
+  it('passent à la date absolue au-delà d’hier', () => {
+    const now = new Date(2026, 7, 13, 8, 0);
+
+    assert.equal(formatWhen(new Date(2026, 7, 4, 15, 29).toISOString(), now), '4 août');
+  });
+
+  it('ne cassent pas sur une date que le serveur n’aurait pas dû envoyer', () => {
+    assert.equal(formatWhen('pas une date', new Date()), 'pas une date');
+  });
+});
