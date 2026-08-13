@@ -32,6 +32,8 @@ export const appleHealthProvider: HealthProvider = {
 
   requestAuthorization: () => GrrindHealth.requestAuthorization(),
 
+  authorizationPrompt: () => GrrindHealth.authorizationPrompt(),
+
   /**
    * Le pont ne transporte pas de `Date` : la conversion en millisecondes se fait ici, une fois.
    * Passer une chaîne ISO obligerait les deux côtés à s'accorder sur un formateur, ce qui est

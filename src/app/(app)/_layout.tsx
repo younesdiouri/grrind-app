@@ -11,7 +11,8 @@ export default function AppLayout() {
         contentStyle: { backgroundColor: color.background },
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Spike RewardSummary' }} />
+      <Stack.Screen name="index" options={{ title: 'Spike SyncSummary' }} />
+      <Stack.Screen name="sante" options={{ title: 'Santé' }} />
       <Stack.Screen name="reward" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );

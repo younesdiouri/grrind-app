@@ -18,6 +18,10 @@ import type { HealthProvider } from '@/features/health/provider';
 export const healthProvider: HealthProvider = {
   isAvailable: async () => false,
 
+  // Rien à demander là où il n'y a rien à lire. `alreadyAsked` plutôt que `needed` : l'écran
+  // ne doit pas proposer une feuille système qui ne s'ouvrira jamais.
+  authorizationPrompt: async () => 'alreadyAsked' as const,
+
   requestAuthorization: async () => {
     throw new Error("Aucun fournisseur de santé sur cette plateforme.");
   },

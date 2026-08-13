@@ -21,6 +21,12 @@ import { NativeModule, requireNativeModule } from 'expo';
  * qui rapproche les deux, par une affectation que le compilateur vérifie — si cette forme
  * s'écarte d'`ImportedWorkout`, le build casse là-bas, pas à l'exécution ici.
  */
+/**
+ * Faut-il encore poser la question ? Ne dit **pas** ce que l'utilisateur a répondu — en lecture,
+ * HealthKit ne le dit à personne.
+ */
+export type NativeAuthorizationPrompt = 'needed' | 'alreadyAsked' | 'unknown';
+
 export type NativeWorkout = {
   externalId: string;
   source: 'APPLE_HEALTH';
@@ -45,6 +51,14 @@ declare class GrrindHealthModule extends NativeModule {
    * l'écran du #17, tous deux écrits pour cette ambiguïté.
    */
   requestAuthorization(): Promise<void>;
+
+  /**
+   * Présenter la feuille système apporterait-il quelque chose ?
+   *
+   * Sépare « on n'a jamais demandé » de « on a déjà demandé », sans jamais dire ce qui a été
+   * répondu. C'est la seule information que HealthKit consente à donner sur la lecture.
+   */
+  authorizationPrompt(): Promise<NativeAuthorizationPrompt>;
 
   /**
    * Les workouts **terminés** depuis cet instant, du plus ancien au plus récent.

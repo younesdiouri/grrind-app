@@ -87,6 +87,47 @@ public class GrrindHealthModule: Module {
     }
 
     /**
+     Faut-il encore poser la question ?
+
+     **Ce n'est pas le verdict de l'utilisateur, et rien ne peut l'être.** Les trois valeurs de
+     `HKAuthorizationStatus` sont toutes formulées en termes d'*écriture* — « may save objects »,
+     « not allowed to save », « is authorized to save » — et l'en-tête `HKDefines.h` n'en propose
+     aucune pour la lecture. C'est délibéré chez Apple : une app ne doit pas pouvoir déduire
+     qu'un utilisateur a quelque chose à cacher.
+
+     `getRequestStatusForAuthorizationToShareTypes:readTypes:` dit autre chose, et c'est
+     exactement ce dont l'écran a besoin : est-ce que présenter la feuille système apporterait
+     quoi que ce soit ? Elle sépare « on n'a jamais demandé » de « on a déjà demandé », **sans
+     jamais dire ce qui a été répondu**.
+
+     - `needed` — la feuille montrera quelque chose. C'est le moment d'expliquer avant.
+     - `alreadyAsked` — la question a été posée. La rejouer ne donnerait pas de seconde chance
+       à l'utilisateur qui a décoché par réflexe : la feuille d'Apple ne se rejoue pas, et la
+       seule porte restante est Réglages.
+     - `unknown` — une panne du système. On traite comme `needed` : demander deux fois est sans
+       conséquence, ne jamais demander en a une.
+     */
+    AsyncFunction("authorizationPrompt") { (promise: Promise) in
+      guard HKHealthStore.isHealthDataAvailable() else {
+        promise.reject(HealthDataUnavailableException())
+        return
+      }
+
+      self.store.getRequestStatusForAuthorization(toShare: [], read: self.readTypes) { status, error in
+        if error != nil {
+          promise.resolve("unknown")
+          return
+        }
+
+        switch status {
+        case .shouldRequest: promise.resolve("needed")
+        case .unnecessary: promise.resolve("alreadyAsked")
+        default: promise.resolve("unknown")
+        }
+      }
+    }
+
+    /**
      Les workouts terminés depuis `since`, du plus ancien au plus récent.
 
      `since` arrive en millisecondes depuis l'époque — la seule façon de faire traverser une date
