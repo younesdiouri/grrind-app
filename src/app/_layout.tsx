@@ -1,15 +1,20 @@
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 
 import { color } from '@/design/tokens';
 import { restore } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
+import { beginLaunch, isLaunchSettled, subscribeToLaunch } from '@/features/reward/launch';
 
 // L'écran de démarrage tient jusqu'à ce que le trousseau ait répondu. Sans ça, l'app
 // afficherait l'écran de connexion une fraction de seconde avant de le remplacer par
 // l'accueil — un clignotement à chaque ouverture, pour une session parfaitement valide.
+//
+// Il tient aussi, **borné**, le temps de savoir s'il y a une progression à jouer : c'est ce
+// qui fait de l'animation le premier écran plutôt qu'un plein écran qui surgit une seconde
+// après l'accueil. L'attente se glisse dans un écran déjà affiché au lieu de s'ajouter après.
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -21,11 +26,26 @@ export default function RootLayout() {
     void restore();
   }, []);
 
+  // Un magasin externe plutôt qu'un `useState` : l'état du lancement est un fait du
+  // processus, pas d'un composant, et l'écrire depuis un effet ferait rendre en cascade au
+  // montage — ce que `react-hooks/set-state-in-effect` refuse à juste titre.
+  const settled = useSyncExternalStore(subscribeToLaunch, isLaunchSettled);
+
   useEffect(() => {
-    if (auth.status !== 'restoring') {
+    if (auth.status === 'restoring') {
+      return;
+    }
+
+    // La pile connectée est rendue sous l'écran de démarrage, donc la synchronisation de
+    // lancement est déjà partie quand on arrive ici. `beginLaunch` est idempotent.
+    beginLaunch(auth.status === 'signedIn');
+  }, [auth.status]);
+
+  useEffect(() => {
+    if (settled) {
       void SplashScreen.hideAsync();
     }
-  }, [auth.status]);
+  }, [settled]);
 
   if (auth.status === 'restoring') {
     return null;

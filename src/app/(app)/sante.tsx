@@ -7,7 +7,7 @@ import { color, radius, skipReasonLabel, space, type } from '@/design/tokens';
 import { messageFor } from '@/features/auth/problems';
 import type { SyncResult } from '@/features/health/sync';
 import { useHealthAccess } from '@/features/health/useHealthAccess';
-import { useSync } from '@/features/health/useSync';
+import { useSyncStatus } from '@/features/health/useSync';
 import type { SkippedWorkout } from '@/features/reward/timeline';
 
 /**
@@ -38,7 +38,9 @@ import type { SkippedWorkout } from '@/features/reward/timeline';
  */
 export default function SanteScreen() {
   const { access, ask } = useHealthAccess();
-  const { status, refresh } = useSync();
+  // Les déclencheurs vivent dans la coquille de l'app : cet écran lit et redemande, il ne
+  // déclenche plus le lancement. Y passer n'est plus la condition pour se synchroniser.
+  const { status, refresh } = useSyncStatus();
 
   if (access.step === 'checking') {
     return (
