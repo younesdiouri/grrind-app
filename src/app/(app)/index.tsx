@@ -23,6 +23,17 @@ export default function SpikeIndex() {
     <ScrollView contentContainerStyle={styles.screen}>
       {auth.status === 'signedIn' ? <SessionBench user={auth.user} /> : null}
 
+      {auth.status === 'signedIn' ? (
+        <Link href="/sante" asChild>
+          <Pressable style={styles.card}>
+            <Text style={styles.name}>Santé</Text>
+            <Text style={styles.detail}>
+              Autoriser l&apos;accès à Apple Santé et synchroniser les séances réelles.
+            </Text>
+          </Pressable>
+        </Link>
+      ) : null}
+
       <Text style={styles.intro}>
         Quatre réponses réelles du back, capturées sous l&apos;équilibrage v1. Toucher
         l&apos;écran pendant la séquence la saute.

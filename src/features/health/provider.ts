@@ -35,6 +35,22 @@ export type WorkoutData = components['schemas']['ImportedWorkout'];
  * iPhone et en `HEALTH_CONNECT` sur Android. */
 export type WorkoutSource = WorkoutData['source'];
 
+/**
+ * Faut-il encore poser la question à l'utilisateur ?
+ *
+ * **Ce n'est pas son verdict**, et aucun fournisseur ne peut le donner : HealthKit ne dit
+ * jamais si une autorisation de lecture a été refusée, et les permissions de Health Connect se
+ * révoquent en silence après trente jours. Ce que ce port rend est la seule chose observable —
+ * est-ce que redemander servirait à quelque chose ?
+ */
+export type AuthorizationPrompt =
+  /** La demande n'a pas encore été posée. C'est le moment d'expliquer avant de la poser. */
+  | 'needed'
+  /** Elle l'a été. La reposer ne donnera pas de seconde chance : la seule porte est Réglages. */
+  | 'alreadyAsked'
+  /** Le système n'a pas su répondre. À traiter comme `needed` — demander deux fois ne coûte rien. */
+  | 'unknown';
+
 export interface HealthProvider {
   /**
    * Le fournisseur peut-il être interrogé sur cet appareil ?
@@ -57,6 +73,16 @@ export interface HealthProvider {
    * une panne du système. Un refus de l'utilisateur n'est pas une panne.
    */
   requestAuthorization(): Promise<void>;
+
+  /**
+   * Est-ce que redemander l'accès servirait à quelque chose ?
+   *
+   * La distinction que ça permet est **toute** la différence entre deux écrans : « voilà ce que
+   * GRRIND va lire, et pourquoi » avant la feuille système, et « aucune activité trouvée » avec
+   * le chemin vers Réglages après. Sans elle, il faudrait en choisir un et se tromper la moitié
+   * du temps.
+   */
+  authorizationPrompt(): Promise<AuthorizationPrompt>;
 
   /**
    * Les workouts terminés depuis `since`, du plus ancien au plus récent.
