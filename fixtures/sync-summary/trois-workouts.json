@@ -1,0 +1,163 @@
+{
+  "syncedAt": "2026-08-13T13:14:45+00:00",
+  "imported": [
+    {
+      "session": {
+        "id": "019ffb42-c7c6-7a75-8b38-e54e14b75540",
+        "discipline": "RUNNING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-08T13:14:45+00:00",
+        "endedAt": "2026-08-08T14:14:45+00:00",
+        "durationSeconds": 3600,
+        "distanceMeters": 10000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "trois-1"
+      },
+      "xp": {
+        "awarded": 160,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 60
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 100
+          }
+        ]
+      },
+      "level": {
+        "before": 1,
+        "xpIntoLevelBefore": 0,
+        "xpToNextLevelBefore": 100,
+        "after": 2,
+        "reached": [
+          2
+        ],
+        "totalXp": 160,
+        "xpIntoLevel": 60,
+        "xpToNextLevel": 100,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [
+        {
+          "id": "first_steps",
+          "name": "First Steps",
+          "hint": "Complete your first session",
+          "unlocked": true,
+          "unlockedAt": "2026-08-13T13:14:45+00:00",
+          "progress": {
+            "current": 1,
+            "target": 1,
+            "unit": "SESSIONS"
+          }
+        }
+      ],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-c7cf-74ce-b223-00b1b423fb4e",
+        "discipline": "CYCLING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-10T13:14:45+00:00",
+        "endedAt": "2026-08-10T14:14:45+00:00",
+        "durationSeconds": 3600,
+        "distanceMeters": 30000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "trois-2"
+      },
+      "xp": {
+        "awarded": 150,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 60
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 90
+          }
+        ]
+      },
+      "level": {
+        "before": 2,
+        "xpIntoLevelBefore": 60,
+        "xpToNextLevelBefore": 100,
+        "after": 3,
+        "reached": [
+          3
+        ],
+        "totalXp": 310,
+        "xpIntoLevel": 50,
+        "xpToNextLevel": 170,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-c7d3-754f-984f-e5868827bcb1",
+        "discipline": "STRENGTH",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-12T13:14:45+00:00",
+        "endedAt": "2026-08-12T13:59:45+00:00",
+        "durationSeconds": 2700,
+        "distanceMeters": null,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "trois-3"
+      },
+      "xp": {
+        "awarded": 45,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 45
+          }
+        ]
+      },
+      "level": {
+        "before": 3,
+        "xpIntoLevelBefore": 50,
+        "xpToNextLevelBefore": 170,
+        "after": 3,
+        "reached": [],
+        "totalXp": 355,
+        "xpIntoLevel": 95,
+        "xpToNextLevel": 125,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    }
+  ],
+  "skipped": [],
+  "totals": {
+    "levelBefore": 1,
+    "levelAfter": 3,
+    "xpBefore": 0,
+    "xpAfter": 355,
+    "xpAwarded": 355,
+    "workoutCount": 3
+  },
+  "rulesetVersion": "v1-269e3332e726"
+}

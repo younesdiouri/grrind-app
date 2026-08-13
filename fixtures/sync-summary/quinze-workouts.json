@@ -1,0 +1,740 @@
+{
+  "syncedAt": "2026-08-13T13:14:46+00:00",
+  "imported": [
+    {
+      "session": {
+        "id": "019ffb42-ca24-7500-83de-b8096b9c73fa",
+        "discipline": "HIKING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-07-29T13:14:46+00:00",
+        "endedAt": "2026-07-29T14:44:46+00:00",
+        "durationSeconds": 5400,
+        "distanceMeters": 9000,
+        "calories": null,
+        "elevationGainMeters": 400,
+        "averageHeartRate": null,
+        "externalId": "quinze-15"
+      },
+      "xp": {
+        "awarded": 230,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 90
+          },
+          {
+            "source": "DIMINISHING",
+            "amount": -12
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 72
+          },
+          {
+            "source": "ELEVATION",
+            "amount": 80
+          }
+        ]
+      },
+      "level": {
+        "before": 1,
+        "xpIntoLevelBefore": 0,
+        "xpToNextLevelBefore": 100,
+        "after": 2,
+        "reached": [
+          2
+        ],
+        "totalXp": 230,
+        "xpIntoLevel": 130,
+        "xpToNextLevel": 30,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [
+        {
+          "id": "first_steps",
+          "name": "First Steps",
+          "hint": "Complete your first session",
+          "unlocked": true,
+          "unlockedAt": "2026-08-13T13:14:46+00:00",
+          "progress": {
+            "current": 1,
+            "target": 1,
+            "unit": "SESSIONS"
+          }
+        }
+      ],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca2f-75a2-9b94-31451754cec4",
+        "discipline": "MOBILITY",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-07-30T13:14:46+00:00",
+        "endedAt": "2026-07-30T13:44:46+00:00",
+        "durationSeconds": 1800,
+        "distanceMeters": null,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-14"
+      },
+      "xp": {
+        "awarded": 30,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 30
+          }
+        ]
+      },
+      "level": {
+        "before": 2,
+        "xpIntoLevelBefore": 130,
+        "xpToNextLevelBefore": 30,
+        "after": 3,
+        "reached": [
+          3
+        ],
+        "totalXp": 260,
+        "xpIntoLevel": 0,
+        "xpToNextLevel": 220,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca34-70f4-9741-cf1771e3116f",
+        "discipline": "STRENGTH",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-07-31T13:14:46+00:00",
+        "endedAt": "2026-07-31T14:04:46+00:00",
+        "durationSeconds": 3000,
+        "distanceMeters": null,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-13"
+      },
+      "xp": {
+        "awarded": 50,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 50
+          }
+        ]
+      },
+      "level": {
+        "before": 3,
+        "xpIntoLevelBefore": 0,
+        "xpToNextLevelBefore": 220,
+        "after": 3,
+        "reached": [],
+        "totalXp": 310,
+        "xpIntoLevel": 50,
+        "xpToNextLevel": 170,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca38-7a05-8136-4871400a3acb",
+        "discipline": "CYCLING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-01T13:14:46+00:00",
+        "endedAt": "2026-08-01T14:29:46+00:00",
+        "durationSeconds": 4500,
+        "distanceMeters": 35000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-12"
+      },
+      "xp": {
+        "awarded": 174,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 75
+          },
+          {
+            "source": "DIMINISHING",
+            "amount": -6
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 105
+          }
+        ]
+      },
+      "level": {
+        "before": 3,
+        "xpIntoLevelBefore": 50,
+        "xpToNextLevelBefore": 170,
+        "after": 4,
+        "reached": [
+          4
+        ],
+        "totalXp": 484,
+        "xpIntoLevel": 4,
+        "xpToNextLevel": 276,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca3d-7930-878e-4870ca7764d1",
+        "discipline": "RUNNING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-02T13:14:46+00:00",
+        "endedAt": "2026-08-02T13:59:46+00:00",
+        "durationSeconds": 2700,
+        "distanceMeters": 7000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-11"
+      },
+      "xp": {
+        "awarded": 115,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 45
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 70
+          }
+        ]
+      },
+      "level": {
+        "before": 4,
+        "xpIntoLevelBefore": 4,
+        "xpToNextLevelBefore": 276,
+        "after": 4,
+        "reached": [],
+        "totalXp": 599,
+        "xpIntoLevel": 119,
+        "xpToNextLevel": 161,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca42-760f-b82a-e245c5467aa1",
+        "discipline": "HIKING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-03T13:14:46+00:00",
+        "endedAt": "2026-08-03T14:44:46+00:00",
+        "durationSeconds": 5400,
+        "distanceMeters": 9000,
+        "calories": null,
+        "elevationGainMeters": 400,
+        "averageHeartRate": null,
+        "externalId": "quinze-10"
+      },
+      "xp": {
+        "awarded": 230,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 90
+          },
+          {
+            "source": "DIMINISHING",
+            "amount": -12
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 72
+          },
+          {
+            "source": "ELEVATION",
+            "amount": 80
+          }
+        ]
+      },
+      "level": {
+        "before": 4,
+        "xpIntoLevelBefore": 119,
+        "xpToNextLevelBefore": 161,
+        "after": 5,
+        "reached": [
+          5
+        ],
+        "totalXp": 829,
+        "xpIntoLevel": 69,
+        "xpToNextLevel": 271,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [
+        {
+          "id": "apprentice",
+          "name": "Apprentice",
+          "hint": "Reach level 5",
+          "unlocked": true,
+          "unlockedAt": "2026-08-13T13:14:46+00:00",
+          "progress": {
+            "current": 5,
+            "target": 5,
+            "unit": "LEVELS"
+          }
+        }
+      ],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca48-76e4-a8a9-da99b4deaeb7",
+        "discipline": "MOBILITY",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-04T13:14:46+00:00",
+        "endedAt": "2026-08-04T13:44:46+00:00",
+        "durationSeconds": 1800,
+        "distanceMeters": null,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-9"
+      },
+      "xp": {
+        "awarded": 30,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 30
+          }
+        ]
+      },
+      "level": {
+        "before": 5,
+        "xpIntoLevelBefore": 69,
+        "xpToNextLevelBefore": 271,
+        "after": 5,
+        "reached": [],
+        "totalXp": 859,
+        "xpIntoLevel": 99,
+        "xpToNextLevel": 241,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca4d-7741-8f3d-18e1c9fdbfeb",
+        "discipline": "STRENGTH",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-05T13:14:46+00:00",
+        "endedAt": "2026-08-05T14:04:46+00:00",
+        "durationSeconds": 3000,
+        "distanceMeters": null,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-8"
+      },
+      "xp": {
+        "awarded": 50,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 50
+          }
+        ]
+      },
+      "level": {
+        "before": 5,
+        "xpIntoLevelBefore": 99,
+        "xpToNextLevelBefore": 241,
+        "after": 5,
+        "reached": [],
+        "totalXp": 909,
+        "xpIntoLevel": 149,
+        "xpToNextLevel": 191,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca52-7169-8241-bc9b606c1f29",
+        "discipline": "CYCLING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-06T13:14:46+00:00",
+        "endedAt": "2026-08-06T14:29:46+00:00",
+        "durationSeconds": 4500,
+        "distanceMeters": 35000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-7"
+      },
+      "xp": {
+        "awarded": 174,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 75
+          },
+          {
+            "source": "DIMINISHING",
+            "amount": -6
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 105
+          }
+        ]
+      },
+      "level": {
+        "before": 5,
+        "xpIntoLevelBefore": 149,
+        "xpToNextLevelBefore": 191,
+        "after": 5,
+        "reached": [],
+        "totalXp": 1083,
+        "xpIntoLevel": 323,
+        "xpToNextLevel": 17,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca57-716e-8344-910fef1245de",
+        "discipline": "RUNNING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-07T13:14:46+00:00",
+        "endedAt": "2026-08-07T13:59:46+00:00",
+        "durationSeconds": 2700,
+        "distanceMeters": 7000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-6"
+      },
+      "xp": {
+        "awarded": 115,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 45
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 70
+          }
+        ]
+      },
+      "level": {
+        "before": 5,
+        "xpIntoLevelBefore": 323,
+        "xpToNextLevelBefore": 17,
+        "after": 6,
+        "reached": [
+          6
+        ],
+        "totalXp": 1198,
+        "xpIntoLevel": 98,
+        "xpToNextLevel": 302,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca5c-7ded-981d-d53c4914e433",
+        "discipline": "HIKING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-08T13:14:46+00:00",
+        "endedAt": "2026-08-08T14:44:46+00:00",
+        "durationSeconds": 5400,
+        "distanceMeters": 9000,
+        "calories": null,
+        "elevationGainMeters": 400,
+        "averageHeartRate": null,
+        "externalId": "quinze-5"
+      },
+      "xp": {
+        "awarded": 230,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 90
+          },
+          {
+            "source": "DIMINISHING",
+            "amount": -12
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 72
+          },
+          {
+            "source": "ELEVATION",
+            "amount": 80
+          }
+        ]
+      },
+      "level": {
+        "before": 6,
+        "xpIntoLevelBefore": 98,
+        "xpToNextLevelBefore": 302,
+        "after": 6,
+        "reached": [],
+        "totalXp": 1428,
+        "xpIntoLevel": 328,
+        "xpToNextLevel": 72,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca62-7289-a7fb-7253c03c92b1",
+        "discipline": "MOBILITY",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-09T13:14:46+00:00",
+        "endedAt": "2026-08-09T13:44:46+00:00",
+        "durationSeconds": 1800,
+        "distanceMeters": null,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-4"
+      },
+      "xp": {
+        "awarded": 30,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 30
+          }
+        ]
+      },
+      "level": {
+        "before": 6,
+        "xpIntoLevelBefore": 328,
+        "xpToNextLevelBefore": 72,
+        "after": 6,
+        "reached": [],
+        "totalXp": 1458,
+        "xpIntoLevel": 358,
+        "xpToNextLevel": 42,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca6a-735d-83b8-e8ad51aa95f0",
+        "discipline": "STRENGTH",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-10T13:14:46+00:00",
+        "endedAt": "2026-08-10T14:04:46+00:00",
+        "durationSeconds": 3000,
+        "distanceMeters": null,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-3"
+      },
+      "xp": {
+        "awarded": 50,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 50
+          }
+        ]
+      },
+      "level": {
+        "before": 6,
+        "xpIntoLevelBefore": 358,
+        "xpToNextLevelBefore": 42,
+        "after": 7,
+        "reached": [
+          7
+        ],
+        "totalXp": 1508,
+        "xpIntoLevel": 8,
+        "xpToNextLevel": 452,
+        "skillPointsGranted": 1
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca76-70ba-a5a9-b57410059474",
+        "discipline": "CYCLING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-11T13:14:45+00:00",
+        "endedAt": "2026-08-11T14:29:46+00:00",
+        "durationSeconds": 4501,
+        "distanceMeters": 35000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-2"
+      },
+      "xp": {
+        "awarded": 174,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 75
+          },
+          {
+            "source": "DIMINISHING",
+            "amount": -6
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 105
+          }
+        ]
+      },
+      "level": {
+        "before": 7,
+        "xpIntoLevelBefore": 8,
+        "xpToNextLevelBefore": 452,
+        "after": 7,
+        "reached": [],
+        "totalXp": 1682,
+        "xpIntoLevel": 182,
+        "xpToNextLevel": 278,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    },
+    {
+      "session": {
+        "id": "019ffb42-ca7a-7e56-9c29-6682a4c4e2de",
+        "discipline": "RUNNING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-12T13:14:45+00:00",
+        "endedAt": "2026-08-12T13:59:45+00:00",
+        "durationSeconds": 2700,
+        "distanceMeters": 7000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "quinze-1"
+      },
+      "xp": {
+        "awarded": 115,
+        "breakdown": [
+          {
+            "source": "BASE",
+            "amount": 45
+          },
+          {
+            "source": "DISTANCE",
+            "amount": 70
+          }
+        ]
+      },
+      "level": {
+        "before": 7,
+        "xpIntoLevelBefore": 182,
+        "xpToNextLevelBefore": 278,
+        "after": 7,
+        "reached": [],
+        "totalXp": 1797,
+        "xpIntoLevel": 297,
+        "xpToNextLevel": 163,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-269e3332e726"
+    }
+  ],
+  "skipped": [],
+  "totals": {
+    "levelBefore": 1,
+    "levelAfter": 7,
+    "xpBefore": 0,
+    "xpAfter": 1797,
+    "xpAwarded": 1797,
+    "workoutCount": 15
+  },
+  "rulesetVersion": "v1-269e3332e726"
+}

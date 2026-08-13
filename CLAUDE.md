@@ -55,21 +55,37 @@ une synchronisation vide au lieu de sa mise en scène — l'XP serait juste, l'a
 L'access token dure 15 minutes et ne se révoque pas : le persister n'apporte rien et l'expose.
 Le refresh token va dans `expo-secure-store`, jamais dans `AsyncStorage`.
 
-## `RewardSummary` : l'ordre des clés est l'ordre de l'animation
+## `SyncSummary` : l'ordre des clés est l'ordre de l'animation
 
-C'est *l'*écran du produit. Le payload de complétion se joue **de haut en bas**, sans jamais être
-trié ni réordonné :
+C'est *l'*écran du produit. Le payload d'import se joue **de haut en bas**, sans jamais être trié
+ni réordonné, et à deux niveaux : d'abord entre les workouts — `imported` est chronologique,
+celui du crédit — puis à l'intérieur de chacun.
 
 ```
-session → xp.breakdown (ligne à ligne) → level.reached → titlesUnlocked → loot → streak → unlockableNodes
+imported[i] → session → xp.breakdown (ligne à ligne) → level.reached → titlesUnlocked → loot → streak → unlockableNodes
 ```
 
 `loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux lots correspondants côté
 back. Le client les saute tant qu'ils le sont ; il ne les rend pas optionnels.
 
-Le séquenceur vit dans `src/features/reward/`. Les valeurs animées sont des `useSharedValue`,
-l'enchaînement des `withSequence`/`withTiming`, et **rien ne passe par `setState` dans une boucle** :
-les compteurs numériques s'animent sur le thread UI. Le retour vers JS est réservé à l'haptique.
+**La continuité entre workouts est offerte, pas calculée.** Chaque `RewardSummary` porte son
+palier de départ (`xpIntoLevelBefore` / `xpToNextLevelBefore`), et celui du workout *i+1* est
+exactement l'arrivée du workout *i*. La barre s'enchaîne sans un seul recalcul ici.
+
+**Le serveur envoie tout, le client décide de ce qu'il joue.** Rien ne se tronque côté serveur :
+au-delà de `DETAILED_WORKOUTS`, le client condense le reste en une montée continue. C'est une
+décision de mise en scène, elle vit dans `timeline.ts`, et elle ne change pas les totaux — ils
+viennent de `totals`, qui existe pour ça et pour le saut.
+
+`totals` vaut **`null`** quand rien n'a été crédité. Il n'y a pas d'état d'arrivée quand rien
+n'est arrivé, et le client n'invente pas un zéro.
+
+Le séquenceur vit dans `src/features/reward/`. `buildTimeline` est **pure** — pas de React, pas de
+Reanimated, pas d'horloge — et porte toute la mise en scène, rampes d'interpolation comprises :
+elle se prouve sur les fixtures capturées sans monter le moindre composant. Le composant ne fait
+qu'interpoler. Les valeurs animées sont des `useSharedValue`, il n'y a **qu'une seule horloge**, et
+**rien ne passe par `setState` dans une boucle** : les compteurs numériques s'animent sur le thread
+UI. Le retour vers JS est réservé à l'haptique.
 
 ## Le serveur n'a plus l'horloge, il l'arbitre
 
