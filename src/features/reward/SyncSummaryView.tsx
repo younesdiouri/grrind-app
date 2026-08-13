@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -47,19 +47,47 @@ import { buildTimeline, type RewardSummary, type SkippedWorkout, type SyncSummar
  */
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export function SyncSummaryView({ summary }: { summary: SyncSummary }) {
+export function SyncSummaryView({
+  summary,
+  onDismiss,
+}: {
+  summary: SyncSummary;
+  /**
+   * Sortir. Le composant dit **quand** le joueur veut partir, la route décide de ce que
+   * ça veut dire — une animation ne connaît pas la pile de navigation.
+   */
+  onDismiss?: () => void;
+}) {
   const timeline = useMemo(() => buildTimeline(summary), [summary]);
   const clock = useSharedValue(0);
+
+  /**
+   * La séquence est-elle arrivée au bout.
+   *
+   * C'est le **seul** `setState` de tout l'écran, et il tombe une fois, à la fin. La règle
+   * du fichier interdit la boucle, pas l'événement terminal : rendre l'affordance de sortie
+   * demande un rendu React, et il n'y en a qu'un.
+   */
+  const [done, setDone] = useState(false);
 
   const digest = timeline.beats.find((beat) => beat.kind === 'digest');
   const skipped = timeline.beats.find((beat) => beat.kind === 'skipped');
 
   const play = () => {
+    setDone(false);
     clock.value = 0;
-    clock.value = withTiming(timeline.duration, {
-      duration: timeline.duration,
-      easing: Easing.linear,
-    });
+    clock.value = withTiming(
+      timeline.duration,
+      { duration: timeline.duration, easing: Easing.linear },
+      (finished) => {
+        'worklet';
+        // `finished` est faux quand `cancelAnimation` est passé par là — c'est le saut, qui
+        // marque la fin lui-même. Sans ce test, le rappel du saut écraserait son propre état.
+        if (finished === true) {
+          scheduleOnRN(setDone, true);
+        }
+      },
+    );
   };
 
   /**
@@ -72,6 +100,23 @@ export function SyncSummaryView({ summary }: { summary: SyncSummary }) {
   const skip = () => {
     cancelAnimation(clock);
     clock.value = timeline.duration;
+    setDone(true);
+  };
+
+  /**
+   * Le geste unique de l'écran : **sauter tant qu'il reste à sauter, puis sortir**.
+   *
+   * C'est ce qu'un joueur fait sans qu'on le lui dise — il tape pour accélérer, il tape pour
+   * partir. Réserver la sortie à un bouton laisserait le premier réflexe sans effet, ce qui
+   * est exactement ce qui faisait de cet écran un cul-de-sac.
+   */
+  const touch = () => {
+    if (done) {
+      onDismiss?.();
+      return;
+    }
+
+    skip();
   };
 
   // Le seul aller-retour vers JS de toute la séquence : un choc par niveau franchi, condensé
@@ -114,7 +159,7 @@ export function SyncSummaryView({ summary }: { summary: SyncSummary }) {
   });
 
   return (
-    <Pressable style={styles.screen} onPress={skip} onLayout={play}>
+    <Pressable style={styles.screen} onPress={touch} onLayout={play}>
       {/* La tête de l'écran : une seule course d'XP pour tout le lot. Elle ne se remet jamais
           à zéro entre deux séances — c'est ce qui fait de la synchronisation un moment, et
           non trois animations à la suite. */}
@@ -156,6 +201,12 @@ export function SyncSummaryView({ summary }: { summary: SyncSummary }) {
       {skipped === undefined ? null : (
         <Skipped clock={clock} at={skipped.at} until={skipped.until} entries={summary.skipped} />
       )}
+
+      {/* L'affordance de sortie, qui n'apparaît qu'à la fin. « Taper pour sortir » n'est
+          pas devinable, et pendant la séquence ce serait une invitation à la manquer. */}
+      {done && onDismiss !== undefined ? (
+        <Text style={styles.exit}>Toucher pour continuer</Text>
+      ) : null}
 
       <Text style={styles.ruleset}>{summary.rulesetVersion}</Text>
     </Pressable>
@@ -439,5 +490,6 @@ const styles = StyleSheet.create({
   digestCount: { ...type.display, color: color.text },
   skipped: { gap: space.xs },
   skippedRow: { ...type.body, color: color.textMuted },
+  exit: { ...type.body, color: color.text, textAlign: 'center' },
   ruleset: { ...type.label, color: color.textMuted },
 });
