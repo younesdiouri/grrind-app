@@ -101,3 +101,26 @@ export const disciplineLabel: Record<components['schemas']['Discipline'], string
   MOBILITY: 'Mobilité',
   CLIMBING: 'Escalade',
 };
+
+/**
+ * Pourquoi une séance n'a rien rapporté.
+ *
+ * Le serveur nomme **chaque** séance écartée — `externalId`, `activityType`, `reason` — et
+ * ce n'est pas de la courtoisie : une activité qui disparaît sans un mot est un bug du
+ * point de vue du joueur, même quand l'écarter est le comportement voulu. Ces cinq phrases
+ * sont le seul endroit où le client tient sa part de ce contrat.
+ *
+ * Elles sont écrites **du point de vue de la séance**, pas du serveur : « trop courte pour
+ * compter » plutôt que « durée inférieure au minimum ». Le joueur n'a pas à connaître le
+ * plancher pour comprendre qu'il l'a raté.
+ */
+export const skipReasonLabel: Record<
+  components['schemas']['SyncSummary']['skipped'][number]['reason'],
+  string
+> = {
+  ALREADY_IMPORTED: 'déjà comptée',
+  UNSUPPORTED_ACTIVITY: 'pas encore un sport chez nous',
+  OUT_OF_WINDOW: 'trop ancienne pour rapporter, mais gardée',
+  OVERLAPS: 'déjà couverte par une autre séance',
+  TOO_SHORT: 'trop courte pour compter',
+};

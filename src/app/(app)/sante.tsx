@@ -3,11 +3,12 @@ import { router } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { color, radius, space, type } from '@/design/tokens';
+import { color, radius, skipReasonLabel, space, type } from '@/design/tokens';
 import { messageFor } from '@/features/auth/problems';
 import type { SyncResult } from '@/features/health/sync';
 import { useHealthAccess } from '@/features/health/useHealthAccess';
 import { useSync } from '@/features/health/useSync';
+import type { SkippedWorkout } from '@/features/reward/timeline';
 
 /**
  * L'écran de la santé, écrit **pour** l'ambiguïté d'iOS et non autour d'elle.
@@ -137,19 +138,14 @@ function Settled({ result, onRetry }: { result: SyncResult; onRetry: () => void 
   switch (result.kind) {
     case 'summary': {
       const count = result.summary.imported.length;
+      const skipped = result.summary.skipped;
 
       if (count === 0) {
-        // Un import où tout est écarté est un succès, pas une panne. Le plus souvent c'est
-        // « déjà comptées » — l'utilisateur rouvre l'app pour la troisième fois de la journée.
-        return (
-          <>
-            <Text style={styles.title}>Tout est déjà à jour</Text>
-            <Text style={styles.body}>
-              Aucune nouvelle séance depuis la dernière fois. Reviens après ta prochaine sortie.
-            </Text>
-            <Button label="Revérifier" onPress={onRetry} variant="quiet" />
-          </>
-        );
+        // Un import où tout est écarté est un succès, pas une panne — mais ce n'est pas
+        // pour autant « rien de neuf ». Le serveur a **nommé** chaque séance écartée, et
+        // les taire ici a déjà coûté une session de débogage dans Postgres pour découvrir
+        // que douze séances réelles avaient été lues, envoyées, et refusées à raison.
+        return <NothingCredited skipped={skipped} onRetry={onRetry} />;
       }
 
       return (
@@ -161,6 +157,9 @@ function Settled({ result, onRetry }: { result: SyncResult; onRetry: () => void 
             +{result.summary.totals?.xpAwarded ?? 0} XP t&apos;attendent.
           </Text>
           <Button label="Voir" onPress={() => router.push('/reward')} />
+          {/* Même quand il y a de quoi jouer, ce qui a été écarté se dit. C'est là que le
+              joueur comprend pourquoi il compte onze sorties et en voit neuf. */}
+          <SkippedList skipped={skipped} />
         </>
       );
     }
@@ -220,6 +219,119 @@ function Settled({ result, onRetry }: { result: SyncResult; onRetry: () => void 
   }
 }
 
+/**
+ * L'import n'a rien crédité. **Ce n'est pas la même chose que « rien à importer ».**
+ *
+ * Trois situations se ressemblent et se disent différemment :
+ *
+ * - rien n'est remonté du fournisseur — mais ce cas-là ne passe pas ici, il sort en
+ *   `nothingToSend` bien avant d'atteindre le serveur ;
+ * - tout était **déjà compté** : le cas nominal de quelqu'un qui rouvre son app pour la
+ *   troisième fois de la journée. Il n'y a rien à expliquer, et en faire un événement
+ *   serait transformer le fonctionnement normal en incident ;
+ * - des séances ont été **écartées pour une autre raison**. Là il y a quelque chose à
+ *   dire, et le serveur a envoyé de quoi le dire.
+ */
+function NothingCredited({
+  skipped,
+  onRetry,
+}: {
+  skipped: SkippedWorkout[];
+  onRetry: () => void;
+}) {
+  const explained = skipped.filter((entry) => entry.reason !== 'ALREADY_IMPORTED');
+
+  if (explained.length === 0) {
+    return (
+      <>
+        <Text style={styles.title}>Tout est déjà à jour</Text>
+        <Text style={styles.body}>
+          Aucune nouvelle séance depuis la dernière fois. Reviens après ta prochaine sortie.
+        </Text>
+        <Button label="Revérifier" onPress={onRetry} variant="quiet" />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Text style={styles.title}>
+        {explained.length} séance{explained.length > 1 ? 's' : ''} n&apos;
+        {explained.length > 1 ? 'ont' : 'a'} rien rapporté
+      </Text>
+      <Text style={styles.body}>
+        {explained.length > 1 ? 'Elles ont bien été lues' : 'Elle a bien été lue'} dans Santé.
+        Voici pourquoi {explained.length > 1 ? 'elles ne comptent' : 'elle ne compte'} pas.
+      </Text>
+
+      <SkippedList skipped={skipped} />
+
+      <Button label="Revérifier" onPress={onRetry} variant="quiet" />
+    </>
+  );
+}
+
+/**
+ * Les séances écartées, groupées par raison.
+ *
+ * Une ligne par séance serait illisible au-delà de trois — la première synchronisation
+ * réelle en a produit douze d'un coup. On groupe donc, et on compte.
+ *
+ * **`UNSUPPORTED_ACTIVITY` nomme les types**, les autres non. C'est la seule raison où le
+ * type d'activité *est* l'information : « mixedCardio n'est pas encore un sport chez nous »
+ * se corrige côté serveur, et savoir lequel est ce qui permet de le demander. Pour
+ * « trop courte », le type n'apprend rien.
+ *
+ * `ALREADY_IMPORTED` ferme la liste, sans compter dans le titre : c'est le cas nominal, il
+ * mérite d'être visible et pas d'être mis en avant.
+ */
+function SkippedList({ skipped }: { skipped: SkippedWorkout[] }) {
+  if (skipped.length === 0) {
+    return null;
+  }
+
+  // `Map` et non un objet : elle garde l'ordre d'insertion, donc l'ordre du serveur, qui
+  // est celui de la pratique.
+  const byReason = new Map<SkippedWorkout['reason'], SkippedWorkout[]>();
+  for (const entry of skipped) {
+    const bucket = byReason.get(entry.reason);
+    if (bucket === undefined) {
+      byReason.set(entry.reason, [entry]);
+    } else {
+      bucket.push(entry);
+    }
+  }
+
+  const reasons = [...byReason.keys()].sort((left, right) =>
+    left === 'ALREADY_IMPORTED' ? 1 : right === 'ALREADY_IMPORTED' ? -1 : 0,
+  );
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>
+        {skipped.length} séance{skipped.length > 1 ? 's' : ''} écartée
+        {skipped.length > 1 ? 's' : ''}
+      </Text>
+
+      {reasons.map((reason) => {
+        const entries = byReason.get(reason) ?? [];
+        const types = [...new Set(entries.map((entry) => entry.activityType))];
+
+        return (
+          <View key={reason} style={styles.skippedGroup}>
+            <Text style={styles.item}>
+              {entries.length} · {skipReasonLabel[reason]}
+            </Text>
+            {reason === 'UNSUPPORTED_ACTIVITY' ? (
+              <Text style={styles.skippedTypes}>{types.join(', ')}</Text>
+            ) : null}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { padding: space.lg, gap: space.md },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.md },
@@ -235,5 +347,9 @@ const styles = StyleSheet.create({
   },
   cardTitle: { ...type.label, color: color.text },
   item: { ...type.body, color: color.textMuted },
+  skippedGroup: { gap: space.xs },
+  // `label` plutôt qu'un ton de gris de plus : les types bruts se lisent en second,
+  // et le design system n'a pas de troisième niveau de texte (#7).
+  skippedTypes: { ...type.label, color: color.textMuted },
   path: { ...type.body, color: color.text },
 });
