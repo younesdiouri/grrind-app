@@ -1,3 +1,5 @@
+import type { components } from '@/api/schema';
+
 /**
  * Les tokens du design system.
  *
@@ -67,14 +69,15 @@ export const type = {
  * Le vocabulaire des sources d'XP, rendu lisible.
  *
  * Le serveur envoie l'enum, pas la phrase — il n'a aucune raison de connaître la langue de
- * l'écran. Le mapping est **exhaustif par construction** : `Record` sur l'union du schéma
- * généré, donc le compilateur casse le jour où le back ajoute une source.
+ * l'écran. La clé du `Record` est **l'union du schéma généré**, jamais une union recopiée :
+ * c'est ce qui fait casser la compilation le jour où le back ajoute une source, au lieu de
+ * laisser un `undefined` traverser jusqu'à l'écran. `DISTANCE` et `ELEVATION` sont arrivées
+ * comme ça, avec le virage santé.
  */
-export const xpSourceLabel: Record<
-  'BASE' | 'STREAK' | 'ITEM' | 'SKILL' | 'LEAGUE' | 'DIMINISHING' | 'DAILY_CAP',
-  string
-> = {
+export const xpSourceLabel: Record<components['schemas']['XpLine']['source'], string> = {
   BASE: 'Effort',
+  DISTANCE: 'Distance',
+  ELEVATION: 'Dénivelé',
   STREAK: 'Série',
   ITEM: 'Équipement',
   SKILL: 'Compétence',
@@ -83,14 +86,18 @@ export const xpSourceLabel: Record<
   DAILY_CAP: 'Plafond quotidien',
 };
 
-export const disciplineLabel: Record<
-  'RUNNING' | 'CYCLING' | 'SWIMMING' | 'STRENGTH' | 'MOBILITY' | 'CLIMBING',
-  string
-> = {
+/**
+ * Les disciplines, rendues lisibles. Même garde-fou, même raison : `WALKING`, `HIIT` et
+ * `HIKING` sont entrées au contrat avec le virage santé, et c'est le compilateur qui l'a dit.
+ */
+export const disciplineLabel: Record<components['schemas']['Discipline'], string> = {
   RUNNING: 'Course',
+  WALKING: 'Marche',
   CYCLING: 'Vélo',
   SWIMMING: 'Natation',
   STRENGTH: 'Musculation',
+  HIIT: 'Fractionné',
+  HIKING: 'Randonnée',
   MOBILITY: 'Mobilité',
   CLIMBING: 'Escalade',
 };

@@ -174,7 +174,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/training/sessions/{id}/abandon": {
+    "/api/workouts/import": {
         parameters: {
             query?: never;
             header?: never;
@@ -183,21 +183,21 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["post_training_session_abandon"];
+        post: operations["post_training_workout_import"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/training/sessions/active": {
+    "/api/workouts": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["get_training_session_active"];
+        get: operations["get_training_workout_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -206,32 +206,16 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/training/sessions/{id}/complete": {
+    "/api/workouts/sync-state": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["get_training_workout_sync_state"];
         put?: never;
-        post: operations["post_training_session_complete"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/training/sessions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["get_training_session_list"];
-        put?: never;
-        post: operations["post_training_session_start"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -245,8 +229,8 @@ export interface components {
         /**
          * @description Une erreur, RFC 9457. `type` est l'identifiant stable de la panne ; `title` et
          *     `detail` sont du texte. Certaines erreurs ajoutent leurs propres membres — une
-         *     séance déjà active donne `activeSessionId`, un cooldown donne `remainingSeconds`
-         *     et `readyAt` — pour que le client se recale au lieu d'afficher un refus sec.
+         *     violation de validation donne `violations` — pour que le client se recale au lieu
+         *     d'afficher un refus sec.
          */
         ProblemDetails: {
             /**
@@ -262,7 +246,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/session-not-found" | "https://grrind.app/problems/session-not-active" | "https://grrind.app/problems/session-already-active" | "https://grrind.app/problems/session-too-short" | "https://grrind.app/problems/session-cooldown" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -354,53 +338,233 @@ export interface components {
             tokens: components["schemas"]["TokenPair"];
         };
         /**
-         * @description Une séance, ouverte ou close — **une seule forme**, jamais deux. `endedAt` et
-         *     `durationSeconds` valent `null` tant qu'elle court, plutôt que de disparaître : un
-         *     champ qui apparaît et disparaît finit lu de travers.
+         * @description **La seule forme d'un workout dans toute l'API** — l'historique la sert, le `SyncSummary`
+         *     l'embarque telle quelle. Un client décode un seul type.
          *
-         *     `durationSeconds` est la durée **retenue**, déjà écrêtée au plafond. Ce n'est pas
-         *     `endedAt - startedAt` sur une séance trop longue, et c'est elle qui fait foi.
+         *     Une séance **déjà faite** : elle n'a pas d'état, et `endedAt` comme `durationSeconds` ne
+         *     sont pas nullables. Un workout arrive terminé ou n'arrive pas.
+         *
+         *     `durationSeconds` est calculée par le serveur à partir des deux bornes, jamais recopiée
+         *     d'un champ envoyé par le client. C'est la durée **réellement mesurée** : au-delà du
+         *     plafond, l'XP est calculée sur une durée écrêtée, mais l'historique dit ce qui s'est
+         *     passé.
+         *
+         *     **Les mesures sont nullables, et c'est structurel** : aucun appareil ne fournit tout.
+         *     `null` veut dire « non mesuré », jamais zéro — un tour de piste plat a bien un dénivelé
+         *     de zéro.
          */
-        TrainingSession: {
+        Workout: {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            discipline: "RUNNING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "MOBILITY" | "CLIMBING";
-            /** @enum {string} */
-            status: "ACTIVE" | "COMPLETED" | "ABANDONED";
+            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING";
             /**
-             * @description Toute activité est une source attribuée. `MANUAL_TIMER` en v1 ; les autres arrivent sans changer ce contrat.
+             * @description L'agrégateur de plateforme qui a rapporté la séance, pas l'appareil qui l'a
+             *     mesurée : une montre Garmin arrive en `APPLE_HEALTH` sur iPhone et en
+             *     `HEALTH_CONNECT` sur Android.
              * @enum {string}
              */
-            source: "MANUAL_TIMER" | "STRAVA" | "HEALTHKIT";
-            /** @enum {string} */
+            source: "APPLE_HEALTH" | "HEALTH_CONNECT";
+            /**
+             * @description Toujours `PROVIDER_VERIFIED` aujourd'hui : les deux sources sont vérifiées. `DECLARED` reste le plancher de l'échelle, pas une valeur morte.
+             * @enum {string}
+             */
             trust: "DECLARED" | "PROVIDER_VERIFIED";
             /** Format: date-time */
             startedAt: string;
             /** Format: date-time */
-            endedAt: string | null;
-            durationSeconds: number | null;
+            endedAt: string;
+            durationSeconds: number;
+            distanceMeters: number | null;
+            calories: number | null;
+            elevationGainMeters: number | null;
+            averageHeartRate: number | null;
+            /** @description L'identifiant chez le fournisseur, rendu parce que c'est le client qui l'a envoyé : il peut ainsi rapprocher sa liste HealthKit de ce que le serveur connaît déjà, sans deviner. */
+            externalId: string | null;
         };
-        /** @description Pagination par curseur, sur l'identifiant — UUID v7, donc triable, donc chronologique. `nextCursor` à `null` signifie la fin. */
-        SessionPage: {
-            sessions: components["schemas"]["TrainingSession"][];
-            /** Format: uuid */
+        /**
+         * @description Une page d'historique, **dans l'ordre de la pratique** : `startedAt` décroissant, puis
+         *     l'identifiant pour départager deux séances commencées à la même seconde.
+         *
+         *     `nextCursor` est une **chaîne opaque** — le client la renvoie telle quelle, il n'a rien à
+         *     y lire. `null` signifie la fin ; il n'y a pas de total, un défilement infini n'en a aucun
+         *     usage.
+         */
+        WorkoutPage: {
+            workouts: components["schemas"]["Workout"][];
             nextCursor: string | null;
+        };
+        /**
+         * @description De quoi demander la bonne fenêtre à HealthKit ou Health Connect.
+         *
+         *     **Le curseur vient du serveur.** Le client peut garder sa date de dernière
+         *     synchronisation en local, et il le fera pour éviter un aller-retour au démarrage — mais
+         *     il ne doit pas en *dépendre* : réinstallation, changement d'appareil, second appareil sur
+         *     le même compte. Le cache local est une optimisation, pas la vérité.
+         *
+         *     **La fenêtre est servie et pas codée en dur** : elle doit pouvoir bouger sans publication
+         *     sur les stores. Une app qui demanderait trente jours pendant que le serveur en accepte
+         *     soixante enverrait moins que ce qu'elle pourrait.
+         */
+        SyncState: {
+            /**
+             * Format: date-time
+             * @description La fin du workout le plus récent que le serveur ait en base — pas la date du dernier
+             *     appel d'import, qui a pu ne rien apporter. Les séances archivées hors fenêtre comptent :
+             *     ce qu'on désigne ici est la frontière de ce que le serveur **connaît**, pas de ce qu'il a
+             *     payé. `null` sur un compte qui n'a jamais synchronisé.
+             */
+            lastImportedAt: string | null;
+            /**
+             * @description Au-delà, une séance est conservée mais ne rapporte pas d'XP. C'est ce qui empêche trois ans d'archives d'amener un joueur au niveau 60 avant sa première course pour Grrind.
+             * @example 30
+             */
+            importWindowDays: number;
+        };
+        /**
+         * @description Ce que la montre a enregistré depuis la dernière synchronisation. **Un lot, pas un
+         *     workout** : revenir après dix jours d'absence avec trois séances à créditer est le cas
+         *     nominal.
+         *
+         *     Le client envoie le **type brut du fournisseur**, jamais une `discipline` : la
+         *     traduction est serveur, ce qui permet d'ouvrir un sport sans publier sur les stores.
+         *     Un type inconnu n'est pas une erreur — la séance est écartée et nommée dans la
+         *     réponse.
+         *
+         *     **La durée n'est pas un champ.** Elle se dérive de `startedAt` et `endedAt`, arbitrée
+         *     par le serveur : l'accepter en entrée donnerait au client une prise sur ce qu'il gagne.
+         */
+        WorkoutImportRequest: {
+            workouts: components["schemas"]["ImportedWorkout"][];
+        };
+        /** @description Une séance candidate. Les mesures sont toutes facultatives, et c'est structurel : aucun appareil ne fournit tout. `null` veut dire « non mesuré », jamais zéro. */
+        ImportedWorkout: {
+            /** @description `HKWorkout.uuid` côté Apple, `metadata.id` côté Health Connect. Il porte toute la protection contre le double crédit — le renvoyer à l'identique est ce qui rend une resynchronisation inoffensive. */
+            externalId: string;
+            /** @enum {string} */
+            source: "APPLE_HEALTH" | "HEALTH_CONNECT";
+            /**
+             * @description Le nom de case `HKWorkoutActivityType` côté Apple, la constante `EXERCISE_TYPE_*` côté Health Connect. Envoyé tel quel, sans interprétation.
+             * @example traditionalStrengthTraining
+             */
+            activityType: string;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            endedAt: string;
+            distanceMeters?: number | null;
+            calories?: number | null;
+            elevationGainMeters?: number | null;
+            averageHeartRate?: number | null;
+        };
+        /**
+         * @description **Le contrat le plus coûteux à casser du produit**, dans sa forme multi-workouts. Ce que
+         *     le joueur reçoit quand sa montre a fini de parler.
+         *
+         *     **L'ordre des champs est l'ordre de l'animation**, à deux niveaux : d'abord entre les
+         *     workouts — `imported` est chronologique, celui du crédit — puis à l'intérieur de chacun.
+         *
+         *     **Rien n'est tronqué.** Au-delà d'une vingtaine de workouts, tout jouer prend plusieurs
+         *     minutes : c'est une décision de mise en scène, et elle appartient au client. Le serveur
+         *     envoie tout, le client décide de ce qu'il joue.
+         */
+        SyncSummary: {
+            /**
+             * Format: date-time
+             * @description L'horloge du serveur, et le seul instant de ce payload qui ne vienne pas d'un fournisseur. Sert de repère de dernière synchronisation réussie.
+             */
+            syncedAt: string;
+            /**
+             * @description Un `RewardSummary` par workout crédité, dans l'ordre chronologique. **C'est
+             *     exactement l'objet que le client sait déjà jouer**, palier de départ compris : la
+             *     barre part du bon endroit pour *chacun*, et l'enchaînement est continu sans un seul
+             *     recalcul côté client.
+             */
+            imported: components["schemas"]["RewardSummary"][];
+            /**
+             * @description Les séances qui n'ont **rien rapporté**, chacune **nommée** et non comptée : le client
+             *     doit pouvoir dire « le curling n'est pas encore un sport chez nous » plutôt que « 1
+             *     séance ignorée ».
+             *
+             *     Écarté ne veut pas toujours dire absent. `OUT_OF_WINDOW` écarte le *crédit*, pas la
+             *     séance : elle est bien en base et apparaîtra dans l'historique.
+             */
+            skipped: {
+                externalId: string;
+                activityType: string;
+                /**
+                 * @description `ALREADY_IMPORTED` : déjà en base sous le même couple (source, identifiant). Banal
+                 *     et attendu — c'est ce que rend un client qui a perdu son curseur.
+                 *
+                 *     `UNSUPPORTED_ACTIVITY` : aucune discipline ne correspond. Rien n'est écrit, donc
+                 *     rien n'est définitif — le jour où le sport entre dans la table serveur, la même
+                 *     séance renvoyée est créditée.
+                 *
+                 *     `OUT_OF_WINDOW` : trop ancienne pour rapporter de l'XP, mais **conservée**. Le
+                 *     joueur retrouve son passé sans le monnayer, et le premier import devient un moment
+                 *     de produit au lieu d'un mur.
+                 *
+                 *     `OVERLAPS` : une autre séance couvre déjà ce créneau. Ce ne sont pas deux
+                 *     entraînements, c'est le même vu par deux applications — beaucoup de gens ont Apple
+                 *     Exercice *et* Strava sans le savoir. C'est l'enregistrement le plus complet qui
+                 *     gagne, sauf si l'autre est déjà en base.
+                 *
+                 *     `TOO_SHORT` : sous le plancher de durée. Un faux départ sur la montre n'est pas une
+                 *     séance, et rien n'est écrit.
+                 * @enum {string}
+                 */
+                reason: "ALREADY_IMPORTED" | "UNSUPPORTED_ACTIVITY" | "OUT_OF_WINDOW" | "OVERLAPS" | "TOO_SHORT";
+            }[];
+            /**
+             * @description Le raccourci de l'écran de résumé — « +847 XP · niveau 10 → 15 » — et ce que voit le
+             *     joueur qui saute l'animation.
+             *
+             *     **C'est un raccourci, jamais une source** : il est entièrement dérivé d'`imported`,
+             *     qui dit déjà tout. Deux vérités finissent toujours par diverger.
+             *
+             *     `null` quand rien n'a été crédité : il n'y a pas d'état d'arrivée quand rien n'est
+             *     arrivé, et « niveau 0 → 0 » mentirait à un joueur de niveau 12.
+             */
+            totals: components["schemas"]["SyncTotals"] | null;
+            /** @description L'équilibrage sous lequel la synchronisation a été calculée. Affiché dans un rapport de bug : c'est ce qui rend une capture d'écran exploitable. */
+            rulesetVersion: string;
+        };
+        SyncTotals: {
+            /** @example 10 */
+            levelBefore: number;
+            /** @example 15 */
+            levelAfter: number;
+            xpBefore: number;
+            xpAfter: number;
+            /** @description La somme des montants accordés, écarts non compris — un workout écarté n'a rien rapporté. */
+            xpAwarded: number;
+            /** @description Le nombre de workouts **crédités**, donc la longueur d'`imported`. */
+            workoutCount: number;
         };
         /**
          * @description Une contribution au total, entier signé. Un multiplicateur se résout en points
          *     **avant** d'arriver ici : ce qui est écrit est ce que le joueur a reçu, pas la
          *     formule. Les deux dernières sources sont des garde-fous, négatives au crédit.
+         *
+         *     **Une ligne à zéro n'existe pas.** Une métrique non mesurée, un bonus trop petit
+         *     pour peser, un garde-fou qui n'a rien repris : rien de tout ça n'occupe une ligne
+         *     d'animation. Le client peut donc jouer chaque ligne sans la tester.
          */
         XpLine: {
-            /** @enum {string} */
-            source: "BASE" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "DIMINISHING" | "DAILY_CAP";
+            /**
+             * @description `BASE` est le temps — une minute vaut un point. `DISTANCE` et `ELEVATION`
+             *     sont ce que le terrain ajoute, et n'apparaissent que sur les disciplines où
+             *     une montre les mesure de façon fiable. Les quatre suivantes sont les
+             *     contributeurs de modificateurs ; les deux dernières, les garde-fous.
+             * @enum {string}
+             */
+            source: "BASE" | "DISTANCE" | "ELEVATION" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "DIMINISHING" | "DAILY_CAP";
             /** @example -55 */
             amount: number;
         };
         /**
-         * @description **Le contrat le plus coûteux à casser du produit.** Ce que le joueur reçoit quand il
-         *     appuie sur « terminer ».
+         * @description Ce que le joueur reçoit pour **un** workout crédité. Un `SyncSummary` en contient
+         *     autant qu'il y a eu de séances, dans l'ordre chronologique.
          *
          *     **L'ordre des champs est l'ordre de l'animation** : le client le joue de haut en
          *     bas — la séance se referme, la barre d'XP se remplit ligne à ligne, le niveau
@@ -416,7 +580,7 @@ export interface components {
          *     rendre optionnelle pour toujours.
          */
         RewardSummary: {
-            session: components["schemas"]["TrainingSession"];
+            session: components["schemas"]["Workout"];
             xp: {
                 /**
                  * @description La somme du `breakdown`, jamais autre chose.
@@ -505,13 +669,13 @@ export interface components {
             id: string;
             /**
              * Format: uuid
-             * @description Ce qui a produit l'écriture — l'identifiant de la séance en v1.
+             * @description Ce qui a produit l'écriture — l'identifiant du workout.
              */
             sourceId: string;
             /** @enum {string} */
             reason: "SESSION_COMPLETED" | "SESSION_INVALIDATED";
             /** @enum {string} */
-            discipline: "RUNNING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "MOBILITY" | "CLIMBING";
+            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING";
             /** @description Signé. La somme du `breakdown`, jamais autre chose. */
             amount: number;
             /** @description Signée elle aussi — négative sur une annulation. */
@@ -519,12 +683,18 @@ export interface components {
             breakdown: components["schemas"]["XpLine"][];
             /** @description Celui du calcul, pas celui d'aujourd'hui. C'est ce qui permet de rééquilibrer sans corrompre l'historique. */
             rulesetVersion: string;
-            /** Format: date-time */
-            createdAt: string;
+            /**
+             * Format: date-time
+             * @description **L'instant du sport, pas celui de l'écriture.** Un workout de mardi importé
+             *     vendredi est daté de mardi : c'est ce qui range l'écriture dans la bonne journée,
+             *     pour le plafond quotidien comme pour l'affichage. L'instant de l'écriture, lui,
+             *     est encodé dans l'`id` — c'est un UUID v7.
+             */
+            occurredAt: string;
         };
+        /** @description Même pagination qu'à `GET /api/workouts`, curseur opaque compris : deux paginations qui divergeraient coûteraient deux implémentations côté client. L'ordre est celui du sport — `occurredAt` décroissant, puis l'identifiant pour départager. */
         XpHistoryPage: {
             transactions: components["schemas"]["XpTransaction"][];
-            /** Format: uuid */
             nextCursor: string | null;
         };
         RefreshTokenRequest: {
@@ -558,10 +728,7 @@ export interface components {
             timezone: string;
         };
         XpHistoryQuery: {
-            /**
-             * Format: uuid
-             * @default null
-             */
+            /** @default null */
             cursor: string | null;
             /** @default 20 */
             limit: number;
@@ -571,12 +738,40 @@ export interface components {
             titleId: string | null;
         };
         /** @enum {string} */
-        SessionStatus: "ACTIVE" | "COMPLETED" | "ABANDONED";
-        /** @enum {string} */
-        Discipline: "RUNNING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "MOBILITY" | "CLIMBING";
-        SessionHistoryQuery: {
+        WorkoutSource: "APPLE_HEALTH" | "HEALTH_CONNECT";
+        ImportedWorkoutRequest: {
+            /** @default  */
+            externalId: string;
             /** @default null */
-            status: components["schemas"]["SessionStatus"] | null;
+            source: components["schemas"]["WorkoutSource"] | null;
+            /** @default  */
+            activityType: string;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            startedAt: string | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            endedAt: string | null;
+            /** @default null */
+            distanceMeters: number | null;
+            /** @default null */
+            calories: number | null;
+            /** @default null */
+            elevationGainMeters: number | null;
+            /** @default null */
+            averageHeartRate: number | null;
+        };
+        ImportWorkoutsRequest: {
+            /** @default [] */
+            workouts: components["schemas"]["ImportedWorkoutRequest"][];
+        };
+        /** @enum {string} */
+        Discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING";
+        WorkoutHistoryQuery: {
             /** @default null */
             discipline: components["schemas"]["Discipline"] | null;
             /**
@@ -589,16 +784,10 @@ export interface components {
              * @default null
              */
             to: string | null;
-            /**
-             * Format: uuid
-             * @default null
-             */
+            /** @default null */
             cursor: string | null;
             /** @default 20 */
             limit: number;
-        };
-        StartSessionRequest: {
-            discipline: components["schemas"]["Discipline"];
         };
     };
     responses: {
@@ -995,7 +1184,7 @@ export interface operations {
             422: components["responses"]["UnprocessableEntity"];
         };
     };
-    post_training_session_abandon: {
+    post_training_workout_import: {
         parameters: {
             query?: never;
             header: {
@@ -1007,112 +1196,33 @@ export interface operations {
                  */
                 "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** @description Aucun corps attendu. */
-        requestBody?: {
-            content: {
-                "*/*"?: never;
-            };
-        };
-        responses: {
-            /** @description La séance est close et ne rapporte rien. Elle reste dans l'historique. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TrainingSession"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-        };
-    };
-    get_training_session_active: {
-        parameters: {
-            query?: never;
-            header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
-        responses: {
-            /** @description La séance en cours. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TrainingSession"];
-                };
-            };
-            /** @description Aucune séance en cours — l'état normal du joueur, pas une erreur. */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: components["responses"]["Unauthorized"];
-        };
-    };
-    post_training_session_complete: {
-        parameters: {
-            query?: never;
-            header: {
-                /**
-                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
-                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
-                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
-                 *     une requête différente est un abus et vaut un 409.
-                 */
-                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** @description Aucun corps attendu. Le serveur ne lit ni durée ni date de fin : il lit son horloge. */
-        requestBody?: {
+        requestBody: {
             content: {
-                "*/*"?: never;
+                "application/json": components["schemas"]["WorkoutImportRequest"];
             };
         };
         responses: {
-            /** @description La séance est close et créditée. Le corps est le `RewardSummary`, à jouer de haut en bas. */
+            /** @description La synchronisation, prête à être jouée. Un import où tout est écarté reste un succès. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RewardSummary"];
+                    "application/json": components["schemas"]["SyncSummary"];
                 };
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            /** @description Séance déjà close (`session-not-active`), sous la durée plancher (`session-too-short`), ou clé d'idempotence en cours (`idempotency-key-in-flight`). */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
         };
     };
-    get_training_session_list: {
+    get_training_workout_list: {
         parameters: {
             query?: {
-                status?: components["schemas"]["SessionStatus"] | null;
                 discipline?: components["schemas"]["Discipline"] | null;
                 from?: string | null;
                 to?: string | null;
@@ -1131,46 +1241,32 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionPage"];
+                    "application/json": components["schemas"]["WorkoutPage"];
                 };
             };
             401: components["responses"]["Unauthorized"];
             422: components["responses"]["UnprocessableEntity"];
         };
     };
-    post_training_session_start: {
+    get_training_workout_sync_state: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StartSessionRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
-            /** @description La séance est ouverte, datée par le serveur. */
-            201: {
+            /** @description De quoi demander la bonne fenêtre au fournisseur santé. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TrainingSession"];
+                    "application/json": components["schemas"]["SyncState"];
                 };
             };
             401: components["responses"]["Unauthorized"];
-            /** @description Une séance tourne déjà (`session-already-active`, avec `activeSessionId`), ou le cooldown court encore (`session-cooldown`, avec `remainingSeconds` et `readyAt`). */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            422: components["responses"]["UnprocessableEntity"];
         };
     };
 }

@@ -143,14 +143,14 @@ function messageForProblem(problem: ProblemDetails): string {
       return 'Ta session a expiré. Reconnecte-toi.';
 
     // Les trois pannes d'idempotence sont des bugs du client, pas des situations de jeu :
-    // une clé absente ou réutilisée sur une autre requête veut dire que l'app a mal ouvert
-    // sa séance. On ne les explique pas, on invite à recommencer.
+    // une clé absente ou réutilisée sur un autre corps veut dire que l'app a mal constitué
+    // son lot d'import. On ne les explique pas, on invite à recommencer.
     case 'https://grrind.app/problems/idempotency-key-required':
     case 'https://grrind.app/problems/idempotency-key-reused':
-      return "L'app a envoyé une requête incohérente. Recommence l'action.";
+      return "L'app a envoyé une requête incohérente. Recommence la synchronisation.";
 
     case 'https://grrind.app/problems/idempotency-key-in-flight':
-      return 'Cette action est déjà en cours. Laisse-lui une seconde.';
+      return 'Cette synchronisation est déjà en cours. Laisse-lui une seconde.';
 
     case 'https://grrind.app/problems/email-already-used':
       return 'Cette adresse a déjà un compte. Connecte-toi.';
@@ -166,21 +166,6 @@ function messageForProblem(problem: ProblemDetails): string {
 
     case 'https://grrind.app/problems/social-profile-incomplete':
       return "Le fournisseur n'a pas transmis assez d'informations pour ouvrir un compte.";
-
-    case 'https://grrind.app/problems/session-not-found':
-      return "Cette séance n'existe pas.";
-
-    case 'https://grrind.app/problems/session-not-active':
-      return "Cette séance n'est plus en cours.";
-
-    case 'https://grrind.app/problems/session-already-active':
-      return 'Une séance est déjà en cours.';
-
-    case 'https://grrind.app/problems/session-too-short':
-      return 'Cette séance est trop courte pour compter.';
-
-    case 'https://grrind.app/problems/session-cooldown':
-      return 'Encore un peu de repos avant la prochaine séance.';
 
     case 'https://grrind.app/problems/title-unknown':
       return "Ce titre n'existe pas.";
