@@ -239,9 +239,11 @@ function NothingCredited({
   skipped: SkippedWorkout[];
   onRetry: () => void;
 }) {
-  const explained = skipped.filter((entry) => entry.reason !== 'ALREADY_IMPORTED');
+  // Sert à **choisir la branche**, pas à compter à l'écran : « déjà compté » décide s'il y
+  // a quelque chose à raconter, mais une fois qu'on raconte, il fait partie du total.
+  const nothingToExplain = skipped.every((entry) => entry.reason === 'ALREADY_IMPORTED');
 
-  if (explained.length === 0) {
+  if (nothingToExplain) {
     return (
       <>
         <Text style={styles.title}>Tout est déjà à jour</Text>
@@ -253,18 +255,27 @@ function NothingCredited({
     );
   }
 
+  // Le titre porte le **total**, pas les seules expliquées. Compter autrement que la liste
+  // qui suit immédiatement mettait deux nombres en contradiction à trois lignes d'écart —
+  // « 1 séance n'a rien rapporté » au-dessus de « 2 séances écartées ». La nuance appartient
+  // aux lignes, où « déjà comptée » la dit bien mieux qu'un total amputé.
+  const many = skipped.length > 1;
+
   return (
     <>
       <Text style={styles.title}>
-        {explained.length} séance{explained.length > 1 ? 's' : ''} n&apos;
-        {explained.length > 1 ? 'ont' : 'a'} rien rapporté
+        {skipped.length} séance{many ? 's' : ''} n’{many ? 'ont' : 'a'} rien rapporté
       </Text>
+      {/* Pas « voici pourquoi elles ne comptent pas » : ce serait faux d'une séance déjà
+          comptée, qui a bien compté — simplement pas cette fois. */}
       <Text style={styles.body}>
-        {explained.length > 1 ? 'Elles ont bien été lues' : 'Elle a bien été lue'} dans Santé.
-        Voici pourquoi {explained.length > 1 ? 'elles ne comptent' : 'elle ne compte'} pas.
+        {many ? 'Elles ont bien été lues' : 'Elle a bien été lue'} dans Santé. Voici ce qui
+        s’est passé.
       </Text>
 
-      <SkippedList skipped={skipped} />
+      {/* Sans son propre compte : le titre vient de le donner, et le répéter à l'identique
+          n'ajoute rien. */}
+      <SkippedList skipped={skipped} counted={false} />
 
       <Button label="Revérifier" onPress={onRetry} variant="quiet" />
     </>
@@ -285,7 +296,17 @@ function NothingCredited({
  * `ALREADY_IMPORTED` ferme la liste, sans compter dans le titre : c'est le cas nominal, il
  * mérite d'être visible et pas d'être mis en avant.
  */
-function SkippedList({ skipped }: { skipped: SkippedWorkout[] }) {
+function SkippedList({
+  skipped,
+  counted = true,
+}: {
+  skipped: SkippedWorkout[];
+  /**
+   * Afficher le total en tête de carte. Faux quand le bloc qui précède l'a déjà dit — deux
+   * fois le même nombre n'informe pas, et deux nombres différents se contredisent.
+   */
+  counted?: boolean;
+}) {
   if (skipped.length === 0) {
     return null;
   }
@@ -308,10 +329,12 @@ function SkippedList({ skipped }: { skipped: SkippedWorkout[] }) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        {skipped.length} séance{skipped.length > 1 ? 's' : ''} écartée
-        {skipped.length > 1 ? 's' : ''}
-      </Text>
+      {counted ? (
+        <Text style={styles.cardTitle}>
+          {skipped.length} séance{skipped.length > 1 ? 's' : ''} écartée
+          {skipped.length > 1 ? 's' : ''}
+        </Text>
+      ) : null}
 
       {reasons.map((reason) => {
         const entries = byReason.get(reason) ?? [];
