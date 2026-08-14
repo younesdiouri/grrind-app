@@ -5,6 +5,10 @@
     // Les tests tournent sous `node --test`, qui efface les types lui-même et exige donc des
     // spécificateurs complets — `./authMiddleware.ts`, pas `./authMiddleware`. Metro ne voit
     // jamais ces fichiers : rien ne les importe depuis l'app.
+    //
+    // Les modules de `src/`, eux, gardent l'alias `@/…` même quand un test les charge :
+    // `scripts/module-hooks.ts` apprend cette résolution à Node, une fois, pour les tests
+    // comme pour les previews.
     "allowImportingTsExtensions": true,
     // `node:test` et `node:assert`. Les globales de React Native et d'Expo passent par
     // ailleurs (`expo-env.d.ts` et les types du paquet `react-native`), pas par `@types`.

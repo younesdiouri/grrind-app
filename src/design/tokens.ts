@@ -66,6 +66,86 @@ export const type = {
 } as const;
 
 /**
+ * Ce qui varie sans qu'on y touche : l'opacité d'un élément selon son état.
+ *
+ * Un appui et une inertie ne se disent pas par une couleur — il y en aurait une par surface —
+ * mais par un voile sur la couleur déjà là.
+ */
+export const opacity = {
+  /** Le doigt est posé dessus. */
+  pressed: 0.7,
+  /** L'élément est là mais ne répond pas : occupé, ou désactivé. */
+  inert: 0.5,
+} as const;
+
+/**
+ * ————— Le mouvement ——————————————————————————————————————————————————————————————————
+ *
+ * **Ces durées sont mesurées, pas choisies.** Elles sortent du spike (#4), joué sur un
+ * iPhone physique : le simulateur ment sur la performance, et une durée trouvée à l'œil sur
+ * un Mac se révèle molle ou hachée sur l'appareil. C'est pour ça que ce ticket vient après.
+ *
+ * Elles sont ici et pas dans le séquenceur parce qu'elles ne parlent pas de récompense :
+ * `settle` est le temps qu'une carte met à se poser, que ce soit une séance ou autre chose.
+ * `timeline.ts` compose sa mise en scène **avec** cette échelle ; il n'en invente pas une.
+ */
+export const duration = {
+  /** Le retour d'appui. Ce qui ne doit pas se remarquer. */
+  tap: 120,
+  /** Un détail qui paraît : un badge, un chiffre. */
+  glint: 150,
+  /** Un bloc qui cède la place au suivant. */
+  handoff: 180,
+  /** Ce qui se pose en prenant son échelle. */
+  pop: 200,
+  /** Une ligne de breakdown, et les suivantes à sa suite. */
+  line: 260,
+  /** Une entrée qui vient du bas. */
+  enter: 320,
+  /** Le temps de respirer avant que l'écran redevienne interactif. */
+  breath: 360,
+  /** Une carte qui se referme, une barre qui finit sa course. */
+  settle: 420,
+  /** Une liste qui se déplie. */
+  unfold: 520,
+  /** Un niveau qui bascule. */
+  flip: 620,
+  /** Un titre qui tombe. Rare, donc il prend son temps. */
+  drop: 700,
+} as const;
+
+/**
+ * Les courbes, en **points de contrôle d'une bézier cubique** — la forme de CSS, pas un
+ * objet Reanimated.
+ *
+ * Deux raisons, et la seconde est la vraie. D'abord, ces tokens se lisent aussi depuis Node
+ * quand les previews se construisent : importer Reanimated ici les casserait. Ensuite, une
+ * courbe *est* quatre nombres ; l'objet qui l'applique est un détail de la plateforme qui
+ * l'anime. `Easing.bezierFn(...curve.enter)` du côté React Native, `cubic-bezier(…)` du côté
+ * preview, et c'est la même courbe des deux côtés parce qu'elle n'est écrite qu'une fois.
+ */
+export const curve = {
+  /** Ce qui entre : parti vite, posé sans rebond. */
+  enter: [0.16, 1, 0.3, 1],
+  /** Ce qui se célèbre : dépasse, puis revient. Le dépassement est dans la courbe, pas dans
+   *  une rampe à trois points recopiée d'un composant à l'autre. */
+  celebrate: [0.34, 1.4, 0.64, 1],
+} as const;
+
+/** De combien une entrée se déplace avant de se poser, en points. */
+export const travel = {
+  /** Une ligne qui glisse depuis la droite. */
+  slide: 16,
+  /** Un bloc qui monte depuis le bas. */
+  rise: 18,
+  /** Un titre qui tombe depuis le haut. */
+  drop: 24,
+} as const;
+
+/** D'où part ce qui apparaît en grandissant. Le dépassement, lui, vient de `curve.celebrate`. */
+export const scale = { from: 0.7 } as const;
+
+/**
  * Le vocabulaire des sources d'XP, rendu lisible.
  *
  * Le serveur envoie l'enum, pas la phrase — il n'a aucune raison de connaître la langue de

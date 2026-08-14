@@ -30,6 +30,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Même garde-fou que pour le contrat, et pour la même raison : les previews HTML sont
+      # **dérivées** des composants React Native. Une preview régénérée qui bouge alors que
+      # personne n'a régénéré, c'est une carte poussée vers Claude Design qui décrit un
+      # composant qui n'existe plus.
+      - name: Previews du design system à jour
+        run: npm run previews:check
+
       # « Un seul rafraîchissement part » ne se voit pas à l'œil : les deux issues affichent
       # le même écran, et la mauvaise ne se manifeste qu'à l'ouverture suivante, par une
       # déconnexion. C'est ici que la règle tient, pas sur un appareil.

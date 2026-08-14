@@ -14,16 +14,28 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { BreakdownRow } from '@/components/BreakdownRow';
+import { SessionCard } from '@/components/SessionCard';
+import { TitleBadge } from '@/components/TitleBadge';
+import { XpBar, xpBarFill } from '@/components/XpBar';
 import {
   color,
-  disciplineLabel,
+  curve,
+  duration,
   radius,
+  scale,
   skipReasonLabel,
   space,
+  travel,
   type,
-  xpSourceLabel,
 } from '@/design/tokens';
-import { buildTimeline, type RewardSummary, type SkippedWorkout, type SyncSummary } from './timeline';
+import { formatDuration } from '@/features/progression/format';
+import {
+  buildTimeline,
+  type RewardSummary,
+  type SkippedWorkout,
+  type SyncSummary,
+} from './timeline';
 
 /**
  * L'écran du produit : le moment dopamine, désormais sur **un lot** de séances.
@@ -44,8 +56,24 @@ import { buildTimeline, type RewardSummary, type SkippedWorkout, type SyncSummar
  * `timeline.ts` quand la séquence est passée à plusieurs workouts — c'est de la mise en
  * scène, et de la mise en scène qu'on ne peut vérifier qu'à l'œil sur un appareil est de la
  * mise en scène qu'on ne vérifie pas.
+ *
+ * Ce qu'il ne fait plus non plus : **dessiner**. La carte de séance, la barre, la ligne de
+ * breakdown et le badge de titre viennent du design system, et cet écran n'en garde que le
+ * mouvement. Les deux se séparent proprement parce que rien du design system ne connaît
+ * Reanimated : l'animé enveloppe le dessiné, jamais l'inverse.
  */
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+/**
+ * Les courbes, montées une fois.
+ *
+ * `Easing.bezierFn` rend la fonction elle-même, là où `Easing.bezier` rend la fabrique
+ * qu'attend `withTiming` : ici la courbe s'applique **dans** un worklet, sur une progression
+ * déjà normalisée, et pas à une animation. Les quatre nombres, eux, sont des tokens — la
+ * même courbe sert la preview HTML, en `cubic-bezier(…)`.
+ */
+const easeEnter = Easing.bezierFn(...curve.enter);
+const easeCelebrate = Easing.bezierFn(...curve.celebrate);
 
 export function SyncSummaryView({
   summary,
@@ -170,9 +198,11 @@ export function SyncSummaryView({
         defaultValue="0"
       />
 
-      <View style={styles.barTrack}>
-        <Animated.View style={[styles.barFill, barStyle]} />
-      </View>
+      {/* La barre du design system, remplie par le séquenceur : la piste et le masque
+          viennent du composant, le remplissage d'une valeur partagée. */}
+      <XpBar size="hero">
+        <Animated.View style={[xpBarFill, barStyle]} />
+      </XpBar>
 
       {/* Le détail, empilé : un seul workout à l'écran à la fois, au même endroit. */}
       <View style={styles.stage}>
@@ -244,7 +274,7 @@ function WorkoutDetail({
   const style = useAnimatedStyle(() => ({
     opacity: interpolate(
       clock.value,
-      [segment.at, opening.until, segment.until - 180, segment.until],
+      [segment.at, opening.until, segment.until - duration.handoff, segment.until],
       [0, 1, 1, 0],
       Extrapolation.CLAMP,
     ),
@@ -252,21 +282,21 @@ function WorkoutDetail({
 
   return (
     <Animated.View style={[styles.block, style]} pointerEvents="none">
-      <View style={styles.card}>
-        <Text style={styles.label}>{disciplineLabel[workout.session.discipline]}</Text>
-        <Text style={styles.duration}>{Math.round(workout.session.durationSeconds / 60)} min</Text>
-      </View>
+      <SessionCard
+        discipline={workout.session.discipline}
+        duration={formatDuration(workout.session.durationSeconds)}
+      />
 
       <View style={styles.breakdown}>
         {workout.xp.breakdown.map((line, position) => (
-          <BreakdownRow
+          <LineEntry
             key={`${line.source}-${position}`}
             clock={clock}
             at={lines[position].at}
             until={lines[position].until}
-            label={xpSourceLabel[line.source]}
-            amount={line.amount}
-          />
+          >
+            <BreakdownRow source={line.source} amount={line.amount} />
+          </LineEntry>
         ))}
       </View>
 
@@ -313,12 +343,16 @@ function Digest({
   count,
   levels,
 }: BeatProps & { count: number; levels: number[] }) {
-  const style = useAnimatedStyle(() => ({
-    opacity: interpolate(clock.value, [at, at + 220], [0, 1], Extrapolation.CLAMP),
-    transform: [
-      { translateY: interpolate(clock.value, [at, at + 320], [18, 0], Extrapolation.CLAMP) },
-    ],
-  }));
+  const style = useAnimatedStyle(() => {
+    const entered = easeEnter(
+      interpolate(clock.value, [at, at + duration.enter], [0, 1], Extrapolation.CLAMP),
+    );
+
+    return {
+      opacity: interpolate(clock.value, [at, at + duration.pop], [0, 1], Extrapolation.CLAMP),
+      transform: [{ translateY: travel.rise * (1 - entered) }],
+    };
+  });
 
   return (
     <Animated.View style={[styles.block, styles.digest, style]} pointerEvents="none">
@@ -344,12 +378,16 @@ function Digest({
 }
 
 function DigestLevel({ clock, at, level }: { clock: Clock; at: number; level: number }) {
-  const style = useAnimatedStyle(() => ({
-    opacity: interpolate(clock.value, [at, at + 140], [0, 1], Extrapolation.CLAMP),
-    transform: [
-      { scale: interpolate(clock.value, [at, at + 200], [0.7, 1], Extrapolation.CLAMP) },
-    ],
-  }));
+  const style = useAnimatedStyle(() => {
+    const grown = easeCelebrate(
+      interpolate(clock.value, [at, at + duration.pop], [0, 1], Extrapolation.CLAMP),
+    );
+
+    return {
+      opacity: interpolate(clock.value, [at, at + duration.glint], [0, 1], Extrapolation.CLAMP),
+      transform: [{ scale: scale.from + (1 - scale.from) * grown }],
+    };
+  });
 
   return (
     <Animated.View style={[styles.levelBadge, style]}>
@@ -382,38 +420,39 @@ function Skipped({ clock, at, until, entries }: BeatProps & { entries: SkippedWo
   );
 }
 
-function BreakdownRow({
-  clock,
-  at,
-  until,
-  label,
-  amount,
-}: BeatProps & { label: string; amount: number }) {
-  const style = useAnimatedStyle(() => ({
-    opacity: interpolate(clock.value, [at, until], [0, 1], Extrapolation.CLAMP),
-    transform: [{ translateX: interpolate(clock.value, [at, until], [16, 0], Extrapolation.CLAMP) }],
-  }));
+/**
+ * L'entrée d'une ligne de breakdown : elle glisse depuis la droite, dans l'ordre du calcul.
+ *
+ * Le composant n'enveloppe que le mouvement. Ce qui est *dessiné* — le libellé de la source,
+ * le signe, la couleur du gain ou de la perte — appartient au design system, et cet écran
+ * n'a pas à en connaître un seul pixel.
+ */
+function LineEntry({ clock, at, until, children }: BeatProps & { children: React.ReactNode }) {
+  const style = useAnimatedStyle(() => {
+    const entered = easeEnter(interpolate(clock.value, [at, until], [0, 1], Extrapolation.CLAMP));
 
-  return (
-    <Animated.View style={[styles.row, style]}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={[styles.rowAmount, { color: amount < 0 ? color.loss : color.gain }]}>
-        {amount > 0 ? '+' : ''}
-        {amount}
-      </Text>
-    </Animated.View>
-  );
+    return {
+      opacity: entered,
+      transform: [{ translateX: travel.slide * (1 - entered) }],
+    };
+  });
+
+  return <Animated.View style={style}>{children}</Animated.View>;
 }
 
 function LevelFlip({ clock, at, until, level }: BeatProps & { level: number }) {
-  const style = useAnimatedStyle(() => ({
-    opacity: interpolate(clock.value, [at, at + 120, until], [0, 1, 1], Extrapolation.CLAMP),
-    transform: [
-      {
-        scale: interpolate(clock.value, [at, at + 200, until], [0.6, 1.15, 1], Extrapolation.CLAMP),
-      },
-    ],
-  }));
+  const style = useAnimatedStyle(() => {
+    // Le dépassement vient de la courbe, pas d'une rampe à trois points : `celebrate` monte
+    // au-dessus de 1 puis revient, ce qui *est* la définition d'un basculement qui claque.
+    const flipped = easeCelebrate(
+      interpolate(clock.value, [at, until], [0, 1], Extrapolation.CLAMP),
+    );
+
+    return {
+      opacity: interpolate(clock.value, [at, at + duration.tap], [0, 1], Extrapolation.CLAMP),
+      transform: [{ scale: scale.from + (1 - scale.from) * flipped }],
+    };
+  });
 
   return (
     <Animated.View style={[styles.levelBadge, style]}>
@@ -424,17 +463,18 @@ function LevelFlip({ clock, at, until, level }: BeatProps & { level: number }) {
 }
 
 function TitleDrop({ clock, at, until, name }: BeatProps & { name: string }) {
-  const style = useAnimatedStyle(() => ({
-    opacity: interpolate(clock.value, [at, at + 150], [0, 1], Extrapolation.CLAMP),
-    transform: [
-      { translateY: interpolate(clock.value, [at, until], [-24, 0], Extrapolation.CLAMP) },
-    ],
-  }));
+  const style = useAnimatedStyle(() => {
+    const dropped = easeEnter(interpolate(clock.value, [at, until], [0, 1], Extrapolation.CLAMP));
+
+    return {
+      opacity: interpolate(clock.value, [at, at + duration.glint], [0, 1], Extrapolation.CLAMP),
+      transform: [{ translateY: -travel.drop * (1 - dropped) }],
+    };
+  });
 
   return (
-    <Animated.View style={[styles.titleCard, style]}>
-      <Text style={styles.titleLabel}>TITRE DÉBLOQUÉ</Text>
-      <Text style={styles.titleName}>{name}</Text>
+    <Animated.View style={style}>
+      <TitleBadge name={name} caption="Titre débloqué" />
     </Animated.View>
   );
 }
@@ -442,31 +482,14 @@ function TitleDrop({ clock, at, until, name }: BeatProps & { name: string }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.background, padding: space.lg, gap: space.md },
   counter: { ...type.display, color: color.accent, padding: 0 },
-  barTrack: {
-    height: 14,
-    backgroundColor: color.surfaceRaised,
-    borderRadius: radius.pill,
-    overflow: 'hidden',
-  },
-  barFill: { height: '100%', backgroundColor: color.accent, borderRadius: radius.pill },
   /** Les blocs de détail se superposent : un seul est lisible à la fois. */
   stage: { flex: 1 },
   // Position explicite plutôt que `StyleSheet.absoluteFill` : les blocs se superposent dans
   // `stage`, et écrire les quatre bords ici évite de dépendre d'un helper dont le type a
   // bougé d'une version de React Native à l'autre.
   block: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, gap: space.md },
-  card: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
-    padding: space.md,
-    gap: space.xs,
-  },
   label: { ...type.label, color: color.textMuted },
-  duration: { ...type.title, color: color.text },
   breakdown: { gap: space.sm },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  rowLabel: { ...type.body, color: color.textMuted },
-  rowAmount: { ...type.body },
   levels: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
   levelBadge: {
     backgroundColor: color.surfaceRaised,
@@ -478,14 +501,6 @@ const styles = StyleSheet.create({
   levelLabel: { ...type.label, color: color.textMuted },
   levelValue: { ...type.title, color: color.celebrate },
   titles: { gap: space.sm },
-  titleCard: {
-    backgroundColor: color.surfaceRaised,
-    borderRadius: radius.md,
-    padding: space.md,
-    gap: space.xs,
-  },
-  titleLabel: { ...type.label, color: color.celebrate },
-  titleName: { ...type.title, color: color.text },
   digest: { alignItems: 'center', justifyContent: 'center' },
   digestCount: { ...type.display, color: color.text },
   skipped: { gap: space.xs },

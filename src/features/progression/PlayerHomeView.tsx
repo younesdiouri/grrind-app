@@ -1,6 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { color, disciplineLabel, radius, space, type } from '@/design/tokens';
+import { SessionCard } from '@/components/SessionCard';
+import { TitleBadge } from '@/components/TitleBadge';
+import { XpBar } from '@/components/XpBar';
+import { color, radius, space, type } from '@/design/tokens';
 import {
   formatCalories,
   formatDistance,
@@ -16,7 +19,9 @@ import type { Progression, Workout } from '@/features/progression/usePlayerHome'
  *
  * Il n'anime rien. `SyncSummaryView` est la mise en scène, celui-ci est le constat : on y
  * revient après, ou sans être passé par elle du tout, et il doit dire la même chose dans
- * les deux cas.
+ * les deux cas. « La même chose » veut dire les **mêmes composants** : la barre, la carte de
+ * séance et le badge de titre sont ceux du design system, pas des copies qui divergeraient
+ * au premier ajustement.
  */
 
 export function LevelCard({ progression }: { progression: Progression }) {
@@ -37,12 +42,10 @@ export function LevelCard({ progression }: { progression: Progression }) {
       </View>
 
       {progression.activeTitle === null ? null : (
-        <Text style={styles.title}>{progression.activeTitle.name}</Text>
+        <TitleBadge name={progression.activeTitle.name} />
       )}
 
-      <View style={styles.bar}>
-        <View style={[styles.barFill, { width: `${Math.round(filled * 100)}%` }]} />
-      </View>
+      <XpBar fill={filled} />
 
       <Text style={styles.levelFoot}>
         {progression.xpToNextLevel === null
@@ -67,8 +70,8 @@ export function LevelCard({ progression }: { progression: Progression }) {
  * Une séance de l'historique.
  *
  * Les mesures sont **toutes optionnelles**, et pas par prudence : aucun appareil ne fournit
- * tout. Une mesure absente disparaît de la ligne au lieu de s'afficher à zéro — un `0 bpm`
- * serait une donnée fausse là où il n'y a pas de donnée.
+ * tout. Le tri se fait ici, où l'on sait ce qui est absent ; la carte, elle, reçoit une
+ * liste déjà propre — un `0 bpm` serait une donnée fausse là où il n'y a pas de donnée.
  */
 export function WorkoutRow({ workout, now }: { workout: Workout; now: Date }) {
   const measures = [
@@ -79,18 +82,12 @@ export function WorkoutRow({ workout, now }: { workout: Workout; now: Date }) {
   ].filter((measure): measure is string => measure !== null);
 
   return (
-    <View style={styles.row}>
-      <View style={styles.rowHead}>
-        <Text style={styles.rowTitle}>{disciplineLabel[workout.discipline]}</Text>
-        <Text style={styles.rowDuration}>{formatDuration(workout.durationSeconds)}</Text>
-      </View>
-
-      <Text style={styles.rowWhen}>{formatWhen(workout.startedAt, now)}</Text>
-
-      {measures.length > 0 ? (
-        <Text style={styles.rowMeasures}>{measures.join(' · ')}</Text>
-      ) : null}
-    </View>
+    <SessionCard
+      discipline={workout.discipline}
+      duration={formatDuration(workout.durationSeconds)}
+      when={formatWhen(workout.startedAt, now)}
+      measures={measures}
+    />
   );
 }
 
@@ -104,24 +101,5 @@ const styles = StyleSheet.create({
   levelHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   levelNumber: { ...type.title, color: color.text },
   levelTotal: { ...type.body, color: color.accent },
-  title: { ...type.label, color: color.celebrate },
-  bar: {
-    height: space.sm,
-    borderRadius: radius.sm,
-    backgroundColor: color.surfaceRaised,
-    overflow: 'hidden',
-  },
-  barFill: { height: '100%', backgroundColor: color.accent },
   levelFoot: { ...type.label, color: color.textMuted },
-  row: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
-    padding: space.md,
-    gap: space.xs,
-  },
-  rowHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  rowTitle: { ...type.body, color: color.text },
-  rowDuration: { ...type.body, color: color.textMuted },
-  rowWhen: { ...type.label, color: color.textMuted },
-  rowMeasures: { ...type.label, color: color.textMuted },
 });

@@ -56,6 +56,22 @@ npm test        # `node --test`, sans Expo ni appareil — les deux modules purs
 - L'écran d'accueil porte un banc : il périme le JWT et lance deux requêtes simultanées sur le
   vrai back. Le verdict attendu est `2/2 réponses · 1 rafraîchissement`.
 
+## Le design system n'a qu'un sens
+
+Les composants React Native sont la source de vérité ; les previews HTML en sont **dérivées**
+via `react-native-web`. L'inverse coûterait une traduction CSS → RN sur chaque composant, à vie :
+React Native n'a ni cascade, ni `flexDirection: row` par défaut, ni ombre portable.
+
+```bash
+npm run previews         # src/design/previews.tsx → previews/*.html
+npm run previews:check   # régénère, et échoue sur un diff — le même filet que le contrat
+```
+
+Chaque fichier s'ouvre sur `<!-- @dsCard group="…" -->`, le marqueur qui range la carte dans le
+volet Design System à la synchronisation. Les tokens — couleurs, typographie, espacements,
+**durées et courbes** — vivent dans `src/design/tokens.ts` : aucune valeur en dur dans un
+composant. Les durées sortent du spike, mesurées sur un iPhone physique.
+
 ## Le spike
 
 `fixtures/reward-summary/` contient trois **réponses réelles** du back, capturées par
