@@ -112,7 +112,9 @@ une erreur — la séance est écartée et **nommée** dans la réponse. Le clie
 - Styles : tokens typés dans `src/design/tokens.ts` + `StyleSheet.create`. Pas de valeur en dur
   dans un composant.
 - Le design system a **un seul sens** : les composants RN sont la source de vérité, les previews
-  HTML en sont dérivées via `react-native-web`. Jamais l'inverse.
+  HTML en sont dérivées via `react-native-web` (`npm run previews`, vérifié en CI). Jamais
+  l'inverse. Les durées et les courbes d'animation sont des tokens comme les couleurs — elles
+  sortent du spike, et `timeline.ts` compose avec elles au lieu d'en inventer.
 - Erreurs : `application/problem+json`, les `type` sont des URIs `https://grrind.app/problems/…`.
   C'est dessus que les messages se branchent, pas sur le code HTTP.
 

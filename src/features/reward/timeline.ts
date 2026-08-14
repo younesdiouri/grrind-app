@@ -1,4 +1,5 @@
 import type { components } from '@/api/schema';
+import { duration } from '@/design/tokens';
 
 export type SyncSummary = components['schemas']['SyncSummary'];
 export type SyncTotals = components['schemas']['SyncTotals'];
@@ -27,18 +28,29 @@ export type SkippedWorkout = SyncSummary['skipped'][number];
  * avait qu'un workout à jouer. Le composant ne fait plus qu'interpoler.
  */
 
-/** Les durées de la mise en scène, en millisecondes. Mesurées au spike, pas choisies au doigt. */
+/**
+ * Les temps de la mise en scène, en millisecondes.
+ *
+ * **Ce ne sont pas des durées neuves.** Elles viennent de l'échelle du design system, mesurée
+ * au spike (#4) sur un iPhone physique : une carte qui se pose met le même temps ici que
+ * partout ailleurs. Ce qui est propre à cet écran, c'est le *choix* — quel temps pour quel
+ * moment — et c'est bien ce que ce fichier décide.
+ *
+ * Le budget du condensé, lui, reste ici et en clair : il ne décrit pas un geste mais une
+ * quantité à écouler, et il se calcule sur la taille du lot. Ce n'est pas une valeur de
+ * design, c'est une règle de rythme.
+ */
 export const BEATS = {
   /** La carte de séance se referme. */
-  sessionClose: 420,
+  sessionClose: duration.settle,
   /** Une ligne de breakdown apparaît ; les suivantes s'enchaînent à ce rythme. */
-  xpLine: 260,
+  xpLine: duration.line,
   /** La barre finit sa course après la dernière ligne. */
-  xpSettle: 420,
+  xpSettle: duration.settle,
   /** Un niveau bascule. */
-  levelFlip: 620,
+  levelFlip: duration.flip,
   /** Un titre tombe. */
-  titleDrop: 700,
+  titleDrop: duration.drop,
   /** Ce que coûte un workout condensé, à ajouter au socle du condensé. */
   digestPerWorkout: 190,
   /** Le socle du condensé : le temps de lire « et 12 autres séances ». */
@@ -46,9 +58,9 @@ export const BEATS = {
   /** Le plafond du condensé. Au-delà, on ajoute des secondes que personne ne regarde. */
   digestMax: 3200,
   /** La liste des séances écartées apparaît. */
-  skipped: 520,
+  skipped: duration.unfold,
   /** Le temps de respirer avant que l'écran devienne interactif. */
-  tail: 360,
+  tail: duration.breath,
 } as const;
 
 /**

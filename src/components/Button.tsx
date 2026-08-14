@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { color, radius, space, type } from '@/design/tokens';
+import { color, opacity, radius, space, type } from '@/design/tokens';
 
 type ButtonProps = {
   label: string;
@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
   },
   solid: { backgroundColor: color.accent },
   quiet: { backgroundColor: 'transparent' },
-  pressed: { opacity: 0.7 },
-  inert: { opacity: 0.5 },
+  pressed: { opacity: opacity.pressed },
+  inert: { opacity: opacity.inert },
   label: { ...type.body },
   labelSolid: { color: color.background },
   labelQuiet: { color: color.textMuted },
