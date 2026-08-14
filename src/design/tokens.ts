@@ -142,8 +142,14 @@ export const travel = {
   drop: 24,
 } as const;
 
-/** D'où part ce qui apparaît en grandissant. Le dépassement, lui, vient de `curve.celebrate`. */
-export const scale = { from: 0.7 } as const;
+/**
+ * Les échelles du mouvement.
+ *
+ * `from` est le point de départ de ce qui apparaît en grandissant ; le dépassement, lui,
+ * vient de `curve.celebrate` et non d'une valeur. `glint` est l'à-peine-perceptible : ce
+ * qu'un élément déjà en place gagne au moment où quelque chose lui arrive.
+ */
+export const scale = { from: 0.7, glint: 1.07 } as const;
 
 /**
  * Le vocabulaire des sources d'XP, rendu lisible.
