@@ -109,6 +109,27 @@ export type Timeline = {
   /** Le compteur d'XP, cumulé sur **toute** la synchronisation. */
   counter: Ramp;
   /**
+   * L'or de la butée : 1 à l'instant précis où la barre bute en haut, 0 partout ailleurs.
+   *
+   * C'est le temps fort de la séquence, et il ne se déduit pas de la barre : `bar` vaut aussi
+   * 1 pendant tout le palier d'attente qui précède un basculement, et allumer l'or sur cette
+   * durée-là en ferait un état plutôt qu'un éclat. La crête dit **le moment**, pas la valeur.
+   *
+   * Elle couvre les niveaux du condensé comme ceux du détail : la barre y bute autant, et
+   * c'est même là que le plus gros du lot tombe. Quand deux franchissements se suivent de si
+   * près que leurs éclats se chevauchent — un condensé très fourni — ils se fondent en une
+   * seule lueur continue, ce qui est la bonne lecture de ce qui se passe.
+   */
+  crest: Ramp;
+  /**
+   * Les instants où un niveau est franchi, détail et condensé confondus.
+   *
+   * L'écran s'en sert pour l'haptique. Ils sont ici parce qu'ils sont déjà connus ici : les
+   * recalculer côté composant, c'est refaire la trigonométrie du condensé à un deuxième
+   * endroit et la voir diverger au premier ajustement.
+   */
+  crossings: number[];
+  /**
    * L'état d'arrivée, celui que le saut atteint.
    *
    * `null` quand rien n'a été crédité — le serveur refuse d'écrire « niveau 0 → 0 » à un
@@ -231,6 +252,9 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     counter.output.push(value);
   };
 
+  /** Les instants de franchissement, dans l'ordre où ils se jouent. */
+  const crossings: number[] = [];
+
   const detailed = summary.imported.slice(0, DETAILED_WORKOUTS);
   const condensed = summary.imported.slice(DETAILED_WORKOUTS);
   const last = summary.imported[summary.imported.length - 1];
@@ -241,6 +265,16 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   const start = summary.imported.length > 0 ? fillBefore(summary.imported[0].level) : 0;
   holdBar(0, start);
   holdCounter(0, 0);
+
+  // L'anticipation : un temps mort **avant** la première séance, où la barre est posée sur le
+  // palier du joueur et où rien ne bouge encore. C'est ce qui fait de la première ligne un
+  // événement plutôt qu'un début — on ne peut pas gagner quelque chose sans avoir d'abord vu
+  // ce qu'on avait. Elle ne se joue que s'il y a quelque chose à jouer : une synchronisation
+  // qui n'a rien crédité n'a rien à faire attendre.
+  if (summary.imported.length > 0) {
+    const anticipation = push({ kind: 'rest', duration: duration.breath });
+    holdBar(anticipation.until, start);
+  }
 
   detailed.forEach((workout, index) => {
     // 1. `session` — la séance se referme. La barre attend, posée sur son palier de départ.
@@ -289,6 +323,7 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     workout.level.reached.forEach((level, position) => {
       const span = push({ kind: 'level', duration: BEATS.levelFlip, workout: index, level });
       const isLast = position === workout.level.reached.length - 1;
+      crossings.push(span.at);
       holdBar(span.at + 1, 0);
       holdBar(span.until, isLast ? fillAfter(workout.level) : 1);
     });
@@ -326,6 +361,7 @@ export function buildTimeline(summary: SyncSummary): Timeline {
       const end = span.at + step * (index + 1);
       holdBar(end, 1);
       holdBar(end + 1, 0);
+      crossings.push(end);
     });
     holdBar(span.until, last === undefined ? 0 : fillAfter(last.level));
 
@@ -353,15 +389,30 @@ export function buildTimeline(summary: SyncSummary): Timeline {
 
   const segments = openings.map((opening, index) => ({
     workout: opening.workout,
-    at: opening.at,
+    // Le premier bloc occupe l'écran dès l'ouverture : l'anticipation lui appartient, c'est
+    // pendant elle qu'il monte. Les suivants prennent la place du précédent, à son beat.
+    at: index === 0 ? 0 : opening.at,
     until: openings[index + 1]?.at ?? afterDetail,
   }));
+
+  // La crête : un éclat par franchissement, monté sur `glint` et rendu sur `tap`. Il culmine
+  // **à** l'ouverture du basculement — c'est le même instant que le choc haptique, et les
+  // deux doivent tomber ensemble ou aucun des deux ne se remarque.
+  const crest: Ramp = { input: [0], output: [0] };
+  crossings.forEach((at) => {
+    crest.input.push(at - duration.glint, at, at + duration.tap);
+    crest.output.push(0, 1, 0);
+  });
+  crest.input.push(cursor);
+  crest.output.push(0);
 
   return {
     beats,
     duration: cursor,
     bar: strictlyIncreasing(bar),
     counter: strictlyIncreasing(counter),
+    crest: strictlyIncreasing(crest),
+    crossings,
     totals: summary.totals ?? null,
     segments,
   };

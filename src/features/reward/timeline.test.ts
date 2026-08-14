@@ -179,12 +179,73 @@ describe('la timeline du SyncSummary', () => {
     assert.ok(skipped.at > lastSession.at);
   });
 
+  it("attend avant la première séance, sur le palier du joueur", () => {
+    const timeline = buildTimeline(unWorkout);
+    const first = timeline.beats[0];
+    const session = timeline.beats.find((beat) => beat.kind === 'session');
+
+    assert.ok(session !== undefined);
+    assert.equal(first.kind, 'rest', "l'écran s'ouvre sur un temps mort, pas sur une séance");
+    assert.ok(session.at > 0, "la séance ne commence pas à l'instant zéro");
+
+    // Pendant l'attente, la barre ne bouge pas d'un pixel : elle montre ce que le joueur
+    // avait. Sans ce palier, la première ligne serait un début et non un gain.
+    const held = timeline.bar.input
+      .map((at, index) => ({ at, fill: timeline.bar.output[index] }))
+      .filter((point) => point.at <= session.at);
+
+    assert.ok(held.length >= 2, "l'attente pose au moins deux points de barre");
+    assert.ok(
+      held.every((point) => point.fill === held[0].fill),
+      'la barre tient sa valeur de départ pendant toute l’anticipation',
+    );
+
+    // Le premier bloc de détail occupe l'écran dès l'ouverture : l'anticipation lui appartient.
+    assert.equal(timeline.segments[0].at, 0);
+  });
+
+  it("n'attend pas quand il n'y a rien à attendre", () => {
+    // `tout-ecarte` ne crédite rien. Faire patienter devant une barre qui ne bougera jamais
+    // ajouterait de la cérémonie à un refus.
+    const timeline = buildTimeline(toutEcarte);
+
+    assert.equal(timeline.totals, null);
+    assert.equal(
+      timeline.beats.filter((beat) => beat.kind === 'rest').length,
+      1,
+      'seul le temps de respirer final subsiste',
+    );
+  });
+
+  it('allume la crête à chaque franchissement, condensé compris', () => {
+    const timeline = buildTimeline(quinzeWorkouts);
+    const flips = timeline.beats.filter((beat) => beat.kind === 'level');
+    const digest = timeline.beats.find((beat) => beat.kind === 'digest');
+
+    assert.ok(digest !== undefined && digest.levels.length > 0, 'le condensé porte des niveaux');
+    assert.equal(
+      timeline.crossings.length,
+      flips.length + digest.levels.length,
+      'un franchissement par niveau, où qu’il tombe',
+    );
+
+    // La crête culmine **à** l'ouverture du basculement, là où tombe aussi le choc haptique.
+    for (const at of timeline.crossings) {
+      assert.equal(timeline.crest.output[timeline.crest.input.indexOf(at)], 1);
+    }
+
+    // Et elle est éteinte partout ailleurs : c'est un éclat, pas un état.
+    assert.equal(timeline.crest.output[0], 0);
+    assert.equal(timeline.crest.output[timeline.crest.output.length - 1], 0);
+  });
+
   it('produit des rampes que `interpolate` sait lire', () => {
     for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts, toutEcarte]) {
       const timeline = buildTimeline(summary);
 
       assertRampIsSane(timeline.bar, timeline.duration);
       assertRampIsSane(timeline.counter, timeline.duration);
+      assertRampIsSane(timeline.crest, timeline.duration);
 
       assert.ok(
         timeline.bar.output.every((fill) => fill >= 0 && fill <= 1),
