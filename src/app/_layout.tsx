@@ -1,8 +1,10 @@
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useSyncExternalStore } from 'react';
 
+import { queryClient } from '@/api/queryClient';
 import { color } from '@/design/tokens';
 import { restore } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
@@ -52,7 +54,11 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    // Un seul `QueryClient` pour tout le process (`api/queryClient.ts`) : React Query n'est
+    // consommé pour l'instant que par l'onglet Guilde (#42), mais le fournisseur vit à la
+    // racine plutôt que sous `(tabs)` pour qu'un futur écran hors onglets n'ait pas à le
+    // redécouvrir.
+    <QueryClientProvider client={queryClient}>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -74,6 +80,6 @@ export default function RootLayout() {
           <Stack.Screen name="register" options={{ title: 'Créer un compte' }} />
         </Stack.Protected>
       </Stack>
-    </>
+    </QueryClientProvider>
   );
 }
