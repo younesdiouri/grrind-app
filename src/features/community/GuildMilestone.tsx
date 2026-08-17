@@ -4,9 +4,12 @@ import { color, radius, space, type } from '@/design/tokens';
 import type { Guild } from '@/features/community/guildActions';
 
 /**
- * Le jalon minimal une fois qu'on a une guilde — **l'aiguillage du ticket #42, pas l'écran des
- * membres**. Celui-ci (#43) affichera la liste ordonnée fondateur d'abord, les six briques de
- * #40 (`GuildMemberRow`, `CapacityGauge`…) : rien de tout ça n'est ici.
+ * Le pont entre une fondation ou un ralliement et l'écran des membres (#43) — pas l'écran
+ * lui-même. `POST /api/guilds` et `POST /api/guilds/join` rendent une `Guild` sans `members`,
+ * pendant que le cache de `GET /api/guilds/mine` converge vers le `GuildDetail` complet ;
+ * cette carte tient l'écran le temps très court de cette convergence, puis s'efface au
+ * profit de `Roster` (`GuildMemberRow`, `CapacityGauge`, l'ordre fondateur-d'abord…) dès que
+ * `members` est là. `guildScreenStateFrom` décide de ce passage de relais.
  *
  * Le typage accepte un `Guild` et pas un `GuildDetail` **exprès** : la réponse d'une fondation
  * ou d'un ralliement est une `Guild` sans `members`, et ce jalon doit s'afficher avec **elle**,
