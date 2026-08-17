@@ -22,7 +22,10 @@ import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
  * plus. C'est arrivé au lien vers Santé, qui est devenu introuvable le jour où le compte de
  * test a eu des séances — en développement il en avait zéro, donc personne ne l'a vu.
  *
- * D'où la règle : le résumé, l'action, **puis** l'archive.
+ * D'où la règle : le résumé, l'action, **puis** l'archive. Elle tient toujours (#41) même si
+ * Santé n'en est plus l'illustration : l'accès y passe désormais par l'onglet, toujours à
+ * l'écran, plutôt que par une carte qui redevenait introuvable à l'échelle. Une action future
+ * reprendrait sa place entre le résumé et l'archive.
  *
  * Les bancs de développement ferment la marche, sous un intitulé qui dit ce qu'ils sont. Ils
  * restent parce que les fixtures sont le seul moyen de rejouer la mise en scène sans aller
@@ -74,10 +77,12 @@ export default function Home() {
 }
 
 /**
- * Le joueur : son niveau, ce qu'il peut faire, et ce qu'il a fait — **dans cet ordre**.
+ * Le joueur : son niveau, puis ce qu'il a fait — **dans cet ordre**.
  *
- * Le lien vers Santé est entre le résumé et l'historique, et pas après : c'est la seule
- * action de l'écran, et une action placée sous onze cartes de séance n'est plus une action.
+ * Santé n'a plus de carte ici (#41) : elle ferait doublon avec l'onglet, toujours à l'écran,
+ * et garder les deux chemins pour une même destination n'en apprend aucun. La hiérarchie
+ * résumé-puis-archive de #31 tient malgré tout ; c'est juste qu'il n'y a plus d'action entre
+ * les deux pour l'instant.
  *
  * L'état vide n'est pas un échec et ne se présente pas comme tel : un compte neuf n'a rien
  * fait, ce qui est le point de départ normal du produit et pas une panne à réessayer.
@@ -105,16 +110,6 @@ function PlayerHome() {
       ) : null}
 
       {home.step === 'ready' ? <LevelCard progression={home.progression} /> : null}
-
-      {/* L'action, toujours au même endroit — qu'il y ait onze séances ou aucune. */}
-      <Link href="/sante" asChild>
-        <Pressable style={styles.card}>
-          <Text style={styles.name}>Santé</Text>
-          <Text style={styles.detail}>
-            Synchroniser tes séances depuis Apple Santé.
-          </Text>
-        </Pressable>
-      </Link>
 
       {home.step === 'ready' && home.workouts.length === 0 ? (
         <View style={styles.bench}>
