@@ -1,10 +1,15 @@
 import { api } from '@/api/client';
 import type { components } from '@/api/schema';
 import { failureFrom, OFFLINE, type Failure } from '@/features/auth/problems';
+import type { GuildDetail } from '@/features/community/useMyGuild';
 
 export type Guild = components['schemas']['Guild'];
 
 export type GuildActionOutcome = { ok: true; guild: Guild } | { ok: false; failure: Failure };
+
+export type GuildRefreshOutcome =
+  | { ok: true; guild: GuildDetail }
+  | { ok: false; failure: Failure };
 
 /**
  * `POST /api/guilds` — fonder, et devenir fondateur dans le même geste.
@@ -35,6 +40,32 @@ export async function foundGuild(name: string): Promise<GuildActionOutcome> {
 export async function joinGuild(code: string): Promise<GuildActionOutcome> {
   try {
     const { data, error } = await api.POST('/api/guilds/join', { body: { code } });
+
+    if (data === undefined) {
+      return { ok: false, failure: failureFrom(error) };
+    }
+
+    return { ok: true, guild: data };
+  } catch {
+    return { ok: false, failure: OFFLINE };
+  }
+}
+
+/**
+ * `GET /api/guilds/{id}` — le rafraîchissement de l'écran des membres, **distinct** de
+ * `/api/guilds/mine`.
+ *
+ * `/mine` reste la porte de l'onglet (#42) : elle rend `{ "guild": null }` avec un 200 quand
+ * le joueur n'a pas de guilde, elle ne peut donc jamais dire qu'*une* guilde a disparu, elle
+ * ne fait que constater qu'on n'en a plus. `/guilds/{id}` parle d'une guilde précise : « ici
+ * la guilde existe forcément, puisqu'un non-membre reçoit 404 » (description du contrat) —
+ * c'est cette route qui rend `guild-not-found` quand le fondateur vient de dissoudre pendant
+ * qu'on regardait la liste, et c'est donc elle qu'un tirer-pour-rafraîchir doit appeler.
+ * `isGuildGone`, dans `guildRefresh.ts`, reconnaît ce refus précis.
+ */
+export async function refreshGuild(id: string): Promise<GuildRefreshOutcome> {
+  try {
+    const { data, error } = await api.GET('/api/guilds/{id}', { params: { path: { id } } });
 
     if (data === undefined) {
       return { ok: false, failure: failureFrom(error) };
