@@ -14,9 +14,15 @@ type RoleBadgeProps = {
  * pas besoin d'être nommé. Le fondateur, lui, se distingue **en texte**, jamais par une
  * couronne ou une icône codée en dur : le rôle n'a que deux valeurs au contrat, et un
  * pictogramme pour une seule d'entre elles serait un jeu d'icônes qu'on invente ici.
+ *
+ * **La garde teste `'FOUNDER'`, pas `'MEMBER'`.** Le jour où le back ajoute un rôle, un test
+ * sur `'MEMBER'` laisserait passer n'importe quelle valeur inconnue jusqu'au badge — sans
+ * erreur de compilation, avec « FONDATEUR » affiché à quelqu'un qui ne l'est pas. Tester la
+ * seule valeur qui doit vraiment afficher quelque chose rend un rôle inconnu silencieux par
+ * défaut, comme le repli `never` de `messageFor` le fait pour un message.
  */
 export function RoleBadge({ role }: RoleBadgeProps) {
-  if (role === 'MEMBER') {
+  if (role !== 'FOUNDER') {
     return null;
   }
 
