@@ -24,13 +24,10 @@ import { formatCalendarDate } from '@/features/community/format';
 import { GuildMilestone } from '@/features/community/GuildMilestone';
 import { foundGuild, joinGuild, refreshGuild, type Guild } from '@/features/community/guildActions';
 import { isGuildGone } from '@/features/community/guildRefresh';
+import { guildScreenStateFrom, type GuildDetail } from '@/features/community/guildScreenState';
 import { isCompleteInviteCode, sanitizeInviteCode } from '@/features/community/inviteCode';
 import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefusal';
-import {
-  MY_GUILD_QUERY_KEY,
-  useMyGuild,
-  type GuildDetail,
-} from '@/features/community/useMyGuild';
+import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
 
 /**
  * L'onglet Guilde.
@@ -44,10 +41,14 @@ import {
  *
  * ————— La guilde, une fois qu'on en a une ——————————————————————————————————————————————
  *
- * `GuildMilestone` ne tient plus l'écran qu'un instant : celui, très court, entre une
- * fondation ou un ralliement (`justResolved`, une `Guild` sans `members`) et la convergence
- * du cache de `/api/guilds/mine` vers le `GuildDetail` complet. Dès qu'il arrive, `Roster`
- * prend le relais avec la liste ordonnée par le serveur (#43).
+ * `GuildMilestone` ne tient l'écran qu'un instant : celui, très court, entre une fondation ou
+ * un ralliement (`justResolved`, une `Guild` sans `members`) et la convergence du cache de
+ * `/api/guilds/mine` vers le `GuildDetail` complet. Dès qu'il arrive, `Roster` prend le relais
+ * avec la liste ordonnée par le serveur (#43). `guildScreenStateFrom` arbitre entre ces deux
+ * sources et le reste des états — **une seule fonction, un seul ordre**, plutôt qu'une chaîne
+ * de `if` locale : une revue a montré qu'une chaîne de `if` laisse passer le cas où la guilde
+ * disparaît (dissoute pendant qu'on la regardait) sans que les deux sources s'effacent
+ * ensemble, ce qui ramenait indéfiniment `GuildMilestone` sur une guilde qui n'existait plus.
  */
 export default function GuildeScreen() {
   const myGuild = useMyGuild();
@@ -70,24 +71,36 @@ export default function GuildeScreen() {
     void queryClient.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
   };
 
-  const guildDetail = myGuild.data ?? null;
+  // La disparition d'une guilde doit effacer **les deux** sources qui la font exister à
+  // l'écran, dans le même geste : le cache de `/mine`, et `justResolved`, qui sinon lui
+  // survivrait et ramènerait `GuildMilestone` sur ce qui n'existe plus. C'est le correctif du
+  // bug relevé en revue de #43 — `Roster` appelle ceci quand son rafraîchissement rencontre
+  // `guild-not-found`.
+  const forgetGuild = () => {
+    queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
+    setJustResolved(null);
+  };
 
-  // Le détail complet gagne dès qu'il est là : c'est lui qui porte `members`, que
-  // `justResolved` ne peut pas avoir. Tant qu'il n'est pas encore arrivé, `justResolved` tient
-  // seul l'écran, avec le jalon minimal.
-  if (guildDetail !== null) {
-    return <Roster guild={guildDetail} />;
+  const state = guildScreenStateFrom({
+    guildDetail: myGuild.data ?? null,
+    justResolved,
+    isPending: myGuild.isPending,
+    failure: myGuild.isError ? myGuild.error : null,
+  });
+
+  if (state.kind === 'roster') {
+    return <Roster guild={state.guild} onGone={forgetGuild} />;
   }
 
-  if (justResolved !== null) {
+  if (state.kind === 'milestone') {
     return (
       <ScrollView contentContainerStyle={styles.screen}>
-        <GuildMilestone guild={justResolved} />
+        <GuildMilestone guild={state.guild} />
       </ScrollView>
     );
   }
 
-  if (myGuild.isPending) {
+  if (state.kind === 'loading') {
     return (
       <View style={styles.centered}>
         <ActivityIndicator color={color.accent} />
@@ -95,20 +108,20 @@ export default function GuildeScreen() {
     );
   }
 
-  if (myGuild.isError) {
+  if (state.kind === 'error') {
     return (
       <ScrollView contentContainerStyle={styles.screen}>
         <Text style={styles.title}>La guilde est indisponible</Text>
-        <Text style={styles.body}>{messageFor(myGuild.error)}</Text>
+        <Text style={styles.body}>{messageFor(state.failure)}</Text>
         <Button label="Réessayer" onPress={() => void myGuild.refetch()} variant="quiet" />
       </ScrollView>
     );
   }
 
-  // Un joueur qui apprend en plein formulaire qu'il a déjà une guilde — fondée ou rejointe
-  // depuis un autre appareil pendant qu'il remplissait celui-ci — n'a pas de second appel à
-  // faire lui-même : `refetch` va chercher la vraie guilde, et ce même écran bascule sur
-  // `GuildMilestone` dès qu'elle arrive.
+  // `state.kind === 'gate'` : pas de guilde. Un joueur qui apprend en plein formulaire qu'il
+  // en a déjà une — fondée ou rejointe depuis un autre appareil pendant qu'il remplissait
+  // celui-ci — n'a pas de second appel à faire lui-même : `refetch` va chercher la vraie
+  // guilde, et ce même écran bascule sur `Roster` ou `GuildMilestone` dès qu'elle arrive.
   const goToMyGuild = () => void myGuild.refetch();
 
   if (mode === 'found') {
@@ -145,16 +158,19 @@ export default function GuildeScreen() {
  * Le tirer-pour-rafraîchir n'appelle **pas** `/api/guilds/mine` : cette route ne peut que
  * dire « tu n'as plus de guilde », jamais laquelle a disparu. `refreshGuild` interroge
  * `GET /api/guilds/{id}`, scopée à celle-ci, ce qui rend le vrai `404 guild-not-found` quand
- * le fondateur vient de la dissoudre — et c'est ce cas-là qui ramène proprement à l'écran
- * d'invitation, en vidant le cache de `/mine` plutôt que d'attendre sa reconvergence.
+ * le fondateur vient de la dissoudre. Sur ce refus précis, `onGone` (porté par le parent)
+ * efface la guilde des deux endroits où elle peut vivre à l'écran — pas seulement le cache
+ * de `/mine` : `Roster` lui-même ne connaît pas `justResolved`, qui vit dans `GuildeScreen`.
  */
-function Roster({ guild }: { guild: GuildDetail }) {
+function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailure, setRefreshFailure] = useState<Failure | null>(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
+    // Effacé à chaque tentative, succès compris : un rafraîchissement raté suivi d'un
+    // réussi ne doit pas laisser un message d'erreur affiché sous une liste à jour.
     setRefreshFailure(null);
 
     const outcome = await refreshGuild(guild.id);
@@ -162,7 +178,9 @@ function Roster({ guild }: { guild: GuildDetail }) {
     if (outcome.ok) {
       queryClient.setQueryData(MY_GUILD_QUERY_KEY, outcome.guild);
     } else if (isGuildGone(outcome.failure)) {
-      queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
+      // La disparition ne s'arrête pas au cache : `onGone` efface aussi `justResolved`, côté
+      // parent — voir `forgetGuild` dans `GuildeScreen`.
+      onGone();
     } else {
       setRefreshFailure(outcome.failure);
     }
