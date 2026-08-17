@@ -7,8 +7,7 @@ import { color, space } from '@/design/tokens';
 /**
  * La barre d'onglets.
  *
- * Deux destinations pour commencer — Accueil, Santé — la guilde s'ajoutera par un
- * `Tabs.Screen` d'une ligne (#41). `Tabs` d'`expo-router`, pas `unstable-native-tabs` : la
+ * Trois destinations — Accueil, Santé, Guilde. `Tabs` d'`expo-router`, pas `unstable-native-tabs` : la
  * barre native iOS 26 est alléchante mais encore en alpha, et surtout elle échapperait aux
  * tokens — la seule surface visible sur tous les écrans deviendrait celle qu'on ne contrôle
  * pas, dans une app qui n'a qu'un thème.
@@ -39,6 +38,13 @@ export default function TabsLayout() {
           tabBarIcon: ({ color: tint }) => (
             <TabIcon name="heart.text.square" color={tint} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="guilde"
+        options={{
+          title: 'Guilde',
+          tabBarIcon: ({ color: tint }) => <TabIcon name="person.2" color={tint} />,
         }}
       />
     </Tabs>
