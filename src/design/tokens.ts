@@ -63,6 +63,14 @@ export const type = {
   title: { fontSize: 28, fontWeight: '700' },
   body: { fontSize: 16, fontWeight: '500' },
   label: { fontSize: 13, fontWeight: '600', letterSpacing: 0.6 },
+  /**
+   * Un code d'invitation : huit caractères qui se dictent à voix haute et se recopient
+   * depuis une capture d'écran. `letterSpacing` est volontairement large — c'est lui qui
+   * sépare visuellement des glyphes qu'une police système resserrerait. La police elle-même
+   * (`Menlo` / `monospace`) reste au composant : elle dépend de la plateforme, et ce fichier
+   * se lit aussi depuis Node, où `react-native` n'existe pas.
+   */
+  code: { fontSize: 28, fontWeight: '700', letterSpacing: 6 },
 } as const;
 
 /**

@@ -4,8 +4,13 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { components } from '@/api/schema';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
+import { CapacityGauge } from '@/components/CapacityGauge';
+import { DangerRow } from '@/components/DangerRow';
 import { DisciplineChip } from '@/components/DisciplineChip';
 import { Field } from '@/components/Field';
+import { InviteCodeBlock } from '@/components/InviteCodeBlock';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { XpBar } from '@/components/XpBar';
@@ -329,6 +334,82 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="Il est porté">
           <TitleBadge name="Lève-tôt" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'avatar-joueur',
+    name: 'Avatar de joueur',
+    group: 'Composants',
+    element: (
+      // Deux Sam sont un cas normal : la pastille ne distingue rien, c'est l'id qui le fait.
+      <Specimen label="Deux membres homonymes">
+        <View style={styles.chips}>
+          <PlayerAvatar name="Sam Petit" />
+          <PlayerAvatar name="Sam Petit" />
+          <PlayerAvatar name="Zed" />
+        </View>
+      </Specimen>
+    ),
+  },
+  {
+    slug: 'badge-role',
+    name: 'Badge de rôle',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Fondateur">
+          <RoleBadge role="FOUNDER" />
+        </Specimen>
+        {/* Un membre ordinaire ne porte aucun badge : rien à montrer n'est pas une carte
+            vide, c'est le composant qui rend null — voir sa source. */}
+        <Specimen label="Membre — rien à montrer">
+          <RoleBadge role="MEMBER" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'jauge-capacite',
+    name: 'Jauge de capacité',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="En cours de remplissage">
+          <CapacityGauge memberCount={12} capacity={30} />
+        </Specimen>
+        {/* Une autre guilde, un autre équilibrage : rien ici ne suppose 30. */}
+        <Specimen label="Une capacité différente, complète">
+          <CapacityGauge memberCount={8} capacity={8} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'code-invitation',
+    name: "Code d'invitation",
+    group: 'Composants',
+    element: (
+      <Specimen label="Huit caractères, une date, jamais un compte à rebours">
+        <InviteCodeBlock code="K7QM3XPB" expiresAt="Valable jusqu’à demain 18 h" />
+      </Specimen>
+    ),
+  },
+  {
+    slug: 'ligne-danger',
+    name: 'Ligne de danger',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Quitter">
+          <DangerRow label="Quitter la guilde" onPress={() => {}} />
+        </Specimen>
+        <Specimen label="Occupé">
+          <DangerRow label="Dissoudre la guilde" onPress={() => {}} busy />
+        </Specimen>
+        <Specimen label="Inerte">
+          <DangerRow label="Exclure Sam Petit" onPress={() => {}} disabled />
         </Specimen>
       </>
     ),
