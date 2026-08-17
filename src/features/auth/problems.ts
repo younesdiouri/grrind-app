@@ -173,6 +173,44 @@ function messageForProblem(problem: ProblemDetails): string {
     case 'https://grrind.app/problems/title-not-unlocked':
       return "Ce titre n'est pas encore débloqué.";
 
+    // Le module Community (guildes) : younesdiouri/grrind-back#114 à #119. Le contrat soigne
+    // la distinction 404/403 — `guild-not-found` et `player-not-found` (404) ne doivent
+    // jamais laisser entendre « ça existe mais tu n'as pas le droit ». `forbidden` (403) est
+    // la vraie version de ce refus-là : aujourd'hui il ne couvre que les actions réservées au
+    // fondateur (renommer, dissoudre, gérer le code d'invitation, exclure un membre).
+    case 'https://grrind.app/problems/forbidden':
+      return 'Cette action est réservée au fondateur de la guilde.';
+
+    // `capacity` voyage dans le corps du problème (`additionalProperties` est ouvert sur
+    // `ProblemDetails`) ; l'écran qui veut « Cette guilde est complète (30 / 30). » le lit
+    // lui-même. On n'embarque pas 30 ici, c'est de l'équilibrage serveur.
+    case 'https://grrind.app/problems/guild-is-full':
+      return 'Cette guilde est complète.';
+
+    case 'https://grrind.app/problems/player-already-in-a-guild':
+      return "Tu appartiens déjà à une guilde. Quitte-la avant d'en rejoindre une autre.";
+
+    case 'https://grrind.app/problems/guild-not-found':
+      return "Cette guilde n'existe pas, ou tu n'en fais pas partie.";
+
+    case 'https://grrind.app/problems/invite-code-not-usable':
+      return 'Ce code ne mène à aucune guilde.';
+
+    case 'https://grrind.app/problems/player-is-not-a-member':
+      return "Ce joueur n'est plus membre de la guilde.";
+
+    case 'https://grrind.app/problems/founder-cannot-exclude-himself':
+      return "Un fondateur ne s'exclut pas : quitte la guilde, elle passera au membre le plus ancien.";
+
+    case 'https://grrind.app/problems/player-not-found':
+      return 'Ce joueur est introuvable.';
+
+    // Rate limiting : aujourd'hui seul `POST /api/guilds/join` est limité, un code
+    // d'invitation se dictant à voix haute et se tentant donc en boucle. Le `Retry-After` vit
+    // dans l'en-tête, pas dans ce message.
+    case 'https://grrind.app/problems/too-many-requests':
+      return 'Trop de tentatives. Attends un instant avant de réessayer.';
+
     default:
       return unnamedProblem(problem.type);
   }

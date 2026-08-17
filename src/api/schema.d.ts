@@ -4,6 +4,142 @@
  */
 
 export interface paths {
+    "/api/guilds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_community_guild_found"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_community_guild_show"];
+        put?: never;
+        post?: never;
+        delete: operations["delete_community_guild_dissolve"];
+        options?: never;
+        head?: never;
+        patch: operations["patch_community_guild_rename"];
+        trace?: never;
+    };
+    "/api/guilds/{id}/invite-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_community_invite_code_issue"];
+        delete: operations["delete_community_invite_code_revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Le limiteur est **configuré, pas écrit** : la politique et les seuils vivent dans
+         *     `config/packages/rate_limiter.yaml`, et l'attribut ne fait que désigner la clé.
+         * @description Cette clé est le joueur et non l'IP — une IP mobile change en cours de trajet et se
+         *     partage entre colocataires, alors que seul un compte authentifié peut consommer un
+         *     code. `args["user"]` est l'argument du contrôleur, disponible parce que l'attribut
+         *     est traité sur `kernel.controller_arguments`, après résolution.
+         */
+        post: operations["post_community_guild_join"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_community_guild_mine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/mine/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_community_guild_leave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/{id}/members/{playerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["delete_community_guild_exclude"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/players/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_community_player_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -246,7 +382,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -294,6 +430,145 @@ export interface components {
                 /** @enum {string} */
                 unit: "LEVELS" | "XP" | "SESSIONS" | "SECONDS";
             };
+        };
+        /**
+         * @description Le nom seul. **Il n'est pas unique**, et il ne le deviendra pas : on n'entre
+         *     dans une guilde que par un code d'invitation, donc rien ne dépend de pouvoir la
+         *     désigner par son nom. Deux guildes homonymes sont un cas normal.
+         */
+        GuildName: {
+            /** @example Les Lève-Tôt */
+            name: string;
+        };
+        /**
+         * @description Une guilde, vue par l'un de ses membres. Elle **ne produit aucune valeur de
+         *     jeu** en v1 : ni XP, ni modificateur, ni loot. Elle réunit des joueurs, c'est
+         *     tout.
+         */
+        Guild: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @example 12 */
+            memberCount: number;
+            /**
+             * @description La capacité vient de l'équilibrage du serveur et voyage avec la
+             *     réponse : l'écran affiche « 12 / 30 », et embarquer le dénominateur
+             *     dans l'app obligerait à repasser par l'App Store pour le corriger.
+             * @example 30
+             */
+            capacity: number;
+            /**
+             * @description Le rôle de **l'appelant**, pas une propriété de la guilde. Il sert à
+             *     décider quoi dessiner — le bouton « dissoudre » n'existe que pour le
+             *     fondateur — jamais à autoriser : le serveur reste seul juge, et
+             *     l'action est de toute façon revérifiée.
+             * @enum {string}
+             */
+            role: "FOUNDER" | "MEMBER";
+        };
+        /**
+         * @description Le laissez-passer d'une guilde. Il **remplace l'annuaire au lieu de le
+         *     compléter** : aucune recherche de joueur n'existe, et une recherche par adresse
+         *     rendrait l'API capable de confirmer qu'une adresse a un compte. Le code se
+         *     partage hors de l'app, et seul un joueur déjà inscrit et connecté peut le
+         *     consommer.
+         */
+        GuildInviteCode: {
+            /**
+             * @description Huit caractères sur un alphabet **amputé de ce qui se confond** : ni
+             *     `O` ni `0`, ni `I`, `L` ou `1`. Un code se lit au téléphone et se
+             *     recopie d'une capture d'écran.
+             * @example K7QM3XPB
+             */
+            code: string;
+            /**
+             * Format: date-time
+             * @description Une date et non une durée restante : l'écran affiche « valable jusqu'à
+             *     demain 18 h », et des secondes se périmeraient dans la réponse
+             *     elle-même.
+             */
+            expiresAt: string;
+        };
+        /**
+         * @description **Aucun identifiant de guilde** : c'est le code qui la désigne, sans quoi il
+         *     suffirait d'un UUID pour entrer. Le serveur normalise la casse et les espaces,
+         *     donc un code collé depuis un message passe tel quel.
+         */
+        GuildJoin: {
+            /** @example K7QM3XPB */
+            code: string;
+        };
+        /**
+         * @description Un joueur **tel que les autres joueurs le voient** — la seule forme sous
+         *     laquelle l'API expose quelqu'un d'autre que soi-même. Servie telle quelle par
+         *     `GET /api/players/{id}`, et étalée dans chaque membre d'une guilde.
+         *
+         *     **Ce qui n'y figure pas est la moitié du contrat** : ni adresse, ni fuseau, ni
+         *     rôle applicatif. Ce sont des données de compte, pas de profil public — et les
+         *     ports qui alimentent cette ressource ne les rendent tout simplement pas.
+         */
+        Player: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description **Non unique, et il ne le deviendra pas ici.** Deux membres homonymes
+             *     sont un cas normal ; c'est l'`id` qui distingue.
+             */
+            displayName: string;
+            /** Format: date-time */
+            registeredAt: string;
+            /** @example 12 */
+            level: number;
+            /** @example 340 */
+            xpIntoLevel: number;
+            /** @description `null` au niveau maximum : il n'y a plus de suivant, et zéro voudrait dire « atteint ». */
+            xpToNextLevel: number | null;
+            /**
+             * @description Le titre **porté**, `null` si le joueur n'en affiche aucun. Le
+             *     *prochain* titre visé n'y est pas : il n'a de sens que sur son propre
+             *     profil, et personne n'a à savoir ce qu'un co-équipier est en train de
+             *     viser. C'est `GET /api/me` qui le sert.
+             */
+            title: components["schemas"]["PlayerTitle"] | null;
+        };
+        /**
+         * @description Un membre : le joueur public, plus ce que la guilde sait de lui. Les champs de
+         *     `Player` sont **étalés** et non imbriqués — le client dessine une ligne, pas
+         *     deux objets, et `GET /api/players/{id}` sert exactement le même bloc.
+         */
+        GuildMember: components["schemas"]["Player"] & {
+            /** @enum {string} */
+            role: "FOUNDER" | "MEMBER";
+            /** Format: date-time */
+            joinedAt: string;
+        };
+        /**
+         * @description La guilde et ses membres d'un bloc — **c'est l'écran**. L'onglet ne s'ouvre
+         *     jamais sans les deux, et les séparer coûterait un aller-retour pour un écran
+         *     qui n'a rien à afficher entre-temps.
+         */
+        GuildDetail: components["schemas"]["Guild"] & {
+            /**
+             * @description **Le fondateur d'abord, puis par date d'entrée croissante.** Un
+             *     ordre décidé par le serveur, jamais celui que rend la base : sans
+             *     `ORDER BY`, PostgreSQL sert les lignes comme il veut et change
+             *     d'avis quand la table grossit. Une liste qui se réordonne toute
+             *     seule entre deux ouvertures d'écran est un bug qu'on ne sait pas
+             *     reproduire.
+             */
+            members: components["schemas"]["GuildMember"][];
+        };
+        /**
+         * @description L'enveloppe de `GET /api/guilds/mine`. Elle existe parce que « pas de guilde »
+         *     doit être une réponse et non une erreur : c'est la requête d'ouverture de
+         *     l'onglet, et un joueur sans guilde est dans un état normal — l'écran l'invite à
+         *     en fonder une.
+         */
+        MyGuild: {
+            guild: components["schemas"]["GuildDetail"] | null;
         };
         UserProfile: {
             /** Format: uuid */
@@ -697,6 +972,18 @@ export interface components {
             transactions: components["schemas"]["XpTransaction"][];
             nextCursor: string | null;
         };
+        FoundGuildRequest: {
+            /** @default  */
+            name: string;
+        };
+        RenameGuildRequest: {
+            /** @default  */
+            name: string;
+        };
+        JoinGuildRequest: {
+            /** @default  */
+            code: string;
+        };
         RefreshTokenRequest: {
             /** @default  */
             refreshToken: string;
@@ -836,6 +1123,36 @@ export interface components {
                 "application/problem+json": components["schemas"]["ProblemDetails"];
             };
         };
+        /**
+         * @description L'appelant est bien identifié, la ressource existe, et il n'a pas le droit
+         *     demandé. **C'est ce qui distingue ce statut du 404** : un 403 ne se rend qu'à
+         *     quelqu'un qui savait déjà que la ressource existe — un membre de la guilde qui
+         *     n'en est pas le fondateur. À un non-membre, l'API répond 404, sans quoi elle
+         *     dirait quels UUID désignent une guilde.
+         */
+        Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["ProblemDetails"];
+            };
+        };
+        /**
+         * @description Trop d'essais. L'en-tête `Retry-After` dit combien de secondes attendre, et le
+         *     client doit l'honorer plutôt que de réessayer en boucle. Aujourd'hui seul
+         *     `POST /api/guilds/join` est limité : un code d'invitation est court par
+         *     nécessité — il se dicte à voix haute — et c'est ce plafond qui rend le tirage au
+         *     hasard sans issue.
+         */
+        TooManyRequests: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["ProblemDetails"];
+            };
+        };
         /** @description Le corps est bien formé mais son contenu est refusé. */
         UnprocessableEntity: {
             headers: {
@@ -861,6 +1178,346 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    post_community_guild_found: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuildName"];
+            };
+        };
+        responses: {
+            /** @description La guilde est fondée et l'appelant en est le fondateur : les deux dans le même geste. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Guild"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Le joueur appartient déjà à une guilde (`player-already-in-a-guild`). Il doit la quitter avant d'en fonder une autre. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    get_community_guild_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La même charge utile que `/api/guilds/mine`, sans l'enveloppe : ici la guilde existe forcément, puisqu'un non-membre reçoit 404. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuildDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    delete_community_guild_dissolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La guilde et toutes ses adhésions sont parties dans la même transaction. Ses membres sont libres d'en fonder ou d'en rejoindre une autre. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    patch_community_guild_rename: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuildName"];
+            };
+        };
+        responses: {
+            /** @description La guilde renommée. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Guild"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    post_community_invite_code_issue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Le nouveau code. **Il révoque le précédent** : une guilde n'a jamais deux codes vivants, et régénérer est le geste par lequel on coupe un code qui a trop circulé. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuildInviteCode"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    delete_community_invite_code_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plus aucun code ne mène à cette guilde. Révoquer alors qu'il n'y avait rien à révoquer rend le même 204 : l'état visé est atteint. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    post_community_guild_join: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuildJoin"];
+            };
+        };
+        responses: {
+            /** @description Le joueur est entré. La guilde est rendue en entier, pour que l'écran s'affiche sans second appel. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Guild"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Le code ne mène à rien : **inconnu, expiré ou révoqué, indistinctement** (`invite-code-not-usable`). Les distinguer dirait quels codes existent. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Le joueur appartient déjà à une guilde (`player-already-in-a-guild`), ou celle-ci est complète (`guild-is-full`, qui porte sa `capacity`). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    get_community_guild_mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La guilde du joueur et ses membres, ou `{"guild": null}` s'il n'en a pas. **Pas d'erreur dans ce second cas** : ouvrir l'onglet quand on n'a pas de guilde est une situation normale, pas une panne, et c'est l'écran qui invite à en fonder une. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyGuild"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    post_community_guild_leave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /**
+             * @description Le joueur est sorti. Trois issues invisibles pour lui, et toutes dans la même transaction :
+             *     il s'en va simplement ; il était fondateur et la guilde passe **au membre le plus ancien** ;
+             *     il était le dernier et la guilde est dissoute, code d'invitation compris.
+             */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Le joueur n'a pas de guilde à quitter (`guild-not-found`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    delete_community_guild_exclude: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                playerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /**
+             * @description Le membre est sorti. **Il peut revenir avec un code valide** : il n'y a pas de liste
+             *     noire en v1, et le recours du fondateur est de révoquer le code — ce qui referme la
+             *     guilde pour tout le monde.
+             */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description La guilde est invisible à l'appelant (`guild-not-found`), ou le joueur visé n'en est pas membre (`player-is-not-a-member`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Le fondateur a tenté de s'exclure lui-même (`founder-cannot-exclude-himself`). Il doit passer par `POST /api/guilds/mine/leave`, qui sait gérer la succession. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    get_community_player_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Le profil public. **Exactement le bloc servi dans la liste des membres** : mêmes ports, même ressource, donc un seul type à décoder côté client. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Player"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /**
+             * @description Le joueur n'existe pas, **ou n'est ni soi-même ni un co-équipier** (`player-not-found`).
+             *     Les deux cas rendent la même réponse, et **jamais 403** : un 403 confirmerait qu'un
+             *     compte porte cet UUID, et les UUID v7 encodent leur instant de création — l'API
+             *     deviendrait un moyen d'énumérer les comptes ouverts un jour donné.
+             */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     post_identity_login: {
         parameters: {
             query?: never;
