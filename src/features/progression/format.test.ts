@@ -7,6 +7,7 @@ import {
   formatDuration,
   formatElevation,
   formatHeartRate,
+  formatInviteExpiry,
   formatWhen,
 } from './format.ts';
 
@@ -83,5 +84,44 @@ describe('les dates', () => {
 
   it('ne cassent pas sur une date que le serveur n’aurait pas dû envoyer', () => {
     assert.equal(formatWhen('pas une date', new Date()), 'pas une date');
+  });
+});
+
+/**
+ * L'expiration d'un code d'invitation — voir #44. Le contrat le dit : une date, pas un
+ * compte à rebours, l'exemple du ticket est repris tel quel (« valable jusqu'à demain
+ * 18 h ») pour que le test et la spécification ne divergent jamais en silence.
+ */
+describe('l’expiration d’un code d’invitation', () => {
+  it('tait l’heure ronde, et rejoint la minute sinon', () => {
+    const now = new Date(2026, 7, 13, 8, 0);
+
+    assert.equal(formatInviteExpiry(new Date(2026, 7, 13, 18, 0).toISOString(), now), 'valable jusqu’à 18 h');
+    assert.equal(
+      formatInviteExpiry(new Date(2026, 7, 13, 18, 5).toISOString(), now),
+      'valable jusqu’à 18 h 05',
+    );
+  });
+
+  it('dit « demain » le jour suivant, comme le ticket l’écrit', () => {
+    const now = new Date(2026, 7, 13, 8, 0);
+
+    assert.equal(
+      formatInviteExpiry(new Date(2026, 7, 14, 18, 0).toISOString(), now),
+      'valable jusqu’à demain 18 h',
+    );
+  });
+
+  it('passe à la date absolue au-delà de demain : personne ne compte un code à l’heure près huit jours plus tard', () => {
+    const now = new Date(2026, 7, 13, 8, 0);
+
+    assert.equal(
+      formatInviteExpiry(new Date(2026, 7, 21, 18, 0).toISOString(), now),
+      'valable jusqu’au 21 août',
+    );
+  });
+
+  it('ne casse pas sur une date que le serveur n’aurait pas dû envoyer', () => {
+    assert.equal(formatInviteExpiry('pas une date', new Date()), 'pas une date');
   });
 });

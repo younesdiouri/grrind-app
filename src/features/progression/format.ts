@@ -101,6 +101,48 @@ export function formatWhen(startedAt: string, now: Date): string {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 }
 
+/**
+ * L'expiration d'un code d'invitation, en phrase — « valable jusqu'à demain 18 h ».
+ *
+ * Le contrat le dit : `expiresAt` est une date, pas un compte à rebours, des secondes se
+ * périmeraient dans la réponse elle-même. Elle rejoint ce module plutôt que
+ * `community/format.ts` : `formatCalendarDate`, là-bas, est délibérément *sans* heure — une
+ * fondation de guilde ne se compare à rien, dixit son commentaire — alors qu'un code se joue
+ * à l'heure près, comme une séance. C'est `formatWhen` qui porte le même calcul de jour civil
+ * relatif ; celui-ci le tourne vers l'avenir au lieu du passé, et arrête le relatif après
+ * demain : au-delà, personne ne partage un code en comptant qu'il tienne à l'heure près huit
+ * jours plus tard, la date seule suffit.
+ *
+ * `now` est un paramètre, comme `formatWhen` : un test qui dépend de l'heure de son
+ * exécution ne prouve rien.
+ */
+export function formatInviteExpiry(expiresAt: string, now: Date): string {
+  const date = new Date(expiresAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return expiresAt;
+  }
+
+  const days = Math.round((startOfDay(date).getTime() - startOfDay(now).getTime()) / 86_400_000);
+  const time = formatTimeOfDay(date);
+
+  if (days === 0) {
+    return `valable jusqu’à ${time}`;
+  }
+
+  if (days === 1) {
+    return `valable jusqu’à demain ${time}`;
+  }
+
+  return `valable jusqu’au ${date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`;
+}
+
+/** « 18 h », ou « 18 h 05 » quand l'heure ronde ne suffit pas à la désigner. */
+function formatTimeOfDay(date: Date): string {
+  const minutes = date.getMinutes();
+  return minutes === 0 ? `${date.getHours()} h` : `${date.getHours()} h ${String(minutes).padStart(2, '0')}`;
+}
+
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
