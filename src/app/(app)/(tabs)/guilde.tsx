@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -17,7 +18,7 @@ import { GuildMilestone } from '@/features/community/GuildMilestone';
 import { foundGuild, joinGuild, type Guild } from '@/features/community/guildActions';
 import { isCompleteInviteCode, sanitizeInviteCode } from '@/features/community/inviteCode';
 import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefusal';
-import { useMyGuild } from '@/features/community/useMyGuild';
+import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
 
 /**
  * L'onglet Guilde.
@@ -36,13 +37,24 @@ import { useMyGuild } from '@/features/community/useMyGuild';
  */
 export default function GuildeScreen() {
   const myGuild = useMyGuild();
+  const queryClient = useQueryClient();
 
   // Le résultat d'une fondation ou d'un ralliement réussis. La réponse du serveur est une
-  // `Guild` complète : la rejouer par un second `GET /api/guilds/mine` serait une requête
-  // pour rien, et gagnerait la course contre la mise en scène qu'elle est censée précéder.
-  // `/api/guilds/mine` reprend la main tout seul à la prochaine ouverture de l'onglet.
+  // `Guild` complète : la rejouer par un second `GET /api/guilds/mine` **avant** d'afficher le
+  // jalon serait une requête pour rien, et gagnerait la course contre la mise en scène qu'elle
+  // est censée précéder. `justResolved` porte donc ce résultat immédiat.
   const [justResolved, setJustResolved] = useState<Guild | null>(null);
   const [mode, setMode] = useState<'empty' | 'found' | 'join'>('empty');
+
+  // Le cache de `guilds/mine`, lui, reste sur `null` tant qu'on ne le corrige pas : un
+  // démontage de cet écran (l'app quittée puis rouverte, par exemple) perdrait `justResolved`
+  // et reservirait la guilde absente d'avant. On invalide donc en tâche de fond après un
+  // succès — pas d'optimisme, pas de `GuildDetail` inventé avec une liste de membres vide —
+  // et on laisse la vraie réponse converger pendant que `justResolved` tient l'écran.
+  const resolve = (guild: Guild) => {
+    setJustResolved(guild);
+    void queryClient.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
+  };
 
   const guild = justResolved ?? myGuild.data ?? null;
 
@@ -81,7 +93,7 @@ export default function GuildeScreen() {
   if (mode === 'found') {
     return (
       <FoundForm
-        onFounded={setJustResolved}
+        onFounded={resolve}
         onCancel={() => setMode('empty')}
         onAlreadyInAGuild={goToMyGuild}
       />
@@ -91,7 +103,7 @@ export default function GuildeScreen() {
   if (mode === 'join') {
     return (
       <JoinForm
-        onJoined={setJustResolved}
+        onJoined={resolve}
         onCancel={() => setMode('empty')}
         onAlreadyInAGuild={goToMyGuild}
       />
@@ -242,7 +254,14 @@ function JoinForm({
           // Le serveur normalise casse et espaces : un collage sale doit passer. Ce champ ne
           // filtre donc pas sur l'alphabet du serveur, il nettoie seulement ce qui ne se voit
           // pas — espaces, casse — sans jamais refuser un caractère.
-          onChangeText={(text) => setCode(sanitizeInviteCode(text))}
+          //
+          // `refused` s'efface à la première frappe : sans ça, un joueur qui corrige son code
+          // après un refus continuerait de lire « ce code n'est plus utilisable » sur le
+          // nouveau code, pas encore soumis.
+          onChangeText={(text) => {
+            setCode(sanitizeInviteCode(text));
+            setRefused(null);
+          }}
           autoCapitalize="none"
           autoCorrect={false}
           autoComplete="off"
