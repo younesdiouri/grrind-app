@@ -4,8 +4,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { components } from '@/api/schema';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
+import { CapacityGauge } from '@/components/CapacityGauge';
+import { DangerRow } from '@/components/DangerRow';
 import { DisciplineChip } from '@/components/DisciplineChip';
 import { Field } from '@/components/Field';
+import { GuildMemberRow } from '@/components/GuildMemberRow';
+import { InviteCodeBlock } from '@/components/InviteCodeBlock';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { XpBar } from '@/components/XpBar';
@@ -48,6 +54,24 @@ export type Preview = {
 };
 
 const DISCIPLINES = Object.keys(disciplineLabel) as components['schemas']['Discipline'][];
+
+/** Un membre de guilde, avec des trous à combler au cas par cas — voir les spécimens. */
+function guildMember(
+  overrides: Partial<components['schemas']['GuildMember']>,
+): components['schemas']['GuildMember'] {
+  return {
+    id: '00000000-0000-0000-0000-000000000000',
+    displayName: 'Sam Petit',
+    registeredAt: '2025-11-02T00:00:00Z',
+    level: 7,
+    xpIntoLevel: 340,
+    xpToNextLevel: 900,
+    title: null,
+    role: 'MEMBER',
+    joinedAt: '2025-11-03T08:00:00Z',
+    ...overrides,
+  };
+}
 
 /**
  * La largeur d'une preview, en points : celle d'un iPhone.
@@ -329,6 +353,125 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="Il est porté">
           <TitleBadge name="Lève-tôt" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'avatar-joueur',
+    name: 'Avatar de joueur',
+    group: 'Composants',
+    element: (
+      // Deux Sam sont un cas normal : la pastille ne distingue rien, c'est l'id qui le fait.
+      <Specimen label="Deux membres homonymes">
+        <View style={styles.chips}>
+          <PlayerAvatar name="Sam Petit" />
+          <PlayerAvatar name="Sam Petit" />
+          <PlayerAvatar name="Zed" />
+        </View>
+      </Specimen>
+    ),
+  },
+  {
+    slug: 'badge-role',
+    name: 'Badge de rôle',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Fondateur">
+          <RoleBadge role="FOUNDER" />
+        </Specimen>
+        {/* Un membre ordinaire ne porte aucun badge : rien à montrer n'est pas une carte
+            vide, c'est le composant qui rend null — voir sa source. */}
+        <Specimen label="Membre — rien à montrer">
+          <RoleBadge role="MEMBER" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'jauge-capacite',
+    name: 'Jauge de capacité',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="En cours de remplissage">
+          <CapacityGauge memberCount={12} capacity={30} />
+        </Specimen>
+        {/* Une autre guilde, un autre équilibrage : rien ici ne suppose 30. */}
+        <Specimen label="Une capacité différente, complète">
+          <CapacityGauge memberCount={8} capacity={8} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'code-invitation',
+    name: "Code d'invitation",
+    group: 'Composants',
+    element: (
+      <Specimen label="Huit caractères, une date, jamais un compte à rebours">
+        <InviteCodeBlock code="K7QM3XPB" expiresAt="Valable jusqu’à demain 18 h" />
+      </Specimen>
+    ),
+  },
+  {
+    slug: 'ligne-danger',
+    name: 'Ligne de danger',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Quitter">
+          <DangerRow label="Quitter la guilde" onPress={() => {}} />
+        </Specimen>
+        <Specimen label="Occupé">
+          <DangerRow label="Dissoudre la guilde" onPress={() => {}} busy />
+        </Specimen>
+        <Specimen label="Inerte">
+          <DangerRow label="Exclure Sam Petit" onPress={() => {}} disabled />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'ligne-membre-guilde',
+    name: 'Ligne de membre',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Fondateur, titre porté">
+          <GuildMemberRow
+            member={guildMember({
+              displayName: 'Léa Durand',
+              role: 'FOUNDER',
+              level: 12,
+              xpIntoLevel: 640,
+              xpToNextLevel: 1200,
+              title: {
+                id: 'first_steps',
+                name: 'Premiers pas',
+                hint: 'Termine ta première séance',
+                unlocked: true,
+                unlockedAt: '2025-10-01T00:00:00Z',
+                progress: { current: 1, target: 1, unit: 'SESSIONS' },
+              },
+            })}
+          />
+        </Specimen>
+        {/* `title === null` : la ligne du titre disparaît, la mise en page ne bouge pas. */}
+        <Specimen label="Membre, sans titre">
+          <GuildMemberRow member={guildMember({ displayName: 'Zed', title: null })} />
+        </Specimen>
+        {/* `xpToNextLevel === null` : niveau maximum, la barre reste pleine — jamais à zéro. */}
+        <Specimen label="Niveau maximum">
+          <GuildMemberRow
+            member={guildMember({
+              displayName: 'Jean De La Fontaine',
+              level: 60,
+              xpIntoLevel: 48000,
+              xpToNextLevel: null,
+            })}
+          />
         </Specimen>
       </>
     ),
