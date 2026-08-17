@@ -1,9 +1,13 @@
+import { Link } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,14 +15,22 @@ import {
 } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { CapacityGauge } from '@/components/CapacityGauge';
 import { Field } from '@/components/Field';
+import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { color, radius, space, type } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
+import { formatCalendarDate } from '@/features/community/format';
 import { GuildMilestone } from '@/features/community/GuildMilestone';
-import { foundGuild, joinGuild, type Guild } from '@/features/community/guildActions';
+import { foundGuild, joinGuild, refreshGuild, type Guild } from '@/features/community/guildActions';
+import { isGuildGone } from '@/features/community/guildRefresh';
 import { isCompleteInviteCode, sanitizeInviteCode } from '@/features/community/inviteCode';
 import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefusal';
-import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
+import {
+  MY_GUILD_QUERY_KEY,
+  useMyGuild,
+  type GuildDetail,
+} from '@/features/community/useMyGuild';
 
 /**
  * L'onglet Guilde.
@@ -30,10 +42,12 @@ import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild'
  * chemins en sortent, d'égale importance — fonder, rejoindre — parce qu'aucun des deux n'est
  * le parcours principal : on fonde quand on est le premier, on rejoint quand on est invité.
  *
- * ————— Ce qui n'est pas ici ——————————————————————————————————————————————————————————————
+ * ————— La guilde, une fois qu'on en a une ——————————————————————————————————————————————
  *
- * `guild !== null` n'ouvre qu'un **jalon minimal** (`GuildMilestone`) : l'écran des membres,
- * ses six briques (#40) et son ordre fondateur-d'abord (#43), viennent après ce ticket.
+ * `GuildMilestone` ne tient plus l'écran qu'un instant : celui, très court, entre une
+ * fondation ou un ralliement (`justResolved`, une `Guild` sans `members`) et la convergence
+ * du cache de `/api/guilds/mine` vers le `GuildDetail` complet. Dès qu'il arrive, `Roster`
+ * prend le relais avec la liste ordonnée par le serveur (#43).
  */
 export default function GuildeScreen() {
   const myGuild = useMyGuild();
@@ -56,12 +70,19 @@ export default function GuildeScreen() {
     void queryClient.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
   };
 
-  const guild = justResolved ?? myGuild.data ?? null;
+  const guildDetail = myGuild.data ?? null;
 
-  if (guild !== null) {
+  // Le détail complet gagne dès qu'il est là : c'est lui qui porte `members`, que
+  // `justResolved` ne peut pas avoir. Tant qu'il n'est pas encore arrivé, `justResolved` tient
+  // seul l'écran, avec le jalon minimal.
+  if (guildDetail !== null) {
+    return <Roster guild={guildDetail} />;
+  }
+
+  if (justResolved !== null) {
     return (
       <ScrollView contentContainerStyle={styles.screen}>
-        <GuildMilestone guild={guild} />
+        <GuildMilestone guild={justResolved} />
       </ScrollView>
     );
   }
@@ -111,6 +132,79 @@ export default function GuildeScreen() {
   }
 
   return <EmptyState onFound={() => setMode('found')} onJoin={() => setMode('join')} />;
+}
+
+/**
+ * La guilde et ses membres — l'écran du ticket #43.
+ *
+ * **L'ordre de `guild.members` n'est jamais retouché.** Le serveur l'a déjà décidé — le
+ * fondateur d'abord, puis par date d'entrée croissante — et rien ici ne trie, ne filtre, ni
+ * ne propose de le faire : une liste qui se réordonnerait seule entre deux ouvertures serait
+ * un bug qu'on ne saurait pas reproduire.
+ *
+ * Le tirer-pour-rafraîchir n'appelle **pas** `/api/guilds/mine` : cette route ne peut que
+ * dire « tu n'as plus de guilde », jamais laquelle a disparu. `refreshGuild` interroge
+ * `GET /api/guilds/{id}`, scopée à celle-ci, ce qui rend le vrai `404 guild-not-found` quand
+ * le fondateur vient de la dissoudre — et c'est ce cas-là qui ramène proprement à l'écran
+ * d'invitation, en vidant le cache de `/mine` plutôt que d'attendre sa reconvergence.
+ */
+function Roster({ guild }: { guild: GuildDetail }) {
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshFailure, setRefreshFailure] = useState<Failure | null>(null);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setRefreshFailure(null);
+
+    const outcome = await refreshGuild(guild.id);
+
+    if (outcome.ok) {
+      queryClient.setQueryData(MY_GUILD_QUERY_KEY, outcome.guild);
+    } else if (isGuildGone(outcome.failure)) {
+      queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
+    } else {
+      setRefreshFailure(outcome.failure);
+    }
+
+    setRefreshing(false);
+  };
+
+  return (
+    <FlatList
+      data={guild.members}
+      // `id`, jamais `displayName` : deux membres homonymes sont un cas normal, et une clé
+      // de liste qui collisionnerait romprait le rendu, pas seulement l'affichage.
+      keyExtractor={(member) => member.id}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      contentContainerStyle={styles.rosterContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => void onRefresh()}
+          tintColor={color.accent}
+        />
+      }
+      ListHeaderComponent={
+        <View style={styles.rosterHeader}>
+          <Text style={styles.title}>{guild.name}</Text>
+          <CapacityGauge memberCount={guild.memberCount} capacity={guild.capacity} />
+          <Text style={styles.body}>Fondée le {formatCalendarDate(guild.createdAt)}.</Text>
+          {refreshFailure === null ? null : (
+            <Text style={styles.failure}>{messageFor(refreshFailure)}</Text>
+          )}
+        </View>
+      }
+      renderItem={({ item }) => (
+        <Link href={{ pathname: '/joueur/[id]', params: { id: item.id } }} asChild>
+          {/* `asChild` clone l'enfant avec `onPress` : voir index.tsx pour la même règle. */}
+          <Pressable>
+            <GuildMemberRow member={item} />
+          </Pressable>
+        </Link>
+      )}
+    />
+  );
 }
 
 /**
@@ -311,4 +405,7 @@ const styles = StyleSheet.create({
     padding: space.md,
     gap: space.sm,
   },
+  rosterContent: { padding: space.lg },
+  rosterHeader: { gap: space.sm, marginBottom: space.md },
+  separator: { height: space.md },
 });
