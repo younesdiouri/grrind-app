@@ -45,6 +45,29 @@ describe('l’adresse de l’API', () => {
     const url = resolveApiBaseUrl({
       configured: undefined,
       hostUri: '192.168.68.109:8081',
+      scriptURL: undefined,
+      isDev: true,
+    });
+
+    assert.equal(url, `http://192.168.68.109:${API_PORT}`);
+  });
+
+  it('retombe sur scriptURL quand hostUri est absent — le cas d’un dev client, qui ne passe jamais par le manifeste', () => {
+    const url = resolveApiBaseUrl({
+      configured: undefined,
+      hostUri: undefined,
+      scriptURL: 'http://192.168.68.109:8081/index.bundle?platform=ios&dev=true',
+      isDev: true,
+    });
+
+    assert.equal(url, `http://192.168.68.109:${API_PORT}`);
+  });
+
+  it('préfère hostUri à scriptURL quand les deux sont là', () => {
+    const url = resolveApiBaseUrl({
+      configured: undefined,
+      hostUri: '192.168.68.109:8081',
+      scriptURL: 'http://10.0.0.1:8081/index.bundle',
       isDev: true,
     });
 
@@ -55,6 +78,7 @@ describe('l’adresse de l’API', () => {
     const url = resolveApiBaseUrl({
       configured: 'https://api.grrind.app',
       hostUri: '192.168.68.109:8081',
+      scriptURL: undefined,
       isDev: true,
     });
 
@@ -65,6 +89,7 @@ describe('l’adresse de l’API', () => {
     const url = resolveApiBaseUrl({
       configured: 'https://api.grrind.app/',
       hostUri: undefined,
+      scriptURL: undefined,
       isDev: false,
     });
 
@@ -72,7 +97,12 @@ describe('l’adresse de l’API', () => {
   });
 
   it('ignore une variable vide ou blanche, qu’un .env commenté à moitié laisse traîner', () => {
-    const url = resolveApiBaseUrl({ configured: '   ', hostUri: '192.168.68.109:8081', isDev: true });
+    const url = resolveApiBaseUrl({
+      configured: '   ',
+      hostUri: '192.168.68.109:8081',
+      scriptURL: undefined,
+      isDev: true,
+    });
 
     assert.equal(url, `http://192.168.68.109:${API_PORT}`);
   });
@@ -81,6 +111,7 @@ describe('l’adresse de l’API', () => {
     const url = resolveApiBaseUrl({
       configured: undefined,
       hostUri: '192.168.68.109:8081',
+      scriptURL: undefined,
       isDev: false,
     });
 
@@ -88,7 +119,12 @@ describe('l’adresse de l’API', () => {
   });
 
   it('retombe sur localhost sans serveur de développement — le cas du simulateur', () => {
-    const url = resolveApiBaseUrl({ configured: undefined, hostUri: undefined, isDev: true });
+    const url = resolveApiBaseUrl({
+      configured: undefined,
+      hostUri: undefined,
+      scriptURL: undefined,
+      isDev: true,
+    });
 
     assert.equal(url, `http://localhost:${API_PORT}`);
   });
