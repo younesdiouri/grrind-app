@@ -21,6 +21,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: color.accent,
         tabBarInactiveTintColor: color.textMuted,
         tabBarStyle: styles.bar,
+        sceneStyle: styles.scene,
       }}
     >
       <Tabs.Screen
@@ -65,4 +66,5 @@ function TabIcon({ name, color: tint }: { name: SFSymbol; color: ColorValue }) {
 
 const styles = StyleSheet.create({
   bar: { backgroundColor: color.surface, borderTopColor: color.border },
+  scene: { backgroundColor: color.background },
 });
