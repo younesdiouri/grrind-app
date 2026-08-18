@@ -1,8 +1,9 @@
 import { Link, router } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -16,18 +17,31 @@ import {
 
 import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
+import { DangerRow } from '@/components/DangerRow';
 import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { color, radius, space, type } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
 import { formatCalendarDate } from '@/features/community/format';
 import { GuildMilestone } from '@/features/community/GuildMilestone';
-import { foundGuild, joinGuild, refreshGuild, type Guild } from '@/features/community/guildActions';
+import {
+  dissolveGuild,
+  excludeMember,
+  foundGuild,
+  joinGuild,
+  leaveGuild,
+  refreshGuild,
+  renameGuild,
+  type Guild,
+} from '@/features/community/guildActions';
 import { isGuildGone } from '@/features/community/guildRefresh';
 import { guildScreenStateFrom, type GuildDetail } from '@/features/community/guildScreenState';
 import { isCompleteInviteCode, sanitizeInviteCode } from '@/features/community/inviteCode';
 import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefusal';
+import { leaveAnnouncementFor } from '@/features/community/leaveAnnouncement';
 import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
+
+type GuildMemberEntry = GuildDetail['members'][number];
 
 /**
  * L'onglet Guilde.
@@ -69,16 +83,27 @@ export default function GuildeScreen() {
   const resolve = (guild: Guild) => {
     setJustResolved(guild);
     void queryClient.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
+    // Un formulaire qu'on vient de faire aboutir n'a plus de raison de rester armé : sans ce
+    // reset, `mode` resterait sur `'found'` ou `'join'` pendant tout le séjour dans la guilde,
+    // prêt à resurgir si le joueur la quitte ensuite (voir `forgetGuild`, juste en dessous).
+    setMode('empty');
   };
 
-  // La disparition d'une guilde doit effacer **les deux** sources qui la font exister à
-  // l'écran, dans le même geste : le cache de `/mine`, et `justResolved`, qui sinon lui
-  // survivrait et ramènerait `GuildMilestone` sur ce qui n'existe plus. C'est le correctif du
-  // bug relevé en revue de #43 — `Roster` appelle ceci quand son rafraîchissement rencontre
-  // `guild-not-found`.
+  // La disparition d'une guilde doit effacer **trois** sources qui la font exister à l'écran,
+  // dans le même geste : le cache de `/mine`, `justResolved`, et — depuis #45 — `mode`. C'est
+  // le correctif du bug relevé en revue de #43 (les deux premières) puis de #45 (la
+  // troisième) : `Roster` appelle ceci quand son rafraîchissement rencontre `guild-not-found`,
+  // et c'est aussi ce que `leave` et `dissolve` déclenchent après un `204`.
+  //
+  // `mode` ne se relit que dans l'état `gate` — tant qu'une guilde existe, ses branches ne
+  // sont jamais atteintes, donc jamais retestées. Sans ce reset, un joueur qui avait fondé ou
+  // rejoint par un formulaire, puis quitté ou dissous sa guilde, retombait sur `gate` avec
+  // `mode` encore sur `'found'`/`'join'` : `GuildeScreen` rendait ce formulaire au lieu de
+  // l'état vide que le ticket #45 demande explicitement.
   const forgetGuild = () => {
     queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
     setJustResolved(null);
+    setMode('empty');
   };
 
   const state = guildScreenStateFrom({
@@ -148,6 +173,43 @@ export default function GuildeScreen() {
 }
 
 /**
+ * Recale le cache sur ce que le serveur rend *maintenant*, jamais sur une épissure locale.
+ *
+ * Partagée par le tirer-pour-rafraîchir et par l'exclusion (#45, piège relevé par l'architecte :
+ * retirer un membre à la main désynchronise `memberCount`, donc `CapacityGauge`). `guild-not-
+ * found` — la guilde a disparu pendant l'aller-retour — passe par `onGone`, qui efface les deux
+ * sources où elle peut survivre à l'écran (voir `forgetGuild` dans `GuildeScreen`) ; tout autre
+ * refus revient tel quel, pour que l'appelant l'affiche.
+ */
+async function syncGuild(
+  guildId: string,
+  queryClient: QueryClient,
+  onGone: () => void,
+): Promise<Failure | null> {
+  const outcome = await refreshGuild(guildId);
+
+  if (outcome.ok) {
+    queryClient.setQueryData(MY_GUILD_QUERY_KEY, outcome.guild);
+    return null;
+  }
+
+  if (isGuildGone(outcome.failure)) {
+    onGone();
+    return null;
+  }
+
+  return outcome.failure;
+}
+
+/** Le refus précis d'une exclusion sur un membre déjà parti : un recalage, pas une excuse. */
+function isPlayerNotAMember(failure: Failure): boolean {
+  return (
+    failure.kind === 'problem' &&
+    failure.problem.type === 'https://grrind.app/problems/player-is-not-a-member'
+  );
+}
+
+/**
  * La guilde et ses membres — l'écran du ticket #43.
  *
  * **L'ordre de `guild.members` n'est jamais retouché.** Le serveur l'a déjà décidé — le
@@ -161,32 +223,115 @@ export default function GuildeScreen() {
  * le fondateur vient de la dissoudre. Sur ce refus précis, `onGone` (porté par le parent)
  * efface la guilde des deux endroits où elle peut vivre à l'écran — pas seulement le cache
  * de `/mine` : `Roster` lui-même ne connaît pas `justResolved`, qui vit dans `GuildeScreen`.
+ *
+ * ————— #45 : quitter, exclure, gérer ——————————————————————————————————————————————————
+ *
+ * Trois gestes de plus, aucun optimiste : « Quitter » est un `DangerRow` seul dans sa propre
+ * section du pied de liste, offert à **tout le monde** (`role` n'en change que le message,
+ * jamais la visibilité). « Exclure » vit sur la ligne d'un membre, mais **jamais dans le
+ * `Pressable` du `Link`** qui pointe vers son profil — un appui unique ne doit jamais exclure
+ * *et* naviguer. « Gérer la guilde » (renommer, dissoudre) bascule cet écran sur `ManageGuild`,
+ * dans le même composant : dissoudre a besoin de `onGone`, exactement comme quitter, et
+ * `onGone` n'existe qu'ici — le pousser sur une route séparée l'aurait rendu inatteignable
+ * sans réinventer `forgetGuild`.
  */
 function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailure, setRefreshFailure] = useState<Failure | null>(null);
+  const [managing, setManaging] = useState(false);
+
+  const [excludingId, setExcludingId] = useState<string | null>(null);
+  const [excludeFailure, setExcludeFailure] = useState<Failure | null>(null);
+
+  const [leaving, setLeaving] = useState(false);
+  const [leaveFailure, setLeaveFailure] = useState<Failure | null>(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
     // Effacé à chaque tentative, succès compris : un rafraîchissement raté suivi d'un
     // réussi ne doit pas laisser un message d'erreur affiché sous une liste à jour.
     setRefreshFailure(null);
-
-    const outcome = await refreshGuild(guild.id);
-
-    if (outcome.ok) {
-      queryClient.setQueryData(MY_GUILD_QUERY_KEY, outcome.guild);
-    } else if (isGuildGone(outcome.failure)) {
-      // La disparition ne s'arrête pas au cache : `onGone` efface aussi `justResolved`, côté
-      // parent — voir `forgetGuild` dans `GuildeScreen`.
-      onGone();
-    } else {
-      setRefreshFailure(outcome.failure);
-    }
-
+    setRefreshFailure(await syncGuild(guild.id, queryClient, onGone));
     setRefreshing(false);
   };
+
+  const performExclude = async (playerId: string) => {
+    setExcludingId(playerId);
+    setExcludeFailure(null);
+
+    const outcome = await excludeMember(guild.id, playerId);
+
+    if (!outcome.ok) {
+      // Le `404` de cette route couvre **deux** refus distincts, le contrat le dit : le joueur
+      // visé n'est déjà plus membre, ou la guilde entière a disparu (le fondateur l'a dissoute
+      // depuis un autre appareil pendant cet appel). Le second doit passer par `onGone`, comme
+      // partout ailleurs où ce refus peut survenir — jamais afficher un message d'erreur sous
+      // une liste de membres d'une guilde qui n'existe plus.
+      if (isGuildGone(outcome.failure)) {
+        onGone();
+        setExcludingId(null);
+        return;
+      }
+
+      if (!isPlayerNotAMember(outcome.failure)) {
+        setExcludeFailure(outcome.failure);
+        setExcludingId(null);
+        return;
+      }
+    }
+
+    // Succès, ou `player-is-not-a-member` — il était déjà parti : dans les deux cas la liste
+    // se recale sur ce que le serveur rend maintenant, jamais sur une épissure locale.
+    setExcludeFailure(await syncGuild(guild.id, queryClient, onGone));
+    setExcludingId(null);
+  };
+
+  const confirmExclude = (member: GuildMemberEntry) => {
+    Alert.alert(
+      `Exclure ${member.displayName} ?`,
+      "Il pourra revenir avec un code valide : il n'y a pas de liste noire. Pour fermer la guilde à tout le monde, révoque plutôt le code d'invitation.",
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Exclure', style: 'destructive', onPress: () => void performExclude(member.id) },
+      ],
+    );
+  };
+
+  const performLeave = async () => {
+    setLeaving(true);
+    setLeaveFailure(null);
+
+    const outcome = await leaveGuild();
+
+    // Les trois issues du serveur (départ simple, succession, dissolution) retirent toutes
+    // la guilde de ce que *ce* joueur voit ; `guild-not-found` — elle a disparu pendant qu'il
+    // regardait — ramène au même endroit, sans drame. `onGone` couvre les deux cas.
+    if (outcome.ok || isGuildGone(outcome.failure)) {
+      onGone();
+      return;
+    }
+
+    setLeaveFailure(outcome.failure);
+    setLeaving(false);
+  };
+
+  const confirmLeave = () => {
+    const announcement = leaveAnnouncementFor({
+      role: guild.role,
+      memberCount: guild.memberCount,
+      guildName: guild.name,
+    });
+
+    Alert.alert('Quitter la guilde', announcement.message, [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Quitter', style: 'destructive', onPress: () => void performLeave() },
+    ]);
+  };
+
+  if (managing) {
+    return <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />;
+  }
 
   return (
     <FlatList
@@ -214,23 +359,183 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
           {/* `role` décide quoi dessiner, jamais ce qui est permis (#44) : un appel direct de
               l'écran par un membre recevrait de toute façon `forbidden` du serveur. */}
           {guild.role === 'FOUNDER' ? (
-            <Button
-              label="Code d'invitation"
-              onPress={() => router.push({ pathname: '/invite-code', params: { guildId: guild.id } })}
-              variant="quiet"
-            />
+            <>
+              <Button
+                label="Code d'invitation"
+                onPress={() => router.push({ pathname: '/invite-code', params: { guildId: guild.id } })}
+                variant="quiet"
+              />
+              <Button label="Gérer la guilde" onPress={() => setManaging(true)} variant="quiet" />
+            </>
           ) : null}
         </View>
       }
       renderItem={({ item }) => (
-        <Link href={{ pathname: '/joueur/[id]', params: { id: item.id } }} asChild>
-          {/* `asChild` clone l'enfant avec `onPress` : voir index.tsx pour la même règle. */}
-          <Pressable>
-            <GuildMemberRow member={item} />
-          </Pressable>
-        </Link>
+        <View style={styles.memberRow}>
+          <Link href={{ pathname: '/joueur/[id]', params: { id: item.id } }} asChild>
+            {/* `asChild` clone l'enfant avec `onPress` : voir index.tsx pour la même règle. */}
+            <Pressable>
+              <GuildMemberRow member={item} />
+            </Pressable>
+          </Link>
+
+          {/* Le fondateur ne se voit jamais ce geste sur sa propre ligne — un seul membre
+              porte `role === 'FOUNDER'` dans cette liste, c'est lui. Le `409
+              founder-cannot-exclude-himself` reste une garde serveur, l'écran ne l'expose
+              simplement pas (#45). Hors de son propre `Pressable` du `Link` ci-dessus : un
+              appui n'exclut jamais *et* ne navigue jamais dans le même geste. */}
+          {guild.role === 'FOUNDER' && item.role !== 'FOUNDER' ? (
+            <DangerRow
+              label="Exclure"
+              onPress={() => confirmExclude(item)}
+              busy={excludingId === item.id}
+              disabled={excludingId !== null && excludingId !== item.id}
+            />
+          ) : null}
+        </View>
       )}
+      ListFooterComponent={
+        <View style={styles.leaveSection}>
+          {excludeFailure === null ? null : (
+            <Text style={styles.failure}>{messageFor(excludeFailure)}</Text>
+          )}
+          {leaveFailure === null ? null : (
+            <Text style={styles.failure}>{messageFor(leaveFailure)}</Text>
+          )}
+          {/* Seule dans sa section, jamais mêlée aux actions ordinaires du pied de liste — la
+              règle de `DangerRow`. Offerte à tout le monde : `role` ne change que le message
+              annoncé par `leaveAnnouncementFor`, jamais la visibilité du geste. */}
+          <DangerRow
+            label="Quitter la guilde"
+            onPress={confirmLeave}
+            busy={leaving}
+            disabled={excludingId !== null}
+          />
+        </View>
+      }
     />
+  );
+}
+
+/**
+ * « Gérer la guilde » — fondateur seul, poussé depuis `Roster` sans quitter ce composant : le
+ * geste de dissolution a besoin d'`onDissolved` (== `forgetGuild`, porté par `GuildeScreen`),
+ * qu'une route séparée n'aurait pas pu atteindre sans dupliquer la double purge du cache.
+ */
+function ManageGuild({
+  guild,
+  onClose,
+  onDissolved,
+}: {
+  guild: GuildDetail;
+  onClose: () => void;
+  onDissolved: () => void;
+}) {
+  const queryClient = useQueryClient();
+
+  const [name, setName] = useState(guild.name);
+  const [renaming, setRenaming] = useState(false);
+  const [renameFailure, setRenameFailure] = useState<Failure | null>(null);
+
+  const [dissolving, setDissolving] = useState(false);
+  const [dissolveFailure, setDissolveFailure] = useState<Failure | null>(null);
+
+  const violations = renameFailure === null ? {} : violationsByField(renameFailure);
+  const trimmedName = name.trim();
+
+  const submitRename = async () => {
+    setRenaming(true);
+    setRenameFailure(null);
+
+    const outcome = await renameGuild(guild.id, trimmedName);
+
+    if (outcome.ok) {
+      // `PATCH /api/guilds/{id}` rend une `Guild`, **pas** un `GuildDetail` : écrire cette
+      // réponse telle quelle dans le cache effacerait `members`. On fusionne donc le nom
+      // dans le détail déjà en cache, sans toucher au reste (#45, piège relevé par l'archi).
+      queryClient.setQueryData<GuildDetail | null>(MY_GUILD_QUERY_KEY, (previous) =>
+        previous === null || previous === undefined
+          ? (previous ?? null)
+          : { ...previous, name: outcome.guild.name },
+      );
+      onClose();
+      return;
+    }
+
+    setRenameFailure(outcome.failure);
+    setRenaming(false);
+  };
+
+  const performDissolve = async () => {
+    setDissolving(true);
+    setDissolveFailure(null);
+
+    const outcome = await dissolveGuild(guild.id);
+
+    if (outcome.ok) {
+      onDissolved();
+      return;
+    }
+
+    setDissolveFailure(outcome.failure);
+    setDissolving(false);
+  };
+
+  const confirmDissolve = () => {
+    Alert.alert(
+      'Dissoudre la guilde ?',
+      "Irréversible : la guilde et toutes les adhésions disparaissent dans le même geste. Pour partir sans la casser, quitte-la plutôt depuis la liste des membres — la guilde continue sans toi.",
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Dissoudre', style: 'destructive', onPress: () => void performDissolve() },
+      ],
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>Gérer la guilde</Text>
+
+        <Field
+          label="Nom de la guilde"
+          value={name}
+          onChangeText={setName}
+          maxLength={GUILD_NAME_MAX_LENGTH}
+          autoCapitalize="words"
+          returnKeyType="done"
+          editable={!renaming}
+          error={violations.name}
+        />
+        <Text style={styles.counter}>
+          {name.length} / {GUILD_NAME_MAX_LENGTH}
+        </Text>
+        {renameFailure === null ? null : (
+          <Text style={styles.failure}>{messageFor(renameFailure)}</Text>
+        )}
+        <Button
+          label="Renommer"
+          onPress={() => void submitRename()}
+          busy={renaming}
+          disabled={trimmedName.length === 0 || trimmedName === guild.name}
+        />
+
+        {dissolveFailure === null ? null : (
+          <Text style={styles.failure}>{messageFor(dissolveFailure)}</Text>
+        )}
+        <DangerRow
+          label="Dissoudre la guilde"
+          onPress={confirmDissolve}
+          busy={dissolving}
+          disabled={renaming}
+        />
+
+        <Button label="Retour" onPress={onClose} variant="quiet" disabled={renaming || dissolving} />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -435,4 +740,6 @@ const styles = StyleSheet.create({
   rosterContent: { padding: space.lg },
   rosterHeader: { gap: space.sm, marginBottom: space.md },
   separator: { height: space.md },
+  memberRow: { gap: space.xs },
+  leaveSection: { gap: space.sm, marginTop: space.lg },
 });
