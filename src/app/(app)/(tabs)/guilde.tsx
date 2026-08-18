@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
@@ -211,6 +211,15 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
           {refreshFailure === null ? null : (
             <Text style={styles.failure}>{messageFor(refreshFailure)}</Text>
           )}
+          {/* `role` décide quoi dessiner, jamais ce qui est permis (#44) : un appel direct de
+              l'écran par un membre recevrait de toute façon `forbidden` du serveur. */}
+          {guild.role === 'FOUNDER' ? (
+            <Button
+              label="Code d'invitation"
+              onPress={() => router.push({ pathname: '/invite-code', params: { guildId: guild.id } })}
+              variant="quiet"
+            />
+          ) : null}
         </View>
       }
       renderItem={({ item }) => (
