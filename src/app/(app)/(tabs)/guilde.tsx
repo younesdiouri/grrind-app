@@ -83,16 +83,27 @@ export default function GuildeScreen() {
   const resolve = (guild: Guild) => {
     setJustResolved(guild);
     void queryClient.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
+    // Un formulaire qu'on vient de faire aboutir n'a plus de raison de rester armé : sans ce
+    // reset, `mode` resterait sur `'found'` ou `'join'` pendant tout le séjour dans la guilde,
+    // prêt à resurgir si le joueur la quitte ensuite (voir `forgetGuild`, juste en dessous).
+    setMode('empty');
   };
 
-  // La disparition d'une guilde doit effacer **les deux** sources qui la font exister à
-  // l'écran, dans le même geste : le cache de `/mine`, et `justResolved`, qui sinon lui
-  // survivrait et ramènerait `GuildMilestone` sur ce qui n'existe plus. C'est le correctif du
-  // bug relevé en revue de #43 — `Roster` appelle ceci quand son rafraîchissement rencontre
-  // `guild-not-found`.
+  // La disparition d'une guilde doit effacer **trois** sources qui la font exister à l'écran,
+  // dans le même geste : le cache de `/mine`, `justResolved`, et — depuis #45 — `mode`. C'est
+  // le correctif du bug relevé en revue de #43 (les deux premières) puis de #45 (la
+  // troisième) : `Roster` appelle ceci quand son rafraîchissement rencontre `guild-not-found`,
+  // et c'est aussi ce que `leave` et `dissolve` déclenchent après un `204`.
+  //
+  // `mode` ne se relit que dans l'état `gate` — tant qu'une guilde existe, ses branches ne
+  // sont jamais atteintes, donc jamais retestées. Sans ce reset, un joueur qui avait fondé ou
+  // rejoint par un formulaire, puis quitté ou dissous sa guilde, retombait sur `gate` avec
+  // `mode` encore sur `'found'`/`'join'` : `GuildeScreen` rendait ce formulaire au lieu de
+  // l'état vide que le ticket #45 demande explicitement.
   const forgetGuild = () => {
     queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
     setJustResolved(null);
+    setMode('empty');
   };
 
   const state = guildScreenStateFrom({
@@ -251,10 +262,23 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
 
     const outcome = await excludeMember(guild.id, playerId);
 
-    if (!outcome.ok && !isPlayerNotAMember(outcome.failure)) {
-      setExcludeFailure(outcome.failure);
-      setExcludingId(null);
-      return;
+    if (!outcome.ok) {
+      // Le `404` de cette route couvre **deux** refus distincts, le contrat le dit : le joueur
+      // visé n'est déjà plus membre, ou la guilde entière a disparu (le fondateur l'a dissoute
+      // depuis un autre appareil pendant cet appel). Le second doit passer par `onGone`, comme
+      // partout ailleurs où ce refus peut survenir — jamais afficher un message d'erreur sous
+      // une liste de membres d'une guilde qui n'existe plus.
+      if (isGuildGone(outcome.failure)) {
+        onGone();
+        setExcludingId(null);
+        return;
+      }
+
+      if (!isPlayerNotAMember(outcome.failure)) {
+        setExcludeFailure(outcome.failure);
+        setExcludingId(null);
+        return;
+      }
     }
 
     // Succès, ou `player-is-not-a-member` — il était déjà parti : dans les deux cas la liste
