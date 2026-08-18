@@ -5,6 +5,7 @@ import {
   inviteCodeIssued,
   inviteCodeRevoked,
   NO_INVITE_CODE,
+  UNKNOWN_INVITE_CODE,
   type GuildInviteCode,
   type InviteCodeState,
 } from './inviteCodeState.ts';
@@ -14,11 +15,17 @@ function code(overrides: Partial<GuildInviteCode> = {}): GuildInviteCode {
 }
 
 /**
- * La table des trois états, prouvée plutôt que relue à l'œil — le contrat n'offre aucun
+ * La table des quatre états, prouvée plutôt que relue à l'œil — le contrat n'offre aucun
  * `GET` pour la vérifier autrement : voir `inviteCodeState.ts`.
  */
 describe('la table du code d’invitation', () => {
-  it('un premier code émis depuis « aucun code actif » devient « actif », pas « régénéré »', () => {
+  it('un code émis depuis l’état d’entrée devient « actif », pas « régénéré » — rien de connu n’a été coupé', () => {
+    const state = inviteCodeIssued(UNKNOWN_INVITE_CODE, code());
+
+    assert.deepEqual(state, { kind: 'active', code: code() });
+  });
+
+  it('un code émis depuis « aucun code actif » (après une révocation) devient « actif », pas « régénéré »', () => {
     const state = inviteCodeIssued(NO_INVITE_CODE, code());
 
     assert.deepEqual(state, { kind: 'active', code: code() });
@@ -36,6 +43,10 @@ describe('la table du code d’invitation', () => {
     const next = code({ code: 'NOUVEAU2' });
 
     assert.deepEqual(inviteCodeIssued(previous, next), { kind: 'regenerated', code: next });
+  });
+
+  it('révoquer depuis l’état d’entrée ramène à « aucun code actif », le geste restant sûr sans rien savoir', () => {
+    assert.deepEqual(inviteCodeRevoked(), { kind: 'none' });
   });
 
   it('révoquer ramène à « aucun code actif », qu’il y ait eu ou non un code à couper', () => {

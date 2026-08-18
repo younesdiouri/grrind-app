@@ -12,7 +12,7 @@ import { issueInviteCode, revokeInviteCode } from '@/features/community/inviteCo
 import {
   inviteCodeIssued,
   inviteCodeRevoked,
-  NO_INVITE_CODE,
+  UNKNOWN_INVITE_CODE,
   type InviteCodeState,
 } from '@/features/community/inviteCodeState';
 import { formatInviteExpiry } from '@/features/progression/format';
@@ -27,11 +27,15 @@ import { formatInviteExpiry } from '@/features/progression/format';
  * ————— Pas de `GET`, donc pas de mémoire entre deux visites ——————————————————————————————
  *
  * Le contrat ne sert que `POST` (émettre, ce qui révoque le précédent) et `DELETE` (révoquer) :
- * aucune route ne rend le code actif d'une guilde. L'écran s'ouvre donc toujours sur `none`,
- * même si un code tourne déjà côté serveur — ce n'est pas un manque à combler ici, voir
- * `inviteCodeState.ts`. C'est aussi pourquoi **Révoquer reste affiché dans les trois états** :
- * c'est le seul geste qui reste sûr sans connaître l'état réel, et le contrat le rend
- * idempotent pour ça (même `204`, code à couper ou non).
+ * aucune route ne rend le code actif d'une guilde. L'écran s'ouvre donc toujours sur `unknown`
+ * — pas sur « aucun code actif » — même si un code tourne déjà côté serveur : dire le
+ * contraire inventerait une fermeture qui n'existe pas. Voir `inviteCodeState.ts` pour la
+ * distinction entre cet état d'ouverture et `none`, qui lui est un fait acquis après un
+ * `DELETE` réussi pendant cette visite. C'est aussi pourquoi **Révoquer reste affiché depuis
+ * `unknown` comme depuis un code connu** : c'est le seul geste qui reste sûr sans connaître
+ * l'état réel, et le contrat le rend idempotent pour ça (même `204`, code à couper ou non) — il
+ * disparaît en revanche une fois qu'une révocation a réussi, le reproposer serait un bouton
+ * mort.
  *
  * ————— Aucun optimisme —————————————————————————————————————————————————————————————————
  *
@@ -42,7 +46,7 @@ import { formatInviteExpiry } from '@/features/progression/format';
 export default function InviteCodeScreen() {
   const { guildId } = useLocalSearchParams<{ guildId: string }>();
 
-  const [state, setState] = useState<InviteCodeState>(NO_INVITE_CODE);
+  const [state, setState] = useState<InviteCodeState>(UNKNOWN_INVITE_CODE);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [busyAction, setBusyAction] = useState<'issue' | 'revoke' | null>(null);
   // Le code copié, pas un booléen : un « Copié » qui survivrait à une régénération
@@ -105,9 +109,15 @@ export default function InviteCodeScreen() {
         seul un joueur déjà inscrit peut le consommer.
       </Text>
 
-      {state.kind === 'none' ? (
+      {state.kind === 'unknown' ? (
         <>
-          <Text style={styles.body}>Aucun code n&apos;est actif : personne ne peut rejoindre pour l&apos;instant.</Text>
+          {/* Ni « un code existe » ni « aucun code n'existe » : l'écran vient de s'ouvrir, il
+              n'a encore rien vu (voir inviteCodeState.ts). L'avertissement précède l'appui,
+              comme depuis un code connu — un fondateur qui a émis un code hier ne doit pas
+              apprendre après coup qu'il vient de le couper. */}
+          <Text style={styles.warning}>
+            S&apos;il existe déjà un code actif, en générer un nouveau le coupe aussitôt.
+          </Text>
           <Button
             label="Générer un code"
             onPress={() => void issue()}
@@ -115,7 +125,23 @@ export default function InviteCodeScreen() {
             disabled={busyAction === 'revoke'}
           />
         </>
-      ) : (
+      ) : null}
+
+      {state.kind === 'none' ? (
+        <>
+          {/* Ici, à la différence de `unknown`, l'écran sait vraiment : c'est lui qui vient de
+              révoquer. Rien à couper en émettre un nouveau, donc aucun avertissement. */}
+          <Text style={styles.body}>Code révoqué : personne ne peut plus rejoindre avec l&apos;ancien.</Text>
+          <Button
+            label="Générer un code"
+            onPress={() => void issue()}
+            busy={busyAction === 'issue'}
+            disabled={busyAction === 'revoke'}
+          />
+        </>
+      ) : null}
+
+      {state.kind === 'active' || state.kind === 'regenerated' ? (
         <>
           {state.kind === 'regenerated' ? (
             <Text style={styles.confirm}>Nouveau code généré : l&apos;ancien ne fonctionne plus.</Text>
@@ -145,20 +171,27 @@ export default function InviteCodeScreen() {
             variant="quiet"
           />
         </>
-      )}
+      ) : null}
 
       {failure !== null ? <Text style={styles.failure}>{messageFor(failure)}</Text> : null}
 
-      <Text style={styles.warning}>
-        Révoquer ferme la guilde à l&apos;entrée, sans en proposer un autre.
-      </Text>
-      <Button
-        label="Révoquer le code"
-        onPress={() => void revoke()}
-        busy={busyAction === 'revoke'}
-        disabled={busyAction === 'issue'}
-        variant="quiet"
-      />
+      {/* `none` est le seul état où révoquer est un bouton mort : l'écran vient déjà de le
+          faire, le reproposer n'offrirait rien à couper. Dans les trois autres, y compris
+          `unknown`, c'est le geste sûr quand on ne sait pas. */}
+      {state.kind !== 'none' ? (
+        <>
+          <Text style={styles.warning}>
+            Révoquer ferme la guilde à l&apos;entrée, sans en proposer un autre.
+          </Text>
+          <Button
+            label="Révoquer le code"
+            onPress={() => void revoke()}
+            busy={busyAction === 'revoke'}
+            disabled={busyAction === 'issue'}
+            variant="quiet"
+          />
+        </>
+      ) : null}
     </ScrollView>
   );
 }
