@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { hasInteracted } from '@/features/reward/launchGate';
 import { getPending, subscribeToPending } from '@/features/reward/pending';
@@ -10,6 +11,23 @@ import { getPending, subscribeToPending } from '@/features/reward/pending';
  * Monté par la coquille de l'app, donc actif quel que soit l'écran affiché : une
  * synchronisation qui aboutit pendant que le joueur lit son historique doit se jouer, et il
  * n'a pas à être sur le bon écran pour ça.
+ *
+ * ————— Il ne navigue que devant quelqu'un ————————————————————————————————————————————
+ *
+ * Un réveil HealthKit ne réveille pas un composant, il relance le **processus** : iOS remonte
+ * toute la coquille, cette coquille comprise, dans une app que personne ne regarde.
+ * `hasInteracted()` ne protège pas ce cas — il est faux sur un processus neuf, c'est
+ * précisément la situation d'un lancement — donc sans autre garde, une progression déjà en
+ * file au réveil ferait partir `router.push('/reward')` dans le vide. Ce qui se passe ensuite
+ * dépend de si l'horloge de l'animation tourne pendant qu'une app en arrière-plan n'affiche
+ * rien, et c'est justement pour ça qu'il ne faut pas en dépendre : dans le pire cas, le joueur
+ * ouvre son app et trouve son animation déjà terminée — le dommage exact que `pending.ts`
+ * existe pour empêcher.
+ *
+ * D'où la garde sur `AppState.currentState` : ce hook ne décide de ce que le joueur voit que
+ * quand il y a un joueur devant l'écran. Comme la progression en attente ne bouge pas pendant
+ * qu'elle reste hors ligne, il suffit de réévaluer au passage à `active` — pas besoin de
+ * relire le magasin, `pending` est déjà à jour.
  *
  * ————— Ce que ce hook ne fait pas ————————————————————————————————————————————————————
  *
@@ -29,8 +47,15 @@ export function usePendingReward(): void {
   // rendre, il ne sert qu'à ne pas naviguer deux fois vers la même chose.
   const shown = useRef<unknown>(null);
 
-  useEffect(() => {
+  const tryShow = useCallback(() => {
     if (pending === null || shown.current === pending) {
+      return;
+    }
+
+    // Personne ne regarde : un réveil qui vient de relancer le processus, ou une app qui
+    // finit de s'installer en arrière-plan. La progression reste non jouée et sera retentée
+    // au prochain passage à `active`.
+    if (AppState.currentState !== 'active') {
       return;
     }
 
@@ -43,4 +68,22 @@ export function usePendingReward(): void {
     shown.current = pending;
     router.push('/reward');
   }, [pending]);
+
+  useEffect(() => {
+    tryShow();
+  }, [tryShow]);
+
+  // Le passage au premier plan est le seul moment où « personne ne regarde » peut devenir
+  // faux sans que `pending` ait lui-même changé — même idiome que le déclencheur `foreground`
+  // de `useSync.ts`.
+  useEffect(() => {
+    const onChange = (next: AppStateStatus): void => {
+      if (next === 'active') {
+        tryShow();
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', onChange);
+    return () => subscription.remove();
+  }, [tryShow]);
 }
