@@ -8,6 +8,11 @@ import { queryClient } from '@/api/queryClient';
 import { color } from '@/design/tokens';
 import { restore } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
+// Importé pour son seul effet de bord — voir son docblock : `setNotificationHandler` doit
+// être en place avant qu'une notification arrive, donc au chargement du module et pas dans
+// un effet.
+import '@/features/notifications/foregroundHandler';
+import { useNotificationResponseRouting } from '@/features/notifications/useNotificationResponseRouting';
 import { beginLaunch, isLaunchSettled, subscribeToLaunch } from '@/features/reward/launch';
 
 // L'écran de démarrage tient jusqu'à ce que le trousseau ait répondu. Sans ça, l'app
@@ -27,6 +32,12 @@ export default function RootLayout() {
     // sa promesse, donc il ne part quand même qu'un seul appel.
     void restore();
   }, []);
+
+  // Avant la garde de session, volontairement : un tap peut lancer l'app ou arriver pendant
+  // que le trousseau restaure encore, et `handleNotificationResponse` sait déjà mettre la
+  // cible en attente dans ce cas (`pendingPushRoute.ts`, consommée par `(app)/_layout.tsx`
+  // dès que `signedIn` arrive).
+  useNotificationResponseRouting();
 
   // Un magasin externe plutôt qu'un `useState` : l'état du lancement est un fait du
   // processus, pas d'un composant, et l'écrire depuis un effet ferait rendre en cascade au
