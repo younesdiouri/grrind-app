@@ -1,6 +1,6 @@
 import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
 import { createLaunchGate, LAUNCH_WAIT_MS } from '@/features/reward/launchGate';
-import { loadPending } from '@/features/reward/pending';
+import { getPending } from '@/features/reward/pending';
 
 /**
  * Le portillon de lancement, branché sur le vrai disque et la vraie synchronisation.
@@ -13,7 +13,7 @@ import { loadPending } from '@/features/reward/pending';
  * `node --test`. Ce fichier ne fait que fournir l'heure, le disque et le réseau.
  */
 const gate = createLaunchGate({
-  hasPending: () => loadPending() !== null,
+  hasPending: () => getPending() !== null,
   settledRevision: getSettledRevision,
   subscribeToSync,
   timeoutMs: LAUNCH_WAIT_MS,

@@ -16,9 +16,11 @@ import { getPending, subscribeToPending } from '@/features/reward/pending';
  * **Il n'efface rien.** Marquer la progression comme jouée appartient à l'écran qui la joue,
  * et seulement quand le joueur en sort — une app tuée pendant l'animation n'a rien montré.
  *
- * **Il ne rejoue pas.** Le magasin notifie à chaque écriture, et une synchronisation de
- * retour au premier plan peut très bien réécrire le même résumé. Sans garde, l'animation
- * repartirait par-dessus elle-même.
+ * **Il ne rejoue pas.** Le magasin notifie à chaque écriture, y compris quand un réveil
+ * HealthKit met une progression de plus en file (`pending.ts`) pendant que le joueur regarde
+ * autre chose. La référence en tête ne bouge que quand la précédente est jouée et retirée
+ * (`markPlayed`) : sans la garde `shown`, une file qui grossit pendant que l'écran est déjà
+ * ouvert renaviguerait sur lui-même pour rien.
  */
 export function usePendingReward(): void {
   const pending = useSyncExternalStore(subscribeToPending, getPending);
