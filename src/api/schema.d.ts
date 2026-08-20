@@ -140,6 +140,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_identity_device_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -587,6 +603,17 @@ export interface components {
             title: components["schemas"]["PlayerTitle"] | null;
             /** @description Le plus proche d'aboutir parmi ceux qui restent. `null` quand il les a tous. */
             nextTitle: components["schemas"]["PlayerTitle"] | null;
+            /**
+             * @description Toutes les catégories connues, jamais seulement celles coupées (#132) — le
+             *     client lit l'état exact de chacune plutôt que de connaître le défaut. Clé =
+             *     valeur de `NotificationCategory`, valeur = activée.
+             * @example {
+             *       "GUILD_ACTIVITY": true
+             *     }
+             */
+            notificationPreferences: {
+                [key: string]: boolean;
+            };
         };
         /**
          * @description Deux jetons de nature différente. Le JWT porte l'identité et ne se révoque pas —
@@ -611,6 +638,38 @@ export interface components {
         AuthSession: {
             user: components["schemas"]["UserProfile"];
             tokens: components["schemas"]["TokenPair"];
+        };
+        /**
+         * @description Un appareil enregistré pour la notification push. Rendu par `POST /api/devices`,
+         *     que l'appel soit un premier enregistrement ou un réenregistrement — la route est
+         *     un upsert par construction, et rien dans la réponse ne distingue les deux cas.
+         *
+         *     **Le jeton n'y figure jamais.** Le client vient de l'envoyer ; le faire revenir
+         *     dans une réponse HTTP en ferait une valeur qui finit dans des logs pour rien.
+         */
+        Device: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Le système de l'appareil. Deux valeurs aujourd'hui, comme `source` n'en avait que deux au premier jour — l'enum est prévue pour en accueillir d'autres sans que la forme bouge.
+             * @enum {string}
+             */
+            platform: "IOS" | "ANDROID";
+            /**
+             * @description Le canal de build qui a émis le jeton. Un même appareil produit un jeton différent selon qu'il tourne un client de dev Expo ou un build publié — sans ce champ, une campagne de production irait aussi aux téléphones des développeurs.
+             * @enum {string}
+             */
+            environment: "DEVELOPMENT" | "PRODUCTION";
+            /**
+             * Format: date-time
+             * @description Le tout premier enregistrement de ce jeton. Ne bouge pas si le même jeton change de propriétaire — c'est `lastSeenAt` qui le signale.
+             */
+            registeredAt: string;
+            /**
+             * Format: date-time
+             * @description Rafraîchi à chaque appel de la route, y compris quand rien d'autre ne change.
+             */
+            lastSeenAt: string;
         };
         /**
          * @description **La seule forme d'un workout dans toute l'API** — l'historique la sert, le `SyncSummary`
@@ -984,15 +1043,37 @@ export interface components {
             /** @default  */
             code: string;
         };
+        /** @enum {string} */
+        DevicePlatform: "IOS" | "ANDROID";
+        /** @enum {string} */
+        DeviceEnvironment: "DEVELOPMENT" | "PRODUCTION";
+        RegisterDeviceRequest: {
+            /** @default  */
+            pushToken: string;
+            /** @default null */
+            platform: components["schemas"]["DevicePlatform"] | null;
+            /** @default null */
+            environment: components["schemas"]["DeviceEnvironment"] | null;
+        };
         RefreshTokenRequest: {
             /** @default  */
             refreshToken: string;
+        };
+        /** @enum {string} */
+        NotificationCategory: "GUILD_ACTIVITY";
+        NotificationPreferenceRequest: {
+            /** @default null */
+            category: components["schemas"]["NotificationCategory"] | null;
+            /** @default null */
+            enabled: boolean | null;
         };
         UpdateProfileRequest: {
             /** @default null */
             displayName: string | null;
             /** @default null */
             timezone: string | null;
+            /** @default [] */
+            notificationPreferences: components["schemas"]["NotificationPreferenceRequest"][];
         };
         RegisterRequest: {
             /** @default  */
@@ -1516,6 +1597,32 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+        };
+    };
+    post_identity_device_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDeviceRequest"];
+            };
+        };
+        responses: {
+            /** @description L'appareil est enregistré — ou son propriétaire mis à jour si le jeton appartenait à un autre compte. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Device"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            422: components["responses"]["UnprocessableEntity"];
         };
     };
     post_identity_login: {
