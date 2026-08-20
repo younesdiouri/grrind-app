@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { color } from '@/design/tokens';
 import { useSyncTriggers } from '@/features/health/useSync';
+import { useDeviceRegistration } from '@/features/notifications/useDeviceRegistration';
 import { markInteracted } from '@/features/reward/launchGate';
 import { usePendingReward } from '@/features/reward/usePendingReward';
 
@@ -13,6 +14,11 @@ import { usePendingReward } from '@/features/reward/usePendingReward';
  * synchronisait **jamais** : le joueur devait aller chercher sa propre progression. Ici,
  * elle part au lancement et à chaque retour au premier plan, quel que soit l'écran.
  *
+ * `useDeviceRegistration` (#56) suit la même règle pour une raison différente : le jeton de
+ * push change parfois sans qu'on l'apprenne autrement qu'en le renvoyant, donc il se
+ * réenregistre à chaque démarrage — sans jamais demander l'autorisation, qui se pose ailleurs,
+ * après avoir fondé ou rejoint une guilde.
+ *
  * Le `View` qui enveloppe la pile ne sert qu'à savoir si le joueur a touché l'écran — les
  * événements tactiles remontent, donc un seul point d'écoute suffit pour toute l'app. C'est
  * ce qui empêche une progression arrivée en retard de s'ouvrir sur quelqu'un en pleine
@@ -20,6 +26,7 @@ import { usePendingReward } from '@/features/reward/usePendingReward';
  */
 export default function AppLayout() {
   useSyncTriggers();
+  useDeviceRegistration();
   usePendingReward();
 
   return (

@@ -229,6 +229,13 @@ export async function register(input: RegisterInput): Promise<AuthOutcome> {
  *
  * L'oubli local est inconditionnel : si le réseau tombe pendant l'appel, garder l'utilisateur
  * connecté serait le pire des deux mondes.
+ *
+ * **Le jeton de push n'a rien à faire désinscrire ici, et ce n'est pas un oubli** (#56). Le
+ * back a livré son #136 par le « chemin B » : l'appareil s'accroche à la famille de refresh
+ * tokens du jeton courant, et `LogOutHandler` révoque le jeton de push de cette même famille
+ * quand `POST /api/auth/logout` la révoque tout entière. Il n'existe donc aucune route
+ * `DELETE /api/devices` (le contrat le dit : `delete?: never` sur `/api/devices`), et ce
+ * module n'a rien de plus à envoyer — voir `notifications/registration.ts`.
  */
 /**
  * Le compteur du banc de l'accueil, et pourquoi il n'y a plus de porte dérobée à côté.
