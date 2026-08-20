@@ -1,8 +1,7 @@
+import type { components } from '@/api/schema';
+
 /**
- * Le routage porté par une notification — et **la dette du #57, assumée ici et nulle part
- * ailleurs**.
- *
- * ————— Pourquoi ce fichier recopie un type du back ——————————————————————————————————————
+ * Le routage porté par une notification.
  *
  * Le back envoie, dans `data` (hors du corps affiché, `title`/`body`/`categoryId`) :
  *
@@ -10,21 +9,18 @@
  * { groupingKey: "guild-activity:018f…", routeType: "PLAYER_PROFILE", routeId: "<uuid>" }
  * ```
  *
- * Ce canal est APNs, pas HTTP : `openapi.yaml` ne le décrit pas, et ne peut pas le décrire
- * tant que younesdiouri/grrind-back#147 — ouvert exprès — n'a pas ajouté cette forme au
- * contrat. En attendant, `PushRouteType` est recopié à la main depuis le code du back
- * (vérifié par l'architecte), et **ce fichier est le seul endroit du client où
- * `'PLAYER_PROFILE'` s'écrit**. Nulle part ailleurs on ne réécrit cette valeur : un futur
- * écran qui a besoin de savoir où router importe `PushRouteTarget` d'ici, jamais la chaîne.
+ * Ce canal est APNs, pas HTTP, mais `openapi.yaml` décrit tout de même sa forme
+ * (`PushNotificationData`) : le client route dessus, donc `routeType` se génère depuis le
+ * contrat plutôt que de recopier ses valeurs à la main.
  *
- * ————— Ce qui arrive quand le back ajoute une valeur avant que le client la connaisse ———
+ * ————— Pourquoi un `routeType` inconnu ne route nulle part ——————————————————————————————
  *
- * `PushRouteType` n'est **pas** l'union générée du contrat : rien ici ne casse le build le
- * jour où le back en ajoute une. C'est le prix de la dette ci-dessus, et c'est pour ça que
  * `decodePushRouteTarget` ne fait jamais confiance à un `routeType` qu'il ne reconnaît pas —
  * il rend `null`, et l'appelant ne route rien. Un tap qui n'aboutit nulle part se remarque à
  * peine ; un tap qui aboutit ailleurs qu'attendu ressemble à un succès et se remarque encore
- * moins.
+ * moins. C'est `hrefFor` (`pushRouting.ts`), pas ce fichier, qui casse le build quand le back
+ * ajoute une valeur à l'enum : ici, une valeur inconnue à l'exécution — back plus récent que
+ * l'app installée — reste un `null` silencieux plutôt qu'une erreur.
  *
  * ————— Une fonction pure, comme `buildTimeline` ——————————————————————————————————————————
  *
@@ -34,8 +30,7 @@
  * monter la moindre notification.
  */
 
-/** Recopié depuis le back — voir le docblock ci-dessus. Une seule valeur aujourd'hui. */
-type PushRouteType = 'PLAYER_PROFILE';
+type PushRouteType = components['schemas']['PushRouteType'];
 
 export type PushRouteTarget = {
   type: PushRouteType;
@@ -64,9 +59,12 @@ export function decodePushRouteTarget(data: unknown): PushRouteTarget | null {
 
   const { routeType, routeId, groupingKey } = data;
 
-  // Le seul type que ce client connaît. Toute autre valeur — y compris une future addition
-  // du back — n'aboutit à aucune route plutôt qu'à une mauvaise.
-  if (routeType !== 'PLAYER_PROFILE') {
+  // `openapi-typescript` ne génère qu'un type, pas une valeur : `PushRouteType` est erasé à
+  // la compilation, et il n'y a rien à interroger ici à l'exécution. La reconnaissance reste
+  // donc une comparaison à la valeur du contrat — toute autre chaîne, y compris une future
+  // addition du back que cette version de l'app ne connaît pas encore, n'aboutit à aucune
+  // route plutôt qu'à une mauvaise.
+  if (routeType !== ('PLAYER_PROFILE' satisfies PushRouteType)) {
     return null;
   }
 
