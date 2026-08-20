@@ -16,7 +16,10 @@ Pod::Spec.new do |s|
   # `statistics(for:)` demande iOS 16, ce que la plateforme ci-dessus garantit déjà. Le lien
   # explicite au framework évite de dépendre de la directive d'autolink que Swift émet sur
   # `import HealthKit` — elle marche, mais elle est invisible dans un journal de build raté.
-  s.frameworks = 'HealthKit'
+  #
+  # `Security` est là pour la même raison : c'est par elle que l'ancre `HKAnchoredObjectQuery`
+  # est écrite au Keychain, à part du trousseau que `expo-secure-store` gère déjà côté JS.
+  s.frameworks = 'HealthKit', 'Security'
 
   # Swift/Objective-C compatibility
   s.pod_target_xcconfig = {

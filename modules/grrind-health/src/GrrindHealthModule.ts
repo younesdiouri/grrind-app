@@ -39,7 +39,28 @@ export type NativeWorkout = {
   averageHeartRate: number | null;
 };
 
-declare class GrrindHealthModule extends NativeModule {
+/**
+ * « Il y a du neuf depuis l'ancre » — rien de plus.
+ *
+ * Ce n'est **pas** un lot de workouts : le natif a déjà vérifié, via `HKAnchoredObjectQuery`,
+ * qu'il y a une différence à lire, mais il ne la transporte pas ici. Récupérer les workouts
+ * eux-mêmes reste le travail de `workoutsSince`, sur le curseur du serveur — l'ancre répond à
+ * une question distincte, « faut-il déranger le réseau ? », pas « qu'est-ce qui a changé ? ».
+ *
+ * `anchor` est l'ancre **neuve**, en base64, pas encore écrite sur le disque : c'est
+ * `commitAnchor` qui l'y écrit, et seulement après qu'un appelant a de quoi la mériter (le
+ * serveur a répondu). La faire avancer avant serait perdre une séance pour de bon au premier
+ * import raté.
+ */
+export type NativeWorkoutsChangedEvent = {
+  anchor: string;
+};
+
+type GrrindHealthEvents = {
+  onWorkoutsChanged: (event: NativeWorkoutsChangedEvent) => void;
+};
+
+declare class GrrindHealthModule extends NativeModule<GrrindHealthEvents> {
   /** HealthKit existe-t-il sur cet appareil ? Faux sur simulateur mal configuré et sur iPad. */
   isAvailable(): Promise<boolean>;
 
@@ -66,6 +87,36 @@ declare class GrrindHealthModule extends NativeModule {
    * @param since millisecondes depuis l'époque Unix.
    */
   workoutsSince(since: number): Promise<NativeWorkout[]>;
+
+  /**
+   * Enregistre l'app auprès d'iOS pour être réveillée quand un workout change dans Santé, et
+   * démarre l'observateur qui en profite (`HKObserverQuery`).
+   *
+   * Rappelable sans risque à chaque lancement — un observateur déjà en cours n'en démarre pas
+   * un second. Rejette si l'entitlement `com.apple.developer.healthkit.background-delivery`
+   * manque ou si HealthKit refuse l'inscription.
+   *
+   * **Ce que ceci ne fait pas** : ni appeler `sync`, ni parler au réseau. Le seul effet visible
+   * côté JS est l'événement `onWorkoutsChanged`, quand HealthKit rend quelque chose.
+   *
+   * **Sur la fréquence réelle des réveils** : voir la documentation de la fonction native
+   * (`GrrindHealthModule.swift`). `.immediate` est ce qui est demandé, pas ce qu'iOS garantit —
+   * la documentation d'Apple ne plafonne pas explicitement les workouts, mais ne promet rien non
+   * plus, et le réveil reste soumis au bon vouloir du système comme au moment où la montre se
+   * synchronise avec le téléphone.
+   */
+  enableBackgroundDelivery(): Promise<void>;
+
+  /**
+   * Persiste l'ancre reçue par `onWorkoutsChanged`, dans le stockage sécurisé du module natif.
+   *
+   * **À n'appeler qu'après que le serveur a répondu** — succès ou échec définitif de l'import
+   * qui a suivi l'événement. L'ancre ne progresse jamais d'elle-même à la lecture : c'est cet
+   * appel, et lui seul, qui la fait avancer. Ne pas l'appeler après un échec fait relire la même
+   * différence au prochain réveil, ce qui est le comportement voulu — rien à perdre à relire une
+   * fois de plus, tout à perdre à avancer sur un import qui n'a pas abouti.
+   */
+  commitAnchor(anchor: string): Promise<void>;
 }
 
 export default requireNativeModule<GrrindHealthModule>('GrrindHealth');

@@ -1,5 +1,6 @@
 import ExpoModulesCore
 import HealthKit
+import Security
 
 /**
  Le pont vers HealthKit. **Aucune vue, aucune règle de jeu, aucune traduction.**
@@ -10,10 +11,31 @@ import HealthKit
  qui permet d'ouvrir un sport sans publier sur l'App Store. Un type que le serveur ne connaît
  pas revient nommé dans la réponse d'import, en `UNSUPPORTED_ACTIVITY` — il ne disparaît pas.
 
- Les trois fonctions correspondent une pour une au port `HealthProvider` côté TypeScript.
+ Les trois premières fonctions correspondent une pour une au port `HealthProvider` côté
+ TypeScript. Les suivantes — `enableBackgroundDelivery`, l'événement `onWorkoutsChanged` et
+ `commitAnchor` — n'y apparaissent pas et **n'y apparaîtront pas** : c'est une capacité propre à
+ iOS, câblée depuis `modules/grrind-health/src/GrrindHealthModule.ts` directement plutôt que par
+ le port. Android n'a pas encore d'équivalent (#15), et ce n'est pas ce ticket qui l'invente.
+
+ ————— Ce que le natif fait seul, sans jamais attendre le JS ——————————————————————————————
+
+ `HKObserverQuery` réveille l'app quand HealthKit a du neuf ; `HKAnchoredObjectQuery` dit s'il
+ s'agit vraiment de quelque chose de nouveau **depuis l'ancre**, une mémoire distincte du
+ curseur serveur (`lastImportedAt`, côté `syncState.ts`). Le natif lit cette différence lui-même
+ avant de déranger qui que ce soit : rien à lire depuis l'ancre, `completionHandler` est appelé
+ et rien ne part vers JS. Quelque chose à lire, l'événement part avec la **nouvelle** ancre — pas
+ encore écrite sur le disque, seulement rendue — et `completionHandler` est rappelé par un délai
+ armé ici, pas par un acquittement du JS qui pourrait ne jamais venir (bundle pas chargé,
+ exception dans un `await`, runtime tué en plein réveil). C'est `commitAnchor` qui écrit
+ l'ancre, plus tard, et seulement si l'appelant a de quoi la mériter — voir sa documentation.
  */
 public class GrrindHealthModule: Module {
   private let store = HKHealthStore()
+
+  /** L'observateur en cours d'exécution, retenu pour ne pas être désalloué entre deux réveils.
+   Un second appel à `enableBackgroundDelivery` ne doit pas en démarrer un deuxième par-dessus :
+   HealthKit livrerait alors chaque changement deux fois. */
+  private var observerQuery: HKObserverQuery?
 
   /**
    Ce qu'on demande à lire, et rien de plus.
@@ -55,6 +77,11 @@ public class GrrindHealthModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("GrrindHealth")
+
+    // Un seul événement : « il y a du neuf depuis l'ancre ». Il ne porte jamais de workout —
+    // ça reste le travail de `workoutsSince`, sur le curseur serveur — seulement l'ancre neuve
+    // que HealthKit vient de rendre, pour que l'appelant puisse la commettre plus tard.
+    Events("onWorkoutsChanged")
 
     AsyncFunction("isAvailable") { () -> Bool in
       HKHealthStore.isHealthDataAvailable()
@@ -169,6 +196,174 @@ public class GrrindHealthModule: Module {
 
       self.store.execute(query)
     }
+
+    /**
+     Demande à iOS de réveiller l'app quand un workout change dans Santé, et démarre
+     l'observateur qui en profite.
+
+     Deux étapes distinctes chez Apple, l'une n'entraînant pas l'autre : `enableBackgroundDelivery`
+     enregistre l'app auprès du système, `HKObserverQuery` est ce qui reçoit effectivement le
+     réveil. Sans la première, la seconde ne tourne qu'au premier plan ; sans la seconde, la
+     première ne réveillerait personne.
+
+     Idempotent par construction : rappelable sans risque à chaque lancement (l'entitlement
+     `com.apple.developer.healthkit.background-delivery` doit être présent, sans lui cet appel
+     échoue avec `errorAuthorizationDenied`), `startObserving()` ne crée un second observateur
+     que si aucun ne tourne déjà.
+
+     **Sur la fréquence : ce que dit Apple, sans l'arrondir.** `.immediate` ne veut pas dire
+     instantané — la documentation d'`enableBackgroundDelivery(for:frequency:withCompletion:)`
+     est explicite : *"The system wakes your app at most once per time period defined by the
+     specified frequency"*, et certains types ont un plafond imposé — `stepCount` est cité à
+     `hourly` au maximum, appliqué silencieusement par le système. Rien dans cette même page ne
+     mentionne un plafond particulier pour `HKWorkoutType` : `.immediate` est donc ce qu'on
+     demande, mais ni cette fonction ni sa documentation ne garantissent qu'iOS l'honore à la
+     lettre. Seul un iPhone physique le dira.
+     */
+    AsyncFunction("enableBackgroundDelivery") { (promise: Promise) in
+      guard HKHealthStore.isHealthDataAvailable() else {
+        promise.reject(HealthDataUnavailableException())
+        return
+      }
+
+      self.store.enableBackgroundDelivery(for: HKObjectType.workoutType(), frequency: .immediate) { success, error in
+        if let error {
+          promise.reject(HealthBackgroundDeliveryException(error.localizedDescription))
+          return
+        }
+
+        guard success else {
+          promise.reject(HealthBackgroundDeliveryException(
+            "HealthKit a refusé la livraison en arrière-plan sans donner d'erreur."
+          ))
+          return
+        }
+
+        self.startObserving()
+        promise.resolve()
+      }
+    }
+
+    /**
+     Écrit l'ancre sur le disque — **et seulement ça**. Elle n'avance jamais d'elle-même à la
+     lecture : c'est cet appel, et lui seul, qui la fait progresser, pour que l'appelant ne le
+     fasse qu'après avoir de quoi la mériter (le serveur a répondu). Avancer l'ancre à la lecture
+     ferait perdre une séance pour de bon au premier import raté — l'ancre n'ayant plus rien à
+     rejouer, la séance qu'elle couvrait ne reviendrait jamais.
+
+     Rejette plutôt que d'écrire n'importe quoi : une ancre qui ne se décode pas n'est d'aucune
+     confiance, qu'elle vienne d'un bug ou d'une version antérieure du module.
+     */
+    AsyncFunction("commitAnchor") { (anchor: String, promise: Promise) in
+      guard let data = Data(base64Encoded: anchor), Self.decodeAnchor(data) != nil else {
+        promise.reject(HealthAnchorException("L'ancre reçue n'est pas lisible."))
+        return
+      }
+
+      do {
+        try AnchorStore.write(data)
+        promise.resolve()
+      } catch {
+        promise.reject(HealthAnchorException("L'écriture de l'ancre a échoué (\(error))."))
+      }
+    }
+  }
+
+  // MARK: - Observation en arrière-plan
+
+  /** Démarre l'observateur s'il ne tourne pas déjà. Voir la note sur `observerQuery`. */
+  private func startObserving() {
+    guard observerQuery == nil else { return }
+
+    let query = HKObserverQuery(sampleType: HKObjectType.workoutType(), predicate: nil) { [weak self] _, completionHandler, error in
+      self?.handleObserverWake(error: error, completionHandler: completionHandler)
+    }
+
+    observerQuery = query
+    store.execute(query)
+  }
+
+  /**
+   Un réveil de `HKObserverQuery`, du début à la fin.
+
+   `pending` garantit que `completionHandler` part une fois, quel que soit le chemin — HealthKit
+   ne documente pas ce qui arrive à un double appel, et il n'y a aucune raison de le découvrir en
+   production. Le chien de garde (`armWatchdog`) est câblé **avant** l'exécution de la requête
+   d'ancre : si `HKAnchoredObjectQuery` elle-même ne rappelle jamais — un scénario qu'Apple ne
+   documente pas non plus, mais que rien n'exclut — l'app reste couverte.
+   */
+  private func handleObserverWake(error: Error?, completionHandler: @escaping HKObserverQueryCompletionHandler) {
+    let pending = CompletionGuard(completionHandler)
+
+    // Une erreur ici porte sur l'observation elle-même — un accès révoqué en cours de route,
+    // par exemple — pas sur une lecture qui a échoué. Rien à interroger dans ce cas.
+    guard error == nil else {
+      pending.fire()
+      return
+    }
+
+    let anchor = AnchorStore.read().flatMap(Self.decodeAnchor)
+
+    // Armé avant l'exécution, pas après avoir vu le résultat : si `HKAnchoredObjectQuery`
+    // elle-même ne rappelle jamais — un scénario qu'Apple ne documente pas, mais qu'aucune
+    // documentation n'exclut non plus — `completionHandler` part quand même.
+    armWatchdog(pending)
+
+    let anchoredQuery = HKAnchoredObjectQuery(
+      type: HKObjectType.workoutType(),
+      predicate: nil,
+      anchor: anchor,
+      limit: HKObjectQueryNoLimit
+    ) { [weak self] _, added, deleted, newAnchor, queryError in
+      guard let self, queryError == nil, let newAnchor else {
+        pending.fire()
+        return
+      }
+
+      // `added` et `deleted` ne sont pas filtrés sur `activityType` — exactement comme
+      // `workoutsSince` ne le fait pas. Ce module ne décide jamais ce qui compte comme sport.
+      let changed = (added?.count ?? 0) + (deleted?.count ?? 0)
+
+      guard changed > 0, let encoded = try? Self.encodeAnchor(newAnchor) else {
+        pending.fire()
+        return
+      }
+
+      // Rien n'attend d'acquittement ici : l'événement part, et `completionHandler` suivra par
+      // le chien de garde armé plus haut, pas par un retour du JS.
+      self.sendEvent("onWorkoutsChanged", ["anchor": encoded.base64EncodedString()])
+    }
+
+    store.execute(anchoredQuery)
+  }
+
+  /**
+   Le délai après lequel `completionHandler` part de toute façon, sans attendre le JS.
+
+   Rien dans la documentation Apple ne chiffre le budget d'exécution accordé à ce réveil précis :
+   cette valeur est un plafond choisi par prudence, pas une donnée d'Apple, et volontairement
+   sous la trentaine de secondes généralement tolérée pour une tâche de fond avant qu'iOS ne
+   coupe le processus de toute façon. Elle ne se prouve pas en test — seul un iPhone physique dit
+   si le JS a eu le temps de faire quoi que ce soit avant qu'elle expire.
+   */
+  private static let completionWatchdogSeconds: TimeInterval = 25
+
+  private func armWatchdog(_ pending: CompletionGuard) {
+    DispatchQueue.global().asyncAfter(deadline: .now() + Self.completionWatchdogSeconds) {
+      pending.fire()
+    }
+  }
+
+  // MARK: - L'ancre : mise en forme et disque
+
+  /** `HKQueryAnchor` est `NSSecureCoding` ; c'est ce format, pas un JSON maison, qui traverse le
+   pont et le disque — il n'y a rien d'autre à en tirer côté client. */
+  private static func encodeAnchor(_ anchor: HKQueryAnchor) throws -> Data {
+    try NSKeyedArchiver.archivedData(withRootObject: anchor, requiringSecureCoding: true)
+  }
+
+  private static func decodeAnchor(_ data: Data) -> HKQueryAnchor? {
+    try? NSKeyedUnarchiver.unarchivedObject(ofClass: HKQueryAnchor.self, from: data)
   }
 
   // MARK: - Traduction d'un HKWorkout vers le contrat
@@ -422,4 +617,106 @@ internal final class HealthQueryException: GenericException<String>, @unchecked 
   override var reason: String {
     "La lecture des séances a échoué : \(param)"
   }
+}
+
+internal final class HealthBackgroundDeliveryException: GenericException<String>, @unchecked Sendable {
+  override var reason: String {
+    "L'activation de la livraison en arrière-plan a échoué : \(param)"
+  }
+}
+
+internal final class HealthAnchorException: GenericException<String>, @unchecked Sendable {
+  override var reason: String {
+    param
+  }
+}
+
+/**
+ Garantit qu'un `HKObserverQueryCompletionHandler` n'est appelé qu'une seule fois, quel que soit
+ le chemin qui y mène — la lecture immédiate quand rien n'a bougé depuis l'ancre, ou le chien de
+ garde quand quelque chose a bougé et que le JS ne dit jamais qu'il a fini. HealthKit ne
+ documente aucune conséquence à un double appel, mais rien ne garantit non plus qu'il n'y en ait
+ pas, et `handleObserverWake` peut atteindre ce point par deux chemins concurrents (la requête
+ d'ancre et le chien de garde).
+ */
+private final class CompletionGuard: @unchecked Sendable {
+  private let lock = NSLock()
+  private var handler: HKObserverQueryCompletionHandler?
+
+  init(_ handler: @escaping HKObserverQueryCompletionHandler) {
+    self.handler = handler
+  }
+
+  func fire() {
+    lock.lock()
+    let toCall = handler
+    handler = nil
+    lock.unlock()
+    toCall?()
+  }
+}
+
+/**
+ L'ancre HealthKit, sur le disque du Keychain — **son propre item, distinct de celui que
+ `keyStore.ts` tient déjà côté JS** (service `app.grrind.health`, compte `grrind.sync.idempotency`,
+ pour la clé d'idempotence). Service et compte diffèrent ici volontairement : effacer l'un ne
+ doit jamais toucher l'autre, la clé d'idempotence et l'ancre n'ayant ni le même cycle de vie, ni
+ le même risque en cas de perte.
+
+ `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, et pas la classe par défaut
+ (`whenUnlocked`) : un réveil HealthKit arrive téléphone verrouillé dans une poche, et une classe
+ qui exige un déverrouillage courant ferait échouer la lecture précisément dans le cas nominal.
+ `ThisDeviceOnly` exclut la sauvegarde iCloud — une ancre restaurée sur un autre appareil ne
+ correspond à rien dans le HealthKit de celui-ci.
+ */
+private enum AnchorStore {
+  private static let service = "app.grrind.health.anchor"
+  private static let account = "workoutObserverAnchor"
+
+  private static func query() -> [String: Any] {
+    [
+      kSecClass as String: kSecClassGenericPassword,
+      kSecAttrService as String: service,
+      kSecAttrAccount as String: account
+    ]
+  }
+
+  static func read() -> Data? {
+    var lookup = query()
+    lookup[kSecReturnData as String] = true
+    lookup[kSecMatchLimit as String] = kSecMatchLimitOne
+
+    var result: AnyObject?
+    let status = SecItemCopyMatching(lookup as CFDictionary, &result)
+    guard status == errSecSuccess else { return nil }
+    return result as? Data
+  }
+
+  static func write(_ data: Data) throws {
+    let attributes: [String: Any] = [
+      kSecValueData as String: data,
+      kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+    ]
+
+    let updateStatus = SecItemUpdate(query() as CFDictionary, attributes as CFDictionary)
+    if updateStatus == errSecItemNotFound {
+      var insert = query()
+      insert.merge(attributes) { _, new in new }
+
+      let addStatus = SecItemAdd(insert as CFDictionary, nil)
+      guard addStatus == errSecSuccess else {
+        throw KeychainWriteError(status: addStatus)
+      }
+      return
+    }
+
+    guard updateStatus == errSecSuccess else {
+      throw KeychainWriteError(status: updateStatus)
+    }
+  }
+}
+
+private struct KeychainWriteError: Error, CustomStringConvertible {
+  let status: OSStatus
+  var description: String { "OSStatus \(status)" }
 }
