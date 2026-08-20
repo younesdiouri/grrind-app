@@ -2,10 +2,12 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
 import { useAuth } from '@/features/auth/useAuth';
+import { enableBackgroundWakeup, startBackgroundWakeup } from '@/features/health/backgroundWakeup';
+import { healthProvider } from '@/features/health/current';
 import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/features/health/sync';
 
 /**
- * Les trois déclencheurs de la synchronisation, et rien de plus.
+ * Les quatre déclencheurs de la synchronisation, et rien de plus.
  *
  * - **À l'ouverture de l'app**, une fois l'authentification établie. Pas avant : l'import est
  *   une route `Bearer`, et la déclencher sans jeton ferait partir un 401 qui brûlerait un
@@ -14,11 +16,16 @@ import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/feature
  *   pas ici : c'est une règle de synchronisation, pas une règle de React.
  * - **Manuellement**, par un geste de rafraîchissement. C'est le filet quand tout le reste a
  *   raté, donc il **ignore le seuil**.
+ * - **Le réveil HealthKit** (#55), automatique comme les deux premiers — même seuil de trente
+ *   secondes, lui non plus ne l'ignore pas.
  *
- * **Pas de tâche de fond en V1**, et ce n'est pas un manque de temps : iOS ne garantit aucun
- * réveil, et une synchronisation qu'on ne peut pas expliquer à l'utilisateur produit des
- * animations qui se déclenchent dans le vide — ou pire, une progression déjà jouée quand il
- * ouvre l'app.
+ * **Ce hook ne joue toujours rien.** C'était vrai en V1 faute de tâche de fond ; c'est resté
+ * vrai en ajoutant le réveil, pour une raison différente : une synchronisation qu'on ne peut
+ * pas expliquer à l'utilisateur — parce qu'il n'a pas les yeux sur l'écran — produirait des
+ * animations qui se déclenchent dans le vide, ou pire, une progression déjà jouée quand il
+ * ouvre l'app. Le réveil écrit donc sur le disque (`pending.ts`) exactement comme les trois
+ * autres, et c'est le portillon de lancement (`launchGate.ts`) qui décide, à l'ouverture
+ * suivante, de jouer ce qui attend.
  *
  * Ce hook ne **détient** rien. L'état vit dans `sync.ts`, hors de l'arbre, comme la session
  * d'authentification et pour la même raison : la synchronisation survit au démontage de
@@ -59,6 +66,30 @@ export function useSyncTriggers(): void {
     return () => subscription.remove();
   }, [run]);
 
+  // 4. Le réveil HealthKit. Pas de branche « manual » ici : ce déclencheur-là n'existe que
+  //    par un geste, il n'a pas de pendant automatique à monter.
+  useEffect(() => {
+    if (!signedIn) {
+      return;
+    }
+
+    // `enableBackgroundDelivery` échoue tant que HealthKit n'a rien accordé — voir
+    // `backgroundWakeup.ios.ts`. On ne le tente donc qu'une fois l'autorisation posée, ce que
+    // seul `authorizationPrompt()` sait dire ; le rappeler à chaque lancement ne coûte rien,
+    // c'est idempotent côté natif, et c'est le seul moyen de s'inscrire sans revenir sur
+    // l'écran Santé après avoir accordé l'accès. `authorizationPrompt()` rejette sans
+    // fournisseur (un iPad, par exemple) — dans ce cas il n'y a de toute façon rien à activer.
+    healthProvider
+      .authorizationPrompt()
+      .then((prompt) => {
+        if (prompt === 'alreadyAsked') {
+          void enableBackgroundWakeup();
+        }
+      })
+      .catch(() => undefined);
+
+    return startBackgroundWakeup();
+  }, [signedIn]);
 }
 
 /**

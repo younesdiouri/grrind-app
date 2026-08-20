@@ -29,8 +29,16 @@
  * sous `node --test` plutôt que se constater sur un appareil qui a perdu une animation.
  */
 
-/** Pourquoi une synchronisation part. Seul `manual` passe outre le seuil. */
-export type SyncTrigger = 'launch' | 'foreground' | 'manual';
+/**
+ * Pourquoi une synchronisation part. Seul `manual` passe outre le seuil.
+ *
+ * `background` — le réveil HealthKit (#55) — est un déclencheur automatique comme
+ * `foreground` et `launch` : il subit le seuil de trente secondes comme eux. Ce qui le
+ * distingue ne vit pas ici mais dans la politique de rejeu (`retryPolicy.ts`) et dans ce que
+ * fait l'appelant du résumé : personne ne regarde l'écran pendant un réveil, donc rien ne se
+ * joue, voir `sync.ts`.
+ */
+export type SyncTrigger = 'launch' | 'foreground' | 'manual' | 'background';
 
 /** Ce qu'une demande de synchronisation rend. */
 export type SyncOutcome<T> =
@@ -41,8 +49,12 @@ export type SyncOutcome<T> =
   | { status: 'throttled' };
 
 export type SyncCoordinatorDeps<T> = {
-  /** La synchronisation réelle. */
-  perform: () => Promise<T>;
+  /**
+   * La synchronisation réelle. Reçoit le déclencheur : `perform` en a besoin pour choisir sa
+   * politique de rejeu (`retryPolicy.ts`), ce module n'en a pas besoin pour autre chose que le
+   * lui transmettre.
+   */
+  perform: (trigger: SyncTrigger) => Promise<T>;
   /** L'horloge, injectée : un test ne doit pas attendre trente secondes pour prouver un seuil. */
   now: () => number;
   /**
@@ -83,7 +95,7 @@ export function createSyncCoordinator<T>(deps: SyncCoordinatorDeps<T>): SyncCoor
 
       lastStartedAt = at;
 
-      const run = deps.perform().then(
+      const run = deps.perform(trigger).then(
         (result) => {
           inFlight = null;
           return result;
