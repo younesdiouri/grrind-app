@@ -40,6 +40,7 @@ import { isCompleteInviteCode, sanitizeInviteCode } from '@/features/community/i
 import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefusal';
 import { leaveAnnouncementFor } from '@/features/community/leaveAnnouncement';
 import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
+import { requestPermissionAndRegister } from '@/features/notifications/registration';
 
 type GuildMemberEntry = GuildDetail['members'][number];
 
@@ -87,6 +88,13 @@ export default function GuildeScreen() {
     // reset, `mode` resterait sur `'found'` ou `'join'` pendant tout le séjour dans la guilde,
     // prêt à resurgir si le joueur la quitte ensuite (voir `forgetGuild`, juste en dessous).
     setMode('empty');
+
+    // Le seul endroit où GRRIND demande l'autorisation notifications (#56) : jamais au premier
+    // lancement — iOS ne repose pas la question après un refus — mais ici, où une notification
+    // de guilde a un sens évident puisqu'on vient d'en rejoindre une. `resolve` est le chemin
+    // de succès commun à `FoundForm` et `JoinForm`, donc le seul point à câbler. L'appel ne
+    // bloque rien et n'affiche rien : un refus reste silencieux, comme un succès.
+    void requestPermissionAndRegister();
   };
 
   // La disparition d'une guilde doit effacer **trois** sources qui la font exister à l'écran,
