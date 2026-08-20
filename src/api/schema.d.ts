@@ -378,6 +378,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @enum {string} */
+        PushRouteType: "PLAYER_PROFILE";
+        /**
+         * @description Le `data` d'une notification push, **le seul morceau qui se décode plutôt que
+         *     s'affiche**. Il n'arrive par aucune route : le canal est APNs via Expo, pas HTTP.
+         *     Il est décrit ici parce que c'est le même contrat — le client route dessus, il
+         *     doit donc générer `routeType` plutôt que d'en recopier les valeurs.
+         *
+         *     **Rien à afficher tel quel.** `routeId` est une clé de ressource à relire —
+         *     pour `PLAYER_PROFILE`, l'identifiant que `GET /api/players/{id}` résout. Une
+         *     notification peut dormir des heures dans le centre de notifications ; ce que le
+         *     tap montre ensuite doit être exact, donc relu depuis l'API. `groupingKey`, lui,
+         *     ne se lit pas : il dit seulement quelle notification une nouvelle remplace.
+         */
+        PushNotificationData: {
+            groupingKey: string;
+            routeType: components["schemas"]["PushRouteType"];
+            /** Format: uuid */
+            routeId: string;
+        };
         /**
          * @description Une erreur, RFC 9457. `type` est l'identifiant stable de la panne ; `title` et
          *     `detail` sont du texte. Certaines erreurs ajoutent leurs propres membres — une

@@ -12,12 +12,34 @@ import { decodePushRouteTarget, type PushRouteTarget } from '@/features/notifica
  * La seule cible du contrat aujourd'hui est `PLAYER_PROFILE` → `/joueur/{id}`, la route
  * livrée au #119. `routeId` est l'auteur de la séance, pas un id de notification : c'est ce
  * que `GET /api/players/{id}` attend.
+ *
+ * Le `switch` est exhaustif **par construction**, comme `unnamedProblem` dans
+ * `src/features/auth/problems.ts` : son `default` passe `target.type` à une fonction qui
+ * n'accepte que `never`. Le jour où le back ajoute une valeur à `PushRouteType`, le client ne
+ * compile plus tant qu'un cas n'a pas été écrit ici — c'est le seul endroit du client qui
+ * décide où mène un `routeType`, et une addition qui n'y aurait pas de cas ne doit pas passer
+ * inaperçue.
  */
 function hrefFor(target: PushRouteTarget) {
   switch (target.type) {
     case 'PLAYER_PROFILE':
       return { pathname: '/joueur/[id]', params: { id: target.routeId } } as const;
+    default:
+      return unroutablePushRouteType(target.type);
   }
+}
+
+/**
+ * Le repli sur un `routeType` que ce client ne connaît pas.
+ *
+ * Le paramètre est typé `never` : à la compilation, il ne peut recevoir que l'ensemble vide,
+ * donc ajouter une valeur à `PushRouteType` casse le build ici. À l'exécution, ce cas ne se
+ * présente pas — `decodePushRouteTarget` a déjà écarté tout `routeType` qu'il ne reconnaît
+ * pas — donc l'unique rôle de cette fonction est de faire échouer `npm run typecheck`, pas de
+ * gérer un cas réel.
+ */
+function unroutablePushRouteType(type: never): never {
+  throw new Error(`routeType non routable : ${String(type)}`);
 }
 
 export function routeTo(target: PushRouteTarget): void {
