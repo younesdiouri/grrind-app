@@ -19,7 +19,6 @@ import { usePendingReward } from '@/features/reward/usePendingReward';
  * réenregistre à chaque démarrage — sans jamais demander l'autorisation, qui se pose ailleurs,
  * après avoir fondé ou rejoint une guilde.
  *
-
  * Le `View` qui enveloppe la pile ne sert qu'à savoir si le joueur a touché l'écran — les
  * événements tactiles remontent, donc un seul point d'écoute suffit pour toute l'app. C'est
  * ce qui empêche une progression arrivée en retard de s'ouvrir sur quelqu'un en pleine
