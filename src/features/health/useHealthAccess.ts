@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { enableBackgroundWakeup } from '@/features/health/backgroundWakeup';
 import { healthProvider } from '@/features/health/current';
 import type { AuthorizationPrompt } from '@/features/health/provider';
 
@@ -78,9 +79,17 @@ export function useHealthAccess(): { access: HealthAccess; ask: () => void } {
     setAccess({ step: 'asking' });
 
     void healthProvider.requestAuthorization().then(
-      // La feuille s'est fermée. On passe à `asked` **sans rien conclure** : `void` est le
-      // contrat du port, précisément parce qu'il n'y a rien à conclure.
-      () => setAccess({ step: 'asked' }),
+      () => {
+        // La feuille s'est fermée. On passe à `asked` **sans rien conclure** : `void` est le
+        // contrat du port, précisément parce qu'il n'y a rien à conclure.
+        //
+        // C'est aussi le premier moment où l'inscription au réveil HealthKit (#55) a une
+        // chance d'aboutir : elle échoue tant que rien n'a été accordé. Ne pas attendre le
+        // prochain lancement pour l'obtenir — `enableBackgroundWakeup` est un no-op sur les
+        // plateformes qui n'ont pas de réveil.
+        void enableBackgroundWakeup();
+        setAccess({ step: 'asked' });
+      },
       (error: unknown) => {
         // Une panne, pas un refus. Un refus n'est pas observable, donc il ne peut pas arriver
         // ici — ce qui passe par là est un vrai problème système.
