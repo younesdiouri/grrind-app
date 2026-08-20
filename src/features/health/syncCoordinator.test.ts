@@ -95,6 +95,44 @@ describe('le sérialiseur de synchronisation', () => {
     assert.equal(started, 2);
   });
 
+  it('transmet le déclencheur à `perform` — c\'est lui qui choisit sa politique de rejeu', async () => {
+    const seen: string[] = [];
+
+    const coordinator = createSyncCoordinator<string>({
+      perform: async (trigger) => {
+        seen.push(trigger);
+        return 'résumé';
+      },
+      now: () => 0,
+      minimumIntervalMs: 30_000,
+    });
+
+    await coordinator.sync('background');
+
+    assert.deepEqual(seen, ['background']);
+  });
+
+  it('soumet le réveil HealthKit au même seuil que les autres déclencheurs automatiques', async () => {
+    let clock = 0;
+    let started = 0;
+
+    const coordinator = createSyncCoordinator<string>({
+      perform: async () => {
+        started += 1;
+        return 'résumé';
+      },
+      now: () => clock,
+      minimumIntervalMs: 30_000,
+    });
+
+    await coordinator.sync('launch');
+
+    // Deux réveils rapprochés — `background` n'est pas `manual`, il ne passe pas en force.
+    clock = 5_000;
+    assert.deepEqual(await coordinator.sync('background'), { status: 'throttled' });
+    assert.equal(started, 1);
+  });
+
   it('laisse toujours passer le geste de rafraîchissement', async () => {
     let clock = 0;
     let started = 0;

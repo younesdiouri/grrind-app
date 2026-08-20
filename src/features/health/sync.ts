@@ -5,9 +5,10 @@ import { healthProvider } from '@/features/health/current';
 import { batchKeys } from '@/features/health/keyStore';
 import type { WorkoutData } from '@/features/health/provider';
 import { sendUntilAnswered, type Reply } from '@/features/health/replay';
+import { retryDelaysFor } from '@/features/health/retryPolicy';
 import { createSyncCoordinator, type SyncOutcome, type SyncTrigger } from '@/features/health/syncCoordinator';
 import { windowStart } from '@/features/health/syncState';
-import { setPending } from '@/features/reward/pending';
+import { enqueuePending } from '@/features/reward/pending';
 import type { SyncSummary } from '@/features/reward/timeline';
 
 /**
@@ -18,18 +19,27 @@ import type { SyncSummary } from '@/features/reward/timeline';
  * 1. `GET /api/workouts/sync-state` — depuis quand ? Le curseur vient du serveur (`syncState.ts`).
  * 2. Le fournisseur rend ce qui a bougé depuis (`provider.ts`, `current.ts`).
  * 3. Le lot obtient sa clé d'idempotence, appariée à son empreinte (`batchKey.ts`, `keyStore.ts`).
- * 4. `POST /api/workouts/import`, rejoué tant que l'issue est inconnue (`replay.ts`).
- * 5. Le `SyncSummary` part se faire jouer (`src/features/reward/`).
+ * 4. `POST /api/workouts/import`, rejoué tant que l'issue est inconnue (`replay.ts`), selon une
+ *    politique qui dépend du déclencheur (`retryPolicy.ts`).
+ * 5. Le `SyncSummary` part se faire jouer — ou pas, voir plus bas (`src/features/reward/`).
  *
  * Le tout est sérialisé par `syncCoordinator.ts` : **une seule synchronisation à la fois**, et
  * pas deux à trente secondes d'intervalle.
  *
- * ————— Pas de tâche de fond en V1 ————————————————————————————————————————————————————
+ * ————— Un chemin, quatre déclencheurs ——————————————————————————————————————————————————
  *
- * `expo-background-task` existe, mais iOS ne garantit aucun réveil. Une synchronisation qu'on ne
- * peut pas expliquer à l'utilisateur produit des animations qui se déclenchent dans le vide —
- * ou pire, une progression déjà jouée quand il ouvre l'app. Les trois déclencheurs sont donc
- * tous des moments où quelqu'un regarde l'écran.
+ * Le bouton, l'ouverture de l'app et le retour au premier plan regardent tous les trois un
+ * écran : leur `SyncSummary` peut se jouer dès qu'il arrive. Le réveil HealthKit (#55) emprunte
+ * exactement le même chemin — même `POST /api/workouts/import`, même clé d'idempotence, même
+ * traitement de la réponse — mais lui n'a personne devant l'écran. **Il ne joue donc rien** : le
+ * résumé va se mettre en file (`pending.ts`) comme n'importe quel autre, et attend d'être
+ * consommé à la prochaine ouverture par le portillon de lancement (`launchGate.ts`). Ce qu'un
+ * `expo-background-task` en V1 aurait cassé reste vrai — une progression ne se joue jamais dans
+ * le vide — et c'est exactement pour ça que le réveil écrit sur le disque au lieu d'animer.
+ *
+ * Le câblage du réveil lui-même — `enableBackgroundDelivery()`, l'événement natif, l'ancre —
+ * ne vit pas ici : voir `backgroundWakeup.ios.ts`, qui appelle `sync('background')` comme
+ * n'importe quel appelant, et `anchorPolicy.ts` pour la décision qui suit.
  */
 
 /**
@@ -109,12 +119,9 @@ export type SyncResult =
 /** Le maximum que le contrat accepte dans un lot. */
 const MAX_BATCH = 200;
 
-/** Les attentes entre deux envois. Trois rejeus, pendant que le joueur regarde l'écran. */
-const RETRY_DELAYS = [400, 1200, 3000] as const;
-
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function perform(): Promise<SyncResult> {
+async function perform(trigger: SyncTrigger): Promise<SyncResult> {
   // C'est ici et pas dans `sync()` que la synchronisation commence vraiment : un appel refusé
   // par le seuil, ou qui en rejoint une déjà partie, n'entre jamais dans cette fonction. Le
   // dire ailleurs ferait clignoter l'écran entre « en cours » et « rien à faire ».
@@ -155,7 +162,7 @@ async function perform(): Promise<SyncResult> {
         params: { header: { 'Idempotency-Key': key } },
         body: { workouts },
       }) as unknown as Promise<Reply<SyncSummary>>,
-    { delays: RETRY_DELAYS, sleep },
+    { delays: retryDelaysFor(trigger), sleep },
   );
 
   if (!answer.ok) {
@@ -175,8 +182,9 @@ async function perform(): Promise<SyncResult> {
   if (answer.data.imported.length > 0) {
     // **Avant** de rendre le résultat, et sur le disque : à partir d'ici la progression est
     // due au joueur, même si l'app meurt dans la seconde. Le serveur, lui, la considère déjà
-    // comptée et ne la renverra jamais.
-    setPending(answer.data);
+    // comptée et ne la renverra jamais. En file, pas en valeur : un réveil qui tombe pendant
+    // qu'un résumé précédent attend encore de se jouer ne doit pas l'effacer.
+    enqueuePending(answer.data);
   }
 
   return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
