@@ -28,6 +28,13 @@ import Security
  armé ici, pas par un acquittement du JS qui pourrait ne jamais venir (bundle pas chargé,
  exception dans un `await`, runtime tué en plein réveil). C'est `commitAnchor` qui écrit
  l'ancre, plus tard, et seulement si l'appelant a de quoi la mériter — voir sa documentation.
+
+ `HKObserverQuery` **redémarre à chaque lancement du processus** — `startObserving()` est câblé
+ sur `OnCreate`, avant le premier rendu React, plutôt que sur un appel JS qui arriverait trop
+ tard pour le réveil qui vient de lancer l'app. L'enregistrement système
+ (`enableBackgroundDelivery`), lui, ne se refait pas à chaque lancement : une fois accepté par
+ iOS, il survit aux redémarrages du processus et ne se rappelle qu'à la demande — typiquement
+ après une autorisation nouvellement accordée.
  */
 public class GrrindHealthModule: Module {
   private let store = HKHealthStore()
@@ -82,6 +89,16 @@ public class GrrindHealthModule: Module {
     // ça reste le travail de `workoutsSince`, sur le curseur serveur — seulement l'ancre neuve
     // que HealthKit vient de rendre, pour que l'appelant puisse la commettre plus tard.
     Events("onWorkoutsChanged")
+
+    // L'observateur ne doit pas dépendre d'un appel JS pour exister : au réveil, iOS relance le
+    // processus et exécute ce bloc avant le premier rendu React, donc avant que le #55 ait pu
+    // câbler quoi que ce soit. Le gater sur `enableBackgroundDelivery()` déplacerait le trou que
+    // `OnStartObserving` aurait creusé — la requête d'observation doit déjà être en place quand
+    // le réveil arrive, pas s'installer en réaction à lui. `startObserving()` est idempotent et
+    // ne tente rien de coûteux sans autorisation : sans elle, il ne livre simplement jamais rien.
+    OnCreate {
+      self.startObserving()
+    }
 
     AsyncFunction("isAvailable") { () -> Bool in
       HKHealthStore.isHealthDataAvailable()
