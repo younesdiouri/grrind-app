@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -30,6 +30,12 @@ import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
  * Les bancs de développement ferment la marche, sous un intitulé qui dit ce qu'ils sont. Ils
  * restent parce que les fixtures sont le seul moyen de rejouer la mise en scène sans aller
  * faire du sport, et le banc de session le seul moyen de provoquer un rafraîchissement.
+ *
+ * ————— Réglages (#57) ——————————————————————————————————————————————————————————————————
+ *
+ * Pas un quatrième onglet : un geste rare n'a pas besoin d'une place permanente dans la barre.
+ * Un bouton discret, sous l'archive plutôt qu'au-dessus — la règle du résumé-puis-archive ne
+ * s'applique qu'à ce qui se consulte souvent, et personne n'ouvre ses réglages en arrivant.
  */
 export default function Home() {
   const auth = useAuth();
@@ -37,6 +43,10 @@ export default function Home() {
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       {auth.status === 'signedIn' ? <PlayerHome /> : null}
+
+      {auth.status === 'signedIn' ? (
+        <Button label="Réglages" onPress={() => router.push('/reglages')} variant="quiet" />
+      ) : null}
 
       <Text style={styles.section}>Outils de développement</Text>
 

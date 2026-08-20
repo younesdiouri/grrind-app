@@ -218,3 +218,19 @@ export const skipReasonLabel: Record<
   OVERLAPS: 'déjà couverte par une autre séance',
   TOO_SHORT: 'trop courte pour compter',
 };
+
+/**
+ * Les catégories de notification, rendues lisibles — le seul endroit où `reglages.tsx` écrit
+ * une catégorie à la main (#57).
+ *
+ * **`Partial`, contrairement aux tables ci-dessus, et c'est volontaire.** `reglages.tsx`
+ * n'itère jamais sur `NotificationCategory` : il rend chaque clé de
+ * `UserProfile.notificationPreferences`, la map complète que le serveur envoie — une
+ * catégorie ajoutée côté back doit apparaître sans republier le client. Une clé absente
+ * d'ici retombe donc sur elle-même, brute, plutôt que de disparaître de l'écran.
+ */
+export const notificationCategoryLabel: Partial<
+  Record<components['schemas']['NotificationCategory'], string>
+> = {
+  GUILD_ACTIVITY: 'Activité de guilde',
+};
