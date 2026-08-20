@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { color } from '@/design/tokens';
 import { useSyncTriggers } from '@/features/health/useSync';
 import { useDeviceRegistration } from '@/features/notifications/useDeviceRegistration';
+import { usePendingPushRoute } from '@/features/notifications/usePendingPushRoute';
 import { markInteracted } from '@/features/reward/launchGate';
 import { usePendingReward } from '@/features/reward/usePendingReward';
 
@@ -23,10 +24,15 @@ import { usePendingReward } from '@/features/reward/usePendingReward';
  * événements tactiles remontent, donc un seul point d'écoute suffit pour toute l'app. C'est
  * ce qui empêche une progression arrivée en retard de s'ouvrir sur quelqu'un en pleine
  * lecture.
+ *
+ * `usePendingPushRoute` (#57) consomme le tap qui attendait une session : c'est ici, une fois
+ * `signedIn`, que `/joueur/{id}` existe sur cette pile et que le router a quelque chose à
+ * atteindre.
  */
 export default function AppLayout() {
   useSyncTriggers();
   useDeviceRegistration();
+  usePendingPushRoute();
   usePendingReward();
 
   return (

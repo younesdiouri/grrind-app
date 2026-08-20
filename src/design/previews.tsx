@@ -14,6 +14,7 @@ import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
+import { ToggleRow } from '@/components/ToggleRow';
 import { XpBar } from '@/components/XpBar';
 import {
   color,
@@ -431,6 +432,26 @@ export const PREVIEWS: Preview[] = [
           <DangerRow label="Exclure Sam Petit" onPress={() => {}} disabled />
         </Specimen>
       </>
+    ),
+  },
+  {
+    slug: 'ligne-bascule',
+    name: 'Ligne de réglage',
+    group: 'Composants',
+    element: (
+      <View style={styles.stack}>
+        <Specimen label="Activée">
+          <ToggleRow label="Activité de guilde" value={true} onValueChange={() => {}} />
+        </Specimen>
+        <Specimen label="Désactivée">
+          <ToggleRow label="Activité de guilde" value={false} onValueChange={() => {}} />
+        </Specimen>
+        {/* Le réglage part vers le serveur : l'interrupteur cède la place au témoin, comme
+            `Button`/`DangerRow` le font pour un appui. */}
+        <Specimen label="Occupée">
+          <ToggleRow label="Activité de guilde" value={true} onValueChange={() => {}} busy />
+        </Specimen>
+      </View>
     ),
   },
   {
