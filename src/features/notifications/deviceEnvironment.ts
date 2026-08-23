@@ -27,12 +27,28 @@ export function devicePlatformFrom(osName: string): DevicePlatform | null {
  * lit (`registration.ts`). Sans ce champ, une campagne de production irait aussi aux
  * téléphones des développeurs, qui tournent tous un binaire en environnement `development`.
  *
- * `null` — le simulateur, qui ne peut pas s'enregistrer auprès d'APNs — se range avec
- * `'development'` : c'est la valeur prudente, celle qui ne peut jamais faire atterrir une
- * campagne de production sur un canal dont on ne sait rien.
+ * **`null` vaut `PRODUCTION`, et c'est le seul défaut correct.** L'API lit
+ * `embedded.mobileprovision` — pas l'entitlement du binaire — et ce profil n'est pas lisible
+ * dans une app livrée par TestFlight ou l'App Store : Apple resigne, et `expo-application`
+ * traite lui-même l'absence de profil comme « App Store » dans son `appReleaseType`. Un
+ * build de store rend donc `null`, jamais `'production'`.
+ *
+ * C'est exactement la convention d'`expo-notifications`, et ce n'est pas une coïncidence à
+ * maintenir de tête : `shouldUseDevelopmentNotificationService` ne bascule que sur un
+ * `'development'` explicite, `null` compris comme production. C'est cette décision-là qui
+ * détermine à quel canal APNs Expo enregistre le jeton — ce champ doit donc dire la même
+ * chose qu'elle, sous peine de décrire un jeton autrement qu'il n'existe.
+ *
+ * Traiter `null` comme « prudent » a coûté un déploiement : les deux appareils TestFlight se
+ * sont enregistrés en `DEVELOPMENT`, `PUSH_TARGET_ENVIRONMENT=PRODUCTION` les a écartés à
+ * l'envoi, et aucune annonce de guilde n'est partie alors que toute la chaîne serveur avait
+ * fonctionné jusqu'au dernier maillon.
+ *
+ * Le simulateur, lui, n'atteint jamais cette fonction : il ne peut pas produire de jeton, donc
+ * `readExpoPushToken` rend `null` et `registration.ts` s'arrête avant.
  */
 export function deviceEnvironmentFrom(
   apnsEnvironment: 'development' | 'production' | null,
 ): DeviceEnvironment {
-  return apnsEnvironment === 'production' ? 'PRODUCTION' : 'DEVELOPMENT';
+  return apnsEnvironment === 'development' ? 'DEVELOPMENT' : 'PRODUCTION';
 }
