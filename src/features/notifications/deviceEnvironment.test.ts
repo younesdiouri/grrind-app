@@ -26,7 +26,7 @@ describe('deviceEnvironmentFrom', () => {
     assert.equal(deviceEnvironmentFrom('development'), 'DEVELOPMENT');
   });
 
-  it('traduit un canal inconnu (simulateur) en DEVELOPMENT — la valeur prudente', () => {
-    assert.equal(deviceEnvironmentFrom(null), 'DEVELOPMENT');
+  it("traduit null en PRODUCTION — le build de store, dont le profil n'est pas lisible", () => {
+    assert.equal(deviceEnvironmentFrom(null), 'PRODUCTION');
   });
 });
