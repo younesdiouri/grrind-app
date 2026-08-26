@@ -12,6 +12,12 @@ import { ring, type Attribute } from '@/design/tokens';
  * et `attributeRing` ne peuvent pas coexister dans ce dossier — `tsc` refuse deux fichiers qui
  * ne diffèrent que par la casse (TS1149), portabilité oblige. Même écart que `guildCapacity.ts`
  * / `CapacityGauge.tsx`, son modèle.
+ *
+ * Marquée `'worklet'`, comme `arcStroke` : `SyncSummaryView` (#71) l'appelle depuis un
+ * `useAnimatedProps`, sur les quatre valeurs *courantes* de la synchronisation plutôt que sur
+ * un instantané figé — les parts se redistribuent à chaque image, exactement ce qu'un arc qui
+ * grandit ne peut pas capturer seul. Même formule, deux appelants : le rendu statique
+ * d'`AttributeRing` sur le thread JS, la mise en scène du lot sur le thread UI.
  */
 export type AttributeArc = {
   attribute: Attribute;
@@ -45,6 +51,7 @@ const ATTRIBUTE_ORDER_KEYS: Record<Attribute, true> = {
 export const ATTRIBUTE_ORDER = Object.keys(ATTRIBUTE_ORDER_KEYS) as Attribute[];
 
 export function arcsOf(attributes: Record<Attribute, number>): AttributeArc[] {
+  'worklet';
   const total = ATTRIBUTE_ORDER.reduce((sum, attribute) => sum + attributes[attribute], 0);
 
   if (total <= 0) {

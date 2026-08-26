@@ -13,12 +13,17 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { Circle } from 'react-native-svg';
 
+import { AttributeRing } from '@/components/AttributeRing';
+import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
+import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import {
+  attributeColor,
   color,
   curve,
   duration,
@@ -28,6 +33,7 @@ import {
   space,
   travel,
   type,
+  type Attribute,
 } from '@/design/tokens';
 import { formatDuration } from '@/features/progression/format';
 import {
@@ -65,6 +71,7 @@ import {
  * vivent dans `timeline.ts`, le dessin dans le design system. Il ne garde que le mouvement.
  */
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /**
  * Les courbes, montées une fois.
@@ -254,6 +261,18 @@ export function SyncSummaryView({
           />
         ))}
 
+        {/* Les cinq jauges, entre le breakdown et le niveau : elle chasse le détail, le
+            niveau la chasse à son tour — rien ne cohabite. */}
+        {timeline.segments.map((segment) => (
+          <AttributeStage
+            key={segment.workout}
+            clock={clock}
+            timeline={timeline}
+            segment={segment}
+            workout={summary.imported[segment.workout]}
+          />
+        ))}
+
         {/* Le palier, par-dessus tout le reste : il chasse le détail au lieu de s'y ranger. */}
         {timeline.segments
           .filter((segment) => summary.imported[segment.workout].level.reached.length > 0)
@@ -315,8 +334,8 @@ function after(instant: number, floor: number): number {
  * Le détail d'une séance : sa carte et son breakdown.
  *
  * Le bloc monte pendant l'anticipation, tient le temps du calcul, puis **sort** — chassé par
- * le basculement s'il y en a un, par la séance suivante sinon. Les niveaux et les titres ne
- * sont plus ici : ils ont leur propre couche, plein cadre.
+ * les cinq jauges, qui prennent le relais juste après le breakdown. Les niveaux et les
+ * titres ne sont plus ici : ils ont leur propre couche, plein cadre.
  */
 function WorkoutDetail({
   clock,
@@ -331,11 +350,11 @@ function WorkoutDetail({
 }) {
   const index = segment.workout;
   const lines = timeline.beats.filter((beat) => beat.kind === 'xpLine' && beat.workout === index);
-  const levels = timeline.beats.filter((beat) => beat.kind === 'level' && beat.workout === index);
   const opening = timeline.beats.find((beat) => beat.kind === 'session' && beat.workout === index)!;
+  const attributesBeat = timeline.beats.find((beat) => beat.kind === 'attributes' && beat.workout === index)!;
 
   const settled = after(opening.until, segment.at);
-  const exit = after(levels[0]?.at ?? segment.until, settled + duration.handoff);
+  const exit = after(attributesBeat.at, settled + duration.handoff);
 
   const style = useAnimatedStyle(() => {
     const entered = easeEnter(
@@ -354,7 +373,7 @@ function WorkoutDetail({
   });
 
   return (
-    <Animated.View style={[styles.block, style]} pointerEvents="none">
+    <Animated.View style={[styles.block, style]}>
       <SessionCard
         discipline={workout.session.discipline}
         duration={formatDuration(workout.session.durationSeconds)}
@@ -375,6 +394,154 @@ function WorkoutDetail({
 
       {/* `loot`, `streak`, `unlockableNodes` — présents et vides jusqu'aux Lots 6, 5 et 7. */}
     </Animated.View>
+  );
+}
+
+/**
+ * Les cinq jauges, plein cadre — sur le modèle de `LevelStage` : elle paraît, elle est
+ * chassée. Les quatre arcs sont **redistribués en direct** : `arcsOf` (#69), désormais
+ * marquée `'worklet'`, relit les quatre valeurs *courantes* de la timeline à chaque image
+ * plutôt qu'un instantané figé — c'est ce qui rend visible que Vitality est la conséquence
+ * d'un équilibre, pas d'un cinquième gain.
+ *
+ * Vitality compte au centre par `useAnimatedProps`, comme le compteur d'XP et le chiffre du
+ * palier. Sa taille de police se calcule **une fois**, sur l'`after` de la Vitality de **ce**
+ * workout — jamais sur le compte en cours (#70) : la recalculer à chaque image ferait sauter
+ * la police pendant que le nombre grandit.
+ */
+function AttributeStage({
+  clock,
+  timeline,
+  segment,
+  workout,
+}: {
+  clock: Clock;
+  timeline: Timeline;
+  segment: Segment;
+  workout: RewardSummary;
+}) {
+  const index = segment.workout;
+  const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index)!;
+  const geometry = ringGeometry('hero');
+  const fontSize = vitalityFontSize(workout.attributes.vitality.after, geometry.innerDiameter, type.display.fontSize);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      clock.value,
+      [beat.at, beat.at + duration.handoff, beat.until - duration.handoff, beat.until],
+      [0, 1, 1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const vitalityProps = useAnimatedProps(() => {
+    const value = Math.round(
+      interpolate(
+        clock.value,
+        timeline.attributes.vitality.input,
+        timeline.attributes.vitality.output,
+        Extrapolation.CLAMP,
+      ),
+    );
+    const text = `${value}`;
+    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
+  });
+
+  return (
+    <Animated.View style={[styles.block, styles.podium, style]}>
+      <AttributeRing
+        attributes={{
+          strength: workout.attributes.strength.after,
+          endurance: workout.attributes.endurance.after,
+          mobility: workout.attributes.mobility.after,
+          dexterity: workout.attributes.dexterity.after,
+        }}
+        vitality={workout.attributes.vitality.after}
+        size="hero"
+        center={
+          <AnimatedTextInput
+            style={[type.display, styles.vitality, { fontSize }]}
+            editable={false}
+            animatedProps={vitalityProps}
+            defaultValue={`${workout.attributes.vitality.before}`}
+          />
+        }
+      >
+        {ATTRIBUTE_ORDER.map((attribute) => (
+          <LiveArc key={attribute} attribute={attribute} clock={clock} timeline={timeline} geometry={geometry} />
+        ))}
+      </AttributeRing>
+    </Animated.View>
+  );
+}
+
+/**
+ * Un arc dont la part se redistribue à chaque image, plutôt que de grandir vers une borne
+ * fixe : les quatre caractéristiques évoluent ensemble, et la part de chacune dépend des
+ * trois autres à cet instant précis. `arcsOf` (marquée `'worklet'`) recalcule les quatre
+ * fractions à partir des valeurs courantes ; `arcStroke` en tire le tracé, comme partout
+ * ailleurs dans le cercle de vie — aucune formule recopiée.
+ */
+function LiveArc({
+  attribute,
+  clock,
+  timeline,
+  geometry,
+}: {
+  attribute: Attribute;
+  clock: Clock;
+  timeline: Timeline;
+  geometry: RingGeometry;
+}) {
+  const animatedProps = useAnimatedProps(() => {
+    const live = {
+      strength: interpolate(
+        clock.value,
+        timeline.attributes.strength.input,
+        timeline.attributes.strength.output,
+        Extrapolation.CLAMP,
+      ),
+      endurance: interpolate(
+        clock.value,
+        timeline.attributes.endurance.input,
+        timeline.attributes.endurance.output,
+        Extrapolation.CLAMP,
+      ),
+      mobility: interpolate(
+        clock.value,
+        timeline.attributes.mobility.input,
+        timeline.attributes.mobility.output,
+        Extrapolation.CLAMP,
+      ),
+      dexterity: interpolate(
+        clock.value,
+        timeline.attributes.dexterity.input,
+        timeline.attributes.dexterity.output,
+        Extrapolation.CLAMP,
+      ),
+    };
+    const arc = arcsOf(live).find((candidate) => candidate.attribute === attribute);
+    const { circumference, length, offset } = arcStroke(
+      arc?.from ?? 0,
+      arc?.to ?? 0,
+      geometry.radius,
+      geometry.strokeWidth,
+    );
+
+    return { strokeDasharray: `${length} ${circumference - length}`, strokeDashoffset: offset };
+  });
+
+  return (
+    <AnimatedCircle
+      cx={geometry.origin}
+      cy={geometry.origin}
+      r={geometry.radius}
+      stroke={attributeColor[attribute]}
+      strokeWidth={geometry.strokeWidth}
+      strokeLinecap="round"
+      fill="none"
+      animatedProps={animatedProps}
+    />
   );
 }
 
@@ -424,7 +591,7 @@ function LevelStage({
   const grantedAt = (titles[titles.length - 1] ?? levels[levels.length - 1]).until;
 
   return (
-    <Animated.View style={[styles.block, styles.podium, style]} pointerEvents="none">
+    <Animated.View style={[styles.block, styles.podium, style]}>
       <LevelFlip
         clock={clock}
         starts={levels.map((beat) => beat.at)}
@@ -560,7 +727,7 @@ function Digest({
   });
 
   return (
-    <Animated.View style={[styles.block, styles.podium, style]} pointerEvents="none">
+    <Animated.View style={[styles.block, styles.podium, style]}>
       <Text style={styles.digestCount}>+{count}</Text>
       <Text style={styles.label}>{count > 1 ? 'autres séances' : 'autre séance'}</Text>
 
@@ -611,7 +778,7 @@ function Skipped({ clock, at, until, entries }: BeatProps & { entries: SkippedWo
   const step = (until - at) / entries.length;
 
   return (
-    <View style={styles.skipped} pointerEvents="none">
+    <View style={styles.skipped}>
       {entries.map((entry, index) => (
         <SkippedRow
           key={entry.externalId}
@@ -682,8 +849,19 @@ const styles = StyleSheet.create({
   // Position explicite plutôt que `StyleSheet.absoluteFill` : les blocs se superposent dans
   // `stage`, et écrire les quatre bords ici évite de dépendre d'un helper dont le type a
   // bougé d'une version de React Native à l'autre.
-  block: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, gap: space.md },
+  // `pointerEvents` dans le style, pas en prop : RN 0.86 déprécie la prop autonome — même
+  // choix qu'`AttributeRing.center`.
+  block: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    gap: space.md,
+    pointerEvents: 'none',
+  },
   podium: { alignItems: 'center', justifyContent: 'center' },
+  vitality: { color: color.text, padding: 0, textAlign: 'center' },
   label: { ...type.label, color: color.textMuted },
   breakdown: { gap: space.sm },
   // `alignSelf: 'stretch'` et non `alignItems: 'center'` : un `TextInput` n'a pas la largeur
@@ -705,7 +883,7 @@ const styles = StyleSheet.create({
   },
   levelValue: { ...type.title, color: color.celebrate },
   digestCount: { ...type.display, color: color.text },
-  skipped: { gap: space.xs },
+  skipped: { gap: space.xs, pointerEvents: 'none' },
   skippedRow: { flexDirection: 'row', gap: space.sm, alignItems: 'baseline' },
   skippedType: { ...type.body, color: color.text },
   skippedReason: { ...type.body, color: color.textMuted, flexShrink: 1 },

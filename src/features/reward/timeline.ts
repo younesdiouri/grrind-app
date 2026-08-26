@@ -1,5 +1,6 @@
 import type { components } from '@/api/schema';
-import { duration } from '@/design/tokens';
+import { ATTRIBUTE_ORDER } from '@/components/attributeArcs';
+import { duration, type AttributeState } from '@/design/tokens';
 
 export type SyncSummary = components['schemas']['SyncSummary'];
 export type SyncTotals = components['schemas']['SyncTotals'];
@@ -12,9 +13,9 @@ export type SkippedWorkout = SyncSummary['skipped'][number];
  *
  * **L'ordre des clés du payload est l'ordre de l'animation**, à deux niveaux désormais :
  * d'abord entre les workouts — `imported` est chronologique, celui du crédit — puis à
- * l'intérieur de chacun, `session → xp.breakdown → level.reached → titlesUnlocked → loot →
- * streak → unlockableNodes`. Cette fonction ne fait que le rendre explicite : elle ne trie
- * jamais, elle ne réordonne jamais.
+ * l'intérieur de chacun, `session → xp.breakdown → attributes → level.reached →
+ * titlesUnlocked → loot → streak → unlockableNodes`. Cette fonction ne fait que le rendre
+ * explicite : elle ne trie jamais, elle ne réordonne jamais.
  *
  * **La continuité est offerte, pas calculée.** Chaque `RewardSummary` porte son palier de
  * départ (`xpIntoLevelBefore` / `xpToNextLevelBefore`), et celui du workout *i+1* est
@@ -47,6 +48,12 @@ export const BEATS = {
   xpLine: duration.line,
   /** La barre finit sa course après la dernière ligne. */
   xpSettle: duration.settle,
+  /** Un gain de caractéristique atterrit ; les suivants s'enchaînent au même rythme qu'une
+   *  ligne de breakdown — c'est la même échelle, pas une nouvelle. */
+  attributeGain: duration.line,
+  /** L'anneau finit sa course une fois les quatre gains posés. Vitality, dérivée, ne bouge
+   *  qu'ici : elle est la conséquence de la redistribution, pas un cinquième gain. */
+  attributeSettle: duration.settle,
   /** Un niveau bascule. */
   levelFlip: duration.flip,
   /** Un titre tombe. */
@@ -89,6 +96,8 @@ export type Beat =
       line: XpLine;
       runningTotal: number;
     }
+  /** Les cinq jauges montent — entre le repos qui suit le breakdown et le premier `level`. */
+  | { kind: 'attributes'; at: number; until: number; workout: number }
   | { kind: 'level'; at: number; until: number; workout: number; level: number }
   | { kind: 'title'; at: number; until: number; workout: number; index: number }
   /** Les workouts au-delà du détail, roulés en une montée continue. */
@@ -100,6 +109,15 @@ export type Beat =
 /** Une rampe d'interpolation : `input` sont des instants, `output` la valeur à cet instant. */
 export type Ramp = { input: number[]; output: number[] };
 
+/**
+ * Les cinq jauges de caractéristiques, chacune sa propre rampe de valeur **absolue** — jamais
+ * une fraction déjà calculée. Le cercle en tire ses parts lui-même, dans le worklet qui
+ * l'anime (`arcsOf`, désormais marquée `'worklet'` pour ça) : les figer en fractions ici
+ * rendrait impossible d'afficher le chiffre que chaque caractéristique porte, et Vitality n'a
+ * même pas de part à figer, seulement un nombre.
+ */
+export type AttributeRamps = Record<AttributeState, Ramp>;
+
 export type Timeline = {
   beats: Beat[];
   /** Durée totale, en ms. La valeur que le saut fait atteindre d'un coup. */
@@ -108,6 +126,12 @@ export type Timeline = {
   bar: Ramp;
   /** Le compteur d'XP, cumulé sur **toute** la synchronisation. */
   counter: Ramp;
+  /**
+   * Les cinq jauges de caractéristiques, de bout en bout — condensé compris, comme `bar` et
+   * `counter`. Le condensé ne montre pas de cercle, mais les rampes continuent d'y courir
+   * pour que l'arrivée du dernier `imported` soit exacte quand le joueur saute.
+   */
+  attributes: AttributeRamps;
   /**
    * L'or de la butée : 1 à l'instant précis où la barre bute en haut, 0 partout ailleurs.
    *
@@ -197,6 +221,29 @@ function fillsAlong(level: RewardSummary['level'], cumulative: number[]): number
   return cumulative.map((total) => clamp01((level.xpIntoLevelBefore + total) / span));
 }
 
+/** Les cinq jauges à zéro — le point de départ d'un compte neuf, sans workout crédité. */
+const zeroAttributes: Record<AttributeState, number> = {
+  strength: 0,
+  endurance: 0,
+  mobility: 0,
+  dexterity: 0,
+  vitality: 0,
+};
+
+/** L'instantané d'une jauge de caractéristiques — son avant, ou son après. */
+function attributesAt(
+  gauges: RewardSummary['attributes'],
+  edge: 'before' | 'after',
+): Record<AttributeState, number> {
+  return {
+    strength: gauges.strength[edge],
+    endurance: gauges.endurance[edge],
+    mobility: gauges.mobility[edge],
+    dexterity: gauges.dexterity[edge],
+    vitality: gauges.vitality[edge],
+  };
+}
+
 /**
  * Deux points d'interpolation ne peuvent pas partager le même instant : l'entrée doit croître
  * strictement, sinon `interpolate` rend n'importe quoi. Sur un doublon, c'est la **dernière**
@@ -223,6 +270,13 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   const beats: Beat[] = [];
   const bar: Ramp = { input: [], output: [] };
   const counter: Ramp = { input: [], output: [] };
+  const attributes: AttributeRamps = {
+    strength: { input: [], output: [] },
+    endurance: { input: [], output: [] },
+    mobility: { input: [], output: [] },
+    dexterity: { input: [], output: [] },
+    vitality: { input: [], output: [] },
+  };
 
   let cursor = 0;
   /** L'XP cumulée sur toute la synchronisation, tous workouts confondus. */
@@ -252,6 +306,20 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     counter.output.push(value);
   };
 
+  /**
+   * Verrouille les cinq jauges sur une valeur, à un instant donné — la même technique que
+   * `holdBar`, répétée cinq fois. Sans ce point, une jauge qui n'a encore rien à montrer
+   * dériverait dès la première image au lieu de rester plate jusqu'à son tour.
+   */
+  const holdAttributes = (at: number, values: Record<AttributeState, number>): void => {
+    ATTRIBUTE_ORDER.forEach((attribute) => {
+      attributes[attribute].input.push(at);
+      attributes[attribute].output.push(values[attribute]);
+    });
+    attributes.vitality.input.push(at);
+    attributes.vitality.output.push(values.vitality);
+  };
+
   /** Les instants de franchissement, dans l'ordre où ils se jouent. */
   const crossings: number[] = [];
 
@@ -265,6 +333,10 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   const start = summary.imported.length > 0 ? fillBefore(summary.imported[0].level) : 0;
   holdBar(0, start);
   holdCounter(0, 0);
+  holdAttributes(
+    0,
+    summary.imported.length > 0 ? attributesAt(summary.imported[0].attributes, 'before') : zeroAttributes,
+  );
 
   // L'anticipation : un temps mort **avant** la première séance, où la barre est posée sur le
   // palier du joueur et où rien ne bouge encore. C'est ce qui fait de la première ligne un
@@ -316,6 +388,38 @@ export function buildTimeline(summary: SyncSummary): Timeline {
       // s'arrête simplement là où elle finit.
       holdBar(settle.until, workout.level.reached.length > 0 ? 1 : fillAfter(workout.level));
     }
+
+    // 2.5. `attributes` — les quatre gains, dans l'ordre du contrat, puis Vitality. Un gain
+    //      à zéro ne consomme aucun temps : il n'y a rien à annoncer, il reste éteint dans la
+    //      légende sans jamais bouger. Vitality, dérivée, ne se pose qu'une fois les quatre
+    //      autres arrivées — c'est elle qui referme le battement, sur `attributeSettle`.
+    const before = attributesAt(workout.attributes, 'before');
+    const after = attributesAt(workout.attributes, 'after');
+    const landings = ATTRIBUTE_ORDER.filter((attribute) => workout.attributes[attribute].gained > 0);
+
+    const attributesBeat = push({
+      kind: 'attributes',
+      duration: landings.length * BEATS.attributeGain + BEATS.attributeSettle,
+      workout: index,
+    });
+
+    // Le départ : verrouillé sur ce que le joueur avait, pour que rien ne bouge avant le tour
+    // de la caractéristique — même si la continuité du contrat le garantit déjà, ce point
+    // fixe le début du battement plutôt que de dépendre d'un hasard de calendrier.
+    holdAttributes(attributesBeat.at, before);
+
+    // Chaque gain non nul atterrit à son tour. Ceux qui attendent encore restent tenus sur
+    // leur valeur de départ à chaque palier — sinon `interpolate` les ferait dériver dès la
+    // première image, au lieu de les laisser immobiles jusqu'à leur tour.
+    let landed = before;
+    landings.forEach((attribute, position) => {
+      const at = attributesBeat.at + (position + 1) * BEATS.attributeGain;
+      landed = { ...landed, [attribute]: after[attribute] };
+      holdAttributes(at, landed);
+    });
+
+    // L'anneau a fini de se redistribuer : Vitality se pose, seule, sur le reste du battement.
+    holdAttributes(attributesBeat.until, after);
 
     // 3. `level.reached` — un basculement par niveau franchi. Plusieurs d'un coup est un cas
     //    normal, pas l'exception : on les joue tous, l'un après l'autre. La barre retombe à
@@ -369,6 +473,11 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     // retiendra, et elle vient de `totals`, pas d'une somme refaite ici.
     holdCounter(span.until, summary.totals?.xpAwarded ?? running);
     running = summary.totals?.xpAwarded ?? running;
+
+    // Le cercle ne se montre pas ici, mais les cinq jauges continuent d'y courir sous le
+    // condensé : l'arrivée du dernier `imported` doit être exacte quand le joueur saute,
+    // condensé compris — sans ça le saut sur `quinze-workouts` s'arrêterait un cran trop tôt.
+    holdAttributes(span.until, last === undefined ? zeroAttributes : attributesAt(last.attributes, 'after'));
   }
 
   // Ce qui n'a rien rapporté, nommé — et **en dernier**. Un écart est une note en bas de page,
@@ -380,6 +489,7 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   const tail = push({ kind: 'rest', duration: BEATS.tail });
   holdBar(tail.until, last === undefined ? start : fillAfter(last.level));
   holdCounter(tail.until, summary.totals?.xpAwarded ?? running);
+  holdAttributes(tail.until, last === undefined ? zeroAttributes : attributesAt(last.attributes, 'after'));
 
   // Un segment court de l'ouverture d'une séance à l'ouverture de la suivante ; le dernier
   // s'arrête là où le détail cède la place — au condensé, aux écarts, ou à la fin.
@@ -411,6 +521,13 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     duration: cursor,
     bar: strictlyIncreasing(bar),
     counter: strictlyIncreasing(counter),
+    attributes: {
+      strength: strictlyIncreasing(attributes.strength),
+      endurance: strictlyIncreasing(attributes.endurance),
+      mobility: strictlyIncreasing(attributes.mobility),
+      dexterity: strictlyIncreasing(attributes.dexterity),
+      vitality: strictlyIncreasing(attributes.vitality),
+    },
     crest: strictlyIncreasing(crest),
     crossings,
     totals: summary.totals ?? null,
