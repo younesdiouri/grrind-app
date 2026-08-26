@@ -213,7 +213,13 @@ export function AttributeCard({ attributes }: { attributes: Progression['attribu
           ))}
         </AttributeRing>
 
-        <AttributeLegend attributes={arcs} />
+        {/* La légende prend la largeur qui reste, comme `barWrap` le fait pour `XpBar` dans
+            `GuildMemberRow` : son `legendLabel` est en `flex: 1`, et un enfant flexible dans un
+            parent dont la largeur dépend de son contenu se réduit à un caractère — les
+            libellés se replient alors verticalement, lettre par lettre. */}
+        <View style={styles.legendWrap}>
+          <AttributeLegend attributes={arcs} />
+        </View>
       </View>
 
       {empty ? (
@@ -319,5 +325,6 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  legendWrap: { flex: 1 },
   vitalityText: { color: color.text, padding: 0, textAlign: 'center' },
 });

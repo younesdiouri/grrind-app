@@ -94,7 +94,9 @@ function PlayerAttributes({ player }: { player: Player }) {
     <>
       <View style={styles.attributesRow}>
         <AttributeRing attributes={attributes} vitality={vitality} size="hero" />
-        <AttributeLegend attributes={attributes} />
+        <View style={styles.legendWrap}>
+          <AttributeLegend attributes={attributes} />
+        </View>
       </View>
 
       {empty ? <Text style={styles.body}>Rien à répartir pour l&apos;instant.</Text> : null}
@@ -112,4 +114,5 @@ const styles = StyleSheet.create({
   title: { ...type.title, color: color.text },
   body: { ...type.body, color: color.textMuted },
   attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  legendWrap: { flex: 1 },
 });
