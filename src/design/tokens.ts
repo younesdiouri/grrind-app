@@ -197,6 +197,33 @@ export const disciplineLabel: Record<components['schemas']['Discipline'], string
 };
 
 /**
+ * Le contrat n'a pas d'enum `Attribute` : les caractéristiques sont des clés d'objet. Deux
+ * formes, pas une, et c'est le contrat qui le décide — un **passage** (`RewardSummary`,
+ * `XpTransaction`, avec `gained` ou un montant signé) et un **état** (`Progression`, `Player`,
+ * à plat).
+ *
+ * Les quatre qui reçoivent de l'XP. `XpTransaction` est le seul schéma qui les porte sans
+ * Vitality : elle n'est jamais créditée directement, aucune transaction ne lui est adressée.
+ */
+export type Attribute = keyof components['schemas']['XpTransaction']['attributes'];
+
+/** Les cinq, Vitality comprise — l'état affiché après l'animation comme sur le profil d'un tiers. */
+export type AttributeState = keyof components['schemas']['Progression']['attributes'];
+
+/**
+ * Les caractéristiques, rendues lisibles. Même garde-fou, même raison que `xpSourceLabel` et
+ * `disciplineLabel` : la clé sort du schéma généré, jamais d'une union recopiée, et le
+ * compilateur casse le jour où le back en ajoute une sixième.
+ */
+export const attributeLabel: Record<AttributeState, string> = {
+  strength: 'Force',
+  endurance: 'Endurance',
+  mobility: 'Mobilité',
+  dexterity: 'Dextérité',
+  vitality: 'Vitalité',
+};
+
+/**
  * Pourquoi une séance n'a rien rapporté.
  *
  * Le serveur nomme **chaque** séance écartée — `externalId`, `activityType`, `reason` — et
