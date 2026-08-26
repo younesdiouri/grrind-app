@@ -354,7 +354,7 @@ function WorkoutDetail({
   });
 
   return (
-    <Animated.View style={[styles.block, style]} pointerEvents="none">
+    <Animated.View style={[styles.block, style]}>
       <SessionCard
         discipline={workout.session.discipline}
         duration={formatDuration(workout.session.durationSeconds)}
@@ -424,7 +424,7 @@ function LevelStage({
   const grantedAt = (titles[titles.length - 1] ?? levels[levels.length - 1]).until;
 
   return (
-    <Animated.View style={[styles.block, styles.podium, style]} pointerEvents="none">
+    <Animated.View style={[styles.block, styles.podium, style]}>
       <LevelFlip
         clock={clock}
         starts={levels.map((beat) => beat.at)}
@@ -560,7 +560,7 @@ function Digest({
   });
 
   return (
-    <Animated.View style={[styles.block, styles.podium, style]} pointerEvents="none">
+    <Animated.View style={[styles.block, styles.podium, style]}>
       <Text style={styles.digestCount}>+{count}</Text>
       <Text style={styles.label}>{count > 1 ? 'autres séances' : 'autre séance'}</Text>
 
@@ -611,7 +611,7 @@ function Skipped({ clock, at, until, entries }: BeatProps & { entries: SkippedWo
   const step = (until - at) / entries.length;
 
   return (
-    <View style={styles.skipped} pointerEvents="none">
+    <View style={styles.skipped}>
       {entries.map((entry, index) => (
         <SkippedRow
           key={entry.externalId}
@@ -682,7 +682,17 @@ const styles = StyleSheet.create({
   // Position explicite plutôt que `StyleSheet.absoluteFill` : les blocs se superposent dans
   // `stage`, et écrire les quatre bords ici évite de dépendre d'un helper dont le type a
   // bougé d'une version de React Native à l'autre.
-  block: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, gap: space.md },
+  // `pointerEvents` dans le style, pas en prop : RN 0.86 déprécie la prop autonome — même
+  // choix qu'`AttributeRing.center`.
+  block: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    gap: space.md,
+    pointerEvents: 'none',
+  },
   podium: { alignItems: 'center', justifyContent: 'center' },
   label: { ...type.label, color: color.textMuted },
   breakdown: { gap: space.sm },
@@ -705,7 +715,7 @@ const styles = StyleSheet.create({
   },
   levelValue: { ...type.title, color: color.celebrate },
   digestCount: { ...type.display, color: color.text },
-  skipped: { gap: space.xs },
+  skipped: { gap: space.xs, pointerEvents: 'none' },
   skippedRow: { flexDirection: 'row', gap: space.sm, alignItems: 'baseline' },
   skippedType: { ...type.body, color: color.text },
   skippedReason: { ...type.body, color: color.textMuted, flexShrink: 1 },
