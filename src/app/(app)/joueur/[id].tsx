@@ -1,6 +1,7 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { Button } from '@/components/Button';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { TitleBadge } from '@/components/TitleBadge';
@@ -9,7 +10,7 @@ import { progressFill } from '@/components/guildProgress';
 import { color, space, type } from '@/design/tokens';
 import { messageFor } from '@/features/auth/problems';
 import { formatCalendarDate } from '@/features/community/format';
-import { usePlayer } from '@/features/community/usePlayer';
+import { usePlayer, type Player } from '@/features/community/usePlayer';
 
 /**
  * Le profil d'un co-équipier — `GET /api/players/{id}`, poussé sur le Stack au-dessus des
@@ -18,11 +19,15 @@ import { usePlayer } from '@/features/community/usePlayer';
  *
  * ————— Ce qui n'y figure pas est la moitié du contrat ——————————————————————————————————
  *
- * `displayName`, `registeredAt`, `level`, `xpIntoLevel`, `xpToNextLevel`, `title` : **rien
- * d'autre**. Ni rôle dans la guilde (ce profil n'en connaît même pas — c'est `GuildMember`
- * qui l'étale, pas `Player`), ni séances, ni *prochain* titre visé : ce dernier n'a de sens
- * que sur son propre profil (`GET /api/me`), et personne n'a à savoir ce qu'un co-équipier
- * est en train de viser.
+ * `displayName`, `registeredAt`, `level`, `xpIntoLevel`, `xpToNextLevel`, `title`,
+ * `attributes` — **rien d'autre**, et ce dernier champ est le seul à avoir bougé depuis
+ * l'ouverture de ce fichier. Les cinq caractéristiques ont rejoint `Player` par décision de
+ * produit (#176) : la répartition d'une pratique a été tranchée **sociale**, c'est une des
+ * raisons d'avoir des guildes, donc elle ne fuit pas — elle s'affiche, comme sur son propre
+ * profil (#70). Le reste n'a pas bougé : ni rôle dans la guilde (ce profil n'en connaît même
+ * pas — c'est `GuildMember` qui l'étale, pas `Player`), ni séances, ni *prochain* titre
+ * visé : ce dernier n'a de sens que sur son propre profil (`GET /api/me`), et personne n'a à
+ * savoir ce qu'un co-équipier est en train de viser.
  *
  * `404 player-not-found` couvre indistinctement « inconnu » et « hors de la guilde » — et
  * jamais 403, les UUID v7 du contrat encodant leur instant de création. L'écran ne cherche
@@ -62,11 +67,37 @@ export default function JoueurScreen() {
 
           {player.data.title === null ? null : <TitleBadge name={player.data.title.name} />}
 
+          <PlayerAttributes player={player.data} />
+
           <Text style={styles.body}>
             Membre GRRIND depuis le {formatCalendarDate(player.data.registeredAt)}.
           </Text>
         </ScrollView>
       )}
+    </>
+  );
+}
+
+/**
+ * Le cercle de vie (#69) d'un co-équipier, sous sa barre d'XP.
+ *
+ * `Player.attributes` est un **état**, jamais un passage — à la différence de
+ * `RewardSummary.attributes`, il ne porte ni `gained` ni avant/après (#70). Rien ici ne
+ * s'anime donc au montage, à la différence de la même donnée sur son propre accueil : ce
+ * profil affiche ce qui est, pas ce qui vient de se passer.
+ */
+function PlayerAttributes({ player }: { player: Player }) {
+  const { vitality, ...attributes } = player.attributes;
+  const empty = vitality <= 0 && Object.values(attributes).every((value) => value <= 0);
+
+  return (
+    <>
+      <View style={styles.attributesRow}>
+        <AttributeRing attributes={attributes} vitality={vitality} size="hero" />
+        <AttributeLegend attributes={attributes} />
+      </View>
+
+      {empty ? <Text style={styles.body}>Rien à répartir pour l&apos;instant.</Text> : null}
     </>
   );
 }
@@ -80,4 +111,5 @@ const styles = StyleSheet.create({
   level: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   title: { ...type.title, color: color.text },
   body: { ...type.body, color: color.textMuted },
+  attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
 });
