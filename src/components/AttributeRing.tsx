@@ -49,15 +49,18 @@ export function AttributeRing({ attributes, vitality, size = 'inline', children 
     <View style={styles.wrapper}>
       <Svg width={diameter} height={diameter}>
         <Circle cx={center} cy={center} r={ringRadius} stroke={color.surfaceRaised} strokeWidth={strokeWidth} fill="none" />
-        {/* Partie au douze heures, pas aux trois : c'est là qu'un cercle de progression se lit. */}
-        <G rotation={-90} originX={center} originY={center}>
+        {/* Partie au douze heures, pas aux trois : c'est là qu'un cercle de progression se lit.
+            `transform`, pas `rotation`/`originX`/`originY` — dépréciés par `react-native-svg`
+            lui-même, et c'est leur traduction web qui pose un `transform-origin` que React ne
+            reconnaît pas comme propriété DOM. Une rotation SVG porte son centre elle-même. */}
+        <G transform={`rotate(-90 ${center} ${center})`}>
           {children ??
             arcsOf(attributes).map((arc) => (
               <Arc key={arc.attribute} arc={arc} radius={ringRadius} center={center} strokeWidth={strokeWidth} />
             ))}
         </G>
       </Svg>
-      <View style={[styles.center, { width: innerDiameter, height: innerDiameter }]} pointerEvents="none">
+      <View style={[styles.center, { width: innerDiameter, height: innerDiameter }]}>
         <Text numberOfLines={1} style={[typeScale, styles.vitality, { fontSize }]}>
           {vitality}
         </Text>
@@ -143,7 +146,8 @@ export function AttributeLegend({ attributes }: AttributeLegendProps) {
 
 const styles = StyleSheet.create({
   wrapper: { alignItems: 'center', justifyContent: 'center' },
-  center: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  // `pointerEvents` dans le style, pas en prop : RN 0.86 déprécie la prop autonome.
+  center: { position: 'absolute', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' },
   vitality: { color: color.text },
   legend: { gap: space.xs },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
