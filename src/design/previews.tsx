@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
+import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
@@ -321,6 +322,76 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="De tête — celle du séquenceur">
           <XpBar size="hero" fill={0.72} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'cercle-de-vie',
+    name: 'Cercle de vie',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Réparti — une pratique variée">
+          <View style={styles.row}>
+            <AttributeRing
+              vitality={92}
+              attributes={{ strength: 5200, endurance: 4800, mobility: 4300, dexterity: 5100 }}
+            />
+            <AttributeLegend attributes={{ strength: 5200, endurance: 4800, mobility: 4300, dexterity: 5100 }} />
+          </View>
+        </Specimen>
+        <Specimen label="Monospécialisé — presque tout en force">
+          <View style={styles.row}>
+            <AttributeRing
+              vitality={18}
+              attributes={{ strength: 9000, endurance: 300, mobility: 150, dexterity: 200 }}
+            />
+            <AttributeLegend attributes={{ strength: 9000, endurance: 300, mobility: 150, dexterity: 200 }} />
+          </View>
+        </Specimen>
+        {/* Une part réelle (~1 %), trop fine pour survivre à l'écart et à l'épaisseur du
+            trait : l'anneau ne dessine rien pour elle plutôt qu'un point qui la grossirait —
+            la légende, elle, garde le chiffre exact. Sans cette carte, le cas redevient
+            invisible dès qu'on ne le cherche plus. */}
+        <Specimen label="Part infime — sous le seuil de trait">
+          <View style={styles.row}>
+            <AttributeRing vitality={8} attributes={{ strength: 9900, endurance: 100, mobility: 0, dexterity: 0 }} />
+            <AttributeLegend attributes={{ strength: 9900, endurance: 100, mobility: 0, dexterity: 0 }} />
+          </View>
+        </Specimen>
+        {/* Vitality n'a pas de plafond : cinq chiffres tiennent dans l'anneau sans déborder,
+            parce que la taille se calcule — voir `vitalityFontSize`. */}
+        <Specimen label="Vitality à cinq chiffres">
+          <View style={styles.row}>
+            <AttributeRing
+              size="hero"
+              vitality={18420}
+              attributes={{ strength: 52000, endurance: 48000, mobility: 43000, dexterity: 51000 }}
+            />
+            <AttributeLegend attributes={{ strength: 52000, endurance: 48000, mobility: 43000, dexterity: 51000 }} />
+          </View>
+        </Specimen>
+        {/* Une part nulle ne dessine rien, ni trait ni écart — et sa ligne reste là, éteinte. */}
+        <Specimen label="Une caractéristique jamais touchée — la mobilité">
+          <View style={styles.row}>
+            <AttributeRing
+              vitality={61}
+              attributes={{ strength: 3000, endurance: 2500, mobility: 0, dexterity: 2000 }}
+            />
+            <AttributeLegend attributes={{ strength: 3000, endurance: 2500, mobility: 0, dexterity: 2000 }} />
+          </View>
+        </Specimen>
+        {/* `PlayerProgression::untouched()` : cinq zéros, aucun arc. */}
+        <Specimen label="Compte neuf — tout à zéro">
+          <View style={styles.row}>
+            <AttributeRing
+              size="hero"
+              vitality={0}
+              attributes={{ strength: 0, endurance: 0, mobility: 0, dexterity: 0 }}
+            />
+            <AttributeLegend attributes={{ strength: 0, endurance: 0, mobility: 0, dexterity: 0 }} />
+          </View>
         </Specimen>
       </>
     ),

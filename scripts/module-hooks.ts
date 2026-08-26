@@ -22,6 +22,30 @@ import { fileURLToPath } from 'node:url';
  *
  * Ce fichier ne participe **jamais** à l'app : Metro ne le voit pas, et rien dans `src/` ne
  * l'importe. Il s'installe par `--import ./scripts/use-module-hooks.ts`.
+ *
+ * ————— `react-native-svg`, le même problème posé quatre fois de plus ——————————————————————
+ *
+ * `AttributeRing` (#69) dessine des arcs, donc importe `react-native-svg`. Metro sait choisir
+ * son build web ; Node, laissé seul, suit le champ `main` du paquet — du CommonJS qui
+ * `require()` le vrai `react-native` et boit du Flow (`Unexpected token 'typeof'`). Un spike a
+ * vérifié ce chemin de bout en bout ; il tient en quatre règles, chacune pour le symptôme
+ * qu'elle corrige :
+ *
+ * 4. `react-native-svg` se résout vers son build web, `lib/module/ReactNativeSVG.web.js` —
+ *    jamais vers `main` (CommonJS, `require('react-native')`) ni vers le champ `react-native`
+ *    du paquet (ses sources TypeScript, que Node ne sait pas lire).
+ * 5. À l'intérieur du paquet, un import relatif sans extension préfère son `.web.js` à son
+ *    `.js` (`elements.web.js` porte les primitives DOM, `elements.js` les vues natives) — et
+ *    Node doit d'abord apprendre à résoudre l'absence d'extension elle-même, qu'il ne fait
+ *    jamais pour un specifier ESM.
+ * 6. Un specifier **nu** sans extension retombe sur `.js` : `@react-native/assets-registry`
+ *    n'a pas de champ `main`, et le build web du paquet l'importe par son sous-chemin
+ *    (`@react-native/assets-registry/registry`) sans le préciser.
+ * 7. `lib/extract/transformToRn.js` est un analyseur généré par Peggy, en CommonJS
+ *    (`module.exports = { parse, ... }`). Son export nommé échappe à la détection statique de
+ *    Node (« is a CommonJS module, which may not support all module.exports as named
+ *    exports ») : on le recharge donc par `require()`, qui n'a pas ce problème, et on
+ *    réexpose ses clés en ESM à la main.
  */
 
 const src = new URL('../src/', import.meta.url);
@@ -42,9 +66,25 @@ function firstExisting(base: URL): string | null {
   return null;
 }
 
+/** `react-native-svg` : la règle 4, un seul spécificateur à rediriger vers son build web. */
+const REACT_NATIVE_SVG_ENTRY = 'react-native-svg/lib/module/ReactNativeSVG.web.js';
+
+/** Le fichier de la règle 7, quel que soit le chemin (relatif ou déjà résolu) qui y mène. */
+const TRANSFORM_TO_RN_SUFFIX = '/lib/extract/transformToRn.js';
+
+/** Une extension de fichier, au sens le plus simple : un point dans le dernier segment. */
+function hasExtension(specifier: string): boolean {
+  return (specifier.split('/').pop() ?? '').includes('.');
+}
+
 export const resolve: ResolveHook = async (specifier, context, next) => {
   if (specifier === 'react-native') {
     return next('react-native-web', context);
+  }
+
+  // Règle 4 : le seul specifier `react-native-svg` de tout le dépôt à ne pas laisser à `next`.
+  if (specifier === 'react-native-svg') {
+    return next(REACT_NATIVE_SVG_ENTRY, context);
   }
 
   if (specifier.startsWith('@/')) {
@@ -65,10 +105,62 @@ export const resolve: ResolveHook = async (specifier, context, next) => {
     return { url, shortCircuit: true };
   }
 
+  // Règle 5 : dans `react-native-svg` seulement — un import relatif d'ailleurs dans le dépôt
+  // porte toujours son extension, `@/` s'en charge.
+  if (
+    (specifier.startsWith('./') || specifier.startsWith('../')) &&
+    !hasExtension(specifier) &&
+    context.parentURL?.includes('/node_modules/react-native-svg/')
+  ) {
+    const base = new URL(specifier, context.parentURL);
+    // Un dossier (`./web/utils`) n'a pas de `.web.js` propre — seul son `index.js` existe.
+    // L'ordre reste celui de Metro : le `.web.js` du fichier, puis son `.js`, puis les mêmes
+    // deux nommées à l'intérieur du dossier.
+    for (const suffix of ['.web.js', '.js', '/index.web.js', '/index.js']) {
+      const candidate = `${base.href}${suffix}`;
+      if (existsSync(fileURLToPath(candidate))) {
+        return next(candidate, context);
+      }
+    }
+    // Aucune des quatre variantes n'existe : on laisse `next` échouer avec son message, plus
+    // précis que ce que cette règle pourrait inventer.
+  }
+
+  // Règle 6 : un specifier nu, sans extension, qui ne se résout pas tel quel. `next` échoue
+  // vite (pas de requête réseau, pas d'I/O coûteuse) : essayer d'abord coûte moins qu'un
+  // second garde-fou sur le nom du paquet.
+  if (!specifier.startsWith('.') && !specifier.startsWith('@/') && !hasExtension(specifier)) {
+    try {
+      return await next(specifier, context);
+    } catch (error) {
+      if (!(error instanceof Error) || !('code' in error) || error.code !== 'ERR_MODULE_NOT_FOUND') {
+        throw error;
+      }
+      return next(`${specifier}.js`, context);
+    }
+  }
+
   return next(specifier, context);
 };
 
 export const load: LoadHook = async (url, context, next) => {
+  // Règle 7 : `require()` lit `module.exports = { parse, ... }` sans mal — c'est l'analyse
+  // statique de l'ESM qui échoue à trouver ses exports nommés. On rejoue donc le fichier par
+  // `require()` et on réexpose ses clés à la main, en ESM.
+  if (url.endsWith(TRANSFORM_TO_RN_SUFFIX)) {
+    const filename = fileURLToPath(url);
+    const exported = require(filename) as Record<string, unknown>;
+    const names = Object.keys(exported);
+    const source = [
+      `import { createRequire } from 'node:module';`,
+      `const mod = createRequire(import.meta.url)(${JSON.stringify(filename)});`,
+      ...names.map((name) => `export const ${name} = mod[${JSON.stringify(name)}];`),
+      `export default mod;`,
+    ].join('\n');
+
+    return { format: 'module', source, shortCircuit: true };
+  }
+
   if (!url.endsWith('.tsx')) {
     return next(url, context);
   }

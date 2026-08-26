@@ -22,6 +22,14 @@ export const palette = {
   gold: '#FFC857',
   mint: '#3DDC97',
   rust: '#E5484D',
+  /** Force, dans le cercle de vie (#69). */
+  amethyst: '#B388FF',
+  /** Endurance, dans le cercle de vie. */
+  glacier: '#4CC9F0',
+  /** Mobilité, dans le cercle de vie. */
+  lichen: '#B7E356',
+  /** Dextérité, dans le cercle de vie. */
+  blossom: '#FF6FB5',
 } as const;
 
 export const color = {
@@ -222,6 +230,40 @@ export const attributeLabel: Record<AttributeState, string> = {
   dexterity: 'Dextérité',
   vitality: 'Vitalité',
 };
+
+/**
+ * Les couleurs des quatre caractéristiques qui reçoivent de l'XP — `Attribute`, jamais
+ * `AttributeState` : Vitality n'a **pas** de couleur, et c'est délibéré (#69). Les quatre
+ * teintes disent « voici les parts » ; lui en donner une cinquième rendrait la légende fausse
+ * pour ce qui n'en a aucune. Sa place est `color.text`, la couleur de ce qui se lit — voir
+ * `AttributeRing`.
+ *
+ * Même garde-fou que `attributeLabel` : la clé sort du schéma généré, et franches, éloignées
+ * les unes des autres, aucune de ces quatre ne doit se confondre avec `color.accent` (l'XP),
+ * `color.celebrate` (le niveau), `color.gain`/`color.loss` (le breakdown) ou `color.danger`
+ * (un refus) — cinq vocabulaires de couleur qui ne se recouvrent jamais.
+ */
+export const attributeColor: Record<Attribute, string> = {
+  strength: palette.amethyst,
+  endurance: palette.glacier,
+  mobility: palette.lichen,
+  dexterity: palette.blossom,
+};
+
+/**
+ * Le cercle de vie (#69) : deux tailles, comme `XpBar`. Le rayon et l'épaisseur de trait sont
+ * choisis ensemble — l'un ne se lit pas sans l'autre, un trait trop fin sur un grand rayon
+ * paraîtrait flottant, trop épais sur un petit il mangerait le centre où Vitality se lit.
+ */
+export const ring = {
+  radius: { inline: 26, hero: 64 },
+  strokeWidth: { inline: 8, hero: 14 },
+  /**
+   * L'écart visible entre deux arcs — le même vocabulaire que le reste des espacements, pas un
+   * angle choisi à l'œil. `AttributeRing` le convertit en longueur d'arc à l'affichage.
+   */
+  gap: space.xs,
+} as const;
 
 /**
  * Pourquoi une séance n'a rien rapporté.
