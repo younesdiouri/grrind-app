@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
+import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
@@ -321,6 +322,54 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="De tête — celle du séquenceur">
           <XpBar size="hero" fill={0.72} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'cercle-de-vie',
+    name: 'Cercle de vie',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Réparti — une pratique variée">
+          <View style={styles.row}>
+            <AttributeRing
+              vitality={92}
+              attributes={{ strength: 5200, endurance: 4800, mobility: 4300, dexterity: 5100 }}
+            />
+            <AttributeLegend attributes={{ strength: 5200, endurance: 4800, mobility: 4300, dexterity: 5100 }} />
+          </View>
+        </Specimen>
+        <Specimen label="Monospécialisé — presque tout en force">
+          <View style={styles.row}>
+            <AttributeRing
+              vitality={18}
+              attributes={{ strength: 9000, endurance: 300, mobility: 150, dexterity: 200 }}
+            />
+            <AttributeLegend attributes={{ strength: 9000, endurance: 300, mobility: 150, dexterity: 200 }} />
+          </View>
+        </Specimen>
+        {/* Une part nulle ne dessine rien, ni trait ni écart — et sa ligne reste là, éteinte. */}
+        <Specimen label="Une caractéristique jamais touchée — la mobilité">
+          <View style={styles.row}>
+            <AttributeRing
+              vitality={61}
+              attributes={{ strength: 3000, endurance: 2500, mobility: 0, dexterity: 2000 }}
+            />
+            <AttributeLegend attributes={{ strength: 3000, endurance: 2500, mobility: 0, dexterity: 2000 }} />
+          </View>
+        </Specimen>
+        {/* `PlayerProgression::untouched()` : cinq zéros, aucun arc. */}
+        <Specimen label="Compte neuf — tout à zéro">
+          <View style={styles.row}>
+            <AttributeRing
+              size="hero"
+              vitality={0}
+              attributes={{ strength: 0, endurance: 0, mobility: 0, dexterity: 0 }}
+            />
+            <AttributeLegend attributes={{ strength: 0, endurance: 0, mobility: 0, dexterity: 0 }} />
+          </View>
         </Specimen>
       </>
     ),
