@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-13T13:14:46+00:00",
+  "syncedAt": "2026-08-26T08:54:42+00:00",
   "imported": [],
   "skipped": [
     {
@@ -29,5 +29,5 @@
     }
   ],
   "totals": null,
-  "rulesetVersion": "v1-269e3332e726"
+  "rulesetVersion": "v1-0e39afafae33"
 }

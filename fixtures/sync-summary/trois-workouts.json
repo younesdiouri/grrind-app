@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-13T13:14:45+00:00",
+  "syncedAt": "2026-08-26T08:54:41+00:00",
   "imported": [
     {
       "session": {
-        "id": "019ffb42-c7c6-7a75-8b38-e54e14b75540",
+        "id": "01a03d47-5c14-77e9-af1d-d1690ba67411",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-08T13:14:45+00:00",
-        "endedAt": "2026-08-08T14:14:45+00:00",
+        "startedAt": "2026-08-21T08:54:41+00:00",
+        "endedAt": "2026-08-21T09:54:41+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 10000,
         "calories": null,
@@ -29,6 +29,32 @@
           }
         ]
       },
+      "attributes": {
+        "strength": {
+          "gained": 8,
+          "before": 0,
+          "after": 8
+        },
+        "endurance": {
+          "gained": 120,
+          "before": 0,
+          "after": 120
+        },
+        "mobility": {
+          "gained": 8,
+          "before": 0,
+          "after": 8
+        },
+        "dexterity": {
+          "gained": 24,
+          "before": 0,
+          "after": 24
+        },
+        "vitality": {
+          "before": 0,
+          "after": 82
+        }
+      },
       "level": {
         "before": 1,
         "xpIntoLevelBefore": 0,
@@ -48,7 +74,7 @@
           "name": "First Steps",
           "hint": "Complete your first session",
           "unlocked": true,
-          "unlockedAt": "2026-08-13T13:14:45+00:00",
+          "unlockedAt": "2026-08-26T08:54:41+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -59,16 +85,16 @@
       "loot": [],
       "streak": null,
       "unlockableNodes": [],
-      "rulesetVersion": "v1-269e3332e726"
+      "rulesetVersion": "v1-0e39afafae33"
     },
     {
       "session": {
-        "id": "019ffb42-c7cf-74ce-b223-00b1b423fb4e",
+        "id": "01a03d47-5c1e-73a3-a309-c953ced314cb",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-10T13:14:45+00:00",
-        "endedAt": "2026-08-10T14:14:45+00:00",
+        "startedAt": "2026-08-23T08:54:41+00:00",
+        "endedAt": "2026-08-23T09:54:41+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 30000,
         "calories": null,
@@ -89,6 +115,32 @@
           }
         ]
       },
+      "attributes": {
+        "strength": {
+          "gained": 23,
+          "before": 8,
+          "after": 31
+        },
+        "endurance": {
+          "gained": 90,
+          "before": 120,
+          "after": 210
+        },
+        "mobility": {
+          "gained": 15,
+          "before": 8,
+          "after": 23
+        },
+        "dexterity": {
+          "gained": 22,
+          "before": 24,
+          "after": 46
+        },
+        "vitality": {
+          "before": 82,
+          "after": 204
+        }
+      },
       "level": {
         "before": 2,
         "xpIntoLevelBefore": 60,
@@ -106,16 +158,16 @@
       "loot": [],
       "streak": null,
       "unlockableNodes": [],
-      "rulesetVersion": "v1-269e3332e726"
+      "rulesetVersion": "v1-0e39afafae33"
     },
     {
       "session": {
-        "id": "019ffb42-c7d3-754f-984f-e5868827bcb1",
+        "id": "01a03d47-5c23-717f-9718-e01e86a76634",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-12T13:14:45+00:00",
-        "endedAt": "2026-08-12T13:59:45+00:00",
+        "startedAt": "2026-08-25T08:54:41+00:00",
+        "endedAt": "2026-08-25T09:39:41+00:00",
         "durationSeconds": 2700,
         "distanceMeters": null,
         "calories": null,
@@ -132,6 +184,32 @@
           }
         ]
       },
+      "attributes": {
+        "strength": {
+          "gained": 34,
+          "before": 31,
+          "after": 65
+        },
+        "endurance": {
+          "gained": 7,
+          "before": 210,
+          "after": 217
+        },
+        "mobility": {
+          "gained": 2,
+          "before": 23,
+          "after": 25
+        },
+        "dexterity": {
+          "gained": 2,
+          "before": 46,
+          "after": 48
+        },
+        "vitality": {
+          "before": 204,
+          "after": 256
+        }
+      },
       "level": {
         "before": 3,
         "xpIntoLevelBefore": 50,
@@ -147,7 +225,7 @@
       "loot": [],
       "streak": null,
       "unlockableNodes": [],
-      "rulesetVersion": "v1-269e3332e726"
+      "rulesetVersion": "v1-0e39afafae33"
     }
   ],
   "skipped": [],
@@ -159,5 +237,5 @@
     "xpAwarded": 355,
     "workoutCount": 3
   },
-  "rulesetVersion": "v1-269e3332e726"
+  "rulesetVersion": "v1-0e39afafae33"
 }
