@@ -8,10 +8,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
+import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
-import { color, curve, duration, radius, space, type } from '@/design/tokens';
+import { color, curve, duration, radius, ring, space, type } from '@/design/tokens';
 import {
   formatCalories,
   formatDistance,
@@ -134,6 +136,90 @@ export function LevelCard({ progression }: { progression: Progression }) {
 }
 
 /**
+ * La répartition du joueur, sous `LevelCard` : les quatre caractéristiques en anneau,
+ * Vitality au centre — voir `AttributeRing` (#69).
+ *
+ * **Elle se remplit au montage, comme `LevelCard`, avec la même échelle de temps**
+ * (`duration.breath` puis `duration.settle`, `curve.enter`) : deux animations d'accueil qui
+ * ne partiraient pas ensemble se verraient. Une seule valeur partagée pilote les deux
+ * effets. L'anneau lui-même reste celui d'`AttributeRing`, dessiné d'un bloc — il n'expose
+ * de porte animée que pour ses arcs (`children`), et cet écran n'a pas besoin de l'ouvrir :
+ * il affiche un état, pas un passage, donc ce n'est pas l'arc qui grandit mais l'anneau
+ * entier qui apparaît, en fondu. Vitality, elle, compte jusqu'à sa valeur par
+ * `useAnimatedProps`, comme le total de `LevelCard`.
+ *
+ * Ce compteur est **posé par-dessus** le chiffre qu'`AttributeRing` dessine déjà en son
+ * centre — celui-là est un `Text` fixe, qui ne peut pas suivre une valeur partagée. Le
+ * cache qui le couvre porte le fond de la carte : à la fin de la course les deux valent la
+ * même chose, au même endroit, et le retrait du cache ne se voit jamais parce qu'il ne se
+ * retire pas — il reste, identique à ce qu'il masque.
+ *
+ * La taille de police se calcule une fois, sur la valeur **finale** de Vitality — jamais sur
+ * le compte en cours. `vitalityFontSize` dépend du nombre de chiffres, et le recalculer à
+ * chaque image ferait sauter la police pendant que le compteur grandit, ce qui serait plus
+ * laid que l'inverse : un nombre à un chiffre rendu un peu petit pour sa taille, le temps de
+ * grandir jusqu'au nombre final de chiffres.
+ */
+export function AttributeCard({ attributes }: { attributes: Progression['attributes'] }) {
+  const { vitality, ...arcs } = attributes;
+  // La même donnée que la légende affichera, éteinte : cinq zéros ne sont pas une panne,
+  // c'est le point de départ normal d'un compte neuf.
+  const empty = vitality <= 0 && Object.values(arcs).every((value) => value <= 0);
+
+  const innerDiameter = ring.radius.hero * 2 - ring.strokeWidth.hero * 2;
+  const fontSize = vitalityFontSize(vitality, innerDiameter, type.display.fontSize);
+
+  const progress = useSharedValue(0);
+
+  const play = () => {
+    progress.value = 0;
+    progress.value = withDelay(
+      duration.breath,
+      withTiming(1, { duration: duration.settle, easing: Easing.bezier(...curve.enter) }),
+    );
+  };
+
+  const ringStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+
+  const vitalityProps = useAnimatedProps(() => {
+    const text = `${Math.round(progress.value * vitality)}`;
+    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
+  });
+
+  return (
+    <View style={styles.attributesCard} onLayout={play}>
+      <View style={styles.attributesRow}>
+        <View style={styles.ringBox}>
+          <Animated.View style={ringStyle}>
+            <AttributeRing attributes={arcs} vitality={vitality} size="hero" />
+          </Animated.View>
+
+          {/* Centré comme le `Text` qu'il couvre — même diamètre intérieur, même
+              alignement — voir le docblock. `pointerEvents` dans le style, pas en prop : RN
+              0.86 déprécie la prop autonome, comme le fait déjà `AttributeRing.center`. */}
+          <View style={styles.vitalityMask}>
+            <View style={[styles.vitalityMaskInner, { width: innerDiameter, height: innerDiameter }]}>
+              <AnimatedTextInput
+                style={[type.display, styles.vitalityText, { fontSize }]}
+                editable={false}
+                animatedProps={vitalityProps}
+                defaultValue="0"
+              />
+            </View>
+          </View>
+        </View>
+
+        <AttributeLegend attributes={arcs} />
+      </View>
+
+      {empty ? (
+        <Text style={styles.levelFoot}>Rien à répartir pour l&apos;instant : ta prochaine séance colorera ce cercle.</Text>
+      ) : null}
+    </View>
+  );
+}
+
+/**
  * Une séance de l'historique.
  *
  * Les mesures sont **toutes optionnelles**, et pas par prudence : aucun appareil ne fournit
@@ -185,4 +271,27 @@ const styles = StyleSheet.create({
   },
   levelFoot: { ...type.label, color: color.textMuted },
   levelRemaining: { ...type.label, color: color.text },
+  attributesCard: {
+    backgroundColor: color.surface,
+    borderRadius: radius.md,
+    padding: space.md,
+    gap: space.sm,
+  },
+  attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  ringBox: { position: 'relative' },
+  vitalityMask: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  // Même fond que `attributesCard` : ce carré couvre le chiffre fixe qu'`AttributeRing`
+  // dessine déjà, ses coins compris — ils tombent hors de l'anneau, là où la carte n'a de
+  // toute façon rien d'autre à montrer que son propre fond.
+  vitalityMaskInner: { backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center' },
+  vitalityText: { color: color.text, padding: 0, textAlign: 'center' },
 });
