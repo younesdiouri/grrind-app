@@ -545,6 +545,12 @@ export interface components {
          *     **Ce qui n'y figure pas est la moitié du contrat** : ni adresse, ni fuseau, ni
          *     rôle applicatif. Ce sont des données de compte, pas de profil public — et les
          *     ports qui alimentent cette ressource ne les rendent tout simplement pas.
+         *
+         *     **Les cinq caractéristiques (#176) y figurent par décision de produit** : la
+         *     répartition d'une pratique a été tranchée sociale, c'est une des raisons
+         *     d'avoir des guildes. Ce que la phrase ci-dessus exclut ne bouge pas pour
+         *     autant — un champ de compte n'entre pas ici parce qu'un champ de jeu vient d'y
+         *     entrer.
          */
         Player: {
             /** Format: uuid */
@@ -569,6 +575,27 @@ export interface components {
              *     viser. C'est `GET /api/me` qui le sert.
              */
             title: components["schemas"]["PlayerTitle"] | null;
+            /**
+             * @description Les cinq caractéristiques de ce joueur, à l'instant présent — même
+             *     vocabulaire et même forme qu'à `GET /api/progression`
+             *     (`Progression.attributes`) : un état, jamais un passage, donc ni
+             *     `gained` ni avant/après.
+             */
+            attributes: {
+                /** @example 5108 */
+                strength: number;
+                /** @example 3200 */
+                endurance: number;
+                /** @example 900 */
+                mobility: number;
+                /** @example 1500 */
+                dexterity: number;
+                /**
+                 * @description Dérivée des quatre autres, jamais créditée directement — voir `Progression.attributes.vitality`.
+                 * @example 310
+                 */
+                vitality: number;
+            };
         };
         /**
          * @description Un membre : le joueur public, plus ce que la guilde sait de lui. Les champs de
@@ -917,17 +944,39 @@ export interface components {
             amount: number;
         };
         /**
+         * @description Une caractéristique du personnage — Strength, Endurance, Mobility ou Dexterity —
+         *     avec ce que la séance lui a rapporté et sa jauge avant/après. `gained` est le
+         *     détail par caractéristique d'`xp.awarded` : leur somme sur les quatre vaut
+         *     exactement ce total.
+         */
+        AttributeGauge: {
+            /**
+             * @description Peut valoir zéro : cette séance n'a rien rapporté à cette caractéristique.
+             * @example 108
+             */
+            gained: number;
+            /** @example 5000 */
+            before: number;
+            /** @example 5108 */
+            after: number;
+        };
+        /**
          * @description Ce que le joueur reçoit pour **un** workout crédité. Un `SyncSummary` en contient
          *     autant qu'il y a eu de séances, dans l'ordre chronologique.
          *
          *     **L'ordre des champs est l'ordre de l'animation** : le client le joue de haut en
-         *     bas — la séance se referme, la barre d'XP se remplit ligne à ligne, le niveau
-         *     bascule, le titre tombe, puis le loot et la série. Un champ déplacé change la mise
-         *     en scène.
+         *     bas — la séance se referme, la barre d'XP se remplit ligne à ligne, **les cinq
+         *     jauges de caractéristiques montent**, le niveau bascule, le titre tombe, puis le
+         *     loot et la série. Un champ déplacé change la mise en scène.
+         *
+         *     `attributes` se place entre `xp` et `level`, et nulle part ailleurs : les
+         *     caractéristiques sont la conséquence directe de l'XP qui vient de tomber, le
+         *     niveau celui du **total** qu'elles composent — il vient donc après la
+         *     répartition qui l'alimente.
          *
          *     **Un seul aller-retour.** Rien ici ne demande de recharger quoi que ce soit avant de
          *     jouer l'animation — d'où le palier donné avant *et* après, et les titres déjà
-         *     traduits.
+         *     traduits. `attributes` suit la même règle, Vitality comprise.
          *
          *     `loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux Lots 6, 5
          *     et 7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la
@@ -943,6 +992,30 @@ export interface components {
                 awarded: number;
                 /** @description Dans l'ordre d'affichage. Le client ne le trie pas, il le joue. */
                 breakdown: components["schemas"]["XpLine"][];
+            };
+            /**
+             * @description Les cinq caractéristiques du personnage, chacune avec son avant et son
+             *     après — même raison que le palier de niveau : une jauge qui repartirait de
+             *     zéro mentirait à tout joueur qui n'y était pas.
+             *
+             *     **Vitality n'a pas de `gained`.** Elle ne reçoit jamais d'XP directement —
+             *     c'est une caractéristique dérivée des quatre autres, qui mesure l'équilibre
+             *     de la pratique. Elle peut donc bouger sans que **cette** séance lui ait
+             *     rien crédité : un joueur qui varie ses sports la voit sauter même le jour
+             *     où la répartition de sa séance n'y touche pas directement.
+             */
+            attributes: {
+                strength: components["schemas"]["AttributeGauge"];
+                endurance: components["schemas"]["AttributeGauge"];
+                mobility: components["schemas"]["AttributeGauge"];
+                dexterity: components["schemas"]["AttributeGauge"];
+                /** @description Dérivée, jamais créditée : pas de `gained` ici. */
+                vitality: {
+                    /** @example 300 */
+                    before: number;
+                    /** @example 310 */
+                    after: number;
+                };
             };
             level: {
                 /** @example 1 */
@@ -995,6 +1068,28 @@ export interface components {
                 earned: number;
                 available: number;
             };
+            /**
+             * @description Les cinq caractéristiques du personnage, à l'instant présent — même
+             *     vocabulaire que dans `RewardSummary.attributes`, mais sous une forme
+             *     différente : pas de `gained` ni d'avant/après ici, cette route ne rend
+             *     qu'un instant. C'est cet état qui doit rester affiché après une
+             *     synchronisation, pas seulement le temps de l'animation.
+             */
+            attributes: {
+                /** @example 5108 */
+                strength: number;
+                /** @example 3200 */
+                endurance: number;
+                /** @example 900 */
+                mobility: number;
+                /** @example 1500 */
+                dexterity: number;
+                /**
+                 * @description Dérivée des quatre autres, jamais créditée directement — voir `RewardSummary.attributes.vitality`.
+                 * @example 310
+                 */
+                vitality: number;
+            };
             activeTitle: components["schemas"]["PlayerTitle"] | null;
             unlockedTitles: components["schemas"]["PlayerTitle"][];
             rulesetVersion: string;
@@ -1035,6 +1130,26 @@ export interface components {
             /** @description Signée elle aussi — négative sur une annulation. */
             durationSeconds: number;
             breakdown: components["schemas"]["XpLine"][];
+            /**
+             * @description La répartition de `amount` sur les quatre caractéristiques (#159) — ce qui
+             *     répond à « pourquoi ma Mobility stagne » sans avoir à recouper l'historique
+             *     à la main. Signée comme `amount` : une annulation y montre des valeurs
+             *     négatives, la même contrepartie exacte qui explique la baisse.
+             *
+             *     **Pas de `vitality` ici**, à la différence du vocabulaire de `RewardSummary` :
+             *     elle ne reçoit jamais d'écriture, aucune transaction ne lui est adressée.
+             *     Son état courant se lit sur `GET /api/progression`.
+             */
+            attributes: {
+                /** @example 108 */
+                strength: number;
+                /** @example 0 */
+                endurance: number;
+                /** @example 0 */
+                mobility: number;
+                /** @example 0 */
+                dexterity: number;
+            };
             /** @description Celui du calcul, pas celui d'aujourd'hui. C'est ce qui permet de rééquilibrer sans corrompre l'historique. */
             rulesetVersion: string;
             /**

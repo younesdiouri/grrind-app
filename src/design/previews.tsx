@@ -68,6 +68,7 @@ function guildMember(
     xpIntoLevel: 340,
     xpToNextLevel: 900,
     title: null,
+    attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0, vitality: 0 },
     role: 'MEMBER',
     joinedAt: '2025-11-03T08:00:00Z',
     ...overrides,

@@ -899,7 +899,7 @@ components:
           minLength: 8
       type: object
     Player:
-      description: "Un joueur **tel que les autres joueurs le voient** — la seule forme sous\nlaquelle l'API expose quelqu'un d'autre que soi-même. Servie telle quelle par\n`GET /api/players/{id}`, et étalée dans chaque membre d'une guilde.\n\n**Ce qui n'y figure pas est la moitié du contrat** : ni adresse, ni fuseau, ni\nrôle applicatif. Ce sont des données de compte, pas de profil public — et les\nports qui alimentent cette ressource ne les rendent tout simplement pas.\n"
+      description: "Un joueur **tel que les autres joueurs le voient** — la seule forme sous\nlaquelle l'API expose quelqu'un d'autre que soi-même. Servie telle quelle par\n`GET /api/players/{id}`, et étalée dans chaque membre d'une guilde.\n\n**Ce qui n'y figure pas est la moitié du contrat** : ni adresse, ni fuseau, ni\nrôle applicatif. Ce sont des données de compte, pas de profil public — et les\nports qui alimentent cette ressource ne les rendent tout simplement pas.\n\n**Les cinq caractéristiques (#176) y figurent par décision de produit** : la\nrépartition d'une pratique a été tranchée sociale, c'est une des raisons\nd'avoir des guildes. Ce que la phrase ci-dessus exclut ne bouge pas pour\nautant — un champ de compte n'entre pas ici parce qu'un champ de jeu vient d'y\nentrer.\n"
       required:
         - id
         - displayName
@@ -908,6 +908,7 @@ components:
         - xpIntoLevel
         - xpToNextLevel
         - title
+        - attributes
       properties:
         id:
           type: string
@@ -934,6 +935,32 @@ components:
           allOf:
             -
               $ref: '#/components/schemas/PlayerTitle'
+        attributes:
+          description: "Les cinq caractéristiques de ce joueur, à l'instant présent — même\nvocabulaire et même forme qu'à `GET /api/progression`\n(`Progression.attributes`) : un état, jamais un passage, donc ni\n`gained` ni avant/après.\n"
+          required:
+            - strength
+            - endurance
+            - mobility
+            - dexterity
+            - vitality
+          properties:
+            strength:
+              type: integer
+              example: 5108
+            endurance:
+              type: integer
+              example: 3200
+            mobility:
+              type: integer
+              example: 900
+            dexterity:
+              type: integer
+              example: 1500
+            vitality:
+              description: 'Dérivée des quatre autres, jamais créditée directement — voir `Progression.attributes.vitality`.'
+              type: integer
+              example: 310
+          type: object
       type: object
     GuildMember:
       description: "Un membre : le joueur public, plus ce que la guilde sait de lui. Les champs de\n`Player` sont **étalés** et non imbriqués — le client dessine une ligne, pas\ndeux objets, et `GET /api/players/{id}` sert exactement le même bloc.\n"
@@ -1352,11 +1379,30 @@ components:
           type: integer
           example: -55
       type: object
+    AttributeGauge:
+      description: "Une caractéristique du personnage — Strength, Endurance, Mobility ou Dexterity —\navec ce que la séance lui a rapporté et sa jauge avant/après. `gained` est le\ndétail par caractéristique d'`xp.awarded` : leur somme sur les quatre vaut\nexactement ce total.\n"
+      required:
+        - gained
+        - before
+        - after
+      properties:
+        gained:
+          description: "Peut valoir zéro : cette séance n'a rien rapporté à cette caractéristique."
+          type: integer
+          example: 108
+        before:
+          type: integer
+          example: 5000
+        after:
+          type: integer
+          example: 5108
+      type: object
     RewardSummary:
-      description: "Ce que le joueur reçoit pour **un** workout crédité. Un `SyncSummary` en contient\nautant qu'il y a eu de séances, dans l'ordre chronologique.\n\n**L'ordre des champs est l'ordre de l'animation** : le client le joue de haut en\nbas — la séance se referme, la barre d'XP se remplit ligne à ligne, le niveau\nbascule, le titre tombe, puis le loot et la série. Un champ déplacé change la mise\nen scène.\n\n**Un seul aller-retour.** Rien ici ne demande de recharger quoi que ce soit avant de\njouer l'animation — d'où le palier donné avant *et* après, et les titres déjà\ntraduits.\n\n`loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux Lots 6, 5\net 7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la\nrendre optionnelle pour toujours.\n"
+      description: "Ce que le joueur reçoit pour **un** workout crédité. Un `SyncSummary` en contient\nautant qu'il y a eu de séances, dans l'ordre chronologique.\n\n**L'ordre des champs est l'ordre de l'animation** : le client le joue de haut en\nbas — la séance se referme, la barre d'XP se remplit ligne à ligne, **les cinq\njauges de caractéristiques montent**, le niveau bascule, le titre tombe, puis le\nloot et la série. Un champ déplacé change la mise en scène.\n\n`attributes` se place entre `xp` et `level`, et nulle part ailleurs : les\ncaractéristiques sont la conséquence directe de l'XP qui vient de tomber, le\nniveau celui du **total** qu'elles composent — il vient donc après la\nrépartition qui l'alimente.\n\n**Un seul aller-retour.** Rien ici ne demande de recharger quoi que ce soit avant de\njouer l'animation — d'où le palier donné avant *et* après, et les titres déjà\ntraduits. `attributes` suit la même règle, Vitality comprise.\n\n`loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux Lots 6, 5\net 7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la\nrendre optionnelle pour toujours.\n"
       required:
         - session
         - xp
+        - attributes
         - level
         - titlesUnlocked
         - loot
@@ -1380,6 +1426,37 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/XpLine'
+          type: object
+        attributes:
+          description: "Les cinq caractéristiques du personnage, chacune avec son avant et son\naprès — même raison que le palier de niveau : une jauge qui repartirait de\nzéro mentirait à tout joueur qui n'y était pas.\n\n**Vitality n'a pas de `gained`.** Elle ne reçoit jamais d'XP directement —\nc'est une caractéristique dérivée des quatre autres, qui mesure l'équilibre\nde la pratique. Elle peut donc bouger sans que **cette** séance lui ait\nrien crédité : un joueur qui varie ses sports la voit sauter même le jour\noù la répartition de sa séance n'y touche pas directement.\n"
+          required:
+            - strength
+            - endurance
+            - mobility
+            - dexterity
+            - vitality
+          properties:
+            strength:
+              $ref: '#/components/schemas/AttributeGauge'
+            endurance:
+              $ref: '#/components/schemas/AttributeGauge'
+            mobility:
+              $ref: '#/components/schemas/AttributeGauge'
+            dexterity:
+              $ref: '#/components/schemas/AttributeGauge'
+            vitality:
+              description: 'Dérivée, jamais créditée : pas de `gained` ici.'
+              required:
+                - before
+                - after
+              properties:
+                before:
+                  type: integer
+                  example: 300
+                after:
+                  type: integer
+                  example: 310
+              type: object
           type: object
         level:
           required:
@@ -1455,6 +1532,7 @@ components:
         - xpIntoLevel
         - xpToNextLevel
         - skillPoints
+        - attributes
         - activeTitle
         - unlockedTitles
         - rulesetVersion
@@ -1480,6 +1558,32 @@ components:
               type: integer
             available:
               type: integer
+          type: object
+        attributes:
+          description: "Les cinq caractéristiques du personnage, à l'instant présent — même\nvocabulaire que dans `RewardSummary.attributes`, mais sous une forme\ndifférente : pas de `gained` ni d'avant/après ici, cette route ne rend\nqu'un instant. C'est cet état qui doit rester affiché après une\nsynchronisation, pas seulement le temps de l'animation.\n"
+          required:
+            - strength
+            - endurance
+            - mobility
+            - dexterity
+            - vitality
+          properties:
+            strength:
+              type: integer
+              example: 5108
+            endurance:
+              type: integer
+              example: 3200
+            mobility:
+              type: integer
+              example: 900
+            dexterity:
+              type: integer
+              example: 1500
+            vitality:
+              description: 'Dérivée des quatre autres, jamais créditée directement — voir `RewardSummary.attributes.vitality`.'
+              type: integer
+              example: 310
           type: object
         activeTitle:
           nullable: true
@@ -1523,6 +1627,7 @@ components:
         - amount
         - durationSeconds
         - breakdown
+        - attributes
         - rulesetVersion
         - occurredAt
       properties:
@@ -1560,6 +1665,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/XpLine'
+        attributes:
+          description: "La répartition de `amount` sur les quatre caractéristiques (#159) — ce qui\nrépond à « pourquoi ma Mobility stagne » sans avoir à recouper l'historique\nà la main. Signée comme `amount` : une annulation y montre des valeurs\nnégatives, la même contrepartie exacte qui explique la baisse.\n\n**Pas de `vitality` ici**, à la différence du vocabulaire de `RewardSummary` :\nelle ne reçoit jamais d'écriture, aucune transaction ne lui est adressée.\nSon état courant se lit sur `GET /api/progression`.\n"
+          required:
+            - strength
+            - endurance
+            - mobility
+            - dexterity
+          properties:
+            strength:
+              type: integer
+              example: 108
+            endurance:
+              type: integer
+              example: 0
+            mobility:
+              type: integer
+              example: 0
+            dexterity:
+              type: integer
+              example: 0
+          type: object
         rulesetVersion:
           description: "Celui du calcul, pas celui d'aujourd'hui. C'est ce qui permet de rééquilibrer sans corrompre l'historique."
           type: string
