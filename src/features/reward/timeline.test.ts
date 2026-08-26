@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { buildTimeline, DETAILED_WORKOUTS, type SyncSummary } from './timeline.ts';
+import { BEATS, buildTimeline, DETAILED_WORKOUTS, type SyncSummary } from './timeline.ts';
 
 /**
  * La timeline, éprouvée sur les **réponses réelles** du back.
@@ -246,6 +246,11 @@ describe('la timeline du SyncSummary', () => {
       assertRampIsSane(timeline.bar, timeline.duration);
       assertRampIsSane(timeline.counter, timeline.duration);
       assertRampIsSane(timeline.crest, timeline.duration);
+      assertRampIsSane(timeline.attributes.strength, timeline.duration);
+      assertRampIsSane(timeline.attributes.endurance, timeline.duration);
+      assertRampIsSane(timeline.attributes.mobility, timeline.duration);
+      assertRampIsSane(timeline.attributes.dexterity, timeline.duration);
+      assertRampIsSane(timeline.attributes.vitality, timeline.duration);
 
       assert.ok(
         timeline.bar.output.every((fill) => fill >= 0 && fill <= 1),
@@ -278,5 +283,116 @@ describe('la timeline du SyncSummary', () => {
     const expected = span === 0 ? 1 : level.xpIntoLevelBefore / span;
 
     assert.equal(timeline.bar.output[0], expected);
+  });
+});
+
+const ATTRIBUTES: ('strength' | 'endurance' | 'mobility' | 'dexterity' | 'vitality')[] = [
+  'strength',
+  'endurance',
+  'mobility',
+  'dexterity',
+  'vitality',
+];
+
+describe('les cinq jauges de caractéristiques, entre le breakdown et le niveau', () => {
+  it('posent un battement `attributes` après la dernière ligne du breakdown, avant le premier niveau', () => {
+    const timeline = buildTimeline(troisWorkouts);
+
+    troisWorkouts.imported.forEach((_, index) => {
+      const lines = timeline.beats.filter((beat) => beat.kind === 'xpLine' && beat.workout === index);
+      const attributesBeat = timeline.beats.find((beat) => beat.kind === 'attributes' && beat.workout === index);
+      const firstLevel = timeline.beats.find((beat) => beat.kind === 'level' && beat.workout === index);
+
+      assert.ok(attributesBeat !== undefined, `le workout ${index} porte un battement attributes`);
+      if (lines.length > 0) {
+        assert.ok(
+          attributesBeat.at >= lines[lines.length - 1].until,
+          'le battement suit la dernière ligne du breakdown',
+        );
+      }
+      if (firstLevel !== undefined) {
+        assert.equal(attributesBeat.until, firstLevel.at, 'et cède la place exactement au premier niveau');
+      }
+    });
+  });
+
+  it("n'en pose aucun quand rien n'a été crédité", () => {
+    const timeline = buildTimeline(toutEcarte);
+    assert.equal(
+      timeline.beats.some((beat) => beat.kind === 'attributes'),
+      false,
+    );
+  });
+
+  it("enchaîne les cinq jauges sans discontinuité, d'un workout détaillé au suivant", () => {
+    // Même invariant que la barre (grrind-back#79) : l'après du workout `i` est l'avant du
+    // `i+1`, vérifié ici sur ce que la timeline en a effectivement tenu.
+    for (const summary of [troisWorkouts, quinzeWorkouts]) {
+      const timeline = buildTimeline(summary);
+      const attributesBeats = timeline.beats.filter((beat) => beat.kind === 'attributes');
+
+      for (let i = 1; i < attributesBeats.length; i += 1) {
+        const previous = attributesBeats[i - 1];
+        const current = attributesBeats[i];
+
+        for (const attribute of ATTRIBUTES) {
+          const ramp = timeline.attributes[attribute];
+          const arrival = ramp.output[ramp.input.indexOf(previous.until)];
+          const departure = ramp.output[ramp.input.indexOf(current.at)];
+
+          assert.equal(departure, arrival, `${attribute} doit repartir d'où il s'est arrêté`);
+        }
+      }
+    }
+  });
+
+  it('finissent exactement sur l’après du dernier workout crédité, condensé compris', () => {
+    // Le piège du ticket : `SyncTotals` ne porte pas les caractéristiques. L'arrivée du
+    // cercle, c'est l'`after` du dernier `imported` — jamais un total recalculé ici.
+    for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts]) {
+      const timeline = buildTimeline(summary);
+      const last = summary.imported[summary.imported.length - 1];
+
+      for (const attribute of ATTRIBUTES) {
+        const ramp = timeline.attributes[attribute];
+        assert.equal(ramp.output[ramp.output.length - 1], last.attributes[attribute].after);
+      }
+    }
+  });
+
+  it('un gain à zéro ne consomme aucun temps et reste éteint, jamais annoncé', () => {
+    const summary: SyncSummary = {
+      ...unWorkout,
+      imported: [
+        {
+          ...unWorkout.imported[0],
+          attributes: {
+            ...unWorkout.imported[0].attributes,
+            mobility: { gained: 0, before: 5, after: 5 },
+          },
+        },
+      ],
+    };
+
+    const timeline = buildTimeline(summary);
+    const attributesBeat = timeline.beats.find((beat) => beat.kind === 'attributes');
+    assert.ok(attributesBeat !== undefined);
+
+    // Trois gains non nuls (force, endurance, dextérité) : la mobilité, à zéro, ne consomme
+    // aucun palier d'atterrissage.
+    assert.equal(
+      attributesBeat.until - attributesBeat.at,
+      3 * BEATS.attributeGain + BEATS.attributeSettle,
+    );
+
+    const mobilityRamp = timeline.attributes.mobility;
+    const duringTheBeat = mobilityRamp.input
+      .map((at, index) => ({ at, value: mobilityRamp.output[index] }))
+      .filter((point) => point.at >= attributesBeat.at && point.at <= attributesBeat.until);
+
+    assert.ok(
+      duringTheBeat.every((point) => point.value === 5),
+      'la mobilité reste plate : rien à annoncer',
+    );
   });
 });
