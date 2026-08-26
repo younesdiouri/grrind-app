@@ -1,4 +1,4 @@
-import type { Attribute } from '@/design/tokens';
+import { ring, type Attribute } from '@/design/tokens';
 
 /**
  * La répartition d'un cercle de vie — quatre arcs, un par caractéristique, dont la longueur
@@ -19,6 +19,9 @@ export type AttributeArc = {
   from: number;
   to: number;
 };
+
+/** Les deux tailles du cercle de vie, comme `XpBar` — voir `ringGeometry`. */
+export type RingSize = 'inline' | 'hero';
 
 /**
  * L'ordre du contrat. Jamais trié, jamais réordonné — voir `RewardSummary.attributes`.
@@ -69,4 +72,76 @@ export function arcsOf(attributes: Record<Attribute, number>): AttributeArc[] {
   }
 
   return arcs;
+}
+
+export type RingGeometry = {
+  radius: number;
+  strokeWidth: number;
+  /** Le côté du `Svg` qui porte l'anneau. */
+  diameter: number;
+  /** La coordonnée du centre dans ce `Svg` — `cx`/`cy` de chaque cercle tracé. */
+  origin: number;
+  /** Le trou du donut, à l'intérieur du trait : l'espace réel où le centre peut se lire. */
+  innerDiameter: number;
+};
+
+/**
+ * Le diamètre d'un cercle de vie, à partir de sa taille (`ring.radius`/`ring.strokeWidth`).
+ *
+ * `AttributeRing` la consomme pour son propre tracé, et qui l'anime de l'extérieur (#70) en a
+ * besoin pour les mêmes raisons : positionner ses propres arcs sur le même cercle, et calculer
+ * la taille du centre qu'il fournit par `center`. Sans cette fonction, chaque appelant
+ * recalculerait la formule à la main, et les deux copies divergeraient au premier ajustement
+ * d'un token — c'est la même raison que celle qui sort `arcsOf` du composant.
+ */
+export function ringGeometry(size: RingSize): RingGeometry {
+  const radius = ring.radius[size];
+  const strokeWidth = ring.strokeWidth[size];
+  const diameter = radius * 2 + strokeWidth;
+
+  return {
+    radius,
+    strokeWidth,
+    diameter,
+    origin: diameter / 2,
+    innerDiameter: radius * 2 - strokeWidth * 2,
+  };
+}
+
+export type ArcStroke = {
+  /** La circonférence du cercle porteur — nécessaire pour composer `strokeDasharray`. */
+  circumference: number;
+  /** La longueur du trait, bouts ronds compensés. 0 si rien ne doit se dessiner. */
+  length: number;
+  /** Le décalage à appliquer avec `length` dans `strokeDashoffset`. */
+  offset: number;
+};
+
+/**
+ * La géométrie SVG d'un arc, en trait de cercle plutôt qu'en chemin : la longueur voulue puis
+ * le vide sur le reste de la circonférence (`strokeDasharray`), décalés du point de départ de
+ * l'arc (`strokeDashoffset`). C'est la technique du donut chart — elle évite le calcul des
+ * points d'un arc SVG pour ce qui reste, in fine, un simple pourcentage de tour.
+ *
+ * Les bouts sont ronds (`strokeLinecap="round"`, posé par l'appelant) — le même vocabulaire
+ * que `radius.pill` partout ailleurs dans ce design system, plutôt qu'une coupe nette qui
+ * détonnerait à côté des pistes et des puces déjà arrondies. Un bout rond **allonge**
+ * visuellement le trait de `strokeWidth / 2` à chacune de ses deux extrémités : la longueur
+ * dessinée doit donc leur soustraire l'écart voulu **et** l'épaisseur du trait, pas seulement
+ * l'écart — sans quoi les bouts ronds mangent l'espacement et deux arcs voisins se recouvrent.
+ *
+ * Pure, et marquée `'worklet'` : l'anneau statique l'appelle depuis le rendu React d'`Arc`,
+ * l'anneau animé depuis un `useAnimatedProps` sur le thread UI (#70) — `from` fixe, `to`
+ * interpolé par la valeur partagée qui fait grandir l'arc de rien jusqu'à sa part. Les deux
+ * appelants partagent la même formule au lieu d'en tenir deux copies qui divergeraient au
+ * premier ajustement.
+ */
+export function arcStroke(from: number, to: number, radius: number, strokeWidth: number): ArcStroke {
+  'worklet';
+  const circumference = 2 * Math.PI * radius;
+  const gap = ring.gap;
+  const length = Math.max(0, (to - from) * circumference - gap - strokeWidth);
+  const offset = -(from * circumference + gap / 2 + strokeWidth / 2);
+
+  return { circumference, length, offset };
 }

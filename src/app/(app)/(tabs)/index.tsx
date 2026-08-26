@@ -8,7 +8,7 @@ import { color, radius, space, type } from '@/design/tokens';
 import { messageFor } from '@/features/auth/problems';
 import { refreshAttempts, signOut, type UserProfile } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
-import { LevelCard, WorkoutRow } from '@/features/progression/PlayerHomeView';
+import { AttributeCard, LevelCard, WorkoutRow } from '@/features/progression/PlayerHomeView';
 import { usePlayerHome } from '@/features/progression/usePlayerHome';
 import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
 
@@ -120,6 +120,7 @@ function PlayerHome() {
       ) : null}
 
       {home.step === 'ready' ? <LevelCard progression={home.progression} /> : null}
+      {home.step === 'ready' ? <AttributeCard attributes={home.progression.attributes} /> : null}
 
       {home.step === 'ready' && home.workouts.length === 0 ? (
         <View style={styles.bench}>

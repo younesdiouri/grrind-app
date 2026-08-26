@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Circle, G, Svg } from 'react-native-svg';
 
-import { arcsOf, ATTRIBUTE_ORDER, type AttributeArc } from '@/components/attributeArcs';
+import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type AttributeArc, type RingSize } from '@/components/attributeArcs';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
-import { attributeColor, attributeLabel, color, opacity, radius, ring, space, type } from '@/design/tokens';
+import { attributeColor, attributeLabel, color, opacity, radius, space, type } from '@/design/tokens';
 import type { Attribute } from '@/design/tokens';
 
 type AttributeRingProps = {
@@ -19,15 +19,23 @@ type AttributeRingProps = {
    */
   vitality: number;
   /** La tête d'un profil, ou la ligne d'une carte de guilde. */
-  size?: 'inline' | 'hero';
+  size?: RingSize;
   /**
    * Les quatre arcs **animés**, quand il y en a. Le séquenceur qui les fait grandir pilote des
    * valeurs partagées sur le thread UI, pas un rendu React : il ne peut donc pas passer par
    * `attributes`. Le composant prête son anneau — la piste, le centre — l'appelant fournit ce
    * qui le remplit. C'est ce qui garde Reanimated **hors** du design system, donc hors des
-   * previews, qui se rendent dans Node. Voir `XpBar.children`.
+   * previews, qui se rendent dans Node. Voir `XpBar.children`, et `ringGeometry`/`arcStroke`
+   * pour la géométrie partagée entre le tracé statique d'ici et celui, animé, de l'appelant.
    */
   children?: ReactNode;
+  /**
+   * Le centre de l'anneau, quand quelqu'un l'anime — la même porte que `children`, pour la
+   * même raison : Vitality dessinée par un `<Text>` fixe ne peut pas suivre une valeur
+   * partagée, un `useAnimatedProps` sur un `TextInput` le peut. Retombe sur le chiffre par
+   * défaut quand personne ne le fournit.
+   */
+  center?: ReactNode;
 };
 
 /**
@@ -35,64 +43,47 @@ type AttributeRingProps = {
  * le total, Vitality en chiffre au centre — la seule disposition où le dessin démontre la
  * valeur qu'il affiche (#69).
  */
-export function AttributeRing({ attributes, vitality, size = 'inline', children }: AttributeRingProps) {
-  const ringRadius = ring.radius[size];
-  const strokeWidth = ring.strokeWidth[size];
-  const diameter = ringRadius * 2 + strokeWidth;
-  const center = diameter / 2;
-  // Le trou du donut, à l'intérieur du trait : c'est l'espace réel où Vitality peut se lire.
-  const innerDiameter = ringRadius * 2 - strokeWidth * 2;
+export function AttributeRing({ attributes, vitality, size = 'inline', children, center }: AttributeRingProps) {
+  const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringGeometry(size);
   const typeScale = size === 'hero' ? type.display : type.title;
   const fontSize = vitalityFontSize(vitality, innerDiameter, typeScale.fontSize);
 
   return (
     <View style={styles.wrapper}>
       <Svg width={diameter} height={diameter}>
-        <Circle cx={center} cy={center} r={ringRadius} stroke={color.surfaceRaised} strokeWidth={strokeWidth} fill="none" />
+        <Circle cx={origin} cy={origin} r={ringRadius} stroke={color.surfaceRaised} strokeWidth={strokeWidth} fill="none" />
         {/* Partie au douze heures, pas aux trois : c'est là qu'un cercle de progression se lit.
             `transform`, pas `rotation`/`originX`/`originY` — dépréciés par `react-native-svg`
             lui-même, et c'est leur traduction web qui pose un `transform-origin` que React ne
             reconnaît pas comme propriété DOM. Une rotation SVG porte son centre elle-même. */}
-        <G transform={`rotate(-90 ${center} ${center})`}>
+        <G transform={`rotate(-90 ${origin} ${origin})`}>
           {children ??
             arcsOf(attributes).map((arc) => (
-              <Arc key={arc.attribute} arc={arc} radius={ringRadius} center={center} strokeWidth={strokeWidth} />
+              <Arc key={arc.attribute} arc={arc} radius={ringRadius} origin={origin} strokeWidth={strokeWidth} />
             ))}
         </G>
       </Svg>
       <View style={[styles.center, { width: innerDiameter, height: innerDiameter }]}>
-        <Text numberOfLines={1} style={[typeScale, styles.vitality, { fontSize }]}>
-          {vitality}
-        </Text>
+        {center ?? (
+          <Text numberOfLines={1} style={[typeScale, styles.vitality, { fontSize }]}>
+            {vitality}
+          </Text>
+        )}
       </View>
     </View>
   );
 }
 
-type ArcProps = { arc: AttributeArc; radius: number; center: number; strokeWidth: number };
+type ArcProps = { arc: AttributeArc; radius: number; origin: number; strokeWidth: number };
 
-/**
- * Un arc, en trait de cercle plutôt qu'en chemin : la longueur voulue puis le vide sur le
- * reste de la circonférence (`strokeDasharray`), décalés du point de départ de l'arc
- * (`strokeDashoffset`). C'est la technique du donut chart — elle évite le calcul des points
- * d'un arc SVG pour ce qui reste, in fine, un simple pourcentage de tour.
- *
- * Les bouts sont ronds (`strokeLinecap="round"`) — le même vocabulaire que `radius.pill`
- * partout ailleurs dans ce design system, plutôt qu'une coupe nette qui détonnerait à côté
- * des pistes et des puces déjà arrondies. Un bout rond **allonge** visuellement le trait de
- * `strokeWidth / 2` à chacune de ses deux extrémités : la longueur dessinée doit donc leur
- * soustraire l'écart voulu **et** l'épaisseur du trait, pas seulement l'écart — sans quoi les
- * bouts ronds mangent l'espacement et deux arcs voisins se recouvrent.
- */
-function Arc({ arc, radius: arcRadius, center, strokeWidth }: ArcProps) {
-  const circumference = 2 * Math.PI * arcRadius;
-  const gap = ring.gap;
-  const length = Math.max(0, (arc.to - arc.from) * circumference - gap - strokeWidth);
+/** Un arc statique — la géométrie du trait vient d'`arcStroke`, partagée avec l'anneau animé. */
+function Arc({ arc, radius: arcRadius, origin, strokeWidth }: ArcProps) {
+  const { circumference, length, offset } = arcStroke(arc.from, arc.to, arcRadius, strokeWidth);
 
   // Une part réelle (voir `arcsOf`, qui a déjà écarté les parts nulles) peut être trop fine
-  // pour survivre à la soustraction ci-dessus : rien à dessiner n'est pas la même chose qu'un
-  // trait de longueur nulle, qui se dessinerait quand même — un bout rond couvre un point
-  // même à `strokeDasharray="0 …"`. Un point dessinerait une part invisible plus grosse
+  // pour survivre à la compensation des bouts ronds : rien à dessiner n'est pas la même chose
+  // qu'un trait de longueur nulle, qui se dessinerait quand même — un bout rond couvre un
+  // point même à `strokeDasharray="0 …"`. Un point dessinerait une part invisible plus grosse
   // qu'elle ne l'est ; l'anneau se tait, la légende, elle, garde le chiffre exact.
   if (length <= 0) {
     return null;
@@ -100,15 +91,15 @@ function Arc({ arc, radius: arcRadius, center, strokeWidth }: ArcProps) {
 
   return (
     <Circle
-      cx={center}
-      cy={center}
+      cx={origin}
+      cy={origin}
       r={arcRadius}
       stroke={attributeColor[arc.attribute]}
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       fill="none"
       strokeDasharray={`${length} ${circumference - length}`}
-      strokeDashoffset={-(arc.from * circumference + gap / 2 + strokeWidth / 2)}
+      strokeDashoffset={offset}
     />
   );
 }

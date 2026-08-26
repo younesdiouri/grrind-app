@@ -1,17 +1,24 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
+  Extrapolation,
+  interpolate,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
+import { Circle } from 'react-native-svg';
 
+import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
+import { arcStroke, arcsOf, ringGeometry, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
+import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
-import { color, curve, duration, radius, space, type } from '@/design/tokens';
+import { attributeColor, color, curve, duration, radius, space, type } from '@/design/tokens';
 import {
   formatCalories,
   formatDistance,
@@ -134,6 +141,126 @@ export function LevelCard({ progression }: { progression: Progression }) {
 }
 
 /**
+ * La répartition du joueur, sous `LevelCard` : les quatre caractéristiques en anneau,
+ * Vitality au centre — voir `AttributeRing` (#69).
+ *
+ * **Elle se remplit au montage, comme `LevelCard`, avec la même échelle de temps**
+ * (`duration.breath` puis `duration.settle`, `curve.enter`) : deux animations d'accueil qui
+ * ne partiraient pas ensemble se verraient. Une seule valeur partagée pilote les deux effets,
+ * et les deux passent par les portes qu'`AttributeRing` prête à cet effet — `children` pour
+ * les arcs, `center` pour Vitality — plutôt que par un fondu ou un cache : un cercle qui se
+ * remplit, c'est un arc qui grandit depuis rien jusqu'à sa part, exactement ce que fait la
+ * barre de `LevelCard` en largeur. `arcStroke` porte la géométrie du trait, partagée avec
+ * l'arc statique d'`AttributeRing` ; ici, `from` reste fixe et `to` est interpolé entre `from`
+ * (rien à dessiner) et sa borne réelle.
+ *
+ * Vitality compte jusqu'à sa valeur par `useAnimatedProps` sur un `TextInput`, comme le total
+ * de `LevelCard` — posé par la porte `center`, donc **le seul** chiffre à l'écran : pas de
+ * `Text` fixe en dessous à masquer, pas de cache qui dépendrait d'une couleur de fond restant
+ * identique.
+ *
+ * La taille de police se calcule une fois, sur la valeur **finale** de Vitality — jamais sur
+ * le compte en cours. `vitalityFontSize` dépend du nombre de chiffres, et le recalculer à
+ * chaque image ferait sauter la police pendant que le compteur grandit, ce qui serait plus
+ * laid que l'inverse : un nombre à un chiffre rendu un peu petit pour sa taille, le temps de
+ * grandir jusqu'au nombre final de chiffres.
+ */
+export function AttributeCard({ attributes }: { attributes: Progression['attributes'] }) {
+  const { vitality, ...arcs } = attributes;
+  // La même donnée que la légende affichera, éteinte : cinq zéros ne sont pas une panne,
+  // c'est le point de départ normal d'un compte neuf.
+  const empty = vitality <= 0 && Object.values(arcs).every((value) => value <= 0);
+
+  // Calculée une fois par montage, comme `arcsOf` : les bornes de chaque arc ne bougent pas
+  // pendant la course, seule la valeur partagée fait avancer `to` de `from` jusqu'à elles.
+  const staticArcs = arcsOf(arcs);
+  const geometry = ringGeometry('hero');
+  const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
+
+  const progress = useSharedValue(0);
+
+  const play = () => {
+    progress.value = 0;
+    progress.value = withDelay(
+      duration.breath,
+      withTiming(1, { duration: duration.settle, easing: Easing.bezier(...curve.enter) }),
+    );
+  };
+
+  const vitalityProps = useAnimatedProps(() => {
+    const text = `${Math.round(progress.value * vitality)}`;
+    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
+  });
+
+  return (
+    <View style={styles.attributesCard} onLayout={play}>
+      <View style={styles.attributesRow}>
+        <AttributeRing
+          attributes={arcs}
+          vitality={vitality}
+          size="hero"
+          center={
+            <AnimatedTextInput
+              style={[type.display, styles.vitalityText, { fontSize }]}
+              editable={false}
+              animatedProps={vitalityProps}
+              defaultValue="0"
+            />
+          }
+        >
+          {staticArcs.map((arc) => (
+            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} />
+          ))}
+        </AttributeRing>
+
+        <AttributeLegend attributes={arcs} />
+      </View>
+
+      {empty ? (
+        <Text style={styles.levelFoot}>Rien à répartir pour l&apos;instant : ta prochaine séance colorera ce cercle.</Text>
+      ) : null}
+    </View>
+  );
+}
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+/**
+ * Un arc qui grandit depuis rien jusqu'à sa part, `from` fixe — le pendant animé de l'`Arc`
+ * statique d'`AttributeRing`, même géométrie (`arcStroke`), lue sur le thread UI à chaque
+ * image plutôt que recalculée à la main : c'est la même fonction, marquée `'worklet'` pour ça.
+ */
+function GrowingArc({
+  arc,
+  progress,
+  geometry,
+}: {
+  arc: AttributeArc;
+  progress: SharedValue<number>;
+  geometry: RingGeometry;
+}) {
+  const animatedProps = useAnimatedProps(() => {
+    const to = interpolate(progress.value, [0, 1], [arc.from, arc.to], Extrapolation.CLAMP);
+    const { circumference, length, offset } = arcStroke(arc.from, to, geometry.radius, geometry.strokeWidth);
+
+    return { strokeDasharray: `${length} ${circumference - length}`, strokeDashoffset: offset };
+  });
+
+  return (
+    <AnimatedCircle
+      cx={geometry.origin}
+      cy={geometry.origin}
+      r={geometry.radius}
+      stroke={attributeColor[arc.attribute]}
+      strokeWidth={geometry.strokeWidth}
+      strokeLinecap="round"
+      fill="none"
+      animatedProps={animatedProps}
+    />
+  );
+}
+
+/**
  * Une séance de l'historique.
  *
  * Les mesures sont **toutes optionnelles**, et pas par prudence : aucun appareil ne fournit
@@ -185,4 +312,12 @@ const styles = StyleSheet.create({
   },
   levelFoot: { ...type.label, color: color.textMuted },
   levelRemaining: { ...type.label, color: color.text },
+  attributesCard: {
+    backgroundColor: color.surface,
+    borderRadius: radius.md,
+    padding: space.md,
+    gap: space.sm,
+  },
+  attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  vitalityText: { color: color.text, padding: 0, textAlign: 'center' },
 });
