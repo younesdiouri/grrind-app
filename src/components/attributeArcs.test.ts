@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { arcsOf } from './attributeArcs.ts';
+import { arcStroke, arcsOf, ringGeometry } from './attributeArcs.ts';
 
 describe('la répartition d’un cercle de vie', () => {
   it('donne quatre arcs égaux quand les quatre parts le sont', () => {
@@ -43,5 +43,60 @@ describe('la répartition d’un cercle de vie', () => {
     assert.equal(arcs.length, 4);
     assert.equal(arcs[arcs.length - 1]?.to, 1);
     assert.equal(arcs[0]?.from, 0);
+  });
+});
+
+describe('la géométrie d’un cercle de vie', () => {
+  it('calcule le diamètre et le trou intérieur à partir de la taille — pas à l’appelant de le refaire', () => {
+    assert.deepEqual(ringGeometry('hero'), {
+      radius: 64,
+      strokeWidth: 14,
+      diameter: 142,
+      origin: 71,
+      innerDiameter: 100,
+    });
+
+    assert.deepEqual(ringGeometry('inline'), {
+      radius: 26,
+      strokeWidth: 8,
+      diameter: 60,
+      origin: 30,
+      innerDiameter: 36,
+    });
+  });
+});
+
+describe('le trait d’un arc', () => {
+  const radius = 64;
+  const strokeWidth = 14;
+  const circumference = 2 * Math.PI * radius;
+
+  it('soustrait l’écart et l’épaisseur du trait à la longueur voulue, bouts ronds compensés', () => {
+    const stroke = arcStroke(0, 0.25, radius, strokeWidth);
+
+    assert.equal(stroke.circumference, circumference);
+    assert.equal(stroke.length, 0.25 * circumference - 4 - 14);
+    assert.equal(stroke.offset, -(4 / 2 + 14 / 2));
+  });
+
+  it('décale l’arc de son point de départ, quel qu’il soit', () => {
+    const stroke = arcStroke(0.5, 0.75, radius, strokeWidth);
+
+    assert.equal(stroke.offset, -(0.5 * circumference + 4 / 2 + 14 / 2));
+  });
+
+  it('ne dessine rien quand la part est trop fine pour survivre à la compensation', () => {
+    assert.equal(arcStroke(0, 0.001, radius, strokeWidth).length, 0);
+  });
+
+  // C'est la propriété que l'anneau animé (#70) fait tourner : `from` reste fixe pendant
+  // qu'une valeur partagée fait avancer `to` de `from` jusqu'à sa part réelle — l'arc grandit
+  // depuis rien, il ne clignote pas à sa place.
+  it('grandit avec `to`, à `from` et à `offset` fixes', () => {
+    const partial = arcStroke(0, 0.1, radius, strokeWidth);
+    const full = arcStroke(0, 0.25, radius, strokeWidth);
+
+    assert.ok(partial.length < full.length);
+    assert.equal(partial.offset, full.offset);
   });
 });

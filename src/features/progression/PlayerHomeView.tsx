@@ -1,19 +1,24 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
+  Extrapolation,
+  interpolate,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
+import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
+import { arcStroke, arcsOf, ringGeometry, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
-import { color, curve, duration, radius, ring, space, type } from '@/design/tokens';
+import { attributeColor, color, curve, duration, radius, space, type } from '@/design/tokens';
 import {
   formatCalories,
   formatDistance,
@@ -141,18 +146,18 @@ export function LevelCard({ progression }: { progression: Progression }) {
  *
  * **Elle se remplit au montage, comme `LevelCard`, avec la même échelle de temps**
  * (`duration.breath` puis `duration.settle`, `curve.enter`) : deux animations d'accueil qui
- * ne partiraient pas ensemble se verraient. Une seule valeur partagée pilote les deux
- * effets. L'anneau lui-même reste celui d'`AttributeRing`, dessiné d'un bloc — il n'expose
- * de porte animée que pour ses arcs (`children`), et cet écran n'a pas besoin de l'ouvrir :
- * il affiche un état, pas un passage, donc ce n'est pas l'arc qui grandit mais l'anneau
- * entier qui apparaît, en fondu. Vitality, elle, compte jusqu'à sa valeur par
- * `useAnimatedProps`, comme le total de `LevelCard`.
+ * ne partiraient pas ensemble se verraient. Une seule valeur partagée pilote les deux effets,
+ * et les deux passent par les portes qu'`AttributeRing` prête à cet effet — `children` pour
+ * les arcs, `center` pour Vitality — plutôt que par un fondu ou un cache : un cercle qui se
+ * remplit, c'est un arc qui grandit depuis rien jusqu'à sa part, exactement ce que fait la
+ * barre de `LevelCard` en largeur. `arcStroke` porte la géométrie du trait, partagée avec
+ * l'arc statique d'`AttributeRing` ; ici, `from` reste fixe et `to` est interpolé entre `from`
+ * (rien à dessiner) et sa borne réelle.
  *
- * Ce compteur est **posé par-dessus** le chiffre qu'`AttributeRing` dessine déjà en son
- * centre — celui-là est un `Text` fixe, qui ne peut pas suivre une valeur partagée. Le
- * cache qui le couvre porte le fond de la carte : à la fin de la course les deux valent la
- * même chose, au même endroit, et le retrait du cache ne se voit jamais parce qu'il ne se
- * retire pas — il reste, identique à ce qu'il masque.
+ * Vitality compte jusqu'à sa valeur par `useAnimatedProps` sur un `TextInput`, comme le total
+ * de `LevelCard` — posé par la porte `center`, donc **le seul** chiffre à l'écran : pas de
+ * `Text` fixe en dessous à masquer, pas de cache qui dépendrait d'une couleur de fond restant
+ * identique.
  *
  * La taille de police se calcule une fois, sur la valeur **finale** de Vitality — jamais sur
  * le compte en cours. `vitalityFontSize` dépend du nombre de chiffres, et le recalculer à
@@ -166,8 +171,11 @@ export function AttributeCard({ attributes }: { attributes: Progression['attribu
   // c'est le point de départ normal d'un compte neuf.
   const empty = vitality <= 0 && Object.values(arcs).every((value) => value <= 0);
 
-  const innerDiameter = ring.radius.hero * 2 - ring.strokeWidth.hero * 2;
-  const fontSize = vitalityFontSize(vitality, innerDiameter, type.display.fontSize);
+  // Calculée une fois par montage, comme `arcsOf` : les bornes de chaque arc ne bougent pas
+  // pendant la course, seule la valeur partagée fait avancer `to` de `from` jusqu'à elles.
+  const staticArcs = arcsOf(arcs);
+  const geometry = ringGeometry('hero');
+  const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
 
   const progress = useSharedValue(0);
 
@@ -179,8 +187,6 @@ export function AttributeCard({ attributes }: { attributes: Progression['attribu
     );
   };
 
-  const ringStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
-
   const vitalityProps = useAnimatedProps(() => {
     const text = `${Math.round(progress.value * vitality)}`;
     return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
@@ -189,25 +195,23 @@ export function AttributeCard({ attributes }: { attributes: Progression['attribu
   return (
     <View style={styles.attributesCard} onLayout={play}>
       <View style={styles.attributesRow}>
-        <View style={styles.ringBox}>
-          <Animated.View style={ringStyle}>
-            <AttributeRing attributes={arcs} vitality={vitality} size="hero" />
-          </Animated.View>
-
-          {/* Centré comme le `Text` qu'il couvre — même diamètre intérieur, même
-              alignement — voir le docblock. `pointerEvents` dans le style, pas en prop : RN
-              0.86 déprécie la prop autonome, comme le fait déjà `AttributeRing.center`. */}
-          <View style={styles.vitalityMask}>
-            <View style={[styles.vitalityMaskInner, { width: innerDiameter, height: innerDiameter }]}>
-              <AnimatedTextInput
-                style={[type.display, styles.vitalityText, { fontSize }]}
-                editable={false}
-                animatedProps={vitalityProps}
-                defaultValue="0"
-              />
-            </View>
-          </View>
-        </View>
+        <AttributeRing
+          attributes={arcs}
+          vitality={vitality}
+          size="hero"
+          center={
+            <AnimatedTextInput
+              style={[type.display, styles.vitalityText, { fontSize }]}
+              editable={false}
+              animatedProps={vitalityProps}
+              defaultValue="0"
+            />
+          }
+        >
+          {staticArcs.map((arc) => (
+            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} />
+          ))}
+        </AttributeRing>
 
         <AttributeLegend attributes={arcs} />
       </View>
@@ -216,6 +220,43 @@ export function AttributeCard({ attributes }: { attributes: Progression['attribu
         <Text style={styles.levelFoot}>Rien à répartir pour l&apos;instant : ta prochaine séance colorera ce cercle.</Text>
       ) : null}
     </View>
+  );
+}
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+/**
+ * Un arc qui grandit depuis rien jusqu'à sa part, `from` fixe — le pendant animé de l'`Arc`
+ * statique d'`AttributeRing`, même géométrie (`arcStroke`), lue sur le thread UI à chaque
+ * image plutôt que recalculée à la main : c'est la même fonction, marquée `'worklet'` pour ça.
+ */
+function GrowingArc({
+  arc,
+  progress,
+  geometry,
+}: {
+  arc: AttributeArc;
+  progress: SharedValue<number>;
+  geometry: RingGeometry;
+}) {
+  const animatedProps = useAnimatedProps(() => {
+    const to = interpolate(progress.value, [0, 1], [arc.from, arc.to], Extrapolation.CLAMP);
+    const { circumference, length, offset } = arcStroke(arc.from, to, geometry.radius, geometry.strokeWidth);
+
+    return { strokeDasharray: `${length} ${circumference - length}`, strokeDashoffset: offset };
+  });
+
+  return (
+    <AnimatedCircle
+      cx={geometry.origin}
+      cy={geometry.origin}
+      r={geometry.radius}
+      stroke={attributeColor[arc.attribute]}
+      strokeWidth={geometry.strokeWidth}
+      strokeLinecap="round"
+      fill="none"
+      animatedProps={animatedProps}
+    />
   );
 }
 
@@ -278,20 +319,5 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  ringBox: { position: 'relative' },
-  vitalityMask: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-  },
-  // Même fond que `attributesCard` : ce carré couvre le chiffre fixe qu'`AttributeRing`
-  // dessine déjà, ses coins compris — ils tombent hors de l'anneau, là où la carte n'a de
-  // toute façon rien d'autre à montrer que son propre fond.
-  vitalityMaskInner: { backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center' },
   vitalityText: { color: color.text, padding: 0, textAlign: 'center' },
 });
