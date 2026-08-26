@@ -24,8 +24,22 @@ export type AttributeArc = {
  * L'ordre du contrat. Jamais trié, jamais réordonné — voir `RewardSummary.attributes`.
  * Exporté pour `AttributeLegend`, qui rend les quatre lignes dans le même ordre que les arcs,
  * part nulle comprise.
+ *
+ * Écrit comme `attributeLabel`/`attributeColor` — un `Record<Attribute, …>`, pas un tableau à
+ * la main — pour la même raison : un tableau littéral pourrait oublier une cinquième
+ * caractéristique sans que rien ne le remarque, et elle serait alors simplement absente du
+ * cercle et de la légende, en silence. Le `Record` force le compilateur à casser le jour où
+ * `Attribute` en gagne une ; `Object.keys` en tire l'ordre, comme `DISCIPLINES` le fait de
+ * `disciplineLabel` dans `src/design/previews.tsx`.
  */
-export const ATTRIBUTE_ORDER: readonly Attribute[] = ['strength', 'endurance', 'mobility', 'dexterity'];
+const ATTRIBUTE_ORDER_KEYS: Record<Attribute, true> = {
+  strength: true,
+  endurance: true,
+  mobility: true,
+  dexterity: true,
+};
+
+export const ATTRIBUTE_ORDER = Object.keys(ATTRIBUTE_ORDER_KEYS) as Attribute[];
 
 export function arcsOf(attributes: Record<Attribute, number>): AttributeArc[] {
   const total = ATTRIBUTE_ORDER.reduce((sum, attribute) => sum + attributes[attribute], 0);

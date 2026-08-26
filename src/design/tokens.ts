@@ -258,6 +258,11 @@ export const attributeColor: Record<Attribute, string> = {
 export const ring = {
   radius: { inline: 26, hero: 64 },
   strokeWidth: { inline: 8, hero: 14 },
+  /**
+   * L'écart visible entre deux arcs — le même vocabulaire que le reste des espacements, pas un
+   * angle choisi à l'œil. `AttributeRing` le convertit en longueur d'arc à l'affichage.
+   */
+  gap: space.xs,
 } as const;
 
 /**

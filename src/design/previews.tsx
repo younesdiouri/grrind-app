@@ -350,6 +350,28 @@ export const PREVIEWS: Preview[] = [
             <AttributeLegend attributes={{ strength: 9000, endurance: 300, mobility: 150, dexterity: 200 }} />
           </View>
         </Specimen>
+        {/* Une part réelle (~1 %), trop fine pour survivre à l'écart et à l'épaisseur du
+            trait : l'anneau ne dessine rien pour elle plutôt qu'un point qui la grossirait —
+            la légende, elle, garde le chiffre exact. Sans cette carte, le cas redevient
+            invisible dès qu'on ne le cherche plus. */}
+        <Specimen label="Part infime — sous le seuil de trait">
+          <View style={styles.row}>
+            <AttributeRing vitality={8} attributes={{ strength: 9900, endurance: 100, mobility: 0, dexterity: 0 }} />
+            <AttributeLegend attributes={{ strength: 9900, endurance: 100, mobility: 0, dexterity: 0 }} />
+          </View>
+        </Specimen>
+        {/* Vitality n'a pas de plafond : cinq chiffres tiennent dans l'anneau sans déborder,
+            parce que la taille se calcule — voir `vitalityFontSize`. */}
+        <Specimen label="Vitality à cinq chiffres">
+          <View style={styles.row}>
+            <AttributeRing
+              size="hero"
+              vitality={18420}
+              attributes={{ strength: 52000, endurance: 48000, mobility: 43000, dexterity: 51000 }}
+            />
+            <AttributeLegend attributes={{ strength: 52000, endurance: 48000, mobility: 43000, dexterity: 51000 }} />
+          </View>
+        </Specimen>
         {/* Une part nulle ne dessine rien, ni trait ni écart — et sa ligne reste là, éteinte. */}
         <Specimen label="Une caractéristique jamais touchée — la mobilité">
           <View style={styles.row}>

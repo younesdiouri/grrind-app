@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Circle, G, Svg } from 'react-native-svg';
 
 import { arcsOf, ATTRIBUTE_ORDER, type AttributeArc } from '@/components/attributeArcs';
+import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { attributeColor, attributeLabel, color, opacity, radius, ring, space, type } from '@/design/tokens';
 import type { Attribute } from '@/design/tokens';
 
@@ -35,25 +36,31 @@ type AttributeRingProps = {
  * valeur qu'il affiche (#69).
  */
 export function AttributeRing({ attributes, vitality, size = 'inline', children }: AttributeRingProps) {
-  const radius = ring.radius[size];
+  const ringRadius = ring.radius[size];
   const strokeWidth = ring.strokeWidth[size];
-  const diameter = radius * 2 + strokeWidth;
+  const diameter = ringRadius * 2 + strokeWidth;
   const center = diameter / 2;
+  // Le trou du donut, à l'intérieur du trait : c'est l'espace réel où Vitality peut se lire.
+  const innerDiameter = ringRadius * 2 - strokeWidth * 2;
+  const typeScale = size === 'hero' ? type.display : type.title;
+  const fontSize = vitalityFontSize(vitality, innerDiameter, typeScale.fontSize);
 
   return (
     <View style={styles.wrapper}>
       <Svg width={diameter} height={diameter}>
-        <Circle cx={center} cy={center} r={radius} stroke={color.surfaceRaised} strokeWidth={strokeWidth} fill="none" />
+        <Circle cx={center} cy={center} r={ringRadius} stroke={color.surfaceRaised} strokeWidth={strokeWidth} fill="none" />
         {/* Partie au douze heures, pas aux trois : c'est là qu'un cercle de progression se lit. */}
         <G rotation={-90} originX={center} originY={center}>
           {children ??
             arcsOf(attributes).map((arc) => (
-              <Arc key={arc.attribute} arc={arc} radius={radius} center={center} strokeWidth={strokeWidth} />
+              <Arc key={arc.attribute} arc={arc} radius={ringRadius} center={center} strokeWidth={strokeWidth} />
             ))}
         </G>
       </Svg>
-      <View style={styles.center} pointerEvents="none">
-        <Text style={[size === 'hero' ? type.display : type.title, styles.vitality]}>{vitality}</Text>
+      <View style={[styles.center, { width: innerDiameter, height: innerDiameter }]} pointerEvents="none">
+        <Text numberOfLines={1} style={[typeScale, styles.vitality, { fontSize }]}>
+          {vitality}
+        </Text>
       </View>
     </View>
   );
@@ -66,26 +73,39 @@ type ArcProps = { arc: AttributeArc; radius: number; center: number; strokeWidth
  * reste de la circonférence (`strokeDasharray`), décalés du point de départ de l'arc
  * (`strokeDashoffset`). C'est la technique du donut chart — elle évite le calcul des points
  * d'un arc SVG pour ce qui reste, in fine, un simple pourcentage de tour.
+ *
+ * Les bouts sont ronds (`strokeLinecap="round"`) — le même vocabulaire que `radius.pill`
+ * partout ailleurs dans ce design system, plutôt qu'une coupe nette qui détonnerait à côté
+ * des pistes et des puces déjà arrondies. Un bout rond **allonge** visuellement le trait de
+ * `strokeWidth / 2` à chacune de ses deux extrémités : la longueur dessinée doit donc leur
+ * soustraire l'écart voulu **et** l'épaisseur du trait, pas seulement l'écart — sans quoi les
+ * bouts ronds mangent l'espacement et deux arcs voisins se recouvrent.
  */
-function Arc({ arc, radius, center, strokeWidth }: ArcProps) {
-  const circumference = 2 * Math.PI * radius;
-  // Le vide entre deux arcs vient du même vocabulaire que le reste des espacements — pas un
-  // angle choisi à l'œil. Converti en longueur d'arc, il se soustrait pour moitié de chaque
-  // côté, jamais retranché d'une part nulle : `arcsOf` ne lui en a laissé aucune.
-  const gap = space.xs;
-  const length = Math.max(0, (arc.to - arc.from) * circumference - gap);
+function Arc({ arc, radius: arcRadius, center, strokeWidth }: ArcProps) {
+  const circumference = 2 * Math.PI * arcRadius;
+  const gap = ring.gap;
+  const length = Math.max(0, (arc.to - arc.from) * circumference - gap - strokeWidth);
+
+  // Une part réelle (voir `arcsOf`, qui a déjà écarté les parts nulles) peut être trop fine
+  // pour survivre à la soustraction ci-dessus : rien à dessiner n'est pas la même chose qu'un
+  // trait de longueur nulle, qui se dessinerait quand même — un bout rond couvre un point
+  // même à `strokeDasharray="0 …"`. Un point dessinerait une part invisible plus grosse
+  // qu'elle ne l'est ; l'anneau se tait, la légende, elle, garde le chiffre exact.
+  if (length <= 0) {
+    return null;
+  }
 
   return (
     <Circle
       cx={center}
       cy={center}
-      r={radius}
+      r={arcRadius}
       stroke={attributeColor[arc.attribute]}
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       fill="none"
       strokeDasharray={`${length} ${circumference - length}`}
-      strokeDashoffset={-(arc.from * circumference + gap / 2)}
+      strokeDashoffset={-(arc.from * circumference + gap / 2 + strokeWidth / 2)}
     />
   );
 }
