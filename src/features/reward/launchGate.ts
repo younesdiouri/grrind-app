@@ -164,3 +164,38 @@ export function markInteracted(): void {
 export function hasInteracted(): boolean {
   return interacted;
 }
+
+/**
+ * Une progression a-t-elle le droit de prendre l'écran, maintenant ?
+ *
+ * Trois faits, une décision, et **aucune dépendance** : `usePendingReward` fournit les trois,
+ * ce fichier tranche, et la règle se prouve sous `node --test` sans monter de composant ni
+ * simuler un cycle de vie d'app.
+ *
+ * ————— Les deux gardes ne se valent pas ——————————————————————————————————————————————
+ *
+ * `active` est **absolue**. Personne devant l'écran veut dire personne, quel qu'ait été le
+ * geste à l'origine de la synchronisation : un réveil HealthKit relance le processus entier
+ * dans une app que personne ne regarde, et une animation qui s'y jouerait serait perdue pour
+ * de bon — le dommage exact que `pending.ts` existe pour empêcher.
+ *
+ * `interacted` **cède devant une demande explicite** (#97). Elle protège d'une progression qui
+ * *arrive* pendant qu'on lit son historique. Elle n'a rien à dire d'une progression qu'on vient
+ * de *réclamer* en tapant « Synchroniser maintenant » ou en tirant pour rafraîchir : dans ce
+ * cas `interacted` est vrai **parce que** le joueur a touché l'écran pour l'obtenir, et le lui
+ * opposer transforme sa demande en refus.
+ */
+export function mayOpenReward(state: {
+  /** L'app est-elle au premier plan ? */
+  active: boolean;
+  /** Le joueur a-t-il touché l'écran depuis le lancement ? */
+  interacted: boolean;
+  /** A-t-il demandé cette progression, par un geste explicite ? */
+  solicited: boolean;
+}): boolean {
+  if (!state.active) {
+    return false;
+  }
+
+  return !state.interacted || state.solicited;
+}

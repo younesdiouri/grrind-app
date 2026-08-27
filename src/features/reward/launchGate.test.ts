@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createLaunchGate, type LaunchGateDeps } from './launchGate.ts';
+import { createLaunchGate, mayOpenReward, type LaunchGateDeps } from './launchGate.ts';
 
 /**
  * Le banc du portillon de lancement.
@@ -194,5 +194,50 @@ describe('le portillon de lancement', () => {
     // Et le verdict, lui, le pose bien.
     bench.settleSync();
     assert.equal(gate.isSettled(), true);
+  });
+});
+
+/**
+ * Qui a le droit de prendre l'écran (#97).
+ *
+ * Le défaut que ces cas figent s'était constaté en vrai : une marche importée par un
+ * « Synchroniser maintenant », et aucun écran de récompense — il a fallu tuer l'app et la
+ * relancer pour la voir. La garde protégeait le joueur de sa propre demande.
+ */
+describe('l’ouverture de l’écran de récompense', () => {
+  it('s’ouvre sur un lancement neuf, où rien n’a encore été touché', () => {
+    assert.equal(
+      mayOpenReward({ active: true, interacted: false, solicited: false }),
+      true,
+    );
+  });
+
+  it('n’interrompt pas un joueur qu’une progression vient surprendre', () => {
+    // Un réveil en arrière-plan qui tombe pendant qu'on lit son historique : elle attendra.
+    assert.equal(
+      mayOpenReward({ active: true, interacted: true, solicited: false }),
+      false,
+    );
+  });
+
+  it('cède quand le joueur a demandé sa progression', () => {
+    // `interacted` est vrai **parce qu'il** a touché l'écran pour l'obtenir. Le lui opposer
+    // transformerait sa demande en refus.
+    assert.equal(
+      mayOpenReward({ active: true, interacted: true, solicited: true }),
+      true,
+    );
+  });
+
+  it('ne joue jamais devant personne, même sur une demande explicite', () => {
+    // Un réveil HealthKit relance le processus entier dans une app que personne ne regarde.
+    // Une animation qui s'y jouerait serait perdue — le dommage que `pending.ts` empêche.
+    for (const solicited of [false, true]) {
+      assert.equal(
+        mayOpenReward({ active: false, interacted: false, solicited }),
+        false,
+        `l'app en arrière-plan n'ouvre rien (solicited: ${solicited})`,
+      );
+    }
   });
 });
