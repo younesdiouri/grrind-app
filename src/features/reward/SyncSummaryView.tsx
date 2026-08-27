@@ -15,7 +15,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 import { Circle } from 'react-native-svg';
 
-import { AttributeRing } from '@/components/AttributeRing';
+import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { SessionCard } from '@/components/SessionCard';
@@ -41,6 +41,7 @@ import {
   type RewardSummary,
   type SkippedWorkout,
   type SyncSummary,
+  type SyncTotals,
 } from './timeline';
 
 /**
@@ -61,15 +62,31 @@ import {
  *
  * ————— La lecture, de haut en bas ——————————————————————————————————————————————————————
  *
- * L'écran se lit en trois temps, et chacun chasse le précédent. **L'attente** — la barre est
- * posée sur le palier du joueur, la séance monte. **Le calcul** — les lignes tombent, la
- * barre suit, elle bute en haut et l'or la traverse. **Le palier** — le détail sort, le
- * niveau prend tout le cadre, le titre tombe dedans. Rien ne cohabite : deux choses à lire
- * en même temps, c'est aucune des deux qui est lue.
+ * L'écran se lit en quatre temps, et chacun chasse le précédent — sauf le dernier.
+ * **L'attente** — la barre est posée sur le palier du joueur, la séance monte. **Le calcul** —
+ * les lignes tombent, la barre suit, elle bute en haut et l'or la traverse. **Le palier** — le
+ * détail sort, le niveau prend tout le cadre, le titre tombe dedans. Rien ne cohabite : deux
+ * choses à lire en même temps, c'est aucune des deux qui est lue.
+ *
+ * **Puis le bilan** (#79), et lui ne sort pas. C'est la moitié qui manquait : chaque bloc était
+ * écrit pour être chassé, personne ne reprenait la main à la fin, et l'écran finissait nu au
+ * moment exact où le joueur venait chercher ce qu'il avait gagné. Voir `Recap`.
+ *
+ * Chaque temps a par ailleurs gagné son **temps de lecture** (`BEATS.dwell`, dans
+ * `timeline.ts`) : un bloc se construisait puis sortait aussitôt sa dernière ligne posée.
  *
  * Ce que ce composant **ne fait pas** : construire les rampes, ni dessiner. Les premières
  * vivent dans `timeline.ts`, le dessin dans le design system. Il ne garde que le mouvement.
  */
+/**
+ * Combien de titres le bilan montre avant de les compter.
+ *
+ * Deux badges tiennent sous l'anneau sur un iPhone ; le troisième pousse les comptes hors de
+ * l'écran. Un titre est un événement rare — en débloquer trois d'un coup veut dire qu'on
+ * revient de vacances, et c'est exactement le lot où le bilan doit rester lisible.
+ */
+const RECAP_TITLES = 2;
+
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -109,6 +126,9 @@ export function SyncSummaryView({
 
   const digest = timeline.beats.find((beat) => beat.kind === 'digest');
   const skipped = timeline.beats.find((beat) => beat.kind === 'skipped');
+  const recap = timeline.beats.find((beat) => beat.kind === 'recap');
+  /** Le dernier workout crédité : c'est son état d'après que le bilan montre. */
+  const last = summary.imported[summary.imported.length - 1];
 
   /**
    * Rien n'a été crédité.
@@ -293,6 +313,18 @@ export function SyncSummaryView({
             until={digest.until}
             count={digest.count}
             levels={digest.levels}
+          />
+        )}
+
+        {/* Le bilan, par-dessus tout ce qui vient de sortir — et qui **reste**. */}
+        {recap === undefined || timeline.totals === null || last === undefined ? null : (
+          <Recap
+            clock={clock}
+            at={recap.at}
+            totals={timeline.totals}
+            attributes={last.attributes}
+            titles={summary.imported.flatMap((workout) => workout.titlesUnlocked)}
+            skippedCount={summary.skipped.length}
           />
         )}
       </View>
@@ -767,6 +799,106 @@ function DigestLevel({ clock, at, level }: { clock: Clock; at: number; level: nu
 }
 
 /**
+ * Le bilan — **l'état d'arrivée, et le seul bloc de cet écran qui ne sort jamais**.
+ *
+ * Tout le reste est écrit pour être chassé : c'est la règle « rien ne cohabite », et elle est
+ * juste *pendant* la séquence. Mais personne ne reprenait la main à la fin, et l'écran finissait
+ * nu au moment précis où le joueur venait chercher ce qu'il avait gagné (#79). Sa rampe d'opacité
+ * n'a donc que **deux** points : il monte, et il y reste.
+ *
+ * ————— Il ne calcule rien ———————————————————————————————————————————————————————————————
+ *
+ * `totals` est servi depuis le premier jour et n'avait jamais été affiché. Son docblock au
+ * contrat dit mot pour mot ce que ce composant fait : « le raccourci de l'écran de résumé —
+ * +847 XP · niveau 10 → 15 — et ce que voit le joueur qui saute l'animation ». Les cinq jauges
+ * viennent de l'`after` du dernier `imported`, exactement là où le saut les pose. Rien n'est
+ * refait ici, et rien ne peut donc diverger de ce que la séquence vient de montrer.
+ *
+ * ————— Il tient dans un écran, ou il choisit ————————————————————————————————————————————
+ *
+ * Les blocs sont empilés au même endroit exprès — une vue défilante se battrait avec le geste
+ * qui saute la séquence. Un lot peut débloquer plus de titres qu'il n'y a de place : ils se
+ * comptent alors au lieu de s'empiler, parce qu'un bilan illisible ne vaut pas mieux qu'un
+ * écran vide.
+ *
+ * L'anneau est celui du design system, sans enfant : ses arcs sont **statiques** ici, et c'est
+ * le point — la redistribution vient d'avoir lieu sous les yeux du joueur, la rejouer en
+ * boucle en ferait une décoration.
+ */
+function Recap({
+  clock,
+  at,
+  totals,
+  attributes,
+  titles,
+  skippedCount,
+}: {
+  clock: Clock;
+  at: number;
+  totals: SyncTotals;
+  attributes: RewardSummary['attributes'];
+  titles: RewardSummary['titlesUnlocked'];
+  skippedCount: number;
+}) {
+  const style = useAnimatedStyle(() => ({
+    // Deux points, jamais trois : c'est ce qui fait de ce bloc un état et pas un passage.
+    opacity: interpolate(clock.value, [at, at + duration.enter], [0, 1], Extrapolation.CLAMP),
+  }));
+
+  const { vitality, ...arcs } = {
+    strength: attributes.strength.after,
+    endurance: attributes.endurance.after,
+    mobility: attributes.mobility.after,
+    dexterity: attributes.dexterity.after,
+    vitality: attributes.vitality.after,
+  };
+
+  const climbed = totals.levelAfter > totals.levelBefore;
+  // Deux badges tiennent, trois débordent. Au-delà, on compte — voir le docblock.
+  const shown = titles.slice(0, RECAP_TITLES);
+  const beyond = titles.length - shown.length;
+
+  return (
+    <Animated.View style={[styles.block, styles.podium, style]}>
+      <View style={styles.recapRing}>
+        <AttributeRing attributes={arcs} vitality={vitality} size="hero" />
+        {/* Même disposition que la carte d'accueil, et pour la même raison : la légende prend
+            la largeur qui reste, sinon ses libellés se replient lettre par lettre. */}
+        <View style={styles.recapLegend}>
+          <AttributeLegend attributes={arcs} />
+        </View>
+      </View>
+
+      {/* Le niveau se dit toujours ; la flèche seulement s'il a bougé. « Niveau 12 → 12 »
+          serait une célébration qui n'a pas eu lieu. */}
+      <Text style={styles.label}>
+        NIVEAU{' '}
+        <Text style={climbed ? styles.recapClimb : styles.recapStay}>
+          {climbed ? `${totals.levelBefore} → ${totals.levelAfter}` : totals.levelAfter}
+        </Text>
+      </Text>
+
+      {shown.map((title) => (
+        <TitleBadge key={title.id} name={title.name} caption="Titre débloqué" />
+      ))}
+      {beyond > 0 ? (
+        <Text style={styles.label}>
+          et {beyond} autre{beyond > 1 ? 's' : ''} titre{beyond > 1 ? 's' : ''}
+        </Text>
+      ) : null}
+
+      {/* Les écarts se comptent ici sans se nommer : ils le sont déjà, plus bas, un par un. */}
+      <Text style={styles.label}>
+        {totals.workoutCount} séance{totals.workoutCount > 1 ? 's' : ''}
+        {skippedCount > 0
+          ? ` · ${skippedCount} écartée${skippedCount > 1 ? 's' : ''}`
+          : ''}
+      </Text>
+    </Animated.View>
+  );
+}
+
+/**
  * Les séances écartées, **nommées** et une par une.
  *
  * Le contrat rend `activityType` et `reason` par séance justement pour ça : « le curling
@@ -882,6 +1014,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   levelValue: { ...type.title, color: color.celebrate },
+  /** Le bilan : l'anneau et sa légende côte à côte, comme sur la carte d'accueil. */
+  recapRing: { flexDirection: 'row', alignItems: 'center', gap: space.md, alignSelf: 'stretch' },
+  recapLegend: { flex: 1 },
+  /** Un palier franchi se célèbre ; un palier tenu se lit simplement. */
+  recapClimb: { color: color.celebrate },
+  recapStay: { color: color.text },
   digestCount: { ...type.display, color: color.text },
   skipped: { gap: space.xs, pointerEvents: 'none' },
   skippedRow: { flexDirection: 'row', gap: space.sm, alignItems: 'baseline' },

@@ -27,6 +27,14 @@ const troisWorkouts = fixture('trois-workouts');
 const quinzeWorkouts = fixture('quinze-workouts');
 const toutEcarte = fixture('tout-ecarte');
 
+const ATTRIBUTES: ('strength' | 'endurance' | 'mobility' | 'dexterity' | 'vitality')[] = [
+  'strength',
+  'endurance',
+  'mobility',
+  'dexterity',
+  'vitality',
+];
+
 /** La rampe est-elle exploitable par `interpolate` ? */
 function assertRampIsSane(ramp: { input: number[]; output: number[] }, duration: number): void {
   assert.equal(ramp.input.length, ramp.output.length, 'autant de points que de valeurs');
@@ -88,6 +96,93 @@ describe('la timeline du SyncSummary', () => {
       assert.equal(step, lines[i].line.amount);
     }
     assert.equal(lines[lines.length - 1].runningTotal, troisWorkouts.totals?.xpAwarded);
+  });
+
+  /**
+   * Le bilan (#79) — le seul battement qui ne se referme pas.
+   *
+   * Le défaut qu'il répare ne se voyait dans aucun test parce qu'aucun ne regardait la **fin**
+   * de la séquence : chaque bloc était correct, chaque rampe arrivait au bon endroit, et l'écran
+   * était pourtant vide à la dernière image. Ce banc-ci regarde ce qui reste, pas ce qui passe.
+   */
+  describe('le bilan qui ferme la séquence', () => {
+    it('ferme les trois synchronisations créditées, et court jusqu\'au bout', () => {
+      for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts]) {
+        const timeline = buildTimeline(summary);
+        const recap = timeline.beats.find((beat) => beat.kind === 'recap');
+
+        assert.ok(recap !== undefined, 'une synchronisation créditée se referme sur son bilan');
+        // C'est *la* propriété du ticket : il ne se termine pas avant la séquence, donc il ne
+        // peut pas laisser l'écran nu.
+        assert.equal(recap.until, timeline.duration);
+        // Et il est bien le dernier : rien ne se joue après lui.
+        assert.equal(timeline.beats[timeline.beats.length - 1], recap);
+      }
+    });
+
+    it("n'invente pas d'état d'arrivée quand rien n'est arrivé", () => {
+      const timeline = buildTimeline(toutEcarte);
+
+      assert.equal(toutEcarte.totals, null, 'la fixture est bien celle qui ne crédite rien');
+      assert.equal(
+        timeline.beats.some((beat) => beat.kind === 'recap'),
+        false,
+      );
+    });
+
+    it('laisse la place au bilan : aucun détail ne tient encore l\'écran quand il paraît', () => {
+      // Le défaut le plus discret du ticket. Sans condensé ni écart, la fenêtre du dernier
+      // palier s'étendait jusqu'à `duration` — donc par-dessus le bilan qu'elle est censée
+      // laisser paraître.
+      for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts]) {
+        const timeline = buildTimeline(summary);
+        const recap = timeline.beats.find((beat) => beat.kind === 'recap');
+        assert.ok(recap !== undefined);
+
+        for (const segment of timeline.segments) {
+          assert.ok(
+            segment.until <= recap.at,
+            `le détail du workout ${segment.workout} déborde sur le bilan`,
+          );
+        }
+      }
+    });
+
+    it('le saut tombe sur le bilan, sans cas particulier', () => {
+      // Poser l'horloge à la fin met chaque interpolation sur sa dernière valeur ; ces
+      // dernières valeurs doivent être l'état d'arrivée, et non celui d'avant le bilan.
+      for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts]) {
+        const timeline = buildTimeline(summary);
+        const last = summary.imported[summary.imported.length - 1];
+
+        assert.equal(timeline.counter.input[timeline.counter.input.length - 1], timeline.duration);
+        assert.equal(
+          timeline.counter.output[timeline.counter.output.length - 1],
+          summary.totals?.xpAwarded,
+        );
+
+        for (const attribute of ATTRIBUTES) {
+          const ramp = timeline.attributes[attribute];
+          assert.equal(ramp.input[ramp.input.length - 1], timeline.duration);
+          assert.equal(ramp.output[ramp.output.length - 1], last.attributes[attribute].after);
+        }
+      }
+    });
+
+    it('tient l\'écran assez longtemps pour se lire', () => {
+      for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts]) {
+        const timeline = buildTimeline(summary);
+        const recap = timeline.beats.find((beat) => beat.kind === 'recap');
+        assert.ok(recap !== undefined);
+
+        // Deux secondes pleines : c'est aussi le délai avant que « Toucher pour continuer »
+        // ne paraisse, puisque l'affordance suit la fin de la séquence.
+        assert.ok(
+          recap.until - recap.at >= 2_000,
+          `le bilan ne tient que ${recap.until - recap.at}ms`,
+        );
+      }
+    });
   });
 
   it('condense au-delà de trois workouts au lieu de jouer une minute et demie', () => {
@@ -286,14 +381,6 @@ describe('la timeline du SyncSummary', () => {
   });
 });
 
-const ATTRIBUTES: ('strength' | 'endurance' | 'mobility' | 'dexterity' | 'vitality')[] = [
-  'strength',
-  'endurance',
-  'mobility',
-  'dexterity',
-  'vitality',
-];
-
 describe('les cinq jauges de caractéristiques, entre le breakdown et le niveau', () => {
   it('posent un battement `attributes` après la dernière ligne du breakdown, avant le premier niveau', () => {
     const timeline = buildTimeline(troisWorkouts);
@@ -379,10 +466,11 @@ describe('les cinq jauges de caractéristiques, entre le breakdown et le niveau'
     assert.ok(attributesBeat !== undefined);
 
     // Trois gains non nuls (force, endurance, dextérité) : la mobilité, à zéro, ne consomme
-    // aucun palier d'atterrissage.
+    // aucun palier d'atterrissage. Le `dwell` (#79) est le temps de lecture de l'anneau une
+    // fois posé — il ne dépend pas du nombre de gains, et c'est bien le point.
     assert.equal(
       attributesBeat.until - attributesBeat.at,
-      3 * BEATS.attributeGain + BEATS.attributeSettle,
+      3 * BEATS.attributeGain + BEATS.attributeSettle + BEATS.dwell,
     );
 
     const mobilityRamp = timeline.attributes.mobility;
