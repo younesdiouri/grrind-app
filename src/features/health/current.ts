@@ -29,4 +29,10 @@ export const healthProvider: HealthProvider = {
   workoutsSince: async () => {
     throw new Error("Aucun fournisseur de santé sur cette plateforme.");
   },
+
+  // Celle-ci rend `[]` là où les deux précédentes jettent, et la différence est délibérée :
+  // son appelant est un **meilleur effort** (`dailyActivity.ts`) qui n'affiche rien et ne
+  // bloque rien. Une exception ici n'apprendrait à personne ce qu'un tableau vide ne dit pas
+  // déjà — il n'y a pas d'énergie à remonter, et ce n'est pas une panne.
+  dailyActiveEnergy: async () => [],
 };
