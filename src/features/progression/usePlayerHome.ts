@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import { api } from '@/api/client';
 import type { components } from '@/api/schema';
@@ -43,8 +43,29 @@ export type PlayerHome =
   | { step: 'ready'; progression: Progression; workouts: Workout[]; hasMore: boolean }
   | { step: 'failed'; failure: Failure };
 
-export function usePlayerHome(): { home: PlayerHome; reload: () => void } {
+export function usePlayerHome(): {
+  home: PlayerHome;
+  /** Réessayer après un échec : l'écran repasse par son témoin, il n'y a rien à préserver. */
+  reload: () => void;
+  /**
+   * Relire **sans vider l'écran** — ce que le tirer-pour-rafraîchir exige (#100).
+   *
+   * Rend une promesse pour que l'appelant sache quand les chiffres ont réellement bougé :
+   * retirer le témoin à la fin de la synchronisation, avant que la lecture n'ait abouti,
+   * donnerait l'impression que le geste n'a rien fait.
+   */
+  refresh: () => Promise<void>;
+  /**
+   * Le refus d'un rafraîchissement qui n'a pas vidé l'écran.
+   *
+   * Distinct de `home.step === 'failed'`, et c'est le point : là, il n'y a rien à afficher ;
+   * ici, les chiffres d'avant sont toujours justes et valent mieux qu'un écran d'erreur. Il
+   * se dit donc à côté d'eux, et s'efface au premier rafraîchissement qui aboutit.
+   */
+  refreshFailure: Failure | null;
+} {
   const [home, setHome] = useState<PlayerHome>({ step: 'loading' });
+  const [refreshFailure, setRefreshFailure] = useState<Failure | null>(null);
 
   // Le nombre de verdicts tombés, pas le statut : c'est le seul moment où les chiffres du
   // serveur ont pu bouger. S'abonner au statut rechargerait aussi au départ d'une
@@ -75,10 +96,26 @@ export function usePlayerHome(): { home: PlayerHome; reload: () => void } {
     };
   }, []);
 
+  /**
+   * La lecture en cours, partagée — même idiome que `syncCoordinator.ts`, et pour la même
+   * raison à plus petite échelle : un tirer-pour-rafraîchir déclenche une synchronisation, dont
+   * le verdict fait *déjà* recharger cet écran par `settled`. Sans partage, le même couple de
+   * requêtes partirait deux fois pour un seul geste.
+   */
+  const inFlight = useRef<Promise<PlayerHome> | null>(null);
+
+  const loadOnce = useCallback((): Promise<PlayerHome> => {
+    inFlight.current ??= load().finally(() => {
+      inFlight.current = null;
+    });
+
+    return inFlight.current;
+  }, [load]);
+
   useEffect(() => {
     let current = true;
 
-    void load().then(
+    void loadOnce().then(
       (next) => {
         if (current) {
           setHome(next);
@@ -95,14 +132,39 @@ export function usePlayerHome(): { home: PlayerHome; reload: () => void } {
       current = false;
     };
     // `settled` change à chaque verdict de synchronisation, ce qui relance ce chargement.
-  }, [load, settled]);
+  }, [loadOnce, settled]);
 
   const reload = useCallback(() => {
     setHome({ step: 'loading' });
+    setRefreshFailure(null);
     void load().then(setHome, (error: unknown) =>
       setHome({ step: 'failed', failure: failureFrom(error) }),
     );
   }, [load]);
 
-  return { home, reload };
+  /**
+   * Le tirer-pour-rafraîchir : **jamais** de passage par `loading`.
+   *
+   * `reload` démonte le contenu pour afficher son témoin, ce qui est juste après un échec — il
+   * n'y a rien à préserver. Sous le doigt, ce serait l'écran qui disparaît au moment où on tire
+   * dessus. Les chiffres restent donc en place jusqu'à ce que les nouveaux arrivent.
+   */
+  const refresh = useCallback(async (): Promise<void> => {
+    try {
+      const next = await loadOnce();
+
+      if (next.step === 'failed') {
+        // Le contenu d'avant reste juste : on garde l'écran et on dit le refus à côté.
+        setRefreshFailure(next.failure);
+        return;
+      }
+
+      setHome(next);
+      setRefreshFailure(null);
+    } catch (error: unknown) {
+      setRefreshFailure(failureFrom(error));
+    }
+  }, [loadOnce]);
+
+  return { home, reload, refresh, refreshFailure };
 }
