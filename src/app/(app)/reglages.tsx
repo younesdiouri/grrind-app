@@ -1,5 +1,5 @@
 import * as Linking from 'expo-linking';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -15,7 +15,15 @@ import {
   updateNotificationPreference,
   type UserProfile,
 } from '@/features/notifications/preferences';
-import { useNotificationPermission } from '@/features/notifications/useNotificationPermission';
+import { requestPermissionAndRegister } from '@/features/notifications/registration';
+import {
+  useNotificationPermission,
+  // Nommé explicitement : sans lui, `NotificationPermission` résout vers le type **du DOM**
+  // que TypeScript embarque, dont les valeurs sont `'default' | 'denied' | 'granted'` — assez
+  // proches pour compiler par accident, et fausses.
+  type NotificationPermission,
+} from '@/features/notifications/useNotificationPermission';
+import { useHealthAccess } from '@/features/health/useHealthAccess';
 
 /**
  * Les réglages de notification — #57. Pas un quatrième onglet : une route poussée depuis
@@ -30,12 +38,27 @@ import { useNotificationPermission } from '@/features/notifications/useNotificat
  * (`design/tokens.ts`) est un `Partial` : une clé qu'il ne connaît pas encore s'affiche quand
  * même, brute, plutôt que de disparaître.
  *
- * ————— L'autorisation système, avant tout le reste ————————————————————————————————————
+ * ————— Les autorisations, avant tout le reste (#81) ——————————————————————————————————
  *
- * Si iOS n'a pas accordé les notifications, ces interrupteurs ne veulent rien dire : le
- * serveur ne pousse plus rien vers cet appareil, quoi qu'ils affichent. iOS ne repose jamais
- * la question depuis l'app une fois refusée — le seul recours est Réglages système, donc
- * c'est le seul geste que ce cas propose.
+ * Si iOS n'a pas accordé les notifications, les interrupteurs ci-dessous ne veulent rien dire :
+ * le serveur ne pousse plus rien vers cet appareil, quoi qu'ils affichent. D'où une section
+ * en tête, et le principe qui la justifie :
+ *
+ * **Une autorisation doit pouvoir se donner depuis Réglages, à tout moment.** La lier à un
+ * geste de produit — fonder une guilde, ouvrir l'onglet Santé — a du sens pour la *première*
+ * fois : on demande quand la raison est évidente, et iOS ne repose jamais la question. Mais ce
+ * ne peut pas être le **seul** chemin, sinon l'autorisation devient impossible à rattraper pour
+ * qui a manqué le moment. C'était exactement le cas : la question n'était posée qu'au succès de
+ * l'onglet Guilde, et un joueur sans guilde n'avait aucun moyen de l'obtenir.
+ *
+ * Les deux autorisations n'ont **pas** la même forme, et l'écran ne fait pas semblant :
+ *
+ * - **Notifications** : trois états lisibles, trois gestes. « Jamais demandé » se demande
+ *   sur place, « refusé » passe par Réglages système, « accordé » ne propose rien.
+ * - **Santé** : deux états observables, et **jamais « refusé »**. HealthKit rend
+ *   `notDetermined` en lecture que l'utilisateur ait accepté ou décoché — c'est délibéré chez
+ *   Apple, une app ne doit pas pouvoir déduire qu'on lui cache quelque chose. Voir le docblock
+ *   de `useHealthAccess.ts`, qui est écrit pour cette ambiguïté.
  *
  * ————— Le compte, en dernier (#84) —————————————————————————————————————————————————————
  *
@@ -49,7 +72,7 @@ import { useNotificationPermission } from '@/features/notifications/useNotificat
  * serveur ne répond plus.
  */
 export default function ReglagesScreen() {
-  const permission = useNotificationPermission();
+  const { permission, refresh } = useNotificationPermission();
   const auth = useAuth();
 
   const [state, setState] = useState<
@@ -78,22 +101,7 @@ export default function ReglagesScreen() {
     <ScrollView contentContainerStyle={styles.screen}>
       <Stack.Screen options={{ title: 'Réglages' }} />
 
-      {permission === 'denied' ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Les notifications sont désactivées</Text>
-          <Text style={styles.body}>
-            GRRIND n&apos;a pas la permission d&apos;envoyer de notifications sur cet appareil :
-            les réglages ci-dessous n&apos;ont aucun effet tant que ça reste ainsi. iOS ne
-            repose pas la question depuis l&apos;app — passe par Réglages système pour
-            l&apos;autoriser.
-          </Text>
-          <Button
-            label="Ouvrir Réglages"
-            onPress={() => void Linking.openSettings()}
-            variant="quiet"
-          />
-        </View>
-      ) : null}
+      <Authorizations permission={permission} onAsked={refresh} />
 
       {state.step === 'loading' ? (
         <View style={styles.centered}>
@@ -121,6 +129,128 @@ export default function ReglagesScreen() {
         </View>
       ) : null}
     </ScrollView>
+  );
+}
+
+/**
+ * Les deux autorisations, et les gestes qui les rattrapent.
+ *
+ * Elle est en tête de l'écran parce que rien de ce qui suit n'a de sens sans elle : un
+ * interrupteur de catégorie sur un appareil que le serveur ne peut plus joindre affiche une
+ * préférence qui n'a aucun effet.
+ */
+function Authorizations({
+  permission,
+  onAsked,
+}: {
+  permission: NotificationPermission;
+  /** Relire l'autorisation après une demande faite ici : la feuille système ne provoque pas
+   *  toujours un passage par l'arrière-plan assez net pour que le hook s'en aperçoive seul. */
+  onAsked: () => void;
+}) {
+  const [asking, setAsking] = useState(false);
+  const { access } = useHealthAccess();
+
+  const ask = async () => {
+    setAsking(true);
+    // Le même chemin que l'onglet Guilde, pas un troisième : `requestPermissionAndRegister`
+    // demande **puis** enregistre le jeton, et c'est cette seconde moitié qu'on perdrait à
+    // appeler `requestPermissionsAsync` directement ici.
+    await requestPermissionAndRegister();
+    setAsking(false);
+    onAsked();
+  };
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Autorisations</Text>
+
+      {/* ————— Notifications ————————————————————————————————————————————————————————— */}
+
+      {permission === 'undetermined' ? (
+        <>
+          <Text style={styles.body}>
+            GRRIND ne t&apos;a encore jamais demandé la permission d&apos;envoyer des
+            notifications. Elles préviennent quand une séance est comptée et quand ta guilde
+            bouge — et les réglages ci-dessous n&apos;ont d&apos;effet qu&apos;une fois
+            l&apos;autorisation donnée.
+          </Text>
+          <Button
+            label="Autoriser les notifications"
+            onPress={() => void ask()}
+            busy={asking}
+            variant="quiet"
+          />
+        </>
+      ) : null}
+
+      {permission === 'denied' ? (
+        <>
+          <Text style={styles.body}>
+            GRRIND n&apos;a pas la permission d&apos;envoyer de notifications sur cet appareil :
+            les réglages ci-dessous n&apos;ont aucun effet tant que ça reste ainsi. iOS ne
+            repose pas la question depuis l&apos;app — passe par Réglages système pour
+            l&apos;autoriser.
+          </Text>
+          <Button
+            label="Ouvrir Réglages"
+            onPress={() => void Linking.openSettings()}
+            variant="quiet"
+          />
+        </>
+      ) : null}
+
+      {/* `granted` ne propose rien : on ne demande pas de refaire ce qui est fait. Le dire
+          quand même évite une section qui paraît vide à qui a tout accordé. */}
+      {permission === 'granted' ? (
+        <Text style={styles.body}>Les notifications sont autorisées.</Text>
+      ) : null}
+
+      {/* ————— Santé ——————————————————————————————————————————————————————————————————
+          Jamais « refusé » : HealthKit ne le dit pas en lecture, et l'écrire serait inventer.
+          Deux cas observables, deux gestes. */}
+
+      {access.step === 'explain' ? (
+        <>
+          <Text style={styles.body}>
+            GRRIND n&apos;a pas encore demandé l&apos;accès à Santé, d&apos;où viennent tes
+            séances.
+          </Text>
+          {/* On n'ouvre **pas** la feuille système d'ici. Elle a une case par donnée et ne se
+              rejoue jamais : il faut avoir dit avant ce qu'on lit et pourquoi, et c'est tout
+              l'objet de l'onglet Santé. Ouvrir la feuille à froid depuis Réglages détruirait
+              cette explication pour de bon. */}
+          <Button
+            label="Voir ce que GRRIND lit"
+            onPress={() => router.navigate('/sante')}
+            variant="quiet"
+          />
+        </>
+      ) : null}
+
+      {access.step === 'asked' ? (
+        <>
+          <Text style={styles.body}>
+            L&apos;accès à Santé a été demandé. Si tes séances ne remontent pas, ses
+            interrupteurs vivent ici :
+          </Text>
+          <Text style={styles.path}>
+            Réglages › Confidentialité et sécurité › Santé › GRRIND
+          </Text>
+          <Button
+            label="Ouvrir Réglages"
+            onPress={() => void Linking.openSettings()}
+            variant="quiet"
+          />
+        </>
+      ) : null}
+
+      {access.step === 'unavailable' ? (
+        <Text style={styles.body}>
+          Cet appareil ne donne pas accès aux données de santé.
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
@@ -199,4 +329,7 @@ const styles = StyleSheet.create({
   cardTitle: { ...type.title, color: color.text },
   body: { ...type.body, color: color.textMuted },
   failure: { ...type.body, color: color.danger },
+  /** Le chemin système, écrit en toutes lettres : il reste vrai quoi qu'ouvre le bouton —
+   *  `openSettings()` mène à la page de GRRIND, les interrupteurs de Santé vivent ailleurs. */
+  path: { ...type.body, color: color.text },
 });
