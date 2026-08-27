@@ -23,6 +23,12 @@ export type SkippedWorkout = SyncSummary['skipped'][number];
  * un seul recalcul côté client — c'est précisément ce que la décision serveur de servir le
  * palier de départ (grrind-back#79) achète, et elle vient de payer.
  *
+ * **Et elle se referme sur un bilan** (#79). Le battement `recap` est le seul qui ne se termine
+ * pas : il court jusqu'à `duration` et y reste. Tous les autres blocs sont écrits pour être
+ * chassés — c'est juste pendant la séquence, ça ne l'est plus à la fin, où l'écran se
+ * retrouvait nu. Le rythme y gagne au passage un temps de lecture explicite (`BEATS.dwell`)
+ * après chaque bloc complet : ils se construisaient puis sortaient aussitôt.
+ *
  * C'est une fonction **pure** : pas de React, pas de Reanimated, pas d'horloge. Elle se teste
  * sur les fixtures capturées sans monter le moindre composant, et elle porte toute la mise en
  * scène — y compris les rampes d'interpolation, qui vivaient dans le composant tant qu'il n'y
@@ -66,7 +72,35 @@ export const BEATS = {
   digestMax: 3200,
   /** La liste des séances écartées apparaît. */
   skipped: duration.unfold,
-  /** Le temps de respirer avant que l'écran devienne interactif. */
+  /**
+   * Le temps de lire un bloc **complet**, avant que le suivant ne le chasse.
+   *
+   * C'est ce qui manquait, et c'est la moitié du défaut du #79. Chaque bloc avait le temps
+   * de *se construire* — une ligne toutes les `line`, la barre qui suit — puis il sortait
+   * aussitôt sa dernière ligne posée. Un breakdown de trois lignes tenait un peu plus d'une
+   * seconde en tout : le temps de comprendre, c'était déjà parti.
+   *
+   * `breath` — « le temps de respirer » — et pas une valeur neuve. Le *rythme* est une
+   * décision de ce fichier, l'*échelle* appartient aux tokens : élargir `line` ou `settle`
+   * là-bas ralentirait chaque liste de l'app pour régler un problème de cet écran-ci.
+   *
+   * Il se paie trois fois par séance détaillée — après le breakdown, dans le battement des
+   * jauges, après le palier — soit un peu plus d'une seconde. C'est ce qui fait passer une
+   * séance de trois secondes à quatre et demie environ, et quinze séances de quinze secondes
+   * à dix-neuf. Au-delà, on dépasse le budget que `timeline.test.ts` garde sur le condensé,
+   * et on ajoute des secondes que personne ne regarde.
+   */
+  dwell: duration.breath,
+  /**
+   * Le bilan tient l'écran avant que l'affordance de sortie ne paraisse.
+   *
+   * En clair, comme le budget du condensé et pour la même raison : ce n'est pas un geste
+   * qu'on cale sur l'échelle du design system, c'est un **temps de lecture** — combien de
+   * secondes il faut pour prendre un total, deux niveaux, cinq jauges et deux comptes.
+   */
+  recap: 2000,
+  /** Le temps de respirer avant que l'écran devienne interactif, quand il n'y a pas de bilan
+   *  à lire — rien n'a été crédité, il n'y a rien à récapituler. */
   tail: duration.breath,
 } as const;
 
@@ -104,6 +138,18 @@ export type Beat =
   | { kind: 'digest'; at: number; until: number; from: number; count: number; levels: number[] }
   /** Ce qui n'a rien rapporté, nommé. Toujours en dernier : c'est une note, pas une célébration. */
   | { kind: 'skipped'; at: number; until: number }
+  /**
+   * L'état d'arrivée — **le seul battement qui ne se referme pas**.
+   *
+   * Tous les autres blocs sont écrits pour être chassés : c'est la règle « rien ne cohabite »,
+   * et elle est juste *pendant* la séquence. Mais personne ne reprenait la main à la fin, et
+   * l'écran se retrouvait nu au moment précis où le joueur venait chercher ce qu'il avait
+   * gagné (#79). Celui-ci court jusqu'à `duration` et y reste.
+   *
+   * Il n'existe pas quand `totals` vaut `null` : il n'y a pas d'état d'arrivée quand rien
+   * n'est arrivé, et le client n'invente pas ce zéro.
+   */
+  | { kind: 'recap'; at: number; until: number }
   | { kind: 'rest'; at: number; until: number };
 
 /** Une rampe d'interpolation : `input` sont des instants, `output` la valeur à cet instant. */
@@ -387,6 +433,12 @@ export function buildTimeline(summary: SyncSummary): Timeline {
       // Un niveau franchi veut dire que la barre bute en haut avant de basculer. Sinon elle
       // s'arrête simplement là où elle finit.
       holdBar(settle.until, workout.level.reached.length > 0 ? 1 : fillAfter(workout.level));
+
+      // Puis le temps de **lire** ce qui vient de se poser (#79). Le bloc de détail sort à
+      // l'ouverture du battement des jauges — c'est écrit dans `WorkoutDetail` — donc reculer
+      // celui-ci est ce qui laisse le breakdown à l'écran, entier, avant qu'on le chasse.
+      const read = push({ kind: 'rest', duration: BEATS.dwell });
+      holdBar(read.until, workout.level.reached.length > 0 ? 1 : fillAfter(workout.level));
     }
 
     // 2.5. `attributes` — les quatre gains, dans l'ordre du contrat, puis Vitality. Un gain
@@ -397,9 +449,12 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     const after = attributesAt(workout.attributes, 'after');
     const landings = ATTRIBUTE_ORDER.filter((attribute) => workout.attributes[attribute].gained > 0);
 
+    // La visibilité des jauges est calée sur **ce battement** (`AttributeStage` interpole son
+    // opacité entre `at` et `until`), pas sur ce qui le suit : leur temps de lecture est donc
+    // dans sa durée, et pas dans un repos posé après.
     const attributesBeat = push({
       kind: 'attributes',
-      duration: landings.length * BEATS.attributeGain + BEATS.attributeSettle,
+      duration: landings.length * BEATS.attributeGain + BEATS.attributeSettle + BEATS.dwell,
       workout: index,
     });
 
@@ -436,6 +491,16 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     workout.titlesUnlocked.forEach((_, position) => {
       push({ kind: 'title', duration: BEATS.titleDrop, workout: index, index: position });
     });
+
+    // 4bis. Puis le palier se lit, comme le breakdown et les jauges (#79). Il tient l'écran
+    //       jusqu'à l'ouverture de la séance suivante — voir `segments` — donc c'est bien ce
+    //       repos-ci qui le lui donne, en reculant cette ouverture.
+    //       Seulement s'il s'est passé quelque chose : sans niveau ni titre, `LevelStage`
+    //       n'est même pas monté, et ce serait du temps mort devant un écran vide.
+    if (workout.level.reached.length > 0 || workout.titlesUnlocked.length > 0) {
+      const read = push({ kind: 'rest', duration: BEATS.dwell });
+      holdBar(read.until, fillAfter(workout.level));
+    }
 
     // 5. `loot`, `streak`, `unlockableNodes` — présents et vides jusqu'aux Lots 6, 5 et 7.
     //    On les saute tant qu'ils le sont ; on ne les rend pas optionnels pour autant.
@@ -486,16 +551,34 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     push({ kind: 'skipped', duration: BEATS.skipped });
   }
 
-  const tail = push({ kind: 'rest', duration: BEATS.tail });
-  holdBar(tail.until, last === undefined ? start : fillAfter(last.level));
-  holdCounter(tail.until, summary.totals?.xpAwarded ?? running);
-  holdAttributes(tail.until, last === undefined ? zeroAttributes : attributesAt(last.attributes, 'after'));
+  // Le bilan ferme la séquence, et il ne se referme pas lui-même (#79). C'est le battement
+  // que le saut atteint, et celui sur lequel l'écran se repose : `totals` existe **pour ça**,
+  // son propre docblock au contrat le dit — « le raccourci de l'écran de résumé, et ce que
+  // voit le joueur qui saute l'animation ». Il était servi depuis le début, il n'avait
+  // jamais été affiché.
+  //
+  // Sans rien de crédité, il n'y a pas d'état d'arrivée : on garde le simple temps de
+  // respirer, et l'écran reste ce qu'il est déjà — un compte rendu, avec ses écarts nommés.
+  const closing =
+    summary.totals === null
+      ? push({ kind: 'rest', duration: BEATS.tail })
+      : push({ kind: 'recap', duration: BEATS.recap });
+
+  holdBar(closing.until, last === undefined ? start : fillAfter(last.level));
+  holdCounter(closing.until, summary.totals?.xpAwarded ?? running);
+  holdAttributes(closing.until, last === undefined ? zeroAttributes : attributesAt(last.attributes, 'after'));
 
   // Un segment court de l'ouverture d'une séance à l'ouverture de la suivante ; le dernier
-  // s'arrête là où le détail cède la place — au condensé, aux écarts, ou à la fin.
+  // s'arrête là où le détail cède la place — au condensé, aux écarts, ou au bilan.
+  //
+  // **Le bilan compte dans cette liste**, et il n'y est pas par symétrie : sans lui, une
+  // synchronisation sans condensé ni écart laissait `afterDetail` valoir `cursor`, donc le
+  // dernier palier restait à l'écran *par-dessus* le bilan qu'il est censé laisser paraître.
   const openings = beats.filter((beat) => beat.kind === 'session');
   const afterDetail =
-    beats.find((beat) => beat.kind === 'digest' || beat.kind === 'skipped')?.at ?? cursor;
+    beats.find(
+      (beat) => beat.kind === 'digest' || beat.kind === 'skipped' || beat.kind === 'recap',
+    )?.at ?? cursor;
 
   const segments = openings.map((opening, index) => ({
     workout: opening.workout,
