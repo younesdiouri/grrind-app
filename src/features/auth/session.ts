@@ -43,9 +43,6 @@ export type AuthOutcome = { ok: true } | { ok: false; failure: Failure };
 let state: AuthState = { status: 'restoring' };
 const listeners = new Set<() => void>();
 
-/** Le nombre de rafraîchissements réellement partis. Lu par le banc de l'écran d'accueil. */
-let attempts = 0;
-
 function publish(next: AuthState): void {
   state = next;
   for (const listener of listeners) {
@@ -101,8 +98,6 @@ async function performRefresh(): Promise<string | null> {
     await forget();
     return null;
   }
-
-  attempts += 1;
 
   try {
     const { data, response } = await publicApi.POST('/api/auth/refresh', {
@@ -237,24 +232,6 @@ export async function register(input: RegisterInput): Promise<AuthOutcome> {
  * `DELETE /api/devices` (le contrat le dit : `delete?: never` sur `/api/devices`), et ce
  * module n'a rien de plus à envoyer — voir `notifications/registration.ts`.
  */
-/**
- * Le compteur du banc de l'accueil, et pourquoi il n'y a plus de porte dérobée à côté.
- *
- * « Un seul rafraîchissement part » ne se voit pas à l'œil : les deux issues affichent le
- * même écran, et la mauvaise ne se manifeste qu'à l'ouverture suivante. Les tests unitaires
- * prouvent la règle ; ce compteur la donne à voir sur le vrai serveur.
- *
- * Une version précédente forçait l'expiration en écrivant un faux jeton en mémoire. Ce n'est
- * plus possible, et c'est le contrat qui l'interdit : le serveur distingue les trois refus,
- * et un jeton inventé n'est pas *expiré* mais **invalide** — ce qui déconnecte au lieu de
- * rafraîchir. Forger l'expiration demanderait la clé de signature du back. Le banc attend
- * donc la vraie expiration, quinze minutes, ce qui teste le chemin réel plutôt qu'un chemin
- * voisin.
- */
-export function refreshAttempts(): number {
-  return attempts;
-}
-
 export async function signOut(): Promise<void> {
   const refreshToken = await readRefreshToken();
 
