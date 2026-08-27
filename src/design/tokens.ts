@@ -191,6 +191,12 @@ export const xpSourceLabel: Record<components['schemas']['XpLine']['source'], st
 /**
  * Les disciplines, rendues lisibles. Même garde-fou, même raison : `WALKING`, `HIIT` et
  * `HIKING` sont entrées au contrat avec le virage santé, et c'est le compilateur qui l'a dit.
+ * Les trois sports collectifs de `grrind-back#166` sont arrivés de la même façon.
+ *
+ * **Les deux dernières nomment une famille, pas un sport**, et c'est le contrat qui le veut :
+ * la table de correspondance est serveur, ce qui permet d'ouvrir le padel ou le squash sans
+ * republier le client. Écrire « Tennis » ici rendrait faux l'affichage d'une séance de
+ * badminton le jour où le back la range au même endroit.
  */
 export const disciplineLabel: Record<components['schemas']['Discipline'], string> = {
   RUNNING: 'Course',
@@ -202,6 +208,9 @@ export const disciplineLabel: Record<components['schemas']['Discipline'], string
   HIKING: 'Randonnée',
   MOBILITY: 'Mobilité',
   CLIMBING: 'Escalade',
+  FOOTBALL: 'Football',
+  COURT_SPORTS: 'Sports de terrain',
+  RACKET_SPORTS: 'Sports de raquette',
 };
 
 /**

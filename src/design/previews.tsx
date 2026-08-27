@@ -70,6 +70,7 @@ function guildMember(
     xpToNextLevel: 900,
     title: null,
     attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0, vitality: 0 },
+    vitalityBreakdown: { windowAverageActiveKcal: 420, targetActiveKcal: 500, bonusPermille: 168 },
     role: 'MEMBER',
     joinedAt: '2025-11-03T08:00:00Z',
     ...overrides,
