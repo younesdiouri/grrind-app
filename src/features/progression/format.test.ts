@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  formatAgo,
   formatCalories,
   formatDistance,
   formatDuration,
@@ -123,5 +124,34 @@ describe('l’expiration d’un code d’invitation', () => {
 
   it('ne casse pas sur une date que le serveur n’aurait pas dû envoyer', () => {
     assert.equal(formatInviteExpiry('pas une date', new Date()), 'pas une date');
+  });
+});
+
+describe('formatAgo', () => {
+  const now = new Date('2026-08-27T14:00:00');
+
+  it('dit « à l’instant » sous la minute : c’est la réponse qu’on cherche', () => {
+    assert.equal(formatAgo('2026-08-27T13:59:30', now), 'à l’instant');
+  });
+
+  it('compte en minutes dans l’heure', () => {
+    assert.equal(formatAgo('2026-08-27T13:56:00', now), 'il y a 4 min');
+  });
+
+  it('compte en heures dans la journée', () => {
+    assert.equal(formatAgo('2026-08-27T09:00:00', now), 'il y a 5 h');
+  });
+
+  // Au-delà, « il y a 73 h » ne se lit pas : la question redevient « quand », pas « depuis
+  // combien de temps », et c'est `formatWhen` qui y répond.
+  it('repasse la main à formatWhen au-delà d’une journée', () => {
+    assert.equal(
+      formatAgo('2026-08-24T09:00:00', now),
+      formatWhen('2026-08-24T09:00:00', now),
+    );
+  });
+
+  it('rend l’entrée telle quelle si elle n’est pas une date', () => {
+    assert.equal(formatAgo('pas une date', now), 'pas une date');
   });
 });

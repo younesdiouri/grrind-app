@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
 import { router, Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -24,6 +24,9 @@ import {
   type NotificationPermission,
 } from '@/features/notifications/useNotificationPermission';
 import { useHealthAccess } from '@/features/health/useHealthAccess';
+import { getJournal, subscribeToJournal, type SyncJournal } from '@/features/health/journal';
+import { useSyncStatus } from '@/features/health/useSync';
+import { formatAgo } from '@/features/progression/format';
 
 /**
  * Les réglages de notification — #57. Pas un quatrième onglet : une route poussée depuis
@@ -103,6 +106,8 @@ export default function ReglagesScreen() {
 
       <Authorizations permission={permission} onAsked={refresh} />
 
+      <Synchronisation />
+
       {state.step === 'loading' ? (
         <View style={styles.centered}>
           <ActivityIndicator color={color.accent} />
@@ -129,6 +134,131 @@ export default function ReglagesScreen() {
         </View>
       ) : null}
     </ScrollView>
+  );
+}
+
+/**
+ * Où en est la synchronisation — et la seule chose qui réponde à « est-ce que ça marche ? ».
+ *
+ * ————— Ce qu'il y a à savoir, et pourquoi deux lignes plutôt qu'une ——————————————————
+ *
+ * Une séance qui remonte en arrière-plan n'a personne devant l'écran : son résumé va en file
+ * et attend l'ouverture suivante pour se jouer. Entre les deux, rien ne se voyait. Et quand
+ * rien n'arrive, deux causes très différentes se ressemblaient :
+ *
+ * - **l'observer HealthKit ne tourne pas** — l'inscription a échoué, ou l'autorisation manque ;
+ * - **il tourne, et c'est le serveur qui n'a pas répondu** — le back dort (`fly.io` arrête la
+ *   machine sans trafic) et le réveil ne dispose que de dix secondes sans rejeu, un budget
+ *   dimensionné sur le chien de garde natif d'iOS, pas sur un démarrage à froid.
+ *
+ * Le second cas ne perd rien : l'ancre n'avance pas, la même différence se relit au réveil
+ * suivant. Mais il fallait pouvoir les distinguer, et c'est exactement ce que les deux
+ * premières lignes de ce bloc font.
+ *
+ * ————— Ce n'est pas un banc de développement ——————————————————————————————————————————
+ *
+ * Ils sont sortis de l'accueil au #84 et ne reviennent pas déguisés. « Dernière synchro il y a
+ * quatre minutes » est une information qu'un joueur a de bonnes raisons de vouloir, et ce bloc
+ * est écrit pour rester en production.
+ */
+function Synchronisation() {
+  const journal = useSyncExternalStore(subscribeToJournal, getJournal);
+  const { status, refresh } = useSyncStatus();
+  // Une seule lecture de l'horloge pour tout le bloc : deux lignes de la même seconde ne
+  // doivent pas se dater différemment parce que le rendu a pris du temps.
+  const now = new Date();
+
+  const syncing = status.phase === 'syncing';
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Synchronisation</Text>
+
+      <JournalLine
+        label="Dernière synchronisation"
+        value={journal.settledAt === null ? null : formatAgo(journal.settledAt, now)}
+        detail={outcomeDetail(journal)}
+      />
+
+      {/* La ligne qui répond à la question. Vide depuis des jours : l'observer ne tourne pas.
+          Récente alors que celle du dessus ne l'est pas : c'est le réseau ou le serveur. */}
+      <JournalLine
+        label="Dernier réveil en arrière-plan"
+        value={journal.wokeAt === null ? null : formatAgo(journal.wokeAt, now)}
+        detail={
+          journal.wokeAt === null
+            ? 'Apple Santé n’a encore jamais réveillé GRRIND sur cet appareil.'
+            : null
+        }
+      />
+
+      <JournalLine
+        label="Inscription au réveil"
+        value={
+          journal.registration === null
+            ? null
+            : journal.registration === 'registered'
+              ? 'active'
+              : 'échouée'
+        }
+        detail={
+          journal.registration === 'failed'
+            ? 'Elle échoue tant que Santé n’a rien accordé. Vérifie l’autorisation ci-dessus.'
+            : null
+        }
+      />
+
+      <Button
+        label="Synchroniser maintenant"
+        onPress={refresh}
+        busy={syncing}
+        variant="quiet"
+      />
+    </View>
+  );
+}
+
+/**
+ * Ce que la dernière synchronisation a produit, en une phrase.
+ *
+ * Le refus est stocké **tel quel** sur le disque et rendu ici par `messageFor` : un message
+ * figé au moment de l'écriture survivrait à sa propre correction.
+ */
+function outcomeDetail(journal: SyncJournal): string | null {
+  switch (journal.outcome) {
+    case null:
+      return 'GRRIND n’a pas encore parlé au serveur sur cet appareil.';
+    case 'summary':
+      return journal.imported === null || journal.imported === 0
+        ? 'Rien de neuf à créditer.'
+        : `${journal.imported} séance${journal.imported > 1 ? 's' : ''} créditée${journal.imported > 1 ? 's' : ''}.`;
+    case 'nothingToSend':
+      return 'Aucune activité trouvée dans Santé.';
+    case 'unavailable':
+      return 'Cet appareil ne donne pas accès aux données de santé.';
+    case 'failed':
+      return journal.failure === null ? 'La synchronisation a échoué.' : messageFor(journal.failure);
+  }
+}
+
+/** Un fait daté, et ce qu'il veut dire. Le tiret dit « jamais », pas « zéro ». */
+function JournalLine({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string | null;
+  detail: string | null;
+}) {
+  return (
+    <View style={styles.journalLine}>
+      <View style={styles.journalHead}>
+        <Text style={styles.journalLabel}>{label}</Text>
+        <Text style={styles.journalValue}>{value ?? '—'}</Text>
+      </View>
+      {detail === null ? null : <Text style={styles.body}>{detail}</Text>}
+    </View>
   );
 }
 
@@ -332,4 +462,9 @@ const styles = StyleSheet.create({
   /** Le chemin système, écrit en toutes lettres : il reste vrai quoi qu'ouvre le bouton —
    *  `openSettings()` mène à la page de GRRIND, les interrupteurs de Santé vivent ailleurs. */
   path: { ...type.body, color: color.text },
+  journalLine: { gap: space.xs },
+  /** Le fait à gauche, sa date à droite : on balaie la colonne des dates du regard. */
+  journalHead: { flexDirection: 'row', justifyContent: 'space-between', gap: space.sm },
+  journalLabel: { ...type.label, color: color.textMuted, flexShrink: 1 },
+  journalValue: { ...type.label, color: color.text },
 });

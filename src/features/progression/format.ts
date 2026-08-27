@@ -102,6 +102,43 @@ export function formatWhen(startedAt: string, now: Date): string {
 }
 
 /**
+ * Depuis combien de temps — « il y a 4 min », et pas une heure.
+ *
+ * `formatWhen` répond à « quand ça s'est passé » : une séance d'hier soir se situe par sa date
+ * et son heure, qui sont ce qu'on en retient. Ce formateur-ci répond à une autre question, celle
+ * d'un **diagnostic** : « est-ce que ça vient de se passer ? » — et « Aujourd'hui, 14:32 » oblige
+ * à regarder l'heure qu'il est pour y répondre.
+ *
+ * Au-delà d'une journée, la question redevient la première et il repasse la main à `formatWhen` :
+ * « il y a 73 h » ne se lit pas.
+ */
+export function formatAgo(instant: string, now: Date): string {
+  const date = new Date(instant);
+
+  if (Number.isNaN(date.getTime())) {
+    return instant;
+  }
+
+  const seconds = Math.max(0, Math.round((now.getTime() - date.getTime()) / 1000));
+
+  if (seconds < 60) {
+    return 'à l’instant';
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) {
+    return `il y a ${minutes} min`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `il y a ${hours} h`;
+  }
+
+  return formatWhen(instant, now);
+}
+
+/**
  * L'expiration d'un code d'invitation, en phrase — « valable jusqu'à demain 18 h ».
  *
  * Le contrat le dit : `expiresAt` est une date, pas un compte à rebours, des secondes se
