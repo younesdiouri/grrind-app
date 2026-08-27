@@ -155,13 +155,51 @@ et porte les six interdits sous une forme opérationnelle.
 
 **La revue finale revient à l'architecte**, et elle se fait *contre le ticket* : ce qui est coché
 l'est-il vraiment, ce qui ne l'est pas est-il expliqué, et la PR a-t-elle tranché quelque chose
-qui aurait dû remonter. C'est là, et pas dans le CI, que les décisions de produit se tiennent.
+qui aurait dû remonter. C'est là que les décisions de produit se tiennent — il n'y a nulle part
+ailleurs où elles pourraient se tenir, voir la section suivante.
+
+**Et l'architecte fusionne lui-même sur `main`**, dans la foulée de sa revue, sans demander la
+permission de le faire. La revue *est* l'autorisation ; redemander après l'avoir donnée n'ajoute
+aucune sécurité, ça ajoute un aller-retour. La seule chose qui reste à remonter avant de
+fusionner est une PR qui a tranché quelque chose que le ticket ne tranchait pas.
+
+## Il n'y a pas de CI, et les barrières tournent avant le push
+
+Le workflow GitHub Actions a été supprimé (#85), comme celui du back avant lui
+(`grrind-back#178`) : il rejouait, sur une machine reconstruite à chaque fois, exactement ce
+qu'on lance déjà en local en quelques secondes. Le développeur passe les barrières **avant de
+pousser**, et c'est cette exécution-là qui fait foi — pas une seconde, plus lente, qu'on ne
+regarde qu'après coup.
+
+```bash
+npm run typecheck       # TypeScript strict
+npm run lint
+npm test                # node --test, sans appareil ni Metro
+npm run previews:check  # celle qu'on oublie
+npm run api:check       # dès qu'on touche au contrat
+```
+
+**`previews:check` est celle qu'on oublie, et c'est la seule que le CI attrapait vraiment.** Le
+design system a **un seul sens** : les composants React Native sont la source de vérité, les
+previews HTML en sont dérivées. Une preview qui bouge alors que personne ne l'a régénérée, c'est
+une carte poussée vers Claude Design qui décrit un composant qui n'existe plus — et ça ne se
+remarque nulle part ailleurs.
+
+`api:check` a le même rôle pour le contrat, dans l'autre sens : il retire `openapi.yaml` du
+back et régénère `schema.d.ts`. Un diff, et c'est que le contrat a bougé sans qu'on le suive.
+
+Les deux tests qui justifient à eux seuls `npm test` : « un seul rafraîchissement part » et
+« la clé d'idempotence ne change pas entre deux tentatives ». Aucun des deux ne se voit à
+l'œil — les deux issues affichent le même écran, et la mauvaise ne se manifeste qu'à
+l'ouverture suivante, par une déconnexion ou une animation perdue.
 
 ## Ce qui n'est pas ici
 
 - **Pas de Docker.** Contrairement au back, la chaîne Node/Expo tourne en local. C'est le seul
   point où les deux dépôts divergent sur la méthode, et c'est assumé : Expo pilote Xcode et un
   appareil physique, qu'un conteneur ne peut pas atteindre.
+- **Pas de CI.** Voir la section ci-dessus : les barrières tournent avant le push, et c'est
+  cette exécution-là qui fait foi.
 - **Pas de secret versionné.** `EXPO_PUBLIC_API_URL` vit dans `.env.local`.
 - **Pas de logique de jeu.** Aucun calcul d'XP, aucun tirage de loot, aucune règle de streak. Le
   client affiche ce que le serveur a décidé. Si une valeur manque pour animer, elle s'ajoute au
