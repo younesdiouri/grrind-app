@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -34,11 +33,17 @@ import { usePlayerHome } from '@/features/progression/usePlayerHome';
  * `timeline.test.ts` prouve toute la séquence, sans monter un composant. Et `/reward` accepte
  * toujours son paramètre `fixture` — ce qui a disparu, c'est l'affordance, pas la porte.
  *
- * ————— Réglages (#57) ——————————————————————————————————————————————————————————————————
+ * ————— Réglages a quitté cet écran (#99) ———————————————————————————————————————————————
  *
- * Pas un quatrième onglet : un geste rare n'a pas besoin d'une place permanente dans la barre.
- * Un bouton discret, sous l'archive plutôt qu'au-dessus — la règle du résumé-puis-archive ne
- * s'applique qu'à ce qui se consulte souvent, et personne n'ouvre ses réglages en arrivant.
+ * Le #57 en avait fait un bouton discret ici, sous l'archive, au motif qu'un geste rare n'a pas
+ * besoin d'une place permanente dans la barre d'onglets. C'était juste tant que Réglages ne
+ * portait que des interrupteurs de notification.
+ *
+ * Il porte désormais les autorisations (#81) et l'état de la synchronisation (#82) : on l'ouvre
+ * pour savoir si la chaîne a fonctionné, donc souvent. Or un bouton posé **sous** l'historique
+ * devient introuvable dès qu'un compte a des séances — c'est arrivé au lien vers Santé, et la
+ * règle du résumé-puis-archive existe précisément pour ça. Il est donc passé dans la barre,
+ * toujours à l'écran, et cet écran-ci n'a plus d'action du tout entre le résumé et l'archive.
  */
 export default function Home() {
   const auth = useAuth();
@@ -46,10 +51,6 @@ export default function Home() {
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       {auth.status === 'signedIn' ? <PlayerHome /> : null}
-
-      {auth.status === 'signedIn' ? (
-        <Button label="Réglages" onPress={() => router.push('/reglages')} variant="quiet" />
-      ) : null}
     </ScrollView>
   );
 }
