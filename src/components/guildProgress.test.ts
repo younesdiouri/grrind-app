@@ -17,6 +17,7 @@ function member(
     xpToNextLevel: 100,
     title: null,
     attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0, vitality: 0 },
+    vitalityBreakdown: { windowAverageActiveKcal: 0, targetActiveKcal: 500, bonusPermille: 0 },
     role: 'MEMBER',
     joinedAt: '2026-01-02T00:00:00Z',
     ...overrides,

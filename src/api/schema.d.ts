@@ -326,6 +326,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/daily-activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_training_daily_activity_upsert"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workouts/import": {
         parameters: {
             query?: never;
@@ -591,10 +607,19 @@ export interface components {
                 /** @example 1500 */
                 dexterity: number;
                 /**
-                 * @description Dérivée des quatre autres, jamais créditée directement — voir `Progression.attributes.vitality`.
+                 * @description Dérivée des quatre autres, puis bonifiée par l'énergie active de la fenêtre glissante (#165) — voir `vitalityBreakdown` et `Progression.attributes.vitality`.
                  * @example 310
                  */
                 vitality: number;
+            };
+            /** @description Ce qui explique `attributes.vitality` — même forme qu'à `GET /api/progression` (`Progression.vitalityBreakdown`). */
+            vitalityBreakdown: {
+                /** @example 420 */
+                windowAverageActiveKcal: number;
+                /** @example 500 */
+                targetActiveKcal: number;
+                /** @example 168 */
+                bonusPermille: number;
             };
         };
         /**
@@ -738,7 +763,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING";
+            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
             /**
              * @description L'agrégateur de plateforme qui a rapporté la séance, pas l'appareil qui l'a
              *     mesurée : une montre Garmin arrive en `APPLE_HEALTH` sur iPhone et en
@@ -837,6 +862,31 @@ export interface components {
             calories?: number | null;
             elevationGainMeters?: number | null;
             averageHeartRate?: number | null;
+        };
+        /**
+         * @description Un lot de journées à réviser (#165), en dehors de la synchro d'import : une journée
+         *     sédentaire doit pouvoir se remonter sans aucun workout à envoyer.
+         */
+        DailyActivityUpsertRequest: {
+            days: components["schemas"]["DailyActivityEntry"][];
+        };
+        /**
+         * @description Une journée : l'énergie active seule — `activeEnergyBurned` chez Apple,
+         *     `ActiveCaloriesBurnedRecord` chez Health Connect. Ni pas, ni étages, ni heures
+         *     actives : une seule métrique, une seule permission de plus côté client.
+         */
+        DailyActivityEntry: {
+            /**
+             * Format: date
+             * @description Une date civile, jamais un instant : c'est le client qui sait dans quel fuseau
+             *     la montre a agrégé la journée, exactement comme pour le streak.
+             * @example 2026-08-27
+             */
+            day: string;
+            /** @description La borne haute est un garde-fou contre une unité mal convertie, pas une opinion sur ce qu'une journée humaine peut brûler. */
+            activeEnergyKcal: number;
+            /** @enum {string} */
+            source: "APPLE_HEALTH" | "HEALTH_CONNECT";
         };
         /**
          * @description **Le contrat le plus coûteux à casser du produit**, dans sa forme multi-workouts. Ce que
@@ -992,6 +1042,23 @@ export interface components {
                 awarded: number;
                 /** @description Dans l'ordre d'affichage. Le client ne le trie pas, il le joue. */
                 breakdown: components["schemas"]["XpLine"][];
+                /**
+                 * @description `null` pour toute séance créditée normalement — y compris une séance
+                 *     entièrement écrêtée par le plafond quotidien, dont `breakdown` porte déjà
+                 *     sa ligne `DAILY_CAP` pour l'expliquer.
+                 *
+                 *     Non nul uniquement pour une discipline qui ne rapporte pas d'XP par
+                 *     conception : `breakdown` reste vide dans ce cas, puisqu'il n'y a rien eu
+                 *     à calculer, et `reason` porte l'explication à sa place plutôt qu'un
+                 *     breakdown vide ou une ligne « base : 0 » qui mentirait sur un calcul qui
+                 *     n'a jamais eu lieu.
+                 *
+                 *     `NO_XP_FEEDS_VITALITY` : la marche. Elle reste une séance à part entière
+                 *     — écrite, visible dans l'historique, animée ici — mais n'alimente que
+                 *     Vitality, jamais l'XP.
+                 * @enum {string|null}
+                 */
+                reason: "NO_XP_FEEDS_VITALITY" | null;
             };
             /**
              * @description Les cinq caractéristiques du personnage, chacune avec son avant et son
@@ -1085,10 +1152,32 @@ export interface components {
                 /** @example 1500 */
                 dexterity: number;
                 /**
-                 * @description Dérivée des quatre autres, jamais créditée directement — voir `RewardSummary.attributes.vitality`.
+                 * @description Dérivée des quatre autres, puis bonifiée par l'énergie active de la fenêtre glissante (#165) — jamais créditée directement. Voir `vitalityBreakdown` pour ce qui explique le bonus, et `RewardSummary.attributes.vitality` pour la même valeur, non bonifiée, au moment d'une séance.
                  * @example 310
                  */
                 vitality: number;
+            };
+            /**
+             * @description Ce qui explique `attributes.vitality` (#165) : sans ces trois nombres, une
+             *     Vitality qui bouge sans qu'aucune séance n'ait été créditée ne récompenserait
+             *     rien aux yeux du joueur.
+             */
+            vitalityBreakdown: {
+                /**
+                 * @description L'énergie active moyenne sur la fenêtre glissante — une journée absente y compte pour zéro, c'est précisément ce qui mesure la sédentarité.
+                 * @example 420
+                 */
+                windowAverageActiveKcal: number;
+                /**
+                 * @description La cible d'équilibrage : l'atteindre en moyenne vaut le bonus plafond.
+                 * @example 500
+                 */
+                targetActiveKcal: number;
+                /**
+                 * @description Le bonus effectivement appliqué à `attributes.vitality`, en millièmes du socle.
+                 * @example 168
+                 */
+                bonusPermille: number;
             };
             activeTitle: components["schemas"]["PlayerTitle"] | null;
             unlockedTitles: components["schemas"]["PlayerTitle"][];
@@ -1124,7 +1213,7 @@ export interface components {
             /** @enum {string} */
             reason: "SESSION_COMPLETED" | "SESSION_INVALIDATED";
             /** @enum {string} */
-            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING";
+            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
             /** @description Signé. La somme du `breakdown`, jamais autre chose. */
             amount: number;
             /** @description Signée elle aussi — négative sur une annulation. */
@@ -1242,6 +1331,21 @@ export interface components {
         };
         /** @enum {string} */
         WorkoutSource: "APPLE_HEALTH" | "HEALTH_CONNECT";
+        DailyActivityEntryRequest: {
+            /**
+             * Format: date-time
+             * @default null
+             */
+            day: string | null;
+            /** @default null */
+            activeEnergyKcal: number | null;
+            /** @default null */
+            source: components["schemas"]["WorkoutSource"] | null;
+        };
+        DailyActivityUpsertRequest2: {
+            /** @default [] */
+            days: components["schemas"]["DailyActivityEntryRequest"][];
+        };
         ImportedWorkoutRequest: {
             /** @default  */
             externalId: string;
@@ -1273,7 +1377,7 @@ export interface components {
             workouts: components["schemas"]["ImportedWorkoutRequest"][];
         };
         /** @enum {string} */
-        Discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING";
+        Discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
         WorkoutHistoryQuery: {
             /** @default null */
             discipline: components["schemas"]["Discipline"] | null;
@@ -2080,6 +2184,31 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    put_training_daily_activity_upsert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DailyActivityUpsertRequest"];
+            };
+        };
+        responses: {
+            /** @description Chaque journée du lot est à jour. Une journée déjà connue a été révisée, jamais dupliquée. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
             422: components["responses"]["UnprocessableEntity"];
         };
     };
