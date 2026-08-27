@@ -1,6 +1,7 @@
 import { api } from '@/api/client';
 import { failureFrom, type Failure } from '@/features/auth/problems';
 import { fingerprintOf } from '@/features/health/batchKey';
+import { noteSettled } from '@/features/health/journal';
 import { healthProvider } from '@/features/health/current';
 import { batchKeys } from '@/features/health/keyStore';
 import type { WorkoutData } from '@/features/health/provider';
@@ -247,6 +248,17 @@ export async function sync(trigger: SyncTrigger): Promise<SyncOutcome<SyncResult
   // juste rouvert son app.
   if (outcome.status !== 'throttled') {
     publish({ phase: 'settled', result: outcome.result });
+
+    // Et sur le disque (#82). `SyncStatus` reste l'état courant, le journal n'en est que la
+    // mémoire — celle qui survit à la fermeture de l'app, et sans laquelle « est-ce que
+    // l'observer tourne ? » n'a aucune réponse. Rien ne décide quoi que ce soit à partir de
+    // là : c'est un écran de réglages qui le lit, et rien d'autre.
+    const result = outcome.result;
+    noteSettled({
+      outcome: result.kind,
+      imported: result.kind === 'summary' ? result.summary.imported.length : null,
+      failure: result.kind === 'failed' ? result.failure : null,
+    });
   }
 
   return outcome;

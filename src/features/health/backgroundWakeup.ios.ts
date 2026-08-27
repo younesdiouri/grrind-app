@@ -1,6 +1,10 @@
+import * as Notifications from 'expo-notifications';
+
 import GrrindHealth from '@/../modules/grrind-health/src/GrrindHealthModule';
 
 import { shouldCommitAnchor } from '@/features/health/anchorPolicy';
+import { creditedNotice } from '@/features/health/creditedNotice';
+import { noteRegistration, noteWake } from '@/features/health/journal';
 import { sync } from '@/features/health/sync';
 
 /**
@@ -26,8 +30,13 @@ import { sync } from '@/features/health/sync';
 export async function enableBackgroundWakeup(): Promise<void> {
   try {
     await GrrindHealth.enableBackgroundDelivery();
+    noteRegistration(true);
   } catch {
-    // Voir le docblock : dégradation silencieuse, pas panne à afficher.
+    // Voir le docblock : dégradation silencieuse, pas panne à afficher. Elle laisse en
+    // revanche une trace depuis le #82 — « l'inscription au réveil a échoué » est
+    // exactement ce qu'on cherche à savoir quand plus rien ne remonte, et l'avaler
+    // *complètement* rendait les deux causes indiscernables.
+    noteRegistration(false);
   }
 }
 
@@ -55,6 +64,12 @@ export function startBackgroundWakeup(): () => void {
  * et `GrrindHealthModule.commitAnchor` pour ce qu'elle protège.
  */
 async function handleWakeup(anchor: string): Promise<void> {
+  // Noté **avant** l'import, et pas après : le réveil a bien eu lieu même si ce qui suit
+  // échoue. C'est précisément la distinction que le journal existe pour rendre — un réveil
+  // récent avec une synchronisation ancienne accuse le réseau ou le serveur endormi ; pas de
+  // réveil du tout accuse l'inscription.
+  noteWake();
+
   const outcome = await sync('background');
 
   // `throttled` : une autre synchronisation vient de répondre, à moins de trente secondes.
@@ -62,6 +77,13 @@ async function handleWakeup(anchor: string): Promise<void> {
   // le prochain réveil la retrouvera, et elle se sera peut-être déjà réglée d'elle-même.
   if (outcome.status === 'throttled') {
     return;
+  }
+
+  // La séance est comptée : personne n'est devant l'écran, donc on le dit (#82). Le résumé
+  // reste en file et se jouera à l'ouverture — cette notification ne le consomme pas, elle
+  // signale seulement qu'il y a quelque chose à venir voir.
+  if (outcome.result.kind === 'summary') {
+    await announce(outcome.result.summary);
   }
 
   if (!shouldCommitAnchor(outcome.result)) {
@@ -74,5 +96,39 @@ async function handleWakeup(anchor: string): Promise<void> {
     // Une ancre illisible ou une écriture qui échoue : rien à faire ici, personne ne regarde.
     // Ne pas avancer laisse relire la même différence au prochain réveil — sans conséquence,
     // voir `anchorPolicy.ts`.
+  }
+}
+
+/**
+ * Poste la notification, si elle a quelque chose à dire et si le système l'autorise.
+ *
+ * On ne **demande** rien depuis un réveil en arrière-plan : une feuille système qui
+ * apparaîtrait sans que l'app soit ouverte est le meilleur moyen de récolter un refus
+ * définitif, et iOS ne repose jamais la question. Le geste vit dans Réglages (#81).
+ *
+ * Le texte, lui, se décide dans `creditedNotice.ts`, où il se prouve sur les fixtures : une
+ * notification fausse demanderait une vraie séance et un vrai réveil pour se reproduire.
+ */
+async function announce(summary: Parameters<typeof creditedNotice>[0]): Promise<void> {
+  const notice = creditedNotice(summary);
+
+  if (notice === null) {
+    return;
+  }
+
+  try {
+    const permission = await Notifications.getPermissionsAsync();
+    if (!permission.granted) {
+      return;
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      content: { title: notice.title, body: notice.body },
+      // `null` : tout de suite. Il n'y a rien à planifier — la séance vient d'être comptée.
+      trigger: null,
+    });
+  } catch {
+    // Une notification qui ne part pas ne doit jamais faire échouer l'import qu'elle
+    // accompagne, ni empêcher l'ancre d'avancer. C'est un bonus, pas une étape.
   }
 }
