@@ -150,13 +150,22 @@ function Settled({ result, onRetry }: { result: SyncResult; onRetry: () => void 
         return <NothingCredited skipped={skipped} onRetry={onRetry} />;
       }
 
+      // Une séance peut être créditée sans rapporter d'XP — la marche n'alimente que Vitality
+      // (`grrind-back#167`). « +0 XP t'attendent » serait faux de ton : elle vaut quelque
+      // chose, simplement pas de l'expérience, et c'est l'écran de récompense qui le dira.
+      const awarded = result.summary.totals?.xpAwarded ?? 0;
+
       return (
         <>
           <Text style={styles.title}>
             {count} séance{count > 1 ? 's' : ''} à jouer
           </Text>
           <Text style={styles.body}>
-            +{result.summary.totals?.xpAwarded ?? 0} XP t&apos;attendent.
+            {awarded > 0
+              ? `+${awarded} XP t’attendent.`
+              : count > 1
+                ? 'Elles sont enregistrées, et nourrissent ta Vitalité sans rapporter d’XP.'
+                : 'Elle est enregistrée, et nourrit ta Vitalité sans rapporter d’XP.'}
           </Text>
           <Button label="Voir" onPress={() => router.push('/reward')} />
           {/* Même quand il y a de quoi jouer, ce qui a été écarté se dit. C'est là que le

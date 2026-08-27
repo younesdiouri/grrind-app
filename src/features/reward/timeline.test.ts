@@ -26,6 +26,7 @@ const unWorkout = fixture('un-workout');
 const troisWorkouts = fixture('trois-workouts');
 const quinzeWorkouts = fixture('quinze-workouts');
 const toutEcarte = fixture('tout-ecarte');
+const marcheSansXp = fixture('marche-sans-xp');
 
 const ATTRIBUTES: ('strength' | 'endurance' | 'mobility' | 'dexterity' | 'vitality')[] = [
   'strength',
@@ -96,6 +97,84 @@ describe('la timeline du SyncSummary', () => {
       assert.equal(step, lines[i].line.amount);
     }
     assert.equal(lines[lines.length - 1].runningTotal, troisWorkouts.totals?.xpAwarded);
+  });
+
+  /**
+   * La marche (#80) — créditée, visible, et sans un point d'expérience.
+   *
+   * C'est le **deuxième** zéro du produit, et il ne dit pas du tout la même chose que celui de
+   * `tout-ecarte`. Là-bas, rien n'a été crédité et `totals` vaut `null`. Ici une séance a bien
+   * été comptée — elle est en base, elle est dans l'historique — mais sa discipline ne rapporte
+   * pas d'XP par conception : `breakdown` est vide, `awarded` vaut zéro, et le serveur envoie
+   * une `reason` plutôt qu'une ligne « base : 0 » qui mentirait sur un calcul qui n'a jamais eu
+   * lieu.
+   */
+  describe('une séance créditée qui ne rapporte pas d’XP', () => {
+    it('joue la raison à la place du calcul', () => {
+      const timeline = buildTimeline(marcheSansXp);
+
+      assert.equal(marcheSansXp.imported[0].xp.breakdown.length, 0, 'la fixture est bien la bonne');
+      assert.equal(marcheSansXp.imported[0].xp.reason, 'NO_XP_FEEDS_VITALITY');
+
+      const lines = timeline.beats.filter((beat) => beat.kind === 'xpLine');
+      const reason = timeline.beats.find((beat) => beat.kind === 'noCredit');
+
+      assert.equal(lines.length, 0, 'aucune ligne à jouer');
+      assert.ok(reason !== undefined, 'mais quelque chose à dire');
+      assert.equal(reason.reason, 'NO_XP_FEEDS_VITALITY');
+    });
+
+    it('ne monte pas l’anneau : rien n’a été redistribué', () => {
+      // Le montrer immobile ferait croire à une animation qui a raté — et ce serait la
+      // deuxième fois de suite qu'on dit « il ne s'est rien passé ».
+      const timeline = buildTimeline(marcheSansXp);
+
+      assert.equal(
+        timeline.beats.some((beat) => beat.kind === 'attributes'),
+        false,
+      );
+    });
+
+    it('garde la barre immobile, sans la faire dériver', () => {
+      const timeline = buildTimeline(marcheSansXp);
+      const level = marcheSansXp.imported[0].level;
+      const span = level.xpIntoLevelBefore + (level.xpToNextLevelBefore ?? 0);
+      const expected = span === 0 ? 1 : level.xpIntoLevelBefore / span;
+
+      assert.ok(timeline.bar.output.every((fill) => fill === expected));
+    });
+
+    it('se referme quand même sur un bilan : la séance a bien été comptée', () => {
+      // La différence exacte avec `tout-ecarte`, et elle tient à `totals`.
+      const timeline = buildTimeline(marcheSansXp);
+
+      assert.notEqual(marcheSansXp.totals, null);
+      assert.equal(marcheSansXp.totals?.xpAwarded, 0);
+      assert.equal(marcheSansXp.totals?.workoutCount, 1);
+      assert.ok(timeline.beats.some((beat) => beat.kind === 'recap'));
+    });
+
+    it('ne teste jamais la discipline : c’est `xp.reason` qui décide', () => {
+      // Le jour où une deuxième discipline rejoint la marche, il n'y a rien à changer dans le
+      // client. On le prouve en retirant la raison d'une séance de marche : la mise en scène
+      // doit repasser au chemin normal, sans que `WALKING` change quoi que ce soit.
+      const summary: SyncSummary = {
+        ...marcheSansXp,
+        imported: [
+          {
+            ...marcheSansXp.imported[0],
+            xp: { ...marcheSansXp.imported[0].xp, reason: null },
+          },
+        ],
+      };
+
+      const timeline = buildTimeline(summary);
+      assert.equal(
+        timeline.beats.some((beat) => beat.kind === 'noCredit'),
+        false,
+      );
+      assert.ok(timeline.beats.some((beat) => beat.kind === 'attributes'));
+    });
   });
 
   /**
