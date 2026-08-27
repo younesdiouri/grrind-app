@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
-import { hasInteracted } from '@/features/reward/launchGate';
-import { getPending, subscribeToPending } from '@/features/reward/pending';
+import { hasInteracted, mayOpenReward } from '@/features/reward/launchGate';
+import { getPending, subscribeToPending, wasSolicited } from '@/features/reward/pending';
 
 /**
  * Ouvre l'écran de récompense dès qu'une progression non jouée existe.
@@ -25,7 +25,9 @@ import { getPending, subscribeToPending } from '@/features/reward/pending';
  * existe pour empêcher.
  *
  * D'où la garde sur `AppState.currentState` : ce hook ne décide de ce que le joueur voit que
- * quand il y a un joueur devant l'écran. Comme la progression en attente ne bouge pas pendant
+ * quand il y a un joueur devant l'écran. **Elle, elle ne cède jamais** — pas même à une
+ * progression sollicitée : personne devant l'écran veut dire personne, quel qu'ait été le
+ * geste qui a lancé la synchronisation. Comme la progression en attente ne bouge pas pendant
  * qu'elle reste hors ligne, il suffit de réévaluer au passage à `active` — pas besoin de
  * relire le magasin, `pending` est déjà à jour.
  *
@@ -52,16 +54,21 @@ export function usePendingReward(): void {
       return;
     }
 
-    // Personne ne regarde : un réveil qui vient de relancer le processus, ou une app qui
-    // finit de s'installer en arrière-plan. La progression reste non jouée et sera retentée
-    // au prochain passage à `active`.
-    if (AppState.currentState !== 'active') {
-      return;
-    }
+    // Les deux gardes, et elles ne se valent pas — la règle vit dans `mayOpenReward`, où elle
+    // se prouve sans monter de composant. Ce hook ne fait que lui apporter les trois faits.
+    const allowed = mayOpenReward({
+      // Personne ne regarde : un réveil qui vient de relancer le processus, ou une app qui
+      // finit de s'installer en arrière-plan. Celle-là ne cède jamais.
+      active: AppState.currentState === 'active',
+      interacted: hasInteracted(),
+      // Celle-ci, si : le joueur vient de taper « Synchroniser maintenant » ou de tirer pour
+      // rafraîchir (#97).
+      solicited: wasSolicited(pending),
+    });
 
-    // Le joueur est en train de faire quelque chose. On ne l'interrompt pas : sa progression
-    // reste non jouée et l'attendra au prochain lancement, où elle sera immédiate.
-    if (hasInteracted()) {
+    // La progression reste non jouée et sera retentée au prochain passage à `active`, ou au
+    // prochain lancement — où elle sera immédiate.
+    if (!allowed) {
       return;
     }
 

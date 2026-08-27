@@ -150,17 +150,59 @@ export function subscribeToPending(listener: () => void): () => void {
 }
 
 /**
+ * Les progressions que le joueur a **demandées**, par identité d'objet.
+ *
+ * ————— Ce que ça sert à distinguer (#97) ——————————————————————————————————————————————
+ *
+ * `usePendingReward` refuse d'ouvrir l'écran quand le joueur a touché l'écran, et cette garde
+ * a raison : une progression qui arrive d'un réveil en arrière-plan ne doit pas s'ouvrir
+ * par-dessus quelqu'un en train de lire. Mais elle ne distinguait pas **d'où** la progression
+ * venait. Quelqu'un qui vient de taper « Synchroniser maintenant » — ou de tirer pour
+ * rafraîchir — a demandé exactement ça, et le lui refuser au motif qu'il a touché l'écran pour
+ * le demander est un contresens.
+ *
+ * ————— En mémoire, et jamais sur le disque ————————————————————————————————————————————
+ *
+ * Un `WeakSet` et pas un champ persisté, et c'est la bonne durée de vie : « sollicité »
+ * qualifie un geste **de cette session**. Rejoué au lancement suivant, il serait faux — le
+ * joueur qui rouvre son app n'a rien demandé, et de toute façon `hasInteracted()` est faux sur
+ * un processus neuf, donc la progression s'y joue déjà sans passe-droit.
+ *
+ * `WeakSet` plutôt que `Set` : la file se vide (`markPlayed`), et rien ici ne doit retenir un
+ * résumé de quinze séances en mémoire après qu'il a été joué.
+ */
+const solicited = new WeakSet<SyncSummary>();
+
+/**
  * Ajoute une progression en fin de file. **Aucune fusion** : voir `pendingQueue.ts`.
  *
  * L'écriture échouant — disque plein, permissions — ne doit rien casser : le résumé reste en
  * mémoire et sera joué normalement dans cette session. On perd seulement la garantie qu'il
  * survive à la mort de l'app, ce qui est exactement ce qu'on avait avant ce module.
+ *
+ * `asked` dit que le joueur a **demandé** cette progression — le seul déclencheur explicite
+ * est `manual` (`syncCoordinator.ts`). Voir `wasSolicited`.
  */
-export function enqueuePending(summary: SyncSummary): void {
+export function enqueuePending(summary: SyncSummary, asked = false): void {
   queue = enqueue(loadQueue(), summary);
   loaded = true;
+
+  if (asked) {
+    solicited.add(summary);
+  }
+
   persist();
   notify();
+}
+
+/**
+ * Le joueur a-t-il demandé cette progression, dans cette session ?
+ *
+ * Faux pour tout ce qui est relu du disque — ce qui est correct : un résumé retrouvé au
+ * lancement n'a pas été sollicité, il attendait.
+ */
+export function wasSolicited(summary: SyncSummary): boolean {
+  return solicited.has(summary);
 }
 
 /**

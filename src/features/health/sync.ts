@@ -216,7 +216,11 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
     // due au joueur, même si l'app meurt dans la seconde. Le serveur, lui, la considère déjà
     // comptée et ne la renverra jamais. En file, pas en valeur : un réveil qui tombe pendant
     // qu'un résumé précédent attend encore de se jouer ne doit pas l'effacer.
-    enqueuePending(answer.data);
+    //
+    // `manual` est le seul déclencheur qui vienne d'un **geste** : le bouton de
+    // synchronisation, le tirer-pour-rafraîchir. Une progression qu'on vient de demander n'a
+    // pas à attendre le prochain lancement à froid — voir `wasSolicited` (#97).
+    enqueuePending(answer.data, trigger === 'manual');
   }
 
   return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
