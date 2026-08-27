@@ -1,0 +1,78 @@
+{
+  "syncedAt": "2026-08-27T18:22:52+00:00",
+  "imported": [
+    {
+      "session": {
+        "id": "01a04475-e6d4-7e4c-8392-5dcb37216362",
+        "discipline": "WALKING",
+        "source": "APPLE_HEALTH",
+        "trust": "PROVIDER_VERIFIED",
+        "startedAt": "2026-08-26T18:22:52+00:00",
+        "endedAt": "2026-08-26T19:22:52+00:00",
+        "durationSeconds": 3600,
+        "distanceMeters": 5000,
+        "calories": null,
+        "elevationGainMeters": null,
+        "averageHeartRate": null,
+        "externalId": "marche-1"
+      },
+      "xp": {
+        "awarded": 0,
+        "breakdown": [],
+        "reason": "NO_XP_FEEDS_VITALITY"
+      },
+      "attributes": {
+        "strength": {
+          "gained": 0,
+          "before": 0,
+          "after": 0
+        },
+        "endurance": {
+          "gained": 0,
+          "before": 0,
+          "after": 0
+        },
+        "mobility": {
+          "gained": 0,
+          "before": 0,
+          "after": 0
+        },
+        "dexterity": {
+          "gained": 0,
+          "before": 0,
+          "after": 0
+        },
+        "vitality": {
+          "before": 0,
+          "after": 0
+        }
+      },
+      "level": {
+        "before": 1,
+        "xpIntoLevelBefore": 0,
+        "xpToNextLevelBefore": 100,
+        "after": 1,
+        "reached": [],
+        "totalXp": 0,
+        "xpIntoLevel": 0,
+        "xpToNextLevel": 100,
+        "skillPointsGranted": 0
+      },
+      "titlesUnlocked": [],
+      "loot": [],
+      "streak": null,
+      "unlockableNodes": [],
+      "rulesetVersion": "v1-d14f83f22074"
+    }
+  ],
+  "skipped": [],
+  "totals": {
+    "levelBefore": 1,
+    "levelAfter": 1,
+    "xpBefore": 0,
+    "xpAfter": 0,
+    "xpAwarded": 0,
+    "workoutCount": 1
+  },
+  "rulesetVersion": "v1-d14f83f22074"
+}

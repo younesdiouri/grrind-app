@@ -11,6 +11,7 @@ import { DisciplineChip } from '@/components/DisciplineChip';
 import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { InviteCodeBlock } from '@/components/InviteCodeBlock';
+import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
@@ -413,6 +414,20 @@ export const PREVIEWS: Preview[] = [
           <BreakdownRow source="DIMINISHING" amount={-27} />
           <BreakdownRow source="DAILY_CAP" amount={-40} />
         </View>
+      </Specimen>
+    ),
+  },
+  {
+    slug: 'ligne-sans-credit',
+    name: 'Ligne sans crédit',
+    group: 'Composants',
+    element: (
+      <Specimen label="Quand il n'y a pas eu de calcul du tout">
+        {/* Elle prend la place exacte du breakdown, sans porter de nombre : une ligne
+            « base : 0 » mentirait sur un calcul qui n'a jamais eu lieu, et c'est précisément
+            ce que le serveur refuse d'envoyer. Ni `gain` ni `loss` non plus — il ne s'est
+            produit ni l'un ni l'autre. */}
+        <NoCreditRow reason="NO_XP_FEEDS_VITALITY" />
       </Specimen>
     ),
   },

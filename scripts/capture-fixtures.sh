@@ -139,6 +139,22 @@ import "$t2" tout-ecarte.json \
   "$(workout "ecarte-court"   running $(( 2 * DAY )) 120)" \
   "$(workout "ecarte-vieux"   running $(( 60 * DAY )) 3600 8000)" > /dev/null
 
+# ── marche-sans-xp : créditée, visible, et sans un point d'expérience ────────────────
+# La marche ne rapporte plus d'XP (grrind-back#167) : elle reste une séance à part entière
+# — écrite, dans l'historique, animée — mais n'alimente que Vitality, par l'énergie qu'on y
+# dépense.
+#
+# Vu du contrat, c'est un `imported` complet avec `xp.awarded` à zéro, un `breakdown` **vide**
+# et une `xp.reason` non nulle. Le serveur aurait pu envoyer une ligne « base : 0 » ; il a
+# refusé de mentir sur un calcul qui n'a jamais eu lieu, et envoie une raison à la place.
+# C'est une phrase qu'il nous demande d'écrire, et cette fixture est ce sur quoi on la prouve.
+#
+# Un compte neuf, pour que rien d'autre ne vienne brouiller le zéro.
+echo "→ marche-sans-xp"
+t4="$(register "marche-$stamp@grrind.app" "Marche")"
+import "$t4" marche-sans-xp.json \
+  "$(workout "marche-1" walking $(( 1 * DAY )) 3600 5000)" > /dev/null
+
 echo
 echo "Fixtures écrites dans $OUT :"
 for f in "$OUT"/*.json; do

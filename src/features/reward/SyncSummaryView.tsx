@@ -18,6 +18,7 @@ import { Circle } from 'react-native-svg';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
+import { NoCreditRow } from '@/components/NoCreditRow';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
@@ -33,15 +34,18 @@ import {
   space,
   travel,
   type,
+  xpNoCreditReasonLabel,
   type Attribute,
 } from '@/design/tokens';
 import { formatDuration } from '@/features/progression/format';
 import {
   buildTimeline,
+  type Beat,
   type RewardSummary,
   type SkippedWorkout,
   type SyncSummary,
   type SyncTotals,
+  type XpNoCreditReason,
 } from './timeline';
 
 /**
@@ -325,6 +329,7 @@ export function SyncSummaryView({
             attributes={last.attributes}
             titles={summary.imported.flatMap((workout) => workout.titlesUnlocked)}
             skippedCount={summary.skipped.length}
+            noCredit={soleReason(summary)}
           />
         )}
       </View>
@@ -383,10 +388,20 @@ function WorkoutDetail({
   const index = segment.workout;
   const lines = timeline.beats.filter((beat) => beat.kind === 'xpLine' && beat.workout === index);
   const opening = timeline.beats.find((beat) => beat.kind === 'session' && beat.workout === index)!;
-  const attributesBeat = timeline.beats.find((beat) => beat.kind === 'attributes' && beat.workout === index)!;
+  // Prédicat de type et non simple booléen : `Array.find` ne réduit pas l'union toute seule,
+  // et c'est `reason` qu'on vient chercher ici — les autres recherches de ce fichier ne lisent
+  // que `at`/`until`, communs à tous les battements, d'où la différence.
+  const noCredit = timeline.beats.find(
+    (beat): beat is Extract<Beat, { kind: 'noCredit' }> =>
+      beat.kind === 'noCredit' && beat.workout === index,
+  );
+  // **Optionnel depuis le #80** : une séance qui ne rapporte rien ne redistribue rien, donc
+  // elle n'a pas de battement de jauges. Le bloc tient alors jusqu'à la fin de son segment —
+  // il n'y a rien derrière pour le chasser, et la raison est ce qu'il reste à lire.
+  const attributesBeat = timeline.beats.find((beat) => beat.kind === 'attributes' && beat.workout === index);
 
   const settled = after(opening.until, segment.at);
-  const exit = after(attributesBeat.at, settled + duration.handoff);
+  const exit = after(attributesBeat?.at ?? segment.until, settled + duration.handoff);
 
   const style = useAnimatedStyle(() => {
     const entered = easeEnter(
@@ -422,6 +437,15 @@ function WorkoutDetail({
             <BreakdownRow source={line.source} amount={line.amount} />
           </LineEntry>
         ))}
+
+        {/* Ou la raison, quand il n'y a pas eu de calcul — même mouvement d'entrée qu'une
+            ligne, à la place exacte qu'elles auraient prise. Le client ne déduit rien d'un
+            breakdown vide : il lit `xp.reason`, que le serveur envoie pour ça. */}
+        {noCredit === undefined ? null : (
+          <LineEntry clock={clock} at={noCredit.at} until={noCredit.until}>
+            <NoCreditRow reason={noCredit.reason} />
+          </LineEntry>
+        )}
       </View>
 
       {/* `loot`, `streak`, `unlockableNodes` — présents et vides jusqu'aux Lots 6, 5 et 7. */}
@@ -453,17 +477,24 @@ function AttributeStage({
   workout: RewardSummary;
 }) {
   const index = segment.workout;
-  const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index)!;
+  const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index);
   const geometry = ringGeometry('hero');
   const fontSize = vitalityFontSize(workout.attributes.vitality.after, geometry.innerDiameter, type.display.fontSize);
 
+  // La fenêtre est lue **avant** le worklet, jamais dedans : un `beat` absent (#80) doit
+  // pouvoir sortir du composant, et un `return` conditionnel ne peut pas suivre un hook.
+  const window = beat ?? { at: 0, until: 0 };
+
   const style = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      clock.value,
-      [beat.at, beat.at + duration.handoff, beat.until - duration.handoff, beat.until],
-      [0, 1, 1, 0],
-      Extrapolation.CLAMP,
-    ),
+    opacity:
+      window.until === 0
+        ? 0
+        : interpolate(
+            clock.value,
+            [window.at, window.at + duration.handoff, window.until - duration.handoff, window.until],
+            [0, 1, 1, 0],
+            Extrapolation.CLAMP,
+          ),
   }));
 
   const vitalityProps = useAnimatedProps(() => {
@@ -478,6 +509,12 @@ function AttributeStage({
     const text = `${value}`;
     return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
   });
+
+  // Une séance qui ne rapporte rien ne redistribue rien : pas d'anneau du tout. Le montrer
+  // immobile ferait croire à une animation qui a raté.
+  if (beat === undefined) {
+    return null;
+  }
 
   return (
     <Animated.View style={[styles.block, styles.podium, style]}>
@@ -799,6 +836,32 @@ function DigestLevel({ clock, at, level }: { clock: Clock; at: number; level: nu
 }
 
 /**
+ * La raison à afficher au bilan quand **rien** n'a rapporté d'XP.
+ *
+ * Le cas est celui d'une synchronisation qui ne contient que des marches (#80) : `totals`
+ * existe — des séances ont bien été créditées — mais `xpAwarded` vaut zéro. Un bilan qui
+ * afficherait « +0 XP · niveau 12 → 12 » aurait l'air d'un bug, alors que c'est une règle du
+ * jeu qui a fonctionné exactement comme prévu.
+ *
+ * `null` dès qu'une seule séance a rapporté quelque chose : le total parle alors de lui-même,
+ * et expliquer un zéro qui n'existe pas serait du bruit.
+ */
+function soleReason(summary: SyncSummary): XpNoCreditReason | null {
+  if (summary.imported.length === 0 || (summary.totals?.xpAwarded ?? 0) > 0) {
+    return null;
+  }
+
+  const first = summary.imported[0].xp.reason;
+  if (first === null || first === undefined) {
+    return null;
+  }
+
+  // Toutes, pas seulement la première : un lot mêlant une marche et une séance à zéro pour une
+  // autre raison n'aurait pas d'explication unique à donner.
+  return summary.imported.every((workout) => workout.xp.reason === first) ? first : null;
+}
+
+/**
  * Le bilan — **l'état d'arrivée, et le seul bloc de cet écran qui ne sort jamais**.
  *
  * Tout le reste est écrit pour être chassé : c'est la règle « rien ne cohabite », et elle est
@@ -832,6 +895,7 @@ function Recap({
   attributes,
   titles,
   skippedCount,
+  noCredit,
 }: {
   clock: Clock;
   at: number;
@@ -839,6 +903,8 @@ function Recap({
   attributes: RewardSummary['attributes'];
   titles: RewardSummary['titlesUnlocked'];
   skippedCount: number;
+  /** Non nul quand tout le lot a été crédité sans rapporter d'XP — voir `soleReason`. */
+  noCredit: XpNoCreditReason | null;
 }) {
   const style = useAnimatedStyle(() => ({
     // Deux points, jamais trois : c'est ce qui fait de ce bloc un état et pas un passage.
@@ -868,6 +934,12 @@ function Recap({
           <AttributeLegend attributes={arcs} />
         </View>
       </View>
+
+      {/* Rien n'a rapporté d'XP, et c'était prévu : le dire évite qu'un zéro parfaitement
+          normal passe pour une panne. */}
+      {noCredit === null ? null : (
+        <Text style={styles.label}>{xpNoCreditReasonLabel[noCredit].toUpperCase()}</Text>
+      )}
 
       {/* Le niveau se dit toujours ; la flèche seulement s'il a bougé. « Niveau 12 → 12 »
           serait une célébration qui n'a pas eu lieu. */}

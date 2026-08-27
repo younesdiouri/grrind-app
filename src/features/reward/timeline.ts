@@ -7,6 +7,8 @@ export type SyncTotals = components['schemas']['SyncTotals'];
 export type RewardSummary = components['schemas']['RewardSummary'];
 export type XpLine = components['schemas']['XpLine'];
 export type SkippedWorkout = SyncSummary['skipped'][number];
+/** Pourquoi une séance créditée n'a rien rapporté. `null` pour tout crédit normal. */
+export type XpNoCreditReason = NonNullable<RewardSummary['xp']['reason']>;
 
 /**
  * Le `SyncSummary` traduit en **une seule** timeline continue.
@@ -52,6 +54,10 @@ export const BEATS = {
   sessionClose: duration.settle,
   /** Une ligne de breakdown apparaît ; les suivantes s'enchaînent à ce rythme. */
   xpLine: duration.line,
+  /** La raison paraît, à la place du calcul qui n'a pas eu lieu. Elle prend le temps d'une
+   *  ligne **et** de la course que la barre n'a pas faite : c'est une phrase à lire, pas un
+   *  chiffre à voir passer. */
+  noCredit: duration.line + duration.settle,
   /** La barre finit sa course après la dernière ligne. */
   xpSettle: duration.settle,
   /** Un gain de caractéristique atterrit ; les suivants s'enchaînent au même rythme qu'une
@@ -130,6 +136,15 @@ export type Beat =
       line: XpLine;
       runningTotal: number;
     }
+  /**
+   * Le calcul n'a pas eu lieu — et le dire prend la place qu'il aurait prise.
+   *
+   * La marche est créditée sans rapporter d'XP (`grrind-back#167`) : `breakdown` est vide,
+   * `awarded` vaut zéro, et `xp.reason` porte l'explication. Sans ce battement, la carte de
+   * séance se retrouvait seule face au vide pendant que le compteur affichait `+0` — ce qui
+   * se lit comme une panne, pas comme une règle.
+   */
+  | { kind: 'noCredit'; at: number; until: number; workout: number; reason: XpNoCreditReason }
   /** Les cinq jauges montent — entre le repos qui suit le breakdown et le premier `level`. */
   | { kind: 'attributes'; at: number; until: number; workout: number }
   | { kind: 'level'; at: number; until: number; workout: number; level: number }
@@ -441,6 +456,26 @@ export function buildTimeline(summary: SyncSummary): Timeline {
       holdBar(read.until, workout.level.reached.length > 0 ? 1 : fillAfter(workout.level));
     }
 
+    // 2bis. …ou la raison, quand il n'y a pas eu de calcul (#80). Le client ne **déduit** rien
+    //       d'un breakdown vide et ne teste jamais la discipline : il lit `xp.reason`, que le
+    //       serveur envoie exactement pour ça. Le jour où une deuxième discipline rejoint la
+    //       marche, il n'y a rien à changer ici.
+    if (workout.xp.reason !== null && workout.xp.reason !== undefined) {
+      const reason = push({
+        kind: 'noCredit',
+        duration: BEATS.noCredit,
+        workout: index,
+        reason: workout.xp.reason,
+      });
+      // La barre ne bouge pas — c'est le sujet. La tenir explicitement l'empêche de dériver
+      // vers le point suivant au lieu de rester posée là où le joueur était.
+      holdBar(reason.at, fillBefore(workout.level));
+      holdBar(reason.until, fillAfter(workout.level));
+
+      const read = push({ kind: 'rest', duration: BEATS.dwell });
+      holdBar(read.until, fillAfter(workout.level));
+    }
+
     // 2.5. `attributes` — les quatre gains, dans l'ordre du contrat, puis Vitality. Un gain
     //      à zéro ne consomme aucun temps : il n'y a rien à annoncer, il reste éteint dans la
     //      légende sans jamais bouger. Vitality, dérivée, ne se pose qu'une fois les quatre
@@ -449,32 +484,42 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     const after = attributesAt(workout.attributes, 'after');
     const landings = ATTRIBUTE_ORDER.filter((attribute) => workout.attributes[attribute].gained > 0);
 
-    // La visibilité des jauges est calée sur **ce battement** (`AttributeStage` interpole son
-    // opacité entre `at` et `until`), pas sur ce qui le suit : leur temps de lecture est donc
-    // dans sa durée, et pas dans un repos posé après.
-    const attributesBeat = push({
-      kind: 'attributes',
-      duration: landings.length * BEATS.attributeGain + BEATS.attributeSettle + BEATS.dwell,
-      workout: index,
-    });
+    // Une séance qui ne rapporte rien ne redistribue rien : **pas d'anneau du tout** (#80).
+    // Le montrer immobile pendant deux secondes ferait croire à une animation qui a raté, et
+    // ce serait la deuxième fois de suite qu'on dirait « il ne s'est rien passé » à quelqu'un
+    // qui vient de marcher une heure. La raison qui précède a déjà tout dit.
+    //
+    // Un `if` et non un `return` : ce qui suit — paliers et titres — n'a rien à voir avec les
+    // jauges, et les sauter au même endroit créerait une dépendance silencieuse entre deux
+    // décisions indépendantes. Ils sont vides ici, c'est tout.
+    if (landings.length > 0 || (workout.xp.reason === null || workout.xp.reason === undefined)) {
+      // La visibilité des jauges est calée sur **ce battement** (`AttributeStage` interpole son
+      // opacité entre `at` et `until`), pas sur ce qui le suit : leur temps de lecture est donc
+      // dans sa durée, et pas dans un repos posé après.
+      const attributesBeat = push({
+        kind: 'attributes',
+        duration: landings.length * BEATS.attributeGain + BEATS.attributeSettle + BEATS.dwell,
+        workout: index,
+      });
 
-    // Le départ : verrouillé sur ce que le joueur avait, pour que rien ne bouge avant le tour
-    // de la caractéristique — même si la continuité du contrat le garantit déjà, ce point
-    // fixe le début du battement plutôt que de dépendre d'un hasard de calendrier.
-    holdAttributes(attributesBeat.at, before);
+      // Le départ : verrouillé sur ce que le joueur avait, pour que rien ne bouge avant le tour
+      // de la caractéristique — même si la continuité du contrat le garantit déjà, ce point
+      // fixe le début du battement plutôt que de dépendre d'un hasard de calendrier.
+      holdAttributes(attributesBeat.at, before);
 
-    // Chaque gain non nul atterrit à son tour. Ceux qui attendent encore restent tenus sur
-    // leur valeur de départ à chaque palier — sinon `interpolate` les ferait dériver dès la
-    // première image, au lieu de les laisser immobiles jusqu'à leur tour.
-    let landed = before;
-    landings.forEach((attribute, position) => {
-      const at = attributesBeat.at + (position + 1) * BEATS.attributeGain;
-      landed = { ...landed, [attribute]: after[attribute] };
-      holdAttributes(at, landed);
-    });
+      // Chaque gain non nul atterrit à son tour. Ceux qui attendent encore restent tenus sur
+      // leur valeur de départ à chaque palier — sinon `interpolate` les ferait dériver dès la
+      // première image, au lieu de les laisser immobiles jusqu'à leur tour.
+      let landed = before;
+      landings.forEach((attribute, position) => {
+        const at = attributesBeat.at + (position + 1) * BEATS.attributeGain;
+        landed = { ...landed, [attribute]: after[attribute] };
+        holdAttributes(at, landed);
+      });
 
-    // L'anneau a fini de se redistribuer : Vitality se pose, seule, sur le reste du battement.
-    holdAttributes(attributesBeat.until, after);
+      // L'anneau a fini de se redistribuer : Vitality se pose, seule, sur le reste du battement.
+      holdAttributes(attributesBeat.until, after);
+    }
 
     // 3. `level.reached` — un basculement par niveau franchi. Plusieurs d'un coup est un cas
     //    normal, pas l'exception : on les joue tous, l'un après l'autre. La barre retombe à

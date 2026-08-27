@@ -189,6 +189,29 @@ export const xpSourceLabel: Record<components['schemas']['XpLine']['source'], st
 };
 
 /**
+ * Pourquoi une séance n'a rien rapporté, alors qu'elle a bien été créditée.
+ *
+ * **Ce n'est pas un écart.** `skipReasonLabel` parle des séances que le serveur a refusé de
+ * compter ; celle-ci parle d'une séance **comptée**, présente dans `imported`, avec sa carte
+ * et sa ligne d'historique — mais dont la discipline ne rapporte pas d'XP par conception.
+ *
+ * Le serveur aurait pu envoyer un `breakdown` vide, ou une ligne « base : 0 ». Il a refusé de
+ * mentir sur un calcul qui n'a jamais eu lieu et envoie une `reason` à la place : c'est une
+ * phrase qu'il nous demande d'écrire, et la voici.
+ *
+ * Même garde-fou que les trois tables au-dessus : la clé sort de l'union du schéma, jamais
+ * d'un test sur `discipline === 'WALKING'`. Le jour où une deuxième discipline rejoint la
+ * marche, il n'y a rien à changer ici — et le jour où le back ouvre une deuxième raison, le
+ * compilateur le dit.
+ */
+export const xpNoCreditReasonLabel: Record<
+  NonNullable<components['schemas']['RewardSummary']['xp']['reason']>,
+  string
+> = {
+  NO_XP_FEEDS_VITALITY: 'Ne rapporte pas d’XP · nourrit ta Vitalité',
+};
+
+/**
  * Les disciplines, rendues lisibles. Même garde-fou, même raison : `WALKING`, `HIIT` et
  * `HIKING` sont entrées au contrat avec le virage santé, et c'est le compilateur qui l'a dit.
  * Les trois sports collectifs de `grrind-back#166` sont arrivés de la même façon.

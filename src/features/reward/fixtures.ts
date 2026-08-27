@@ -1,3 +1,4 @@
+import marcheSansXp from '@/../fixtures/sync-summary/marche-sans-xp.json';
 import quinzeWorkouts from '@/../fixtures/sync-summary/quinze-workouts.json';
 import toutEcarte from '@/../fixtures/sync-summary/tout-ecarte.json';
 import troisWorkouts from '@/../fixtures/sync-summary/trois-workouts.json';
@@ -22,6 +23,11 @@ import type { SyncSummary } from './timeline';
  *   en scène : trois séances en détail, les douze autres condensées.
  * - `toutEcarte` — **0 XP, `totals` à `null`**, cinq séances nommées et quatre raisons de
  *   refus distinctes. C'est le cas qu'on oublie et celui qui se voit.
+ * - `marcheSansXp` — **0 XP, `totals` non nul** (#80). Une heure de marche, créditée, dans
+ *   l'historique — et pas un point d'expérience : `breakdown` est vide, `xp.reason` porte
+ *   l'explication. C'est le zéro qu'il ne faut surtout pas confondre avec celui de
+ *   `toutEcarte`, où *rien* n'a été crédité. Les deux affichent zéro et ne disent pas du tout
+ *   la même chose.
  *
  * Le `as unknown as` est là parce que TypeScript élargit les littéraux d'un import JSON en
  * `string`, quand le schéma généré attend les unions fermées (`"RUNNING"`, `"BASE"`…). Le
@@ -32,6 +38,7 @@ export const FIXTURES = {
   troisWorkouts: troisWorkouts as unknown as SyncSummary,
   quinzeWorkouts: quinzeWorkouts as unknown as SyncSummary,
   toutEcarte: toutEcarte as unknown as SyncSummary,
+  marcheSansXp: marcheSansXp as unknown as SyncSummary,
 } as const;
 
 export type FixtureName = keyof typeof FIXTURES;
