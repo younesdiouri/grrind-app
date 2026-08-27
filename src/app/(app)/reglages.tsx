@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { DangerRow } from '@/components/DangerRow';
 import { ToggleRow } from '@/components/ToggleRow';
 import { color, notificationCategoryLabel, radius, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
+import { signOut } from '@/features/auth/session';
+import { useAuth } from '@/features/auth/useAuth';
 import {
   fetchProfile,
   updateNotificationPreference,
@@ -33,9 +36,21 @@ import { useNotificationPermission } from '@/features/notifications/useNotificat
  * serveur ne pousse plus rien vers cet appareil, quoi qu'ils affichent. iOS ne repose jamais
  * la question depuis l'app une fois refusée — le seul recours est Réglages système, donc
  * c'est le seul geste que ce cas propose.
+ *
+ * ————— Le compte, en dernier (#84) —————————————————————————————————————————————————————
+ *
+ * « Se déconnecter » vivait dans le banc de session de l'accueil, qui est parti avec les
+ * outils de développement. Ce n'en était pas un : c'est un réglage, et sa place est ici.
+ *
+ * Il est **seul dans sa section**, sous tout le reste, en `DangerRow` — c'est la règle du
+ * composant, et elle vaut : personne ne doit se déconnecter en visant un interrupteur de
+ * notification. Il ne dépend pas de la requête de profil, qui peut échouer : l'identité
+ * affichée vient de la session déjà en mémoire, et partir doit rester possible même quand le
+ * serveur ne répond plus.
  */
 export default function ReglagesScreen() {
   const permission = useNotificationPermission();
+  const auth = useAuth();
 
   const [state, setState] = useState<
     { step: 'loading' } | { step: 'ready'; profile: UserProfile } | { step: 'failed'; failure: Failure }
@@ -95,6 +110,16 @@ export default function ReglagesScreen() {
       ) : null}
 
       {state.step === 'ready' ? <Preferences profile={state.profile} onProfile={(profile) => setState({ step: 'ready', profile })} /> : null}
+
+      {auth.status === 'signedIn' ? (
+        <View style={styles.account}>
+          <Text style={styles.cardTitle}>{auth.user.displayName}</Text>
+          <Text style={styles.body}>
+            {auth.user.email} · {auth.user.timezone}
+          </Text>
+          <DangerRow label="Se déconnecter" onPress={() => void signOut()} />
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
@@ -169,6 +194,8 @@ const styles = StyleSheet.create({
     padding: space.md,
     gap: space.sm,
   },
+  /** Le compte ferme l'écran : de l'air au-dessus, pour qu'il ne colle pas aux catégories. */
+  account: { marginTop: space.lg, gap: space.xs },
   cardTitle: { ...type.title, color: color.text },
   body: { ...type.body, color: color.textMuted },
   failure: { ...type.body, color: color.danger },
