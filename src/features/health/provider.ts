@@ -36,6 +36,14 @@ export type WorkoutData = components['schemas']['ImportedWorkout'];
 export type WorkoutSource = WorkoutData['source'];
 
 /**
+ * Une journée d'énergie active, telle que le contrat l'attend — pas un DTO maison.
+ *
+ * `DailyActivityEntry` sort d'`openapi.yaml`, comme `ImportedWorkout` : `day` en date civile,
+ * `activeEnergyKcal` avec ses bornes, et `source` sur la même énumération fermée.
+ */
+export type DailyActivityData = components['schemas']['DailyActivityEntry'];
+
+/**
  * Faut-il encore poser la question à l'utilisateur ?
  *
  * **Ce n'est pas son verdict**, et aucun fournisseur ne peut le donner : HealthKit ne dit
@@ -92,4 +100,30 @@ export interface HealthProvider {
    * ça doit être écrit pour cette ambiguïté plutôt que d'en choisir une.
    */
   workoutsSince(since: Date): Promise<WorkoutData[]>;
+
+  /**
+   * L'énergie active des `days` derniers jours, une entrée par journée civile — la moitié
+   * « santé de fond » de Vitality (#77).
+   *
+   * ————— Une quatrième divergence de plateforme, et une vraie ————————————————————————
+   *
+   * `activeEnergyBurned` chez HealthKit, `ActiveCaloriesBurnedRecord` chez Health Connect : ce
+   * n'est ni le même type, ni la même unité par défaut, ni la même façon de découper une
+   * journée. Elle a donc sa place ici, à côté des trois autres.
+   *
+   * **Ce n'est pas un raccourci, c'est la décision.** Les pas auraient imposé une branche :
+   * HealthKit ne compte pas des pas pour quelqu'un en fauteuil, il compte des poussées
+   * (`pushCount`), sur un type différent. L'énergie active est calculée par la plateforme pour
+   * tout le monde, avec les bonnes hypothèses pour chacun, et l'app n'a à connaître le corps de
+   * personne. Ne pas « améliorer » ça en ajoutant les pas à côté.
+   *
+   * **Le découpage appartient à l'implémentation, pas à l'appelant.** C'est elle qui connaît le
+   * fuseau où la montre a agrégé la journée, et le contrat dit que le serveur ne le recalcule
+   * pas. Une journée sans échantillon ressort à **zéro** et non absente : c'est exactement ce
+   * qui mesure la sédentarité.
+   *
+   * Un tableau vide est une réponse normale et ambiguë, comme pour `workoutsSince` : pas de
+   * données, ou un accès qu'on n'a pas. L'appelant traite ça en meilleur effort.
+   */
+  dailyActiveEnergy(days: number): Promise<DailyActivityData[]>;
 }

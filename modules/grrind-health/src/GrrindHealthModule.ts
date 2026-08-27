@@ -56,6 +56,23 @@ export type NativeWorkoutsChangedEvent = {
   anchor: string;
 };
 
+/**
+ * Une journée d'énergie active — la moitié « santé de fond » de Vitality (#77).
+ *
+ * `day` est une **date civile** déjà formatée, `AAAA-MM-JJ`, et pas un instant : c'est le
+ * natif qui découpe les journées, dans le calendrier de l'appareil, parce que c'est lui qui
+ * connaît le fuseau où la montre a agrégé. Le contrat le dit dans ces termes — « le serveur ne
+ * la recalcule pas » — et la rendre en millisecondes rouvrirait la question ici.
+ *
+ * C'est la seule valeur de ce module qui ne soit pas brute : elle est déjà arrondie et écrêtée
+ * aux bornes du contrat. Non pas par goût de traduire, mais parce qu'un flottant hors bornes
+ * ne produirait qu'un 422 que personne ne lirait.
+ */
+export type NativeDailyActiveEnergy = {
+  day: string;
+  activeEnergyKcal: number;
+};
+
 type GrrindHealthEvents = {
   onWorkoutsChanged: (event: NativeWorkoutsChangedEvent) => void;
 };
@@ -117,6 +134,20 @@ declare class GrrindHealthModule extends NativeModule<GrrindHealthEvents> {
    * fois de plus, tout à perdre à avancer sur un import qui n'a pas abouti.
    */
   commitAnchor(anchor: string): Promise<void>;
+
+  /**
+   * L'énergie active des `days` derniers jours, une entrée par journée civile, de la plus
+   * ancienne à la plus récente — **la journée en cours comprise**, et révisable : elle sera
+   * renvoyée plus tard avec sa valeur d'alors, et le serveur l'écrase au lieu de la dupliquer.
+   *
+   * Une journée sans le moindre échantillon ressort à **zéro** plutôt que d'être absente :
+   * c'est précisément ce qui mesure la sédentarité, et l'omettre la rendrait invisible à la
+   * moyenne que le serveur calcule sur la fenêtre.
+   *
+   * N'exige **aucune autorisation nouvelle** : `activeEnergyBurned` est demandé depuis le
+   * premier jour, c'est ce qui remplit `calories` sur chaque séance.
+   */
+  dailyActiveEnergy(days: number): Promise<NativeDailyActiveEnergy[]>;
 }
 
 export default requireNativeModule<GrrindHealthModule>('GrrindHealth');

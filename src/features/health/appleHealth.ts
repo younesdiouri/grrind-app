@@ -1,6 +1,9 @@
-import GrrindHealth, { type NativeWorkout } from '@/../modules/grrind-health/src/GrrindHealthModule';
+import GrrindHealth, {
+  type NativeDailyActiveEnergy,
+  type NativeWorkout,
+} from '@/../modules/grrind-health/src/GrrindHealthModule';
 
-import type { HealthProvider, WorkoutData } from '@/features/health/provider';
+import type { DailyActivityData, HealthProvider, WorkoutData } from '@/features/health/provider';
 
 /**
  * Apple Santé, derrière le port.
@@ -27,6 +30,17 @@ function asWorkoutData(workout: NativeWorkout): WorkoutData {
   return workout;
 }
 
+/**
+ * Le même rapprochement que ci-dessus, pour les journées d'énergie.
+ *
+ * `source` est ajoutée **ici** et non côté natif : le module n'a aucune raison de connaître
+ * l'énumération du contrat, et c'est cette frontière-ci qui sait sur quelle plateforme elle
+ * tourne. Le natif rend une mesure, ce fichier dit d'où elle vient.
+ */
+function asDailyActivityData(entry: NativeDailyActiveEnergy): DailyActivityData {
+  return { ...entry, source: 'APPLE_HEALTH' };
+}
+
 export const appleHealthProvider: HealthProvider = {
   isAvailable: () => GrrindHealth.isAvailable(),
 
@@ -42,5 +56,10 @@ export const appleHealthProvider: HealthProvider = {
   workoutsSince: async (since) => {
     const workouts = await GrrindHealth.workoutsSince(since.getTime());
     return workouts.map(asWorkoutData);
+  },
+
+  dailyActiveEnergy: async (days) => {
+    const entries = await GrrindHealth.dailyActiveEnergy(days);
+    return entries.map(asDailyActivityData);
   },
 };

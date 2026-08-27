@@ -11,6 +11,7 @@ import { color, space, type } from '@/design/tokens';
 import { messageFor } from '@/features/auth/problems';
 import { formatCalendarDate } from '@/features/community/format';
 import { usePlayer, type Player } from '@/features/community/usePlayer';
+import { VitalityNote } from '@/features/progression/PlayerHomeView';
 
 /**
  * Le profil d'un co-équipier — `GET /api/players/{id}`, poussé sur le Stack au-dessus des
@@ -85,6 +86,11 @@ export default function JoueurScreen() {
  * `RewardSummary.attributes`, il ne porte ni `gained` ni avant/après (#70). Rien ici ne
  * s'anime donc au montage, à la différence de la même donnée sur son propre accueil : ce
  * profil affiche ce qui est, pas ce qui vient de se passer.
+ *
+ * `vitalityBreakdown` est rendu ici aussi (#77), et pour la même raison que sur son propre
+ * accueil : la moitié « santé de fond » de Vitality bouge sans qu'aucune séance ne l'explique.
+ * Un chiffre au centre d'un cercle, sans sa cause, ne récompense rien — et il en dit encore
+ * moins sur le profil de quelqu'un d'autre, où on n'a pas la mémoire de ce qu'il a fait.
  */
 function PlayerAttributes({ player }: { player: Player }) {
   const { vitality, ...attributes } = player.attributes;
@@ -100,6 +106,8 @@ function PlayerAttributes({ player }: { player: Player }) {
       </View>
 
       {empty ? <Text style={styles.body}>Rien à répartir pour l&apos;instant.</Text> : null}
+
+      <VitalityNote breakdown={player.vitalityBreakdown} />
     </>
   );
 }

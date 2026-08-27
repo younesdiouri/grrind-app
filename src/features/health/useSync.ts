@@ -3,6 +3,7 @@ import { AppState, type AppStateStatus } from 'react-native';
 
 import { useAuth } from '@/features/auth/useAuth';
 import { enableBackgroundWakeup, startBackgroundWakeup } from '@/features/health/backgroundWakeup';
+import { sendDailyActivity } from '@/features/health/dailyActivity';
 import { healthProvider } from '@/features/health/current';
 import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/features/health/sync';
 
@@ -18,6 +19,13 @@ import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/feature
  *   raté, donc il **ignore le seuil**.
  * - **Le réveil HealthKit** (#55), automatique comme les deux premiers — même seuil de trente
  *   secondes, lui non plus ne l'ignore pas.
+ *
+ * **L'énergie active quotidienne** (#77) part sur les mêmes déclencheurs, sans en ajouter un
+ * cinquième. Elle n'emprunte rien de la mécanique d'import — ni coordinateur, ni seuil, ni clé
+ * d'idempotence : `PUT /api/daily-activity` est idempotent par nature, et la journée en cours
+ * est **révisable**, donc la renvoyer est ce qu'on veut. Elle n'est pas enchaînée derrière
+ * l'import non plus : elle n'en dépend pas, et l'attendre retarderait la mise en scène pour une
+ * donnée que personne ne regarde dans la seconde.
  *
  * **Ce hook ne joue toujours rien.** C'était vrai en V1 faute de tâche de fond ; c'est resté
  * vrai en ajoutant le réveil, pour une raison différente : une synchronisation qu'on ne peut
@@ -41,9 +49,21 @@ export function useSyncTriggers(): void {
 
   const run = useCallback(
     (trigger: Parameters<typeof sync>[0]) => {
-      if (signedIn) {
-        void sync(trigger);
+      if (!signedIn) {
+        return;
       }
+
+      void sync(trigger);
+
+      // L'énergie active part **avec** les mêmes déclencheurs, pas sur un cinquième (#77). Ce
+      // n'est pas une synchronisation : pas de coordinateur, pas de seuil, pas de clé
+      // d'idempotence — `PUT /api/daily-activity` est idempotent par nature, et la journée en
+      // cours est révisable, donc la renvoyer est le comportement voulu et non un doublon.
+      //
+      // Elle n'est pas non plus enchaînée derrière l'import : elle n'en dépend pas, et
+      // l'attendre retarderait la mise en scène pour une donnée que personne ne regarde tout
+      // de suite. Meilleur effort, silencieux — voir `dailyActivity.ts`.
+      void sendDailyActivity();
     },
     [signedIn],
   );

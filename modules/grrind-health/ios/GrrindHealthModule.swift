@@ -215,6 +215,109 @@ public class GrrindHealthModule: Module {
     }
 
     /**
+     L'énergie active, **par journée civile** — la moitié « santé de fond » de Vitality (#77).
+
+     ————— Pourquoi ce n'est pas une lecture de plus sur les workouts ——————————————————————
+
+     Vitality a deux moitiés. La variété des sports se calcule déjà toute seule à partir du
+     ledger d'XP. La seconde est ce qui se passe **entre** les séances : sans elle, quelqu'un
+     qui s'entraîne quatre fois par semaine et reste assis les quatre-vingts autres heures a
+     exactement la même Vitality que quelqu'un qui bouge tout le temps. Les calories d'un
+     workout ne peuvent pas y répondre — elles ne parlent que du workout.
+
+     ————— Aucune permission nouvelle ————————————————————————————————————————————————————
+
+     `HKQuantityType(.activeEnergyBurned)` est dans `readTypes` **depuis le début** : c'est ce
+     qui remplit `calories` sur chaque `WorkoutRecord`. La feuille système l'a donc déjà
+     demandé, et il n'y a rien à redemander aux joueurs déjà installés. Ce qui manquait n'était
+     pas un droit, c'était une requête — le même type, lu en cumul journalier au lieu d'être lu
+     par séance.
+
+     ————— Le calendrier de l'appareil, jamais UTC ————————————————————————————————————————
+
+     Le contrat est explicite : `day` est une **date civile**, et « c'est l'app qui sait dans
+     quel fuseau la montre a agrégé la journée ; le serveur ne la recalcule pas ». D'où
+     `Calendar.current` pour découper les journées, et le formatage de la date **ici**, en
+     Swift, où le fuseau est connu — la rendre en millisecondes et laisser JS reformater
+     rouvrirait exactement la question qu'on vient de fermer.
+
+     `HKStatisticsCollectionQuery` fait le découpage lui-même, à la bonne heure locale et en
+     tenant compte des changements d'heure. Le faire à la main coûterait le même code, en faux.
+
+     ————— Une journée absente compte pour zéro, et c'est le sujet ————————————————————————
+
+     `enumerateStatistics` rend un intervalle par journée de la fenêtre, y compris celles sans
+     un seul échantillon : elles ressortent à zéro. C'est exactement ce qu'on veut mesurer — la
+     sédentarité est faite de journées vides, et les omettre les rendrait invisibles au serveur,
+     qui calcule sa moyenne sur toute la fenêtre.
+     */
+    AsyncFunction("dailyActiveEnergy") { (days: Int, promise: Promise) in
+      guard HKHealthStore.isHealthDataAvailable() else {
+        promise.reject(HealthDataUnavailableException())
+        return
+      }
+
+      let calendar = Calendar.current
+      let today = calendar.startOfDay(for: Date())
+
+      guard
+        let anchorDate = calendar.date(byAdding: .day, value: -(max(days, 1) - 1), to: today),
+        // La borne haute est la fin de la journée en cours : elle est **révisable**, et c'est
+        // voulu. 4 000 kcal à 14 h, 11 000 à 22 h, c'est la même journée renvoyée plus tard —
+        // le serveur fait un UPSERT sur (utilisateur, jour), jamais un doublon.
+        let end = calendar.date(byAdding: .day, value: 1, to: today)
+      else {
+        promise.reject(HealthQueryException("Impossible de borner la fenêtre de journées."))
+        return
+      }
+
+      let query = HKStatisticsCollectionQuery(
+        quantityType: HKQuantityType(.activeEnergyBurned),
+        quantitySamplePredicate: HKQuery.predicateForSamples(withStart: anchorDate, end: end),
+        options: .cumulativeSum,
+        anchorDate: anchorDate,
+        intervalComponents: DateComponents(day: 1)
+      )
+
+      // Un formateur POSIX, et non celui de l'utilisateur : `AAAA-MM-JJ` est un format
+      // d'échange, pas un affichage. Un appareil réglé en calendrier bouddhiste ou en chiffres
+      // arabes-indiens rendrait une date que le serveur ne saurait pas lire.
+      let formatter = DateFormatter()
+      formatter.calendar = Calendar(identifier: .gregorian)
+      formatter.locale = Locale(identifier: "en_US_POSIX")
+      formatter.timeZone = calendar.timeZone
+      formatter.dateFormat = "yyyy-MM-dd"
+
+      query.initialResultsHandler = { _, collection, error in
+        if let error {
+          promise.reject(HealthQueryException(error.localizedDescription))
+          return
+        }
+
+        guard let collection else {
+          promise.resolve([[String: Any]]())
+          return
+        }
+
+        var entries: [[String: Any]] = []
+        collection.enumerateStatistics(from: anchorDate, to: today) { statistics, _ in
+          let kilocalories = statistics.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
+          entries.append([
+            "day": formatter.string(from: statistics.startDate),
+            // Le contrat borne à 20 000 — un garde-fou contre une unité mal convertie, pas une
+            // opinion sur ce qu'une journée humaine peut brûler. On arrondit et on écrête ici
+            // plutôt que de laisser partir un 422 pour une valeur aberrante.
+            "activeEnergyKcal": min(20_000, max(0, Int(kilocalories.rounded())))
+          ])
+        }
+
+        promise.resolve(entries)
+      }
+
+      self.store.execute(query)
+    }
+
+    /**
      Demande à iOS de réveiller l'app quand un workout change dans Santé, et démarre
      l'observateur qui en profite.
 

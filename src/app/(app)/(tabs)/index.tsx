@@ -88,7 +88,12 @@ function PlayerHome() {
       ) : null}
 
       {home.step === 'ready' ? <LevelCard progression={home.progression} /> : null}
-      {home.step === 'ready' ? <AttributeCard attributes={home.progression.attributes} /> : null}
+      {home.step === 'ready' ? (
+        <AttributeCard
+          attributes={home.progression.attributes}
+          vitalityBreakdown={home.progression.vitalityBreakdown}
+        />
+      ) : null}
 
       {home.step === 'ready' && home.workouts.length === 0 ? (
         <View style={styles.card}>

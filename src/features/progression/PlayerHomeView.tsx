@@ -28,6 +28,7 @@ import {
   formatWhen,
 } from '@/features/progression/format';
 import type { Progression, Workout } from '@/features/progression/usePlayerHome';
+import { explainVitality, type VitalityBreakdown } from '@/features/progression/vitalityBonus';
 
 /**
  * L'état du joueur et ce qui l'a produit — l'écran qui prouve que la chaîne a marché.
@@ -165,7 +166,18 @@ export function LevelCard({ progression }: { progression: Progression }) {
  * laid que l'inverse : un nombre à un chiffre rendu un peu petit pour sa taille, le temps de
  * grandir jusqu'au nombre final de chiffres.
  */
-export function AttributeCard({ attributes }: { attributes: Progression['attributes'] }) {
+export function AttributeCard({
+  attributes,
+  vitalityBreakdown,
+}: {
+  attributes: Progression['attributes'];
+  /**
+   * Ce qui explique la moitié « santé de fond » de Vitality (#77). Requis, pas optionnel :
+   * le contrat le rend toujours, et le rendre facultatif ici laisserait un appelant l'oublier
+   * — c'est-à-dire afficher le nombre seul, ce que le ticket interdit en toutes lettres.
+   */
+  vitalityBreakdown: VitalityBreakdown;
+}) {
   const { vitality, ...arcs } = attributes;
   // La même donnée que la légende affichera, éteinte : cinq zéros ne sont pas une panne,
   // c'est le point de départ normal d'un compte neuf.
@@ -225,11 +237,41 @@ export function AttributeCard({ attributes }: { attributes: Progression['attribu
       {empty ? (
         <Text style={styles.levelFoot}>Rien à répartir pour l&apos;instant : ta prochaine séance colorera ce cercle.</Text>
       ) : null}
+
+      <VitalityNote breakdown={vitalityBreakdown} />
     </View>
   );
 }
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+/**
+ * L'explication du bonus de Vitality, sous le cercle (#77).
+ *
+ * **Elle est ici et pas dans la légende**, et c'est une décision : la légende dit les parts
+ * des quatre caractéristiques, Vitality n'en a pas — elle est au centre, en chiffre. Lui
+ * ajouter une ligne dans la légende rendrait celle-ci fausse pour ce qui n'a pas de part.
+ *
+ * Elle ne paraît que quand il y a quelque chose à dire : une app installée le jour même n'a ni
+ * moyenne ni bonus, et lui parler d'une cible qu'elle n'a pas eu le temps de viser serait lui
+ * reprocher d'être neuve. Voir `explainVitality`.
+ */
+export function VitalityNote({ breakdown }: { breakdown: VitalityBreakdown }) {
+  const explained = explainVitality(breakdown);
+
+  if (explained === null) {
+    return null;
+  }
+
+  return (
+    <View style={styles.vitalityNote}>
+      {explained.bonus === null ? null : (
+        <Text style={styles.vitalityBonus}>Vitalité {explained.bonus}</Text>
+      )}
+      <Text style={styles.levelFoot}>{explained.detail}</Text>
+    </View>
+  );
+}
 
 /**
  * Un arc qui grandit depuis rien jusqu'à sa part, `from` fixe — le pendant animé de l'`Arc`
@@ -325,6 +367,9 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  vitalityNote: { gap: space.xs },
+  /** Le bonus se célèbre discrètement : c'est un gain, mais il ne vient pas d'une séance. */
+  vitalityBonus: { ...type.label, color: color.gain },
   legendWrap: { flex: 1 },
   vitalityText: { color: color.text, padding: 0, textAlign: 'center' },
 });
