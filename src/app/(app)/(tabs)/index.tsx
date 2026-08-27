@@ -1,11 +1,23 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { Button } from '@/components/Button';
 import { color, radius, space, type } from '@/design/tokens';
-import { messageFor } from '@/features/auth/problems';
+import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
+import { useSyncStatus } from '@/features/health/useSync';
 import { AttributeCard, LevelCard, WorkoutRow } from '@/features/progression/PlayerHomeView';
-import { usePlayerHome } from '@/features/progression/usePlayerHome';
+// Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
+// renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
+import { usePlayerHome, type PlayerHome as HomeState } from '@/features/progression/usePlayerHome';
 
 /**
  * L'accueil.
@@ -48,9 +60,56 @@ import { usePlayerHome } from '@/features/progression/usePlayerHome';
 export default function Home() {
   const auth = useAuth();
 
+  // La lecture et le geste vivent dans le même composant que le `ScrollView` qui les porte :
+  // `RefreshControl` est une prop de la vue défilante, pas quelque chose qu'un enfant peut
+  // installer. `PlayerHome` reçoit donc ce qu'il affiche au lieu de le chercher lui-même.
+  const { home, reload, refresh, refreshFailure } = usePlayerHome();
+  const { refresh: syncNow } = useSyncStatus();
+  const [refreshing, setRefreshing] = useState(false);
+
+  /**
+   * Tirer, c'est demander « qu'est-ce qui est neuf ? » — et dans GRRIND, le neuf ne vient pas
+   * de l'API, il vient de Santé. Le geste **synchronise** donc avant de relire : un
+   * rafraîchissement qui se contenterait de redemander les mêmes chiffres au serveur aurait
+   * l'air de marcher sans rien faire.
+   *
+   * `sync('manual')` est aussi le seul déclencheur qui **ignore le seuil de trente secondes**.
+   * C'est exactement ce qu'on veut ici : opposer « tu as déjà synchronisé il y a vingt
+   * secondes » à quelqu'un qui vient de tirer sur son écran serait le moment où l'app a l'air
+   * cassée.
+   */
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // Un `impact` et non un `notification` : ce retour accuse réception d'un geste, il ne
+    // célèbre rien — la célébration appartient au franchissement de niveau.
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      await syncNow();
+      // Puis la relecture, attendue : retirer le témoin à la fin de la synchronisation, avant
+      // que les chiffres n'aient bougé, donnerait l'impression que le geste n'a rien fait.
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [syncNow, refresh]);
+
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
-      {auth.status === 'signedIn' ? <PlayerHome /> : null}
+    <ScrollView
+      contentContainerStyle={styles.screen}
+      refreshControl={
+        auth.status === 'signedIn' ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void onRefresh()}
+            tintColor={color.accent}
+          />
+        ) : undefined
+      }
+    >
+      {auth.status === 'signedIn' ? (
+        <PlayerHome home={home} reload={reload} refreshFailure={refreshFailure} />
+      ) : null}
     </ScrollView>
   );
 }
@@ -66,14 +125,29 @@ export default function Home() {
  * L'état vide n'est pas un échec et ne se présente pas comme tel : un compte neuf n'a rien
  * fait, ce qui est le point de départ normal du produit et pas une panne à réessayer.
  */
-function PlayerHome() {
-  const { home, reload } = usePlayerHome();
+function PlayerHome({
+  home,
+  reload,
+  refreshFailure,
+}: {
+  home: HomeState;
+  reload: () => void;
+  refreshFailure: Failure | null;
+}) {
   // Une seule lecture de l'horloge pour toute la liste : deux séances de la même journée
   // ne doivent pas tomber de part et d'autre de minuit parce que le rendu a pris du temps.
   const now = new Date();
 
   return (
     <>
+      {/* Un rafraîchissement qui a échoué **sans vider l'écran** : les chiffres d'en dessous
+          sont ceux d'avant, et ils restent justes. Le dire à côté d'eux vaut mieux que de les
+          remplacer par une page d'erreur, et mieux que de ne rien dire à quelqu'un qui vient
+          de tirer trois fois. */}
+      {refreshFailure === null ? null : (
+        <Text style={styles.staleNotice}>{messageFor(refreshFailure)}</Text>
+      )}
+
       {home.step === 'loading' ? (
         <View style={styles.loading}>
           <ActivityIndicator color={color.accent} />
@@ -132,4 +206,6 @@ const styles = StyleSheet.create({
   },
   name: { ...type.title, color: color.text },
   detail: { ...type.body, color: color.textMuted },
+  /** Le refus d'un rafraîchissement, au-dessus de chiffres qui restent valables. */
+  staleNotice: { ...type.body, color: color.textMuted, textAlign: 'center' },
 });

@@ -120,15 +120,21 @@ export function useSyncTriggers(): void {
  * ferait partir une synchronisation de plus à chaque écran qui s'ouvre — ce que le
  * coordinateur absorberait sans broncher, mais qui reste une requête pour rien.
  */
-export function useSyncStatus(): { status: SyncStatus; refresh: () => void } {
+export function useSyncStatus(): { status: SyncStatus; refresh: () => Promise<void> } {
   const auth = useAuth();
   const signedIn = auth.status === 'signedIn';
 
   const status = useSyncExternalStore(subscribeToSync, getSyncStatus);
 
-  const refresh = useCallback(() => {
+  /**
+   * Rend une promesse depuis le #100 : le tirer-pour-rafraîchir doit savoir **quand** la
+   * synchronisation a rendu son verdict, sous peine de retirer son témoin avant que rien
+   * n'ait bougé. `sync` ne jette jamais — tout ce qui peut mal se passer ressort en
+   * `SyncResult` — donc l'attendre n'oblige personne à attraper quoi que ce soit.
+   */
+  const refresh = useCallback(async (): Promise<void> => {
     if (signedIn) {
-      void sync('manual');
+      await sync('manual');
     }
   }, [signedIn]);
 
