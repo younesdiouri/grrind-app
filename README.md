@@ -17,6 +17,27 @@ Le premier `npm run ios` déclenche un `prebuild` et une compilation Xcode. Il f
 sélectionné (`sudo xcode-select -s /Applications/Xcode.app`) et un iPhone connecté et approuvé.
 Un compte développeur gratuit suffit — le profil dure sept jours.
 
+### Après un changement de configuration, `npm run prebuild`
+
+**`npm run ios` ne rejoue pas le prebuild quand `ios/` existe déjà** : il compile le projet
+natif tel qu'il est. Or `/ios` est gitignoré et **entièrement dérivé** d'`app.json`,
+d'`app.config.ts` et des plugins — donc il porte la configuration du jour où il a été généré,
+et rien ne le dit.
+
+```bash
+npm run prebuild   # régénère ios/ à partir de la configuration, puis npm run ios
+```
+
+À lancer après avoir touché à `app.json`, à `app.config.ts`, à la liste des `plugins`, ou après
+avoir installé une dépendance qui porte un plugin de configuration.
+
+C'est ce qui manquait au #95, et la panne était muette dans les deux sens : l'app s'installait
+sous l'ancien identifiant — donc **par-dessus TestFlight** — et sans
+`NSLocalNetworkUsageDescription`, que le plugin `expo-dev-client` ajoute. Depuis iOS 14, une app
+qui joint le réseau local sans cette clé est refusée **en silence** : pas de feuille de
+permission, et pas de ligne « Réseau local » dans Réglages. Metro reste injoignable sans qu'il y
+ait rien à autoriser nulle part.
+
 **Pas de Docker ici**, contrairement au back : Expo pilote Xcode et un appareil physique, qu'un
 conteneur ne peut pas atteindre. C'est le seul point où les deux dépôts divergent sur la méthode.
 
@@ -42,8 +63,13 @@ la main**.
 
 ```bash
 npm run ios                                        # → app.grrind.dev
-npx expo config --type public --json | grep bundle # vérifier laquelle on construit
+npx expo config --type public --json | grep bundle # ce que la config **dit**
+grep PRODUCT_BUNDLE_IDENTIFIER ios/*.xcodeproj/project.pbxproj  # ce qui sera **construit**
 ```
+
+Les deux dernières lignes ne disent pas la même chose, et c'est tout l'objet du paragraphe
+ci-dessus : la première lit la configuration, la seconde lit le projet natif déjà généré. Quand
+elles divergent, il manque un `npm run prebuild`.
 
 ## Le contrat ne s'écrit pas à la main
 
