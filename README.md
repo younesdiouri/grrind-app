@@ -20,6 +20,31 @@ Un compte développeur gratuit suffit — le profil dure sept jours.
 **Pas de Docker ici**, contrairement au back : Expo pilote Xcode et un appareil physique, qu'un
 conteneur ne peut pas atteindre. C'est le seul point où les deux dépôts divergent sur la méthode.
 
+## Deux apps sur le même téléphone
+
+Le build de développement et celui de TestFlight ont des **identifiants distincts**, donc ils
+cohabitent : chacun a ses propres autorisations Santé et notifications, son propre Keychain, son
+propre jeton de push. Plus besoin de supprimer l'un pour installer l'autre — c'est ce cycle qui
+rendait les tests inexploitables, puisqu'une app fraîchement réinstallée repart de zéro sur tout
+ce qu'iOS lui attache.
+
+|                   | dev                 | TestFlight / App Store |
+| ----------------- | ------------------- | ---------------------- |
+| Identifiant       | `app.grrind.dev`    | `app.grrind`           |
+| Nom sur l'écran   | GRRIND dev          | grrind-app             |
+| Icône             | ambre               | bleue                  |
+| Schéma d'URL      | `grrindapp-dev://`  | `grrindapp://`         |
+
+Une seule variable décide, `APP_VARIANT=development` : `app.config.ts` la lit et n'écrase que ce
+qui change ; `app.json` reste la base statique. Elle est posée par le profil `development`
+d'`eas.json` et par les scripts `npm run ios` / `npm run android` — **il n'y a rien à exporter à
+la main**.
+
+```bash
+npm run ios                                        # → app.grrind.dev
+npx expo config --type public --json | grep bundle # vérifier laquelle on construit
+```
+
 ## Le contrat ne s'écrit pas à la main
 
 `api/openapi.yaml` est une **copie** du fichier généré par le back. On ne l'édite jamais ici :
