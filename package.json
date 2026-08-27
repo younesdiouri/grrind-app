@@ -52,6 +52,7 @@
   },
   "scripts": {
     "start": "expo start",
+    "prebuild": "APP_VARIANT=development npx expo prebuild --clean -p ios",
     "android": "APP_VARIANT=development expo run:android",
     "ios": "APP_VARIANT=development expo run:ios --device",
     "web": "expo start --web",
