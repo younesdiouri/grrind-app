@@ -1,5 +1,5 @@
 import * as Linking from 'expo-linking';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -29,8 +29,21 @@ import { useSyncStatus } from '@/features/health/useSync';
 import { formatAgo } from '@/features/progression/format';
 
 /**
- * Les réglages de notification — #57. Pas un quatrième onglet : une route poussée depuis
- * l'accueil (`(tabs)/index.tsx`), atteinte par un geste rare, comme `invite-code.tsx`.
+ * Les réglages — #57, devenu le quatrième onglet au #99.
+ *
+ * ————— Ce qui a changé de nature ———————————————————————————————————————————————————————
+ *
+ * C'était une route poussée depuis l'accueil, atteinte par un geste rare, comme
+ * `invite-code.tsx`. Ça se tenait tant que cet écran ne portait que les interrupteurs de
+ * catégories de notification : on les règle une fois.
+ *
+ * Il porte depuis les **Autorisations** (#81) et l'état de la **Synchronisation** (#82) — ce
+ * qu'on vient consulter pour savoir si la chaîne a fonctionné, donc souvent. Un bouton posé
+ * sous l'historique de l'accueil devenait introuvable dès qu'un compte avait des séances. La
+ * barre d'onglets est la seule surface toujours à l'écran, et c'est là qu'il fallait le mettre.
+ *
+ * Il n'y a donc plus de `Stack.Screen` ici : le titre vient de la barre d'onglets
+ * (`(tabs)/_layout.tsx`), qui est désormais son parent.
  *
  * ————— La map, jamais une liste écrite en dur ——————————————————————————————————————————
  *
@@ -102,8 +115,6 @@ export default function ReglagesScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
-      <Stack.Screen options={{ title: 'Réglages' }} />
-
       <Authorizations permission={permission} onAsked={refresh} />
 
       <Synchronisation />
