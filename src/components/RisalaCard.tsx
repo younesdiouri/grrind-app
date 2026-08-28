@@ -1,15 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { color, radius, space, type } from '@/design/tokens';
-import { risalaDisciplineLabel } from '@/features/community/risalaDiscipline';
+import type { components } from '@/api/schema';
+import { color, disciplineLabel, radius, space, type } from '@/design/tokens';
 
 type RisalaCardProps = {
-  /**
-   * Brute, comme le contrat la type aujourd'hui (younesdiouri/grrind-back#201) : la résolution
-   * en libellé se fait à l'intérieur, via `risalaDisciplineLabel` — le seul repli, jamais
-   * dispersé d'un composant à l'autre.
-   */
-  discipline: string;
+  /** L'enum du contrat (younesdiouri/grrind-back#201) : la résolution en libellé se fait à
+   *  l'intérieur, via `disciplineLabel`, comme partout ailleurs dans l'app. */
+  discipline: components['schemas']['Discipline'];
   /** `null` si l'expéditeur a quitté la guilde depuis la révélation : son défi reste, son nom
    *  n'est plus celui d'un co-équipier. */
   senderDisplayName: string | null;
@@ -36,7 +33,7 @@ export function RisalaCard({ discipline, senderDisplayName, bonusPercent, timeLe
     <View style={styles.card}>
       <View style={styles.head}>
         <View style={styles.disciplineChip}>
-          <Text style={styles.disciplineLabel}>{risalaDisciplineLabel(discipline).toUpperCase()}</Text>
+          <Text style={styles.disciplineLabel}>{disciplineLabel[discipline].toUpperCase()}</Text>
         </View>
         <Text style={styles.bonus}>+{bonusPercent} %</Text>
       </View>

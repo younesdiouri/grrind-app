@@ -4,9 +4,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { components } from '@/api/schema';
 import { Button } from '@/components/Button';
 import { RisalaCard } from '@/components/RisalaCard';
-import { color, space, type } from '@/design/tokens';
+import { color, disciplineLabel, space, type } from '@/design/tokens';
 import { formatTurnDeadline, risalaTimeLeft } from '@/features/community/format';
-import { risalaDisciplineLabel } from '@/features/community/risalaDiscipline';
 
 type Risalat = components['schemas']['Risalat'];
 type RisalaTurn = components['schemas']['RisalaTurn'];
@@ -27,14 +26,16 @@ type RisalaTurn = components['schemas']['RisalaTurn'];
  * d'abord, donc celle qui expire en premier — et la retrier par date donnerait le même résultat
  * aujourd'hui et un résultat faux le jour où le back changera `active_weeks`.
  *
- * ————— Les deux états vides ne nomment pas le jour de la bascule ————————————————————————
+ * ————— Les deux états vides nomment l'instant, jamais la grille qui le produit ——————————
  *
- * « Dimanche soir » serait un réglage d'équilibrage serveur (`reveal_day`, `reveal_hour`)
- * recopié ici, et le contrat ne le rend nulle part. Il serait faux deux fois : pour qui vit
- * hors d'Europe/Paris — le fuseau de la semaine de jeu est le même pour toutes les guildes,
- * donc 20 h à Paris tombe le lundi matin à Tokyo — et le jour où le back retouche la grille,
- * silencieusement. Quand un tour existe, `turn.deadline` donne l'instant exact et on l'écrit ;
- * quand il n'y en a pas, on dit qu'il y aura une bascule sans prétendre savoir laquelle.
+ * `risalat.nextRevealAt` (younesdiouri/grrind-back#202) porte le prochain rendez-vous
+ * hebdomadaire, rendu comme un instant plutôt que comme un jour et une heure recopiés d'un
+ * réglage serveur (`reveal_day`, `reveal_hour`) : `formatTurnDeadline` le met en phrase dans
+ * le fuseau du lecteur, exactement comme il le fait pour `turn.deadline` — un seul format pour
+ * dire un rendez-vous dans ce module. Les deux valent le même instant quand un tour est déjà
+ * ouvert, mais ce n'est qu'une conséquence du calendrier : les deux états vides ci-dessous
+ * n'ont justement pas de tour, ils lisent donc `nextRevealAt`, la seule chose que le serveur
+ * ait à leur dire.
  */
 export function RisalatBlock({ risalat, now }: { risalat: Risalat; now: Date }) {
   return (
@@ -46,7 +47,7 @@ export function RisalatBlock({ risalat, now }: { risalat: Risalat; now: Date }) 
         // encore choisi. Le bloc dit ce qui va se passer et quand, il ne s'efface pas — un
         // bloc qui disparaît ferait croire que la mécanique n'existe pas.
         <Text style={styles.body}>
-          Pas encore de Risāla : la première arrivera à la prochaine bascule hebdomadaire.
+          Pas encore de Risāla : la première arrivera le {formatTurnDeadline(risalat.nextRevealAt)}.
         </Text>
       ) : (
         <View style={styles.cards}>
@@ -82,7 +83,7 @@ export function RisalatBlock({ risalat, now }: { risalat: Risalat; now: Date }) 
         </View>
       )}
 
-      <TurnNote turn={risalat.turn} />
+      <TurnNote turn={risalat.turn} nextRevealAt={risalat.nextRevealAt} />
     </View>
   );
 }
@@ -95,13 +96,12 @@ export function RisalatBlock({ risalat, now }: { risalat: Risalat; now: Date }) 
  * un chemin qui supposerait le contraire. `mine` évite de comparer des UUID pour savoir
  * laquelle des trois phrases écrire.
  */
-function TurnNote({ turn }: { turn: RisalaTurn | null }) {
+function TurnNote({ turn, nextRevealAt }: { turn: RisalaTurn | null; nextRevealAt: string }) {
   if (turn === null) {
     // Guilde d'un seul membre, ou fondée depuis la dernière bascule : pas un vide, une phrase.
     return (
       <Text style={styles.body}>
-        Pas de tour de Risāla pour l’instant : il s’en tirera un à la prochaine bascule
-        hebdomadaire.
+        Pas de tour de Risāla pour l’instant : il s’en tirera un le {formatTurnDeadline(nextRevealAt)}.
       </Text>
     );
   }
@@ -112,7 +112,7 @@ function TurnNote({ turn }: { turn: RisalaTurn | null }) {
         <Text style={styles.body}>
           {turn.discipline === null
             ? `C'est ton tour de choisir la discipline de la semaine, avant le ${formatTurnDeadline(turn.deadline)}.`
-            : `Tu as choisi ${risalaDisciplineLabel(turn.discipline)} pour la semaine prochaine.`}
+            : `Tu as choisi ${disciplineLabel[turn.discipline]} pour la semaine prochaine.`}
         </Text>
         {/* Un choix se remplace tant que l'échéance n'est pas passée (#106) : le bouton reste
             là même une fois choisi, pour qu'on puisse en changer. */}
