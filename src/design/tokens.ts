@@ -184,6 +184,11 @@ export const xpSourceLabel: Record<components['schemas']['XpLine']['source'], st
   ITEM: 'Équipement',
   SKILL: 'Compétence',
   LEAGUE: 'Ligue',
+  // « Guilde », jamais « Risāla » : l'enum désigne le mécanisme, pas la seule Risāla de la
+  // semaine. Une unique valeur porte tout ce qu'un groupe apportera à côté d'elle — nommer
+  // la première arrivée figerait un mensonge daté dès que la deuxième source de crédit de
+  // guilde apparaîtrait, sans que rien dans le breakdown ne les distingue.
+  GUILD: 'Guilde',
   DIMINISHING: 'Rendements décroissants',
   DAILY_CAP: 'Plafond quotidien',
 };
