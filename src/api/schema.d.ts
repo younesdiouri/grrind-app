@@ -699,8 +699,7 @@ export interface components {
         Risala: {
             /** Format: uuid */
             id: string;
-            /** @example CLIMBING */
-            discipline: string;
+            discipline: components["schemas"]["Discipline"];
             /** Format: uuid */
             senderId: string;
             /** @description `null` si l'expéditeur a quitté la guilde depuis la révélation : son défi reste, son nom n'est plus celui d'un co-équipier. */
@@ -741,7 +740,7 @@ export interface components {
              *     Le choix se fait à l'aveugle : c'est toute la mécanique, et l'annoncer
              *     d'avance viderait le rendez-vous du dimanche soir de sa raison d'être.
              */
-            discipline: string | null;
+            discipline: components["schemas"]["Discipline"] | null;
             /**
              * @description Les disciplines qu'un tour peut encore demander : celles qui créditent de
              *     l'XP, moins celles déjà portées par une Risāla vivante. Rendue à tout le
@@ -749,10 +748,10 @@ export interface components {
              *     porteur — et calculée par le serveur, qui valide le choix avec la même
              *     liste.
              */
-            choosable: string[];
+            choosable: components["schemas"]["Discipline"][];
         };
         /**
-         * @description L'écran des Risālāt d'un bloc. L'onglet ne s'ouvre jamais sans les deux, et les
+         * @description L'écran des Risālāt d'un bloc. L'onglet ne s'ouvre jamais sans les trois, et les
          *     séparer coûterait un aller-retour pour un écran qui n'a rien à afficher
          *     entre-temps — même raison que `GuildDetail`.
          */
@@ -761,6 +760,25 @@ export interface components {
             risalat: components["schemas"]["Risala"][];
             /** @description `null` quand la guilde n'a pas encore de tour : un seul membre, ou fondée depuis la dernière bascule hebdomadaire. */
             turn: components["schemas"]["RisalaTurn"] | null;
+            /**
+             * Format: date-time
+             * @description Le prochain rendez-vous hebdomadaire — quand la Risāla du tour part et quand
+             *     le tour suivant se tire. **Toujours rendu**, y compris sans Risāla ni tour :
+             *     c'est justement là, les deux premières semaines d'une guilde neuve, que le
+             *     client n'a rien d'autre à dire.
+             *
+             *     Rendu comme un instant, jamais comme la grille qui le produit : nommer un
+             *     jour et une heure côté client reviendrait à nommer ceux du fuseau de la
+             *     semaine de jeu, pas celui du lecteur — faux pour qui n'est pas dans ce
+             *     fuseau, et faux en silence le jour où l'équilibrage de la grille change,
+             *     puisqu'une phrase codée en dur dans une app déjà publiée continuerait
+             *     d'annoncer l'ancienne sans que rien ne le signale.
+             *
+             *     Coïncide avec `turn.deadline` quand un tour est ouvert et que la bascule qui
+             *     l'a créé s'est exécutée à l'heure — mais c'est une conséquence du calendrier,
+             *     pas une garantie du contrat : ne pas s'y fier pour déduire l'un de l'autre.
+             */
+            nextRevealAt: string;
         };
         UserProfile: {
             /** Format: uuid */
@@ -866,8 +884,7 @@ export interface components {
         Workout: {
             /** Format: uuid */
             id: string;
-            /** @enum {string} */
-            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
+            discipline: components["schemas"]["Discipline"];
             /**
              * @description L'agrégateur de plateforme qui a rapporté la séance, pas l'appareil qui l'a
              *     mesurée : une montre Garmin arrive en `APPLE_HEALTH` sur iPhone et en
@@ -1089,11 +1106,11 @@ export interface components {
             /**
              * @description `BASE` est le temps — une minute vaut un point. `DISTANCE` et `ELEVATION`
              *     sont ce que le terrain ajoute, et n'apparaissent que sur les disciplines où
-             *     une montre les mesure de façon fiable. Les quatre suivantes sont les
+             *     une montre les mesure de façon fiable. Les cinq suivantes sont les
              *     contributeurs de modificateurs ; les deux dernières, les garde-fous.
              * @enum {string}
              */
-            source: "BASE" | "DISTANCE" | "ELEVATION" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "DIMINISHING" | "DAILY_CAP";
+            source: "BASE" | "DISTANCE" | "ELEVATION" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "GUILD" | "DIMINISHING" | "DAILY_CAP";
             /** @example -55 */
             amount: number;
         };
@@ -1316,8 +1333,7 @@ export interface components {
             sourceId: string;
             /** @enum {string} */
             reason: "SESSION_COMPLETED" | "SESSION_INVALIDATED";
-            /** @enum {string} */
-            discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
+            discipline: components["schemas"]["Discipline"];
             /** @description Signé. La somme du `breakdown`, jamais autre chose. */
             amount: number;
             /** @description Signée elle aussi — négative sur une annulation. */
