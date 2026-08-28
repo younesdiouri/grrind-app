@@ -338,6 +338,10 @@ export const notificationCategoryLabel: Partial<
   // Les deux Risālāt (younesdiouri/grrind-back#194) restent séparées côté serveur : on peut
   // vouloir couper le bavardage de sa guilde sans couper ce qui nous demande d'agir. Les deux
   // libellés doivent rendre cette différence lisible, sinon la séparation ne sert à rien ici.
-  RISALA_TURN: "C'est ton tour de choisir",
-  RISALA_REVEALED: 'La Risāla de la semaine',
+  //
+  // Des groupes nominaux, comme « Activité de guilde » juste au-dessus : ces libellés
+  // s'alignent sous un interrupteur et se lisent en liste. Une phrase — « C'est ton tour de
+  // choisir » — se lirait comme la notification elle-même, pas comme le réglage qui la coupe.
+  RISALA_TURN: 'Ton tour de Risāla',
+  RISALA_REVEALED: 'Risāla révélée',
 };

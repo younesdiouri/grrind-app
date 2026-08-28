@@ -225,9 +225,12 @@ function messageForProblem(problem: ProblemDetails): string {
       return "Ce sport ne rapporte pas d'XP. Choisis-en un autre.";
 
     // Une Risāla vivante porte déjà ce sport : refus qui se corrige, mais qui doit dire
-    // pourquoi, sinon le joueur croit à une panne.
+    // pourquoi, sinon le joueur croit à une panne. La phrase ne nomme personne — celle qui
+    // porte déjà le sport peut être la sienne, et le choix des autres est aveugle jusqu'à la
+    // révélation : dire « un autre membre a choisi » serait faux une fois sur deux et
+    // trahirait la mécanique l'autre fois.
     case 'https://grrind.app/problems/discipline-already-challenged':
-      return "Un autre membre a déjà choisi ce sport pour cette Risāla.";
+      return 'Ce sport est déjà porté par une Risāla en cours. Choisis-en un autre.';
 
     // Pas un refus, un état : une guilde d'un seul membre n'en tire pas, une guilde neuve
     // attend la bascule du dimanche. La phrase ne doit accuser personne.
