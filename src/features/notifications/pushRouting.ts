@@ -9,9 +9,14 @@ import { decodePushRouteTarget, type PushRouteTarget } from '@/features/notifica
 /**
  * La cible décodée, poussée sur le routeur.
  *
- * La seule cible du contrat aujourd'hui est `PLAYER_PROFILE` → `/joueur/{id}`, la route
- * livrée au #119. `routeId` est l'auteur de la séance, pas un id de notification : c'est ce
- * que `GET /api/players/{id}` attend.
+ * `PLAYER_PROFILE` → `/joueur/{id}`, la route livrée au #119. `routeId` est l'auteur de la
+ * séance, pas un id de notification : c'est ce que `GET /api/players/{id}` attend.
+ *
+ * `GUILD_RISALAT` → `/guilde`. Le contrat dit que `routeId` porte l'identifiant de la guilde,
+ * mais `GET /api/guilds/mine/risalat` n'accepte aucun identifiant : un compte appartient à une
+ * seule guilde, la destination est unique, il n'y a donc rien à résoudre. `routeId` est décodé
+ * sans être consommé — le jour où un compte en aura plusieurs, la route saura déjà laquelle
+ * ouvrir.
  *
  * Le `switch` est exhaustif **par construction**, comme `unnamedProblem` dans
  * `src/features/auth/problems.ts` : son `default` passe `target.type` à une fonction qui
@@ -24,6 +29,8 @@ function hrefFor(target: PushRouteTarget) {
   switch (target.type) {
     case 'PLAYER_PROFILE':
       return { pathname: '/joueur/[id]', params: { id: target.routeId } } as const;
+    case 'GUILD_RISALAT':
+      return { pathname: '/guilde' } as const;
     default:
       return unroutablePushRouteType(target.type);
   }
