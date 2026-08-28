@@ -13,6 +13,7 @@ import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { InviteCodeBlock } from '@/components/InviteCodeBlock';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
@@ -305,6 +306,46 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="Le cas court">
           <SessionCard discipline="MOBILITY" duration="moins d’une minute" when="aujourd’hui" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'carte-risala',
+    name: 'Carte de Risāla',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Reçue — le régime établi">
+          <RisalaCard
+            discipline="CLIMBING"
+            senderDisplayName="Younes"
+            bonusPercent={150}
+            timeLeft="expire dans 7 jours"
+          />
+        </Specimen>
+        <Specimen label="Envoyée — le bonus de l'expéditeur">
+          <RisalaCard
+            discipline="RUNNING"
+            senderDisplayName="Léa Durand"
+            bonusPercent={50}
+            timeLeft="expire demain"
+          />
+        </Specimen>
+        {/* L'expéditeur a quitté la guilde depuis la révélation : son défi reste, son nom
+            n'est plus celui d'un co-équipier (#105). */}
+        <Specimen label="Expéditeur parti depuis">
+          <RisalaCard
+            discipline="HIKING"
+            senderDisplayName={null}
+            bonusPercent={150}
+            timeLeft="expire dans moins d’une heure"
+          />
+        </Specimen>
+        {/* Une réponse en vol pendant la bascule du dimanche 20 h peut porter une Risāla déjà
+            éteinte : ce n'est pas une erreur, c'est ce que le serveur vient d'envoyer. */}
+        <Specimen label="Déjà expirée — une réponse en vol">
+          <RisalaCard discipline="STRENGTH" senderDisplayName="Zed" bonusPercent={150} timeLeft="expirée" />
         </Specimen>
       </>
     ),
