@@ -211,6 +211,34 @@ function messageForProblem(problem: ProblemDetails): string {
     case 'https://grrind.app/problems/too-many-requests':
       return 'Trop de tentatives. Attends un instant avant de réessayer.';
 
+    // Le module Risālāt (younesdiouri/grrind-back#195 à #199) : un tour hebdomadaire, tiré au
+    // sort dans la guilde, qui porte un défi de discipline. Les cinq refus ne se ressemblent
+    // pas et ne s'écrivent donc pas pareil.
+
+    // L'échéance est passée : la Risāla est partie sans lui, ou le tour est mort. Ça ne se
+    // réessaie pas, la phrase ferme au lieu d'inviter.
+    case 'https://grrind.app/problems/risala-turn-is-closed':
+      return 'Ce tour est terminé.';
+
+    // Le sport choisi ne rapporte pas d'XP (la marche) : se corrige en en choisissant un autre.
+    case 'https://grrind.app/problems/discipline-does-not-credit':
+      return "Ce sport ne rapporte pas d'XP. Choisis-en un autre.";
+
+    // Une Risāla vivante porte déjà ce sport : refus qui se corrige, mais qui doit dire
+    // pourquoi, sinon le joueur croit à une panne.
+    case 'https://grrind.app/problems/discipline-already-challenged':
+      return "Un autre membre a déjà choisi ce sport pour cette Risāla.";
+
+    // Pas un refus, un état : une guilde d'un seul membre n'en tire pas, une guilde neuve
+    // attend la bascule du dimanche. La phrase ne doit accuser personne.
+    case 'https://grrind.app/problems/risala-turn-is-not-open':
+      return "Aucun tour n'est en cours pour le moment.";
+
+    // Le back rend 403 et non 404 : l'appelant sait déjà à qui appartient le tour, le refus ne
+    // protège rien.
+    case 'https://grrind.app/problems/risala-turn-is-not-yours':
+      return "Ce tour appartient à quelqu'un d'autre.";
+
     default:
       return unnamedProblem(problem.type);
   }
