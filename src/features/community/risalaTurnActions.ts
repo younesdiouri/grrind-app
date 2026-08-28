@@ -15,17 +15,16 @@ export type ChooseTurnOutcome = { ok: true; risalat: Risalat } | { ok: false; fa
  * le cache de `useRisalat` plutôt que de rejouer un `GET` qui perdrait la course contre
  * l'écran qu'il met à jour.
  *
- * `discipline` vient toujours de `choosable`, rendu en `string` par le contrat non encore
- * corrigé (younesdiouri/grrind-back#201) : ce module ne fait que la faire passer telle
- * quelle jusqu'au serveur, qui seul valide qu'elle figure encore dans la liste. Le
- * repositionnement de type qui suit n'est pas un second repli sur la valeur — celui-là reste
- * unique, dans `risalaDisciplineLabel` — seulement ce qu'exige la frontière avec un contrat
- * qui type ce seul champ en enum.
+ * `discipline` vient toujours de `choosable` (younesdiouri/grrind-back#201) : ce module ne
+ * fait que la faire passer telle quelle jusqu'au serveur, qui seul valide qu'elle figure
+ * encore dans la liste.
  */
-export async function chooseRisalaTurn(discipline: string): Promise<ChooseTurnOutcome> {
+export async function chooseRisalaTurn(
+  discipline: components['schemas']['Discipline'],
+): Promise<ChooseTurnOutcome> {
   try {
     const { data, error } = await api.PUT('/api/guilds/mine/risalat/turn', {
-      body: { discipline: discipline as components['schemas']['Discipline'] },
+      body: { discipline },
     });
 
     if (data === undefined) {

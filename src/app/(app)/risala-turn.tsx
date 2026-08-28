@@ -3,15 +3,17 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import type { components } from '@/api/schema';
 import { Button } from '@/components/Button';
-import { color, space, type } from '@/design/tokens';
+import { color, disciplineLabel, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { formatTurnDeadline } from '@/features/community/format';
-import { risalaDisciplineLabel } from '@/features/community/risalaDiscipline';
 import { chooseRisalaTurn } from '@/features/community/risalaTurnActions';
 import { turnRefusalFrom } from '@/features/community/turnRefusal';
 import { MY_GUILD_QUERY_KEY } from '@/features/community/useMyGuild';
 import { RISALAT_QUERY_KEY, useRisalat, type Risalat } from '@/features/community/useRisalat';
+
+type Discipline = components['schemas']['Discipline'];
 
 /**
  * Choisir la Risāla de la semaine — #106, poussé depuis `RisalatBlock` quand `turn.mine`, sur
@@ -38,7 +40,7 @@ export default function RisalaTurnScreen() {
   // La discipline en cours d'envoi, pas un simple booléen : elle sert à la fois à désarmer
   // tous les boutons (double envoi impossible) et à montrer le témoin sur celui qu'on vient
   // de taper, pas sur un autre.
-  const [submitting, setSubmitting] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<Discipline | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
 
   // La guilde a disparu pendant qu'on choisissait : le même geste que `forgetGuild` dans
@@ -50,7 +52,7 @@ export default function RisalaTurnScreen() {
     router.back();
   };
 
-  const submit = async (discipline: string) => {
+  const submit = async (discipline: Discipline) => {
     setSubmitting(discipline);
     setFailure(null);
 
@@ -145,9 +147,9 @@ function TurnPicker({
   onChoose,
 }: {
   turn: NonNullable<Risalat['turn']>;
-  submitting: string | null;
+  submitting: Discipline | null;
   failure: Failure | null;
-  onChoose: (discipline: string) => void;
+  onChoose: (discipline: Discipline) => void;
 }) {
   const busy = submitting !== null;
 
@@ -161,7 +163,7 @@ function TurnPicker({
 
       {turn.discipline !== null ? (
         <Text style={styles.current}>
-          Choix actuel : {risalaDisciplineLabel(turn.discipline)}. Tu peux encore le changer.
+          Choix actuel : {disciplineLabel[turn.discipline]}. Tu peux encore le changer.
         </Text>
       ) : null}
 
@@ -179,7 +181,7 @@ function TurnPicker({
           {turn.choosable.map((discipline) => (
             <Button
               key={discipline}
-              label={risalaDisciplineLabel(discipline)}
+              label={disciplineLabel[discipline]}
               onPress={() => onChoose(discipline)}
               busy={submitting === discipline}
               disabled={busy && submitting !== discipline}
