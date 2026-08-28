@@ -34,7 +34,13 @@ type PushRouteType = components['schemas']['PushRouteType'];
 
 export type PushRouteTarget = {
   type: PushRouteType;
-  /** L'UUID de la ressource visée — celui de l'auteur de la séance pour `PLAYER_PROFILE`. */
+  /**
+   * L'UUID de la ressource visée — celui de l'auteur de la séance pour `PLAYER_PROFILE`, celui
+   * de la guilde pour `GUILD_RISALAT`. Ce dernier n'est **pas consommé** : `GET
+   * /api/guilds/mine/risalat` n'accepte aucun identifiant, un compte n'appartenant qu'à une
+   * seule guilde. Il est décodé pour que la route sache déjà laquelle ouvrir le jour où ça
+   * change.
+   */
   routeId: string;
   /**
    * Transportée, **jamais interprétée ici**. `groupingKey` dit quelle notification celle-ci
@@ -64,7 +70,11 @@ export function decodePushRouteTarget(data: unknown): PushRouteTarget | null {
   // donc une comparaison à la valeur du contrat — toute autre chaîne, y compris une future
   // addition du back que cette version de l'app ne connaît pas encore, n'aboutit à aucune
   // route plutôt qu'à une mauvaise.
-  if (routeType !== ('PLAYER_PROFILE' satisfies PushRouteType)) {
+  //
+  // Attention : cette comparaison n'est pas un `switch` exhaustif — contrairement à
+  // `hrefFor`, le compilateur ne signale rien quand `PushRouteType` gagne une valeur ici.
+  // Une addition oubliée est donc silencieuse : elle rend `null` et ne route nulle part.
+  if (routeType !== ('PLAYER_PROFILE' satisfies PushRouteType) && routeType !== ('GUILD_RISALAT' satisfies PushRouteType)) {
     return null;
   }
 

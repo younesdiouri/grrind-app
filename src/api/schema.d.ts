@@ -140,6 +140,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/guilds/mine/risalat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_community_risalat_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/mine/risalat/turn": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_community_risala_choose"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/devices": {
         parameters: {
             query?: never;
@@ -395,7 +427,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {string} */
-        PushRouteType: "PLAYER_PROFILE";
+        PushRouteType: "PLAYER_PROFILE" | "GUILD_RISALAT";
         /**
          * @description Le `data` d'une notification push, **le seul morceau qui se décode plutôt que
          *     s'affiche**. Il n'arrive par aucune route : le canal est APNs via Expo, pas HTTP.
@@ -403,7 +435,8 @@ export interface components {
          *     doit donc générer `routeType` plutôt que d'en recopier les valeurs.
          *
          *     **Rien à afficher tel quel.** `routeId` est une clé de ressource à relire —
-         *     pour `PLAYER_PROFILE`, l'identifiant que `GET /api/players/{id}` résout. Une
+         *     pour `PLAYER_PROFILE`, l'identifiant que `GET /api/players/{id}` résout ; pour
+         *     `GUILD_RISALAT`, celui de la guilde dont il faut ouvrir l'écran des Risālāt. Une
          *     notification peut dormir des heures dans le centre de notifications ; ce que le
          *     tap montre ensuite doit être exact, donc relu depuis l'API. `groupingKey`, lui,
          *     ne se lit pas : il dit seulement quelle notification une nouvelle remplace.
@@ -434,7 +467,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -657,6 +690,77 @@ export interface components {
          */
         MyGuild: {
             guild: components["schemas"]["GuildDetail"] | null;
+        };
+        /**
+         * @description Un défi sportif envoyé par un membre à toute sa guilde, vivant deux semaines.
+         *     Deux cohabitent en régime établi : une nouvelle arrive chaque semaine, la plus
+         *     ancienne s'éteint à la seconde exacte où la nouvelle naît.
+         */
+        Risala: {
+            /** Format: uuid */
+            id: string;
+            /** @example CLIMBING */
+            discipline: string;
+            /** Format: uuid */
+            senderId: string;
+            /** @description `null` si l'expéditeur a quitté la guilde depuis la révélation : son défi reste, son nom n'est plus celui d'un co-équipier. */
+            senderDisplayName: string | null;
+            /** Format: date-time */
+            revealedAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /**
+             * @description **Résolu pour l'appelant** : ce qu'il touche sur cette discipline, en
+             *     pourcentage du socle. 150 s'il reçoit la Risāla, 50 s'il l'a envoyée.
+             *     Le serveur arbitre les valeurs de jeu — un client qui dériverait son
+             *     propre bonus pourrait aussi se tromper, et l'écart avec le ledger ne
+             *     se verrait qu'au signalement d'un joueur.
+             * @example 150
+             */
+            bonusPercent: number;
+        };
+        /**
+         * @description Le tour en cours : qui doit choisir la Risāla de la semaine, et jusqu'à quand.
+         *     Une information pour tout le monde, une action pour un seul.
+         */
+        RisalaTurn: {
+            /** Format: uuid */
+            senderId: string;
+            senderDisplayName: string | null;
+            /** @description Évite au client de comparer des UUID pour savoir s'il dessine un bouton ou une phrase. */
+            mine: boolean;
+            /**
+             * Format: date-time
+             * @description Limite pour choisir **et** instant de la révélation : un seul point sur la
+             *     grille hebdomadaire, donc il n'existe jamais de fenêtre où le choix est
+             *     encore possible alors que la Risāla est déjà partie.
+             */
+            deadline: string;
+            /**
+             * @description **Renseignée seulement pour son auteur**, et seulement s'il a déjà choisi.
+             *     Le choix se fait à l'aveugle : c'est toute la mécanique, et l'annoncer
+             *     d'avance viderait le rendez-vous du dimanche soir de sa raison d'être.
+             */
+            discipline: string | null;
+            /**
+             * @description Les disciplines qu'un tour peut encore demander : celles qui créditent de
+             *     l'XP, moins celles déjà portées par une Risāla vivante. Rendue à tout le
+             *     monde — c'est une propriété de l'état de la guilde, pas un secret de son
+             *     porteur — et calculée par le serveur, qui valide le choix avec la même
+             *     liste.
+             */
+            choosable: string[];
+        };
+        /**
+         * @description L'écran des Risālāt d'un bloc. L'onglet ne s'ouvre jamais sans les deux, et les
+         *     séparer coûterait un aller-retour pour un écran qui n'a rien à afficher
+         *     entre-temps — même raison que `GuildDetail`.
+         */
+        Risalat: {
+            /** @description Les vivantes, **dans l'ordre de révélation** — qui est aussi celui de leur extinction. */
+            risalat: components["schemas"]["Risala"][];
+            /** @description `null` quand la guilde n'a pas encore de tour : un seul membre, ou fondée depuis la dernière bascule hebdomadaire. */
+            turn: components["schemas"]["RisalaTurn"] | null;
         };
         UserProfile: {
             /** Format: uuid */
@@ -1268,6 +1372,12 @@ export interface components {
             code: string;
         };
         /** @enum {string} */
+        Discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
+        ChooseRisalaRequest: {
+            /** @default null */
+            discipline: components["schemas"]["Discipline"] | null;
+        };
+        /** @enum {string} */
         DevicePlatform: "IOS" | "ANDROID";
         /** @enum {string} */
         DeviceEnvironment: "DEVELOPMENT" | "PRODUCTION";
@@ -1284,7 +1394,7 @@ export interface components {
             refreshToken: string;
         };
         /** @enum {string} */
-        NotificationCategory: "GUILD_ACTIVITY";
+        NotificationCategory: "GUILD_ACTIVITY" | "RISALA_TURN" | "RISALA_REVEALED";
         NotificationPreferenceRequest: {
             /** @default null */
             category: components["schemas"]["NotificationCategory"] | null;
@@ -1376,8 +1486,6 @@ export interface components {
             /** @default [] */
             workouts: components["schemas"]["ImportedWorkoutRequest"][];
         };
-        /** @enum {string} */
-        Discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
         WorkoutHistoryQuery: {
             /** @default null */
             discipline: components["schemas"]["Discipline"] | null;
@@ -1829,6 +1937,110 @@ export interface operations {
              *     deviendrait un moyen d'énumérer les comptes ouverts un jour donné.
              */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    get_community_risalat_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /**
+             * @description Les Risālāt vivantes **dans l'ordre de révélation** — qui est aussi celui de leur
+             *     extinction — et le tour en cours. Deux en régime établi, une seule après un tour manqué,
+             *     aucune la première quinzaine d'une guilde neuve.
+             */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Risalat"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Le joueur n'a pas de guilde (`guild-not-found`). Contrairement à `GET /api/guilds/mine`, cet écran n'existe qu'à l'intérieur d'une guilde. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    put_community_risala_choose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Le sport envoyé à la guilde. Doit figurer dans le `choosable` du tour.
+                     * @enum {string}
+                     */
+                    discipline: "RUNNING" | "WALKING" | "CYCLING" | "SWIMMING" | "STRENGTH" | "HIIT" | "HIKING" | "MOBILITY" | "CLIMBING" | "FOOTBALL" | "COURT_SPORTS" | "RACKET_SPORTS";
+                };
+            };
+        };
+        responses: {
+            /** @description Le choix est enregistré, et l'écran complet est rendu — rien à recharger. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Risalat"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /**
+             * @description Le tour appartient à quelqu'un d'autre (`risala-turn-is-not-yours`). **403 et non 404**,
+             *     contrairement au reste du module : le refus ne protège rien, puisque
+             *     `GET /api/guilds/mine/risalat` a déjà dit à l'appelant à qui appartient le tour.
+             */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /**
+             * @description Pas de guilde (`guild-not-found`), ou aucun tour ouvert (`risala-turn-is-not-open`) —
+             *     une guilde d'un seul membre n'en tire pas, et une guilde neuve attend la bascule.
+             */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /**
+             * @description Trois refus, un `type` chacun : l'échéance est passée (`risala-turn-is-closed`), la
+             *     discipline ne rapporte pas d'XP (`discipline-does-not-credit`), ou une Risāla vivante la
+             *     porte déjà (`discipline-already-challenged`). Le premier ne se réessaie pas ; les deux
+             *     autres se corrigent en choisissant dans `choosable`.
+             */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

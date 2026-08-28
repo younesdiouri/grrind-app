@@ -34,6 +34,21 @@ describe('decodePushRouteTarget', () => {
     assert.equal(target?.groupingKey, 'guild-activity:autre-chose:encore');
   });
 
+  it('décode `GUILD_RISALAT`, sans consommer `routeId` — voir le docblock de `pushRouting.ts`', () => {
+    assert.deepEqual(
+      decodePushRouteTarget({
+        groupingKey: 'risala-turn:018f1e2a-6b3c-7000-8000-000000000003',
+        routeType: 'GUILD_RISALAT',
+        routeId: '018f1e2a-6b3c-7000-8000-000000000003',
+      }),
+      {
+        type: 'GUILD_RISALAT',
+        routeId: '018f1e2a-6b3c-7000-8000-000000000003',
+        groupingKey: 'risala-turn:018f1e2a-6b3c-7000-8000-000000000003',
+      },
+    );
+  });
+
   it('rend `null` sur un `routeType` inconnu — le cas du jour où le back en ajoute un', () => {
     assert.equal(
       decodePushRouteTarget({
