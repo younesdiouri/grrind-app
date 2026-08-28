@@ -39,7 +39,9 @@ import { guildScreenStateFrom, type GuildDetail } from '@/features/community/gui
 import { isCompleteInviteCode, sanitizeInviteCode } from '@/features/community/inviteCode';
 import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefusal';
 import { leaveAnnouncementFor } from '@/features/community/leaveAnnouncement';
+import { RisalatBlock } from '@/features/community/RisalatBlock';
 import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
+import { RISALAT_QUERY_KEY, useRisalat } from '@/features/community/useRisalat';
 import { requestPermissionAndRegister } from '@/features/notifications/registration';
 
 type GuildMemberEntry = GuildDetail['members'][number];
@@ -84,6 +86,10 @@ export default function GuildeScreen() {
   const resolve = (guild: Guild) => {
     setJustResolved(guild);
     void queryClient.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
+    // Rejoindre ou fonder change de guilde, donc de Risālāt : sans cette invalidation, un
+    // joueur qui rallie une guilde déjà active verrait un bloc vide (ou celui d'une guilde
+    // précédente, resté en cache) jusqu'à ce qu'un autre geste force le rafraîchissement.
+    void queryClient.invalidateQueries({ queryKey: RISALAT_QUERY_KEY });
     // Un formulaire qu'on vient de faire aboutir n'a plus de raison de rester armé : sans ce
     // reset, `mode` resterait sur `'found'` ou `'join'` pendant tout le séjour dans la guilde,
     // prêt à resurgir si le joueur la quitte ensuite (voir `forgetGuild`, juste en dessous).
@@ -110,6 +116,11 @@ export default function GuildeScreen() {
   // l'état vide que le ticket #45 demande explicitement.
   const forgetGuild = () => {
     queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
+    // Contrairement à `/api/guilds/mine`, cette route n'a pas d'état « pas de guilde » — un
+    // départ y rendrait `guild-not-found`, un refus, pas un `null` à garder en cache. On la
+    // retire donc plutôt que de la recaler : sans ça, rejoindre une autre guilde plus tard
+    // réafficherait un instant les Risālāt de celle qu'on vient de quitter.
+    queryClient.removeQueries({ queryKey: RISALAT_QUERY_KEY });
     setJustResolved(null);
     setMode('empty');
   };
@@ -245,6 +256,11 @@ function isPlayerNotAMember(failure: Failure): boolean {
  */
 function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
   const queryClient = useQueryClient();
+  const risalat = useRisalat();
+  // Calculé au rendu, jamais entretenu : une échéance à quinze jours n'a besoin d'être connue
+  // qu'à l'ouverture de l'onglet et à chaque tirer-pour-rafraîchir, pas d'une horloge qui vit
+  // entre les deux (#105).
+  const now = new Date();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailure, setRefreshFailure] = useState<Failure | null>(null);
   const [managing, setManaging] = useState(false);
@@ -260,7 +276,10 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
     // Effacé à chaque tentative, succès compris : un rafraîchissement raté suivi d'un
     // réussi ne doit pas laisser un message d'erreur affiché sous une liste à jour.
     setRefreshFailure(null);
-    setRefreshFailure(await syncGuild(guild.id, queryClient, onGone));
+    // Le geste rafraîchit ce qu'on regarde, pas une des deux moitiés : les Risālāt partent en
+    // même temps que la guilde, jamais après coup sur un second tirer.
+    const [guildFailure] = await Promise.all([syncGuild(guild.id, queryClient, onGone), risalat.refetch()]);
+    setRefreshFailure(guildFailure);
     setRefreshing(false);
   };
 
@@ -358,6 +377,22 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
       }
       ListHeaderComponent={
         <View style={styles.rosterHeader}>
+          {/* En tête, avant même l'identité de la guilde : c'est le présent de la guilde, le
+              roster en est l'archive (#105). Un push `GUILD_RISALAT` (#104) doit trouver la
+              Risāla qu'il annonce sans qu'on défile. */}
+          {risalat.isPending ? (
+            <View style={styles.risalatLoading}>
+              <ActivityIndicator color={color.accent} />
+            </View>
+          ) : risalat.isError ? (
+            <View style={styles.risalatError}>
+              <Text style={styles.failure}>{messageFor(risalat.error)}</Text>
+              <Button label="Réessayer" onPress={() => void risalat.refetch()} variant="quiet" />
+            </View>
+          ) : (
+            <RisalatBlock risalat={risalat.data} now={now} />
+          )}
+
           <Text style={styles.title}>{guild.name}</Text>
           <CapacityGauge memberCount={guild.memberCount} capacity={guild.capacity} />
           <Text style={styles.body}>Fondée le {formatCalendarDate(guild.createdAt)}.</Text>
@@ -747,6 +782,8 @@ const styles = StyleSheet.create({
   },
   rosterContent: { padding: space.lg },
   rosterHeader: { gap: space.sm, marginBottom: space.md },
+  risalatLoading: { paddingVertical: space.lg, alignItems: 'center' },
+  risalatError: { gap: space.sm, marginBottom: space.md },
   separator: { height: space.md },
   memberRow: { gap: space.xs },
   leaveSection: { gap: space.sm, marginTop: space.lg },
