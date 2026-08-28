@@ -1,7 +1,8 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
+import { Button } from '@/components/Button';
 import { RisalaCard } from '@/components/RisalaCard';
 import { color, space, type } from '@/design/tokens';
 import { formatTurnDeadline, risalaTimeLeft } from '@/features/community/format';
@@ -16,11 +17,11 @@ type RisalaTurn = components['schemas']['RisalaTurn'];
  * met dans cet ordre. C'est aussi là qu'atterrit le tap d'un push `GUILD_RISALAT` (#104) — le
  * joueur qui tape « Younes envoie Escalade à la guilde » doit voir Escalade sans défiler.
  *
- * ————— Ce que ce composant ne fait pas ———————————————————————————————————————————————
+ * ————— Le seul geste actif de la mécanique ————————————————————————————————————————————
  *
- * Aucune action : le bouton « c'est ton tour » et le choix de la discipline sont #106. Un
- * joueur dont c'est le tour voit ici qu'il doit choisir, sans pouvoir encore répondre — c'est
- * volontaire, pas un oubli.
+ * Le bouton qui pousse vers `/risala-turn` (#106) n'apparaît que sous `turn.mine` : pour
+ * tous les autres — personne, ou le tour de quelqu'un d'autre — ce bloc reste ce qu'il a
+ * toujours été, une phrase, jamais une action qu'ils ne pourraient pas actionner.
  *
  * L'ordre de `risalat` n'est jamais retrié : le serveur l'a déjà décidé — la plus ancienne
  * d'abord, donc celle qui expire en premier — et la retrier par date donnerait le même résultat
@@ -107,11 +108,20 @@ function TurnNote({ turn }: { turn: RisalaTurn | null }) {
 
   if (turn.mine) {
     return (
-      <Text style={styles.body}>
-        {turn.discipline === null
-          ? `C'est ton tour de choisir la discipline de la semaine, avant le ${formatTurnDeadline(turn.deadline)}.`
-          : `Tu as choisi ${risalaDisciplineLabel(turn.discipline)} pour la semaine prochaine.`}
-      </Text>
+      <View style={styles.turnAction}>
+        <Text style={styles.body}>
+          {turn.discipline === null
+            ? `C'est ton tour de choisir la discipline de la semaine, avant le ${formatTurnDeadline(turn.deadline)}.`
+            : `Tu as choisi ${risalaDisciplineLabel(turn.discipline)} pour la semaine prochaine.`}
+        </Text>
+        {/* Un choix se remplace tant que l'échéance n'est pas passée (#106) : le bouton reste
+            là même une fois choisi, pour qu'on puisse en changer. */}
+        <Button
+          label={turn.discipline === null ? 'Choisir' : 'Changer de discipline'}
+          onPress={() => router.push('/risala-turn')}
+          variant="quiet"
+        />
+      </View>
     );
   }
 
@@ -144,4 +154,5 @@ const styles = StyleSheet.create({
   title: { ...type.title, color: color.text },
   body: { ...type.body, color: color.textMuted },
   cards: { gap: space.sm },
+  turnAction: { gap: space.sm },
 });
