@@ -334,4 +334,10 @@ export const notificationCategoryLabel: Partial<
   Record<components['schemas']['NotificationCategory'], string>
 > = {
   GUILD_ACTIVITY: 'Activité de guilde',
+
+  // Les deux Risālāt (younesdiouri/grrind-back#194) restent séparées côté serveur : on peut
+  // vouloir couper le bavardage de sa guilde sans couper ce qui nous demande d'agir. Les deux
+  // libellés doivent rendre cette différence lisible, sinon la séparation ne sert à rien ici.
+  RISALA_TURN: "C'est ton tour de choisir",
+  RISALA_REVEALED: 'La Risāla de la semaine',
 };
