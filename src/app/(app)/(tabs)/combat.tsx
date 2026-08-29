@@ -1,12 +1,13 @@
-import { Link } from 'expo-router';
-import { useMemo } from 'react';
+import { Link, router } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BattleRow } from '@/components/BattleRow';
 import { Button } from '@/components/Button';
 import { EnemyCard } from '@/components/EnemyCard';
 import { color, space, type } from '@/design/tokens';
-import { messageFor } from '@/features/auth/problems';
+import { messageFor, type Failure } from '@/features/auth/problems';
+import { fight } from '@/features/combat/fight';
 import { formatFoughtAt, formatTurns } from '@/features/combat/format';
 import { useBattleHistory } from '@/features/combat/useBattleHistory';
 import { useCatalog } from '@/features/combat/useCatalog';
@@ -25,16 +26,47 @@ import { useCatalog } from '@/features/combat/useCatalog';
  * jamais. Il est donc `ListHeaderComponent`, ce qui n'est pas un détour : c'est ce qui fait
  * de l'écran une seule colonne qui se lit d'un bout à l'autre.
  *
- * ————— Ce qui n'est pas encore là ————————————————————————————————————————————————————
+ * ————— Un seul combat en vol ————————————————————————————————————————————————————————
  *
- * Une ligne d'historique se rejoue depuis #114 ; le catalogue, lui, ne propose encore rien.
- * Le bouton qui lance un combat arrive au ticket suivant — dans cet ordre, parce qu'un
- * « Combattre » qui n'aurait nulle part où mener ne serait pas une demi-fonctionnalité mais
- * un cul-de-sac.
+ * Le bouton touché devient occupé, et **tous les autres deviennent inertes avec lui**. Deux
+ * combats lancés en parallèle sont deux intentions, donc deux clés, donc deux combats écrits —
+ * pour une seule animation regardée. L'état porte donc la clé de l'adversaire en cours et non
+ * un booléen : il faut savoir lequel montre le témoin.
  */
 export default function CombatScreen() {
   const { catalog, reload: reloadCatalog } = useCatalog();
   const { history, loadMore } = useBattleHistory();
+
+  /** L'adversaire dont le combat est parti, ou `null`. Voir le docblock. */
+  const [fighting, setFighting] = useState<string | null>(null);
+  const [refusal, setRefusal] = useState<Failure | null>(null);
+
+  const launch = async (enemyKey: string) => {
+    setFighting(enemyKey);
+    setRefusal(null);
+
+    const outcome = await fight(enemyKey);
+    setFighting(null);
+
+    if (outcome.kind === 'fought') {
+      // Le combat est déjà en main : l'écran d'animation le reprendra sans second appel, ce
+      // que le back rend possible en servant la timeline entière sur le `POST`.
+      router.push({ pathname: '/battle', params: { id: outcome.battle.id } });
+      return;
+    }
+
+    setRefusal(outcome.failure);
+
+    // Le verrou du catalogue s'appuie sur un niveau lu au chargement. Un refus pour niveau
+    // insuffisant veut donc dire qu'il a vieilli — on relit, plutôt que de laisser à l'écran
+    // un bouton qui promet ce que le serveur refuse.
+    if (
+      outcome.failure.kind === 'problem' &&
+      outcome.failure.problem.type === 'https://grrind.app/problems/enemy-level-too-low'
+    ) {
+      reloadCatalog();
+    }
+  };
 
   // L'horloge est prise **une fois** par rendu, et non par ligne : vingt lignes qui
   // appelleraient chacune `new Date()` daterait la première et la dernière à des instants
@@ -85,10 +117,28 @@ export default function CombatScreen() {
           {catalog.step === 'ready' && (
             <View style={styles.catalog}>
               {catalog.entries.map(({ enemy, locked }) => (
-                <EnemyCard key={enemy.key} enemy={enemy} locked={locked} />
+                <EnemyCard
+                  key={enemy.key}
+                  enemy={enemy}
+                  locked={locked}
+                  // Un adversaire verrouillé ne propose rien : la fente reste vide plutôt que
+                  // de porter un bouton désactivé, qui inviterait à un geste sans effet.
+                  action={
+                    locked ? undefined : (
+                      <Button
+                        label="Combattre"
+                        onPress={() => void launch(enemy.key)}
+                        busy={fighting === enemy.key}
+                        disabled={fighting !== null}
+                      />
+                    )
+                  }
+                />
               ))}
             </View>
           )}
+
+          {refusal !== null && <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
 
           <Text style={styles.sectionTitle}>Combats</Text>
 
@@ -124,5 +174,6 @@ const styles = StyleSheet.create({
   catalog: { gap: space.sm },
   retry: { gap: space.sm, alignItems: 'flex-start' },
   body: { ...type.body, color: color.textMuted },
+  refusal: { ...type.body, color: color.danger },
   footer: { paddingVertical: space.md },
 });

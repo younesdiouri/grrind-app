@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
@@ -19,6 +20,19 @@ type EnemyCardProps = {
    * en phrase plutôt qu'une horloge.
    */
   locked?: boolean;
+  /**
+   * Ce qu'on peut faire de cet adversaire — un bouton, en pratique.
+   *
+   * Une **fente**, et non un `onPress` sur la carte : le design system ne connaît ni la
+   * navigation ni les appels réseau, et une carte qui porterait son action deviendrait
+   * indessinable sans elle. C'est la même frontière que `RisalaCard`, dont le tap vit à
+   * l'endroit qui la compose, et que `GuildMemberRow`, enveloppée dans un `Link` par son
+   * roster.
+   *
+   * Absente, la carte se lit sans rien proposer — c'est l'état d'un adversaire verrouillé,
+   * et celui du catalogue avant que le lancement n'existe.
+   */
+  action?: ReactNode;
 };
 
 /**
@@ -34,7 +48,7 @@ type EnemyCardProps = {
  * pas », le même que partout ailleurs — plutôt que par une couleur propre, qui en ferait un
  * refus.
  */
-export function EnemyCard({ enemy, locked = false }: EnemyCardProps) {
+export function EnemyCard({ enemy, locked = false, action }: EnemyCardProps) {
   return (
     <View style={[styles.card, locked && styles.locked]}>
       <View style={styles.head}>
@@ -51,6 +65,8 @@ export function EnemyCard({ enemy, locked = false }: EnemyCardProps) {
         <Stat label="Relance" value={`${enemy.extraTurnPercent} %`} />
         <Stat label="Esquive" value={`${enemy.dodgePercent} %`} />
       </View>
+
+      {action}
     </View>
   );
 }
