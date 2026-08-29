@@ -7,7 +7,7 @@ import { color, space } from '@/design/tokens';
 /**
  * La barre d'onglets.
  *
- * Quatre destinations — Accueil, Santé, Guilde, Réglages. `Tabs` d'`expo-router`, pas
+ * Cinq destinations — Accueil, Santé, Combat, Guilde, Réglages. `Tabs` d'`expo-router`, pas
  * `unstable-native-tabs` : la barre native iOS 26 est alléchante mais encore en alpha, et
  * surtout elle échapperait aux tokens — la seule surface visible sur tous les écrans
  * deviendrait celle qu'on ne contrôle pas, dans une app qui n'a qu'un thème.
@@ -24,8 +24,18 @@ import { color, space } from '@/design/tokens';
  * qu'un compte avait des séances — exactement le défaut que la règle « résumé, action, puis
  * archive » décrit, appliqué à autre chose.
  *
- * Il ferme la marche parce que c'est la moins fréquente des quatre : la barre se lit de gauche
+ * Il ferme la marche parce que c'est la moins fréquente des cinq : la barre se lit de gauche
  * à droite dans l'ordre de l'usage.
+ *
+ * ————— Combat s'insère en troisième, pas en quatrième (#113) ——————————————————————————
+ *
+ * La même règle décide : on combat plus souvent qu'on ne consulte sa guilde. Un combat est un
+ * geste qu'on répète — il n'y a rien à farmer aujourd'hui, mais il n'y a rien non plus qui en
+ * limite le nombre — là où la Guilde se visite quand quelque chose s'y est passé, et c'est une
+ * notification qui le dit.
+ *
+ * Il se pose donc juste après Santé, qui reste devant lui : c'est la synchronisation qui rend
+ * un combattant plus fort, et l'ordre de la barre raconte cette dépendance-là.
  */
 export default function TabsLayout() {
   return (
@@ -54,6 +64,13 @@ export default function TabsLayout() {
           tabBarIcon: ({ color: tint }) => (
             <TabIcon name="heart.text.square" color={tint} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="combat"
+        options={{
+          title: 'Combat',
+          tabBarIcon: ({ color: tint }) => <TabIcon name="bolt.shield" color={tint} />,
         }}
       />
       <Tabs.Screen
