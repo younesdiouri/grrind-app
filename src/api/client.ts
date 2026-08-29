@@ -2,6 +2,7 @@ import createClient from 'openapi-fetch';
 
 import { createAuthMiddleware } from '@/api/authMiddleware';
 import { API_BASE_URL } from '@/api/config';
+import { createLanguageMiddleware } from '@/api/languageMiddleware';
 import type { paths } from '@/api/schema';
 import { getAccessToken, refresh } from '@/features/auth/session';
 
@@ -16,3 +17,4 @@ import { getAccessToken, refresh } from '@/features/auth/session';
 export const api = createClient<paths>({ baseUrl: API_BASE_URL });
 
 api.use(createAuthMiddleware({ getAccessToken, refresh }));
+api.use(createLanguageMiddleware());
