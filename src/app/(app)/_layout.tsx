@@ -48,6 +48,13 @@ export default function AppLayout() {
           `headerShown: false` ici, celui de la pile se superposerait à celui des onglets. */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="reward" options={{ headerShown: false, presentation: 'modal' }} />
+      {/* Exactement la récompense, et pour les mêmes deux raisons. L'en-tête d'abord : l'écran
+          de combat est plein cadre, et un « battle » surmonté d'un bouton retour abîmerait la
+          mise en scène en plus de proposer une sortie pendant la séquence, là où le seul geste
+          est le saut. La présentation en modale ensuite : elle place le contenu **sous** la
+          barre d'état sans qu'aucun écran de ce dépôt ait à connaître les marges sûres — sans
+          elle, le nom de l'adversaire passait derrière l'encoche. */}
+      <Stack.Screen name="battle" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
     </View>
   );

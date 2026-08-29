@@ -42,9 +42,10 @@ export const BEATS = {
    * L'ouverture : les deux combattants se posent avec leurs valeurs.
    *
    * C'est le seul moment où on lit le rapport de force — 373 points de vie contre 700, ça se
-   * regarde — et il ne se joue pas au tempo du reste.
+   * regarde — et il ne se joue pas au tempo du reste. Allongée après essai sur appareil : le
+   * temps de poser deux noms et quatre chiffres, pas celui d'un geste.
    */
-  opening: duration.settle,
+  opening: duration.drop,
   /**
    * Le dernier échange, celui qui conclut.
    *
@@ -52,7 +53,7 @@ export const BEATS = {
    * compte, et le jouer à 150 ms parce que le combat était long reviendrait à escamoter la
    * seule image que le joueur retiendra.
    */
-  finalBlow: duration.line,
+  finalBlow: duration.settle,
   /** Le verdict tombe, et l'écran s'arrête dessus. */
   verdict: duration.drop,
 } as const;
@@ -60,22 +61,31 @@ export const BEATS = {
 /**
  * Le budget d'un combat à l'écran, en millisecondes.
  *
- * Neuf secondes : au-delà, on demande à quelqu'un de regarder une bande dont il connaît déjà
- * l'issue. C'est une quantité à écouler, pas un geste — d'où sa place ici, en clair, et non
- * dans `tokens.ts` où elle ralentirait autre chose en la modifiant.
+ * **Quatorze secondes, et pas neuf.** Le premier chiffre venait du raisonnement — « au-delà, on
+ * regarde une bande dont on connaît l'issue » — et l'appareil l'a démenti : à neuf secondes,
+ * un combat de quinze échanges défile trop vite pour qu'on suive **qui** frappe. Le budget ne
+ * borne pas l'ennui, il borne la lecture, et la lecture est plus lente qu'on ne l'écrit.
+ *
+ * C'est une quantité à écouler, pas un geste — d'où sa place ici, en clair, et non dans
+ * `tokens.ts` où elle ralentirait autre chose en la modifiant.
  */
-export const BUDGET = 9000;
+export const BUDGET = 14_000;
 
 /**
  * Les deux bornes du tempo.
  *
  * Le plancher empêche un combat de deux cents tours de devenir un stroboscope ; le plafond
  * empêche un combat de six tours de traîner. Ce sont des durées, donc elles sortent de
- * l'échelle : `glint` est « un détail qui paraît », `line` est le rythme d'une ligne qui
- * s'enchaîne à la suivante — exactement les deux extrémités de ce qu'un échange peut être.
+ * l'échelle du design system.
+ *
+ * **Les deux ont été relevées après essai sur appareil.** `line` en plafond et `glint` en
+ * plancher étaient calées sur ce qu'un *élément* met à paraître ; un échange n'est pas un
+ * élément, c'est une phrase à lire — qui frappe, combien, et sur quelle barre. `settle`, « une
+ * carte qui se referme », est la bonne échelle pour ça ; `pop`, « ce qui se pose en prenant
+ * son échelle », est le minimum en dessous duquel on ne lit plus, on constate.
  */
-export const TEMPO_FLOOR = duration.glint;
-export const TEMPO_CEILING = duration.line;
+export const TEMPO_FLOOR = duration.pop;
+export const TEMPO_CEILING = duration.settle;
 
 export type BattleBeat =
   /** Les deux combattants se posent. */
@@ -130,10 +140,61 @@ export type SideRamps = {
   mitigated: Ramp;
   /** L'éclat du chiffre de dégât : 0 → 1 → 0 sur le battement du coup encaissé. */
   damageFlash: Ramp;
+  /**
+   * L'éclat de la part absorbée — **allumé seulement quand il y a quelque chose à absorber**.
+   *
+   * Une rampe distincte plutôt qu'un test dans le composant : « dont 0 absorbés » dirait le
+   * contraire de ce qui se passe chez un combattant sans armure, et la décision de ne rien
+   * afficher est une décision de mise en scène. Elle appartient donc à ce fichier, où elle se
+   * prouve sur les fixtures — `victoire` n'a aucune mitigation des deux côtés, et c'est
+   * précisément le cas qui l'exige.
+   */
+  mitigatedFlash: Ramp;
   /** L'éclat d'une esquive **de ce camp** — celui qui esquive, pas celui qui frappait. */
   dodgeFlash: Ramp;
   /** L'éclat d'un tour supplémentaire **de ce camp**. */
   extraFlash: Ramp;
+};
+
+/**
+ * Ce qui s'est passé, en chiffres — le bilan que l'écran de fin raconte.
+ *
+ * ————— Est-ce de la logique de jeu ? Non, et voici la frontière ————————————————————————
+ *
+ * L'interdit du dépôt vise les **décisions** : pas de calcul d'XP, pas de tirage de loot, pas
+ * de règle de streak. Rien ici n'est décidé : ce sont des sommes et des comptes sur des
+ * événements que le serveur a déjà envoyés en entier, et **aucun n'est accordé à personne**.
+ * Retirer ce bilan ne changerait pas un point de vie ; il ne fait que dire à voix haute ce que
+ * la timeline contient déjà.
+ *
+ * L'alternative serait de le demander au back — qui devrait alors renvoyer, à côté d'une
+ * timeline complète, un résumé de cette même timeline. C'est la seule fois où « ça s'ajoute au
+ * contrat » serait le mauvais réflexe : on demanderait au serveur de dire deux fois la même
+ * chose pour éviter une addition.
+ *
+ * `turns` fait exception et vient du serveur : un tour n'est pas un événement — un tour
+ * supplémentaire en produit deux — et le recompter ici serait, cette fois, réimplémenter une
+ * règle.
+ */
+export type BattleTally = {
+  /** Du serveur, jamais recompté : un tour n'est pas un événement. */
+  turns: number;
+  /** Les coups qui ont porté, de chaque côté. Les esquives n'en sont pas. */
+  blowsLanded: number;
+  blowsTaken: number;
+  /** Ce qui a réellement été retiré — la mitigation est déjà défalquée par le serveur. */
+  damageDealt: number;
+  damageTaken: number;
+  /** Ce que l'armure a absorbé, de chaque côté. Zéro sans Endurance. */
+  damageAbsorbed: number;
+  dodges: number;
+  dodgesConceded: number;
+  extraTurns: number;
+  extraTurnsConceded: number;
+  /** Ce qu'il restait au joueur à la fin. Zéro sur une défaite, par construction. */
+  hpLeft: number;
+  /** Le dernier coup porté, quel qu'en soit l'auteur — celui qui a conclu. */
+  lastBlow: { by: Actor; damage: number } | null;
 };
 
 export type BattleTimeline = {
@@ -151,6 +212,8 @@ export type BattleTimeline = {
   blows: number[];
   /** Le tempo retenu, en ms par échange. Rendu pour que les tests puissent le lire. */
   tempo: number;
+  /** Ce qui s'est passé, en chiffres. Voir `BattleTally`. */
+  tally: BattleTally;
 };
 
 /**
@@ -244,6 +307,7 @@ function sideRamps(maxHp: number): SideRamps {
     damage: { input: [0], output: [0] },
     mitigated: { input: [0], output: [0] },
     damageFlash: { input: [0], output: [0] },
+    mitigatedFlash: { input: [0], output: [0] },
     dodgeFlash: { input: [0], output: [0] },
     extraFlash: { input: [0], output: [0] },
   };
@@ -262,6 +326,21 @@ export function buildBattleTimeline(battle: Battle): BattleTimeline {
 
   const beats: BattleBeat[] = [];
   const blows: number[] = [];
+
+  const tally: BattleTally = {
+    turns: battle.turns,
+    blowsLanded: 0,
+    blowsTaken: 0,
+    damageDealt: 0,
+    damageTaken: 0,
+    damageAbsorbed: 0,
+    dodges: 0,
+    dodgesConceded: 0,
+    extraTurns: 0,
+    extraTurnsConceded: 0,
+    hpLeft: 0,
+    lastBlow: null,
+  };
 
   const player = sideRamps(battle.player.hp);
   const enemy = sideRamps(battle.enemy.hp);
@@ -309,6 +388,23 @@ export function buildBattleTimeline(battle: Battle): BattleTimeline {
       stepTo(target.mitigated, at, mitigated);
       pulse(target.damageFlash, at, until);
 
+      if (mitigated > 0) {
+        pulse(target.mitigatedFlash, at, until);
+      }
+
+      if (attacker === 'PLAYER') {
+        tally.blowsLanded += 1;
+        tally.damageDealt += damage;
+      } else {
+        tally.blowsTaken += 1;
+        tally.damageTaken += damage;
+        // Ce que **le joueur** a absorbé : la mitigation d'un coup qu'il encaisse. Compter
+        // celle de l'adversaire au même endroit mélangerait deux armures dans un seul chiffre.
+        tally.damageAbsorbed += mitigated;
+      }
+
+      tally.lastBlow = { by: attacker, damage };
+
       blows.push(until);
       beats.push({ kind: 'attack', at, until, index, attacker, damage, mitigated });
     } else if (event.type === 'DODGE') {
@@ -319,11 +415,24 @@ export function buildBattleTimeline(battle: Battle): BattleTimeline {
       // prouve battement par battement.
       pulse(sideOf(dodger).dodgeFlash, at, until);
 
+      if (dodger === 'PLAYER') {
+        tally.dodges += 1;
+      } else {
+        tally.dodgesConceded += 1;
+      }
+
       beats.push({ kind: 'dodge', at, until, index, attacker, dodger });
     } else {
       const actor = event.actor ?? 'PLAYER';
 
       pulse(sideOf(actor).extraFlash, at, until);
+
+      if (actor === 'PLAYER') {
+        tally.extraTurns += 1;
+      } else {
+        tally.extraTurnsConceded += 1;
+      }
+
       beats.push({ kind: 'extraTurn', at, until, index, actor });
     }
 
@@ -336,9 +445,14 @@ export function buildBattleTimeline(battle: Battle): BattleTimeline {
     holdUntil(side.damage, at);
     holdUntil(side.mitigated, at);
     holdUntil(side.damageFlash, at);
+    holdUntil(side.mitigatedFlash, at);
     holdUntil(side.dodgeFlash, at);
     holdUntil(side.extraFlash, at);
   }
 
-  return { beats, duration: at, player, enemy, blows, tempo };
+  // Les points de vie qui restent au joueur : la dernière valeur de sa rampe, celle que le
+  // serveur a écrite. Jamais une soustraction, ici comme partout ailleurs dans ce fichier.
+  tally.hpLeft = player.hp.output[player.hp.output.length - 1];
+
+  return { beats, duration: at, player, enemy, blows, tempo, tally };
 }
