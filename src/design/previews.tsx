@@ -3,11 +3,14 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
+import { BattleResultBadge } from '@/components/BattleResultBadge';
+import { BattleRow } from '@/components/BattleRow';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
 import { DangerRow } from '@/components/DangerRow';
 import { DisciplineChip } from '@/components/DisciplineChip';
+import { EnemyCard } from '@/components/EnemyCard';
 import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { InviteCodeBlock } from '@/components/InviteCodeBlock';
@@ -58,6 +61,21 @@ export type Preview = {
 };
 
 const DISCIPLINES = Object.keys(disciplineLabel) as components['schemas']['Discipline'][];
+
+/** Un adversaire du catalogue, à trouer au cas par cas — voir les spécimens. */
+function enemy(overrides: Partial<components['schemas']['Enemy']>): components['schemas']['Enemy'] {
+  return {
+    key: 'SAND_JACKAL',
+    name: 'Chacal des sables',
+    minimumLevel: 1,
+    hp: 120,
+    damage: 12,
+    mitigationPercent: 5,
+    extraTurnPercent: 4,
+    dodgePercent: 3,
+    ...overrides,
+  };
+}
 
 /** Un membre de guilde, avec des trous à combler au cas par cas — voir les spécimens. */
 function guildMember(
@@ -622,6 +640,76 @@ export const PREVIEWS: Preview[] = [
               xpToNextLevel: null,
             })}
           />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'carte-adversaire',
+    name: 'Carte d’adversaire',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="À portée">
+          <EnemyCard enemy={enemy({})} />
+        </Specimen>
+        {/* Verrouillé : la carte reste **lisible**, elle ne disparaît pas. C'est ce qui donne
+            une raison de monter de niveau — la cacher rendrait le catalogue d'un joueur de
+            niveau 1 indiscernable d'un catalogue vide. */}
+        <Specimen label="Hors de portée">
+          <EnemyCard
+            enemy={enemy({ key: 'STORM_HYENA', name: 'Hyène des tempêtes', minimumLevel: 20, hp: 640, damage: 40, mitigationPercent: 18, extraTurnPercent: 13, dodgePercent: 10 })}
+            locked
+          />
+        </Specimen>
+        {/* Un boss se dessine **exactement** comme un ennemi ordinaire : le contrat ne les
+            distingue pas, et le client n'invente pas la distinction. Ce spécimen est là pour
+            qu'on le voie, pas pour montrer une variante — il n'y en a pas. */}
+        <Specimen label="Un boss : même carte, plus gros chiffres">
+          <EnemyCard
+            enemy={enemy({ key: 'CINDER_SOVEREIGN', name: 'Souverain des cendres', minimumLevel: 50, hp: 3600, damage: 190, mitigationPercent: 44, extraTurnPercent: 33, dodgePercent: 25 })}
+            locked
+          />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'badge-issue-combat',
+    name: 'Issue d’un combat',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Victoire">
+          <BattleResultBadge result="VICTORY" />
+        </Specimen>
+        {/* Une défaite n'emprunte rien au vocabulaire d'un refus : elle est éteinte, pas
+            alarmante. Rien n'a mal tourné — on a perdu, on y retourne. */}
+        <Specimen label="Défaite">
+          <BattleResultBadge result="DEFEAT" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'ligne-combat',
+    name: 'Ligne d’historique de combat',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Victoire">
+          <BattleRow result="VICTORY" enemyName="Chacal des sables" turns="16 tours" when="Aujourd’hui, 15:25" />
+        </Specimen>
+        <Specimen label="Défaite, contre un boss">
+          <BattleRow result="DEFEAT" enemyName="Souverain des dunes" turns="21 tours" when="Hier, 09:05" />
+        </Specimen>
+        {/* Le singulier existe : un combat peut se conclure en un tour. */}
+        <Specimen label="Un seul tour">
+          <BattleRow result="VICTORY" enemyName="Chacal de fer" turns="1 tour" when="20 août" />
+        </Specimen>
+        {/* Le nom cède avant la pastille : c'est l'issue qui doit rester lisible en défilant. */}
+        <Specimen label="Nom qui déborde">
+          <BattleRow result="DEFEAT" enemyName="Matriarche des tempêtes obsidiennes" turns="33 tours" when="12 août" />
         </Specimen>
       </>
     ),

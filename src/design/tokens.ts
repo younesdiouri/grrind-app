@@ -50,6 +50,17 @@ export const color = {
   border: palette.steel,
   /** Un refus : saisie invalide, appel rejeté. Distinct de `loss`, qui parle d'XP. */
   danger: palette.rust,
+  /** Un combat gagné. */
+  victory: palette.mint,
+  /**
+   * Un combat perdu — et **surtout pas `danger`**.
+   *
+   * Une défaite n'est pas un refus : rien n'a mal tourné, l'app n'a rien à se reprocher, et
+   * le joueur non plus. La peindre en rouge la rangerait avec les saisies invalides et les
+   * appels rejetés, alors qu'elle appartient au jeu. Elle est donc **éteinte** plutôt
+   * qu'alarmante : c'est arrivé, on y retourne.
+   */
+  defeat: palette.fog,
 } as const;
 
 export const space = {
@@ -349,4 +360,19 @@ export const notificationCategoryLabel: Partial<
   // choisir » — se lirait comme la notification elle-même, pas comme le réglage qui la coupe.
   RISALA_TURN: 'Ton tour de Risāla',
   RISALA_REVEALED: 'Risāla révélée',
+};
+
+/**
+ * L'issue d'un combat, en un mot.
+ *
+ * Même garde-fou que `xpSourceLabel` et les autres : la clé sort de l'union du schéma généré,
+ * jamais d'une union recopiée. `BattleResult` est fermé à **deux** cas côté serveur et la
+ * colonne est `NOT NULL` — un combat interrompu par `max_turns` est tranché au meilleur ratio
+ * de points de vie, parce qu'un match nul n'a pas de mise en scène
+ * (younesdiouri/grrind-back#209). Il n'y a donc pas de troisième état à dessiner, et le jour
+ * où il y en aurait un, ce `Record` casserait la compilation avant que l'écran ne l'invente.
+ */
+export const battleResultLabel: Record<components['schemas']['BattleSummary']['result'], string> = {
+  VICTORY: 'Victoire',
+  DEFEAT: 'Défaite',
 };

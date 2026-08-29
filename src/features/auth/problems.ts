@@ -242,6 +242,30 @@ function messageForProblem(problem: ProblemDetails): string {
     case 'https://grrind.app/problems/risala-turn-is-not-yours':
       return "Ce tour appartient à quelqu'un d'autre.";
 
+    // ————— Le combat (younesdiouri/grrind-back#212, #219) ————————————————————————————
+
+    // Le combat n'existe pas, **ou n'a pas été mené par l'appelant** : le back rend la même
+    // chose dans les deux cas, et jamais un 403 — un 403 confirmerait qu'un combat porte cet
+    // UUID, et les UUID v7 encodent leur instant de création. Le message doit rester vrai
+    // pour les deux : dire « ce combat ne vous appartient pas » défairait côté client la
+    // protection que le serveur a mise en place côté serveur.
+    case 'https://grrind.app/problems/battle-not-found':
+      return "Ce combat est introuvable.";
+
+    // Un bug de l'app, pas une situation de jeu : les clés d'adversaire viennent toutes de
+    // `GET /api/enemies`, le joueur n'en saisit aucune. D'où le même message que les pannes
+    // de transport plus haut, et non une phrase qui laisserait croire à un choix invalide.
+    case 'https://grrind.app/problems/enemy-key-unknown':
+      return "L'app a envoyé une requête que le serveur ne comprend pas.";
+
+    // Le seul des trois qu'un joueur peut provoquer, et seulement avec un catalogue périmé :
+    // l'écran verrouille sur `minimumLevel` avant d'appeler. Le problème porte `requiredLevel`
+    // et `playerLevel` en membres supplémentaires ; on ne les lit pas — les recopier dans la
+    // phrase obligerait à les valider ici, alors que l'écran a déjà le catalogue et n'a qu'à
+    // le relire.
+    case 'https://grrind.app/problems/enemy-level-too-low':
+      return "Cet adversaire demande un niveau que tu n'as pas encore.";
+
     default:
       return unnamedProblem(problem.type);
   }
