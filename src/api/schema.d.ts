@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/api/enemies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_combat_enemies_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/battles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_combat_battle_list"];
+        put?: never;
+        post: operations["post_combat_battle_fight"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/battles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_combat_battle_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/guilds": {
         parameters: {
             query?: never;
@@ -467,7 +515,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -1375,6 +1423,242 @@ export interface components {
             transactions: components["schemas"]["XpTransaction"][];
             nextCursor: string | null;
         };
+        /**
+         * @description Un combattant tel qu'affiché. **`mitigationPercent`, `extraTurnPercent` et
+         *     `dodgePercent` sont résolus côté serveur**, jamais des taux que le client
+         *     recomposerait — même règle que `bonusPercent` sur une Risāla. Le domaine porte des
+         *     millièmes ; ce sont des pourcentages entiers, tronqués.
+         */
+        BattleFighter: {
+            /** @example 240 */
+            hp: number;
+            /** @example 31 */
+            damage: number;
+            /**
+             * @description Réduction du dégât reçu.
+             * @example 18
+             */
+            mitigationPercent: number;
+            /**
+             * @description Chance de rejouer un tour immédiatement.
+             * @example 12
+             */
+            extraTurnPercent: number;
+            /**
+             * @description Chance d'esquiver entièrement un coup.
+             * @example 8
+             */
+            dodgePercent: number;
+        };
+        /**
+         * @description L'adversaire : les mêmes champs qu'un `BattleFighter`, plus son identité.
+         *
+         *     **Le nom arrive traduit**, comme les titres : le client n'a pas de table de
+         *     correspondance. `key` reste stable d'une locale à l'autre — c'est l'entrée du
+         *     catalogue (`combat.yaml`), pas une donnée d'affichage.
+         */
+        BattleEnemy: {
+            /** @example SAND_JACKAL */
+            key: string;
+            /**
+             * @description Déjà traduit, dans la langue négociée sur `Accept-Language`.
+             * @example Chacal des sables
+             */
+            name: string;
+            /** @example 180 */
+            hp: number;
+            /** @example 22 */
+            damage: number;
+            /** @example 10 */
+            mitigationPercent: number;
+            /** @example 5 */
+            extraTurnPercent: number;
+            /** @example 3 */
+            dodgePercent: number;
+        };
+        /**
+         * @description Un instant de la timeline. **Seul l'ordre des éléments de la liste compte** — voir
+         *     la description de `Battle.events` — un événement isolé n'a pas de position propre.
+         *
+         *     Cinq formes, distinguées par `type` ; seuls les champs de la forme concernée
+         *     sont présents, les autres sont **absents**, jamais `null` :
+         *       - `BATTLE_STARTED` : `playerHp`, `enemyHp` — l'état de départ, avant le premier coup.
+         *       - `ATTACK` : `attacker`, `damage`, `mitigated`, `targetHpRemaining` — un coup porté,
+         *         la part absorbée par la mitigation, et ce qu'il reste à la cible.
+         *       - `DODGE` : `attacker` — la cible de l'attaquant a esquivé, aucun dégât n'est
+         *         appliqué. Remplace l'`ATTACK` que ce tour aurait produit, ne s'ajoute jamais à
+         *         côté.
+         *       - `EXTRA_TURN` : `actor` — qui rejoue un tour immédiatement, que le tour qui l'a
+         *         déclenché ait porté ou été esquivé.
+         *       - `BATTLE_FINISHED` : `result` — toujours le dernier événement de la timeline.
+         */
+        BattleEvent: {
+            /** @enum {string} */
+            type: "BATTLE_STARTED" | "ATTACK" | "DODGE" | "EXTRA_TURN" | "BATTLE_FINISHED";
+            /** @description `BATTLE_STARTED` seulement. */
+            playerHp?: number;
+            /** @description `BATTLE_STARTED` seulement. */
+            enemyHp?: number;
+            /**
+             * @description `ATTACK` et `DODGE` seulement.
+             * @enum {string}
+             */
+            attacker?: "PLAYER" | "ENEMY";
+            /** @description `ATTACK` seulement. */
+            damage?: number;
+            /** @description `ATTACK` seulement : la part du dégât brut absorbée par la mitigation. */
+            mitigated?: number;
+            /** @description `ATTACK` seulement. */
+            targetHpRemaining?: number;
+            /**
+             * @description `EXTRA_TURN` seulement.
+             * @enum {string}
+             */
+            actor?: "PLAYER" | "ENEMY";
+            /**
+             * @description `BATTLE_FINISHED` seulement.
+             * @enum {string}
+             */
+            result?: "VICTORY" | "DEFEAT";
+        };
+        /**
+         * @description Un combat PvE joué et jugé — ce que rendent `POST /api/battles` et
+         *     `GET /api/battles/{id}`, à l'identique.
+         *
+         *     **L'ordre des champs est l'ordre de l'animation**, et c'est un contrat, pas une
+         *     convention d'écriture — même règle que `RewardSummary`.
+         *
+         *     **`rewards` est présent et vide dès maintenant.** Aucune récompense en V1, mais
+         *     il y en aura une : la déclarer plus tard obligerait un client déjà déployé à la
+         *     traiter comme facultative pour toujours — même argument que `loot`, `streak` et
+         *     `unlockableNodes` sur le `RewardSummary`.
+         */
+        Battle: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Toujours renseigné, du point de vue du joueur : un combat se termine toujours avec un vainqueur.
+             * @enum {string}
+             */
+            result: "VICTORY" | "DEFEAT";
+            /** @example 7 */
+            turns: number;
+            /**
+             * Format: date-time
+             * @description L'instant de la requête : contrairement à un workout, un combat n'a aucune antériorité au serveur.
+             */
+            foughtAt: string;
+            player: components["schemas"]["BattleFighter"];
+            enemy: components["schemas"]["BattleEnemy"];
+            /** @description La timeline complète, dans l'ordre de l'animation. */
+            events: components["schemas"]["BattleEvent"][];
+            /** @description Lot 6 : toujours vide aujourd'hui — voir la description de la classe. */
+            rewards: Record<string, never>[];
+        };
+        /**
+         * @description Une ligne de `GET /api/battles` (#220) — **jamais la timeline**. `Battle` peut
+         *     compter deux cents événements (`max_turns`) ; vingt résumés par page restent
+         *     légers, et le client va chercher `GET /api/battles/{id}` au moment où il choisit
+         *     un combat précis à rejouer.
+         *
+         *     `result` est **toujours** `VICTORY` ou `DEFEAT`, y compris pour un combat conclu
+         *     par `max_turns` sans KO — voir la description de `Battle.result`. C'est ce qui
+         *     permet à la liste d'être colorée ligne par ligne sans aucun troisième état à
+         *     dessiner.
+         */
+        BattleSummary: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            result: "VICTORY" | "DEFEAT";
+            /**
+             * @description La clé et le nom traduit seulement — pas les statistiques de combat, qui
+             *     n'ont pas leur place dans une ligne de liste. Le nom vient de la clé du
+             *     snapshot, jamais de `EnemyCatalog` : un combat déjà joué est un fait écrit,
+             *     voir la description de `Battle`.
+             */
+            enemy: {
+                /** @example SAND_JACKAL */
+                key: string;
+                /** @example Chacal des sables */
+                name: string;
+            };
+            /** @example 7 */
+            turns: number;
+            /** Format: date-time */
+            foughtAt: string;
+        };
+        /**
+         * @description Une page d'historique, **dans l'ordre du combat** : `foughtAt` décroissant, puis
+         *     l'identifiant pour départager deux combats livrés à la même seconde.
+         *
+         *     `nextCursor` est une **chaîne opaque** — le client la renvoie telle quelle. `null`
+         *     signifie la fin ; il n'y a pas de total, un défilement infini n'en a aucun usage.
+         */
+        BattlePage: {
+            battles: components["schemas"]["BattleSummary"][];
+            nextCursor: string | null;
+        };
+        /**
+         * @description Le corps, facultatif, de `POST /api/battles` (#219). Absent — ou `{"enemy": null}` —
+         *     le serveur choisit l'ennemi au niveau du joueur, comportement inchangé depuis le
+         *     #212. `enemy` porte n'importe quelle clé du catalogue rendu par `GET /api/enemies`,
+         *     boss comme ennemi ordinaire.
+         */
+        ChosenEnemyRequest: {
+            /** @example DUNE_SOVEREIGN */
+            enemy?: string | null;
+        };
+        /**
+         * @description Une entrée du catalogue rendu par `GET /api/enemies` — ennemi ordinaire ou boss,
+         *     sous la même forme : le corps de `POST /api/battles` les choisit tous les deux de
+         *     la même façon.
+         *
+         *     **`minimumLevel` est le niveau requis pour choisir cette clé explicitement.** Pour
+         *     un ennemi ordinaire, c'est aussi le palier auquel le serveur le choisirait tout
+         *     seul en l'absence de corps ; pour un boss, c'est le seul verrou — il reste
+         *     affrontable au-delà.
+         */
+        Enemy: {
+            /** @example DUNE_SOVEREIGN */
+            key: string;
+            /**
+             * @description Déjà traduit, dans la langue négociée sur `Accept-Language`.
+             * @example Souverain des dunes
+             */
+            name: string;
+            /** @example 10 */
+            minimumLevel: number;
+            /** @example 700 */
+            hp: number;
+            /** @example 40 */
+            damage: number;
+            /** @example 20 */
+            mitigationPercent: number;
+            /** @example 12 */
+            extraTurnPercent: number;
+            /** @example 9 */
+            dodgePercent: number;
+        };
+        /**
+         * @description Le catalogue entier rendu par `GET /api/enemies` — niché sous `enemies`, jamais un
+         *     tableau nu à la racine, même convention que `WorkoutPage` et `TitleBoard` : c'est ce
+         *     qui laisse la place à un champ frère plus tard sans casser un client déjà déployé.
+         *     Ennemis ordinaires puis boss, dans l'ordre de déclaration de chaque liste.
+         */
+        EnemyCatalog: {
+            enemies: components["schemas"]["Enemy"][];
+        };
+        FightBattleRequest: {
+            /** @default null */
+            enemy: string | null;
+        };
+        BattleHistoryQuery: {
+            /** @default null */
+            cursor: string | null;
+            /** @default 20 */
+            limit: number;
+        };
         FoundGuildRequest: {
             /** @default  */
             name: string;
@@ -1622,6 +1906,133 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_combat_enemies_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Le catalogue entier — ennemis ordinaires et boss, dans cet ordre, chacun avec son nom traduit et son niveau minimum. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnemyCatalog"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    get_combat_battle_list: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Une page d'historique, du plus récent au plus ancien — un résumé par combat, jamais sa timeline. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BattlePage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    post_combat_battle_fight: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ChosenEnemyRequest"];
+            };
+        };
+        responses: {
+            /** @description Le combat est joué et écrit. La timeline entière est rendue : un seul aller-retour, rien à recharger avant de l'animer. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Battle"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+            /** @description Clé d'adversaire inconnue (`enemy-key-unknown`) ou niveau insuffisant (`enemy-level-too-low`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    get_combat_battle_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Exactement la charge utile rendue par `POST /api/battles` au moment du combat. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Battle"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /**
+             * @description Le combat n'existe pas, **ou n'a pas été mené par l'appelant** (`battle-not-found`).
+             *     Les deux cas rendent la même réponse, et **jamais 403** : un 403 confirmerait qu'un
+             *     combat porte cet UUID, et les UUID v7 encodent leur instant de création — l'API
+             *     deviendrait un moyen d'énumérer les combats joués un jour donné.
+             */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     post_community_guild_found: {
         parameters: {
             query?: never;
