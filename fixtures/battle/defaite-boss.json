@@ -1,0 +1,176 @@
+{
+  "id": "01a04ea7-df09-7047-9367-2733cefb93c3",
+  "result": "DEFEAT",
+  "turns": 19,
+  "foughtAt": "2026-08-29T17:53:39+00:00",
+  "player": {
+    "hp": 373,
+    "damage": 19,
+    "mitigationPercent": 12,
+    "extraTurnPercent": 2,
+    "dodgePercent": 0
+  },
+  "enemy": {
+    "key": "DUNE_SOVEREIGN",
+    "name": "Souverain des dunes",
+    "hp": 700,
+    "damage": 40,
+    "mitigationPercent": 20,
+    "extraTurnPercent": 12,
+    "dodgePercent": 9
+  },
+  "events": [
+    {
+      "type": "BATTLE_STARTED",
+      "playerHp": 373,
+      "enemyHp": 700
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 3,
+      "targetHpRemaining": 684
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 338
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 3,
+      "targetHpRemaining": 668
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 303
+    },
+    {
+      "type": "DODGE",
+      "attacker": "PLAYER"
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 268
+    },
+    {
+      "type": "EXTRA_TURN",
+      "actor": "ENEMY"
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 233
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 3,
+      "targetHpRemaining": 652
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 198
+    },
+    {
+      "type": "EXTRA_TURN",
+      "actor": "ENEMY"
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 163
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 3,
+      "targetHpRemaining": 636
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 128
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 3,
+      "targetHpRemaining": 620
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 93
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 3,
+      "targetHpRemaining": 604
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 58
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 3,
+      "targetHpRemaining": 588
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 23
+    },
+    {
+      "type": "EXTRA_TURN",
+      "actor": "ENEMY"
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 35,
+      "mitigated": 5,
+      "targetHpRemaining": 0
+    },
+    {
+      "type": "BATTLE_FINISHED",
+      "result": "DEFEAT"
+    }
+  ],
+  "rewards": []
+}
