@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import createClient from 'openapi-fetch';
 
+import { createAuthMiddleware } from './authMiddleware.ts';
 import { ACCEPT_LANGUAGE, createLanguageMiddleware } from './languageMiddleware.ts';
 import type { paths } from './schema';
 
@@ -60,5 +61,58 @@ describe('le middleware de langue', () => {
     await client.GET('/api/me', { headers: { 'Accept-Language': 'de-DE' } });
 
     assert.deepEqual(server.acceptLanguages, ['de-DE']);
+  });
+
+  it("survit au rejeu qui suit un rafraîchissement — l'ordre de montage protège le clone", async () => {
+    // `authMiddleware` clone la requête pour son rejeu (`request.clone()`, avant l'envoi) sur le
+    // `Request` qu'il reçoit. Monté avant le langage, le clone partirait sans `Accept-Language` —
+    // ce test reproduit le montage réel de `client.ts` : le langage d'abord, l'auth ensuite.
+    const calls: { authorization: string | null; acceptLanguage: string | null }[] = [];
+
+    const fetch = async (input: Request | string | URL): Promise<Response> => {
+      const request = input as Request;
+      const authorization = request.headers.get('Authorization');
+      calls.push({ authorization, acceptLanguage: request.headers.get('Accept-Language') });
+
+      if (authorization !== 'Bearer fresh') {
+        return new Response(
+          JSON.stringify({
+            type: 'https://grrind.app/problems/access-token-expired',
+            title: 'Unauthorized',
+            status: 401,
+            detail: "Le jeton d'accès a expiré.",
+          }),
+          { status: 401, headers: { 'Content-Type': 'application/problem+json' } },
+        );
+      }
+
+      return new Response(JSON.stringify({ id: 'u1' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    const client = createClient<paths>({
+      baseUrl: BASE_URL,
+      fetch: fetch as unknown as typeof globalThis.fetch,
+    });
+
+    client.use(createLanguageMiddleware());
+    client.use(
+      createAuthMiddleware({
+        getAccessToken: () => 'stale',
+        refresh: async () => 'fresh',
+      }),
+    );
+
+    const { data } = await client.GET('/api/me');
+
+    assert.ok(data, 'le rejeu doit aboutir');
+    assert.equal(calls.length, 2, 'un refus, puis un rejeu');
+    assert.deepEqual(
+      calls.map((call) => call.acceptLanguage),
+      [ACCEPT_LANGUAGE, ACCEPT_LANGUAGE],
+      "la requête rejouée doit porter l'en-tête, pas seulement la première",
+    );
   });
 });

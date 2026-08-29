@@ -16,5 +16,10 @@ import { getAccessToken, refresh } from '@/features/auth/session';
  */
 export const api = createClient<paths>({ baseUrl: API_BASE_URL });
 
-api.use(createAuthMiddleware({ getAccessToken, refresh }));
+// L'ordre compte, et ce n'est pas un détail d'imports à ranger alphabétiquement :
+// `authMiddleware` clone la requête pour son rejeu (`request.clone()`, avant l'envoi) sur le
+// `Request` tel qu'il le reçoit. Si le langage se posait après lui, la copie de rejeu partirait
+// sans `Accept-Language` — et toute requête rejouée après un rafraîchissement reviendrait en
+// anglais, de façon intermittente et invisible depuis l'écran. Le langage se pose donc en premier.
 api.use(createLanguageMiddleware());
+api.use(createAuthMiddleware({ getAccessToken, refresh }));
