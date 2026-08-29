@@ -1,0 +1,266 @@
+{
+  "id": "01a04ea7-df44-7b36-b844-4e6550428f4a",
+  "result": "DEFEAT",
+  "turns": 33,
+  "foughtAt": "2026-08-29T17:53:39+00:00",
+  "player": {
+    "hp": 373,
+    "damage": 19,
+    "mitigationPercent": 12,
+    "extraTurnPercent": 2,
+    "dodgePercent": 0
+  },
+  "enemy": {
+    "key": "IRON_JACKAL",
+    "name": "Chacal de fer",
+    "hp": 380,
+    "damage": 26,
+    "mitigationPercent": 12,
+    "extraTurnPercent": 9,
+    "dodgePercent": 7
+  },
+  "events": [
+    {
+      "type": "BATTLE_STARTED",
+      "playerHp": 373,
+      "enemyHp": 380
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 363
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 350
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 346
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 327
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 329
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 304
+    },
+    {
+      "type": "EXTRA_TURN",
+      "actor": "ENEMY"
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 281
+    },
+    {
+      "type": "DODGE",
+      "attacker": "PLAYER"
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 258
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 312
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 235
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 295
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 212
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 278
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 189
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 261
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 166
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 244
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 143
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 227
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 120
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 210
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 97
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 193
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 74
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 176
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 51
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 159
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 28
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 142
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 5
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 125
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 0
+    },
+    {
+      "type": "BATTLE_FINISHED",
+      "result": "DEFEAT"
+    }
+  ],
+  "rewards": []
+}

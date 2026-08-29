@@ -13,6 +13,7 @@ import { DisciplineChip } from '@/components/DisciplineChip';
 import { EnemyCard } from '@/components/EnemyCard';
 import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
+import { HpBar } from '@/components/HpBar';
 import { InviteCodeBlock } from '@/components/InviteCodeBlock';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
@@ -710,6 +711,32 @@ export const PREVIEWS: Preview[] = [
         {/* Le nom cède avant la pastille : c'est l'issue qui doit rester lisible en défilant. */}
         <Specimen label="Nom qui déborde">
           <BattleRow result="DEFEAT" enemyName="Matriarche des tempêtes obsidiennes" turns="33 tours" when="12 août" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'barre-de-vie',
+    name: 'Barre de vie',
+    group: 'Composants',
+    element: (
+      <>
+        {/* Les deux camps se lisent **en même temps** pendant un combat : c'est la couleur, et
+            elle seule, qui dit lequel est lequel. Une teinte unique obligerait à retrouver son
+            camp à chaque coup, à 260 ms l'échange. */}
+        <Specimen label="Joueur, intact">
+          <HpBar side="player" fill={1} />
+        </Specimen>
+        <Specimen label="Joueur, entamé">
+          <HpBar side="player" fill={0.35} />
+        </Specimen>
+        <Specimen label="Adversaire, intact">
+          <HpBar side="enemy" fill={1} />
+        </Specimen>
+        {/* Zéro : la piste reste visible. Une barre vide qui disparaîtrait ferait croire à un
+            combattant absent plutôt qu'à un combattant tombé. */}
+        <Specimen label="Adversaire, à terre">
+          <HpBar side="enemy" fill={0} />
         </Specimen>
       </>
     ),

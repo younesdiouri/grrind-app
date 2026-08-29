@@ -1,0 +1,139 @@
+{
+  "id": "01a04ea7-daf6-7e60-be8f-6c5e63b073c9",
+  "result": "VICTORY",
+  "turns": 15,
+  "foughtAt": "2026-08-29T17:53:38+00:00",
+  "player": {
+    "hp": 140,
+    "damage": 16,
+    "mitigationPercent": 0,
+    "extraTurnPercent": 0,
+    "dodgePercent": 0
+  },
+  "enemy": {
+    "key": "SAND_JACKAL",
+    "name": "Chacal des sables",
+    "hp": 120,
+    "damage": 12,
+    "mitigationPercent": 5,
+    "extraTurnPercent": 4,
+    "dodgePercent": 3
+  },
+  "events": [
+    {
+      "type": "BATTLE_STARTED",
+      "playerHp": 140,
+      "enemyHp": 120
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 104
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 12,
+      "mitigated": 0,
+      "targetHpRemaining": 128
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 88
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 12,
+      "mitigated": 0,
+      "targetHpRemaining": 116
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 72
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 12,
+      "mitigated": 0,
+      "targetHpRemaining": 104
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 56
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 12,
+      "mitigated": 0,
+      "targetHpRemaining": 92
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 40
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 12,
+      "mitigated": 0,
+      "targetHpRemaining": 80
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 24
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 12,
+      "mitigated": 0,
+      "targetHpRemaining": 68
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 8
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 12,
+      "mitigated": 0,
+      "targetHpRemaining": 56
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 0
+    },
+    {
+      "type": "BATTLE_FINISHED",
+      "result": "VICTORY"
+    }
+  ],
+  "rewards": []
+}
