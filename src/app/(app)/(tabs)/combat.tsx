@@ -1,5 +1,6 @@
+import { Link } from 'expo-router';
 import { useMemo } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BattleRow } from '@/components/BattleRow';
 import { Button } from '@/components/Button';
@@ -26,9 +27,10 @@ import { useCatalog } from '@/features/combat/useCatalog';
  *
  * ————— Ce qui n'est pas encore là ————————————————————————————————————————————————————
  *
- * Rien n'est touchable. Le rejeu d'un combat et le bouton qui en lance un neuf arrivent aux
- * deux tickets suivants — et dans cet ordre, parce qu'un bouton « Combattre » qui n'aurait
- * nulle part où mener ne serait pas une demi-fonctionnalité mais un cul-de-sac.
+ * Une ligne d'historique se rejoue depuis #114 ; le catalogue, lui, ne propose encore rien.
+ * Le bouton qui lance un combat arrive au ticket suivant — dans cet ordre, parce qu'un
+ * « Combattre » qui n'aurait nulle part où mener ne serait pas une demi-fonctionnalité mais
+ * un cul-de-sac.
  */
 export default function CombatScreen() {
   const { catalog, reload: reloadCatalog } = useCatalog();
@@ -51,12 +53,21 @@ export default function CombatScreen() {
       // assez tard pour ne pas charger l'historique entier au premier effleurement.
       onEndReachedThreshold={0.4}
       renderItem={({ item }) => (
-        <BattleRow
-          result={item.result}
-          enemyName={item.enemy.name}
-          turns={formatTurns(item.turns)}
-          when={formatFoughtAt(item.foughtAt, now)}
-        />
+        // L'historique porte des résumés, jamais des timelines : `GET /api/battles` ne rend
+        // que cinq champs par ligne, et l'écran de rejeu va chercher le combat entier par son
+        // identifiant. C'est un aller-retour de plus au moment où le joueur choisit, contre
+        // une liste qui reste légère à chaque chargement (younesdiouri/grrind-back#220).
+        <Link href={{ pathname: '/battle', params: { id: item.id } }} asChild>
+          {/* `asChild` clone l'enfant avec `onPress` : même idiome que le roster de guilde. */}
+          <Pressable>
+            <BattleRow
+              result={item.result}
+              enemyName={item.enemy.name}
+              turns={formatTurns(item.turns)}
+              when={formatFoughtAt(item.foughtAt, now)}
+            />
+          </Pressable>
+        </Link>
       )}
       ListHeaderComponent={
         <View style={styles.header}>

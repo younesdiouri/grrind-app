@@ -53,6 +53,17 @@ export const color = {
   /** Un combat gagné. */
   victory: palette.mint,
   /**
+   * Les points de vie, en combat. Deux couleurs et pas une, parce que les deux barres se
+   * lisent **en même temps** : une seule teinte obligerait à retrouver laquelle est laquelle
+   * à chaque coup, et le combat se joue trop vite pour ça.
+   *
+   * Le joueur prend la couleur de ce qui va bien, l'adversaire celle de la menace. C'est le
+   * seul endroit de l'app où `rust` ne dit pas un refus mais un camp — d'où deux noms propres
+   * plutôt qu'un emprunt à `danger` ou à `gain`, dont le sens ailleurs ne survivrait pas.
+   */
+  hpPlayer: palette.mint,
+  hpEnemy: palette.rust,
+  /**
    * Un combat perdu — et **surtout pas `danger`**.
    *
    * Une défaite n'est pas un refus : rien n'a mal tourné, l'app n'a rien à se reprocher, et
