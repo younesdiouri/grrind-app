@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import { api } from '@/api/client';
 import { failureFrom, type Failure } from '@/features/auth/problems';
+import { getBattlesRevision, subscribeToBattles } from './battlesRevision.ts';
 import { appendPage, EMPTY_HISTORY, hasMore, type History } from './history.ts';
 
 /** Ce que le contrat borne à 50, et ce que le serveur prend par défaut. */
@@ -43,6 +44,15 @@ export function useBattleHistory(): {
   reload: () => void;
 } {
   const [history, setHistory] = useState<BattleHistory>({ step: 'loading' });
+
+  /**
+   * Combien de combats ont été livrés dans cette session.
+   *
+   * Un combat neuf doit apparaître **en tête** au retour de l'animation, et rien ne le ferait
+   * autrement : l'écran a été démonté au moment du lancement. On se rebranche donc sur le
+   * compteur, comme `usePlayerHome` se rebranche sur les verdicts de synchronisation.
+   */
+  const fought = useSyncExternalStore(subscribeToBattles, getBattlesRevision);
 
   /** Ce qui a été lu jusqu'ici, et le curseur de la suite. Seule source de la pagination. */
   const accumulated = useRef<History>(EMPTY_HISTORY);
@@ -115,7 +125,9 @@ export function useBattleHistory(): {
     return () => {
       alive = false;
     };
-  }, [loadFirstPage]);
+    // `fought` relance la lecture depuis la première page : le combat neuf est le plus récent,
+    // donc il est en tête, donc reprendre au curseur ne le ramènerait jamais.
+  }, [loadFirstPage, fought]);
 
   return { history, loadMore, reload };
 }

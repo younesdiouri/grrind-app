@@ -654,6 +654,21 @@ export const PREVIEWS: Preview[] = [
         <Specimen label="À portée">
           <EnemyCard enemy={enemy({})} />
         </Specimen>
+        {/* La fente d'action : le design system ne connaît ni la navigation ni le réseau, la
+            carte reçoit donc son bouton au lieu de le fabriquer. Un adversaire verrouillé n'en
+            reçoit aucun — pas un bouton désactivé, qui inviterait à un geste sans effet. */}
+        <Specimen label="À portée, avec son action">
+          <EnemyCard
+            enemy={enemy({})}
+            action={<Button label="Combattre" onPress={() => {}} />}
+          />
+        </Specimen>
+        <Specimen label="Action en cours">
+          <EnemyCard
+            enemy={enemy({})}
+            action={<Button label="Combattre" onPress={() => {}} busy />}
+          />
+        </Specimen>
         {/* Verrouillé : la carte reste **lisible**, elle ne disparaît pas. C'est ce qui donne
             une raison de monter de niveau — la cacher rendrait le catalogue d'un joueur de
             niveau 1 indiscernable d'un catalogue vide. */}
