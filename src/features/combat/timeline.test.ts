@@ -35,6 +35,15 @@ const FIXTURES: [string, Battle][] = [
 
 const defaiteBoss = FIXTURES[1][1];
 
+/** Les derniers points de vie du joueur d'après les événements, sans une soustraction. */
+function timelineHpLeft(battle: Battle): number {
+  const taken = battle.events.filter(
+    (event) => event.type === 'ATTACK' && event.attacker === 'ENEMY',
+  );
+
+  return taken.length === 0 ? battle.player.hp : (taken[taken.length - 1].targetHpRemaining ?? 0);
+}
+
 /** La valeur d'une rampe à un instant, par interpolation linéaire — ce que fait `interpolate`. */
 function valueAt(ramp: Ramp, t: number): number {
   if (t <= ramp.input[0]) {
@@ -154,6 +163,7 @@ describe('la timeline d’un combat, sur les fixtures capturées', () => {
           side.damage,
           side.mitigated,
           side.damageFlash,
+          side.mitigatedFlash,
           side.dodgeFlash,
           side.extraFlash,
         ]);
@@ -222,6 +232,21 @@ describe('la timeline d’un combat, sur les fixtures capturées', () => {
         }
       });
 
+      it('n’allume la part absorbée que lorsqu’il y a une armure', () => {
+        for (const beat of timeline.beats) {
+          if (beat.kind !== 'attack') {
+            continue;
+          }
+
+          const taking = beat.attacker === 'PLAYER' ? timeline.enemy : timeline.player;
+          const peak = beat.at + Math.round((beat.until - beat.at) / 3);
+
+          // « dont 0 absorbés » dirait le contraire de ce qui se passe : sans Endurance, il
+          // n'y a rien à annoncer. `victoire` n'a aucune mitigation des deux côtés.
+          assert.equal(valueAt(taking.mitigatedFlash, peak), beat.mitigated > 0 ? 1 : 0);
+        }
+      });
+
       it('allume l’éclat de l’esquive chez l’esquiveur, jamais chez l’attaquant', () => {
         for (const beat of timeline.beats) {
           if (beat.kind !== 'dodge') {
@@ -239,7 +264,7 @@ describe('la timeline d’un combat, sur les fixtures capturées', () => {
 
       it('éteint tous les éclats au départ comme à l’arrivée', () => {
         for (const side of [timeline.player, timeline.enemy]) {
-          for (const flash of [side.damageFlash, side.dodgeFlash, side.extraFlash]) {
+          for (const flash of [side.damageFlash, side.mitigatedFlash, side.dodgeFlash, side.extraFlash]) {
             assert.equal(valueAt(flash, 0), 0);
             assert.equal(valueAt(flash, timeline.duration), 0, 'un éclat reste allumé à la fin');
           }
@@ -260,6 +285,79 @@ describe('la timeline d’un combat, sur les fixtures capturées', () => {
       });
     });
   }
+});
+
+describe('le bilan que l’écran de fin raconte', () => {
+  for (const [name, battle] of FIXTURES) {
+    describe(name, () => {
+      const { tally } = buildBattleTimeline(battle);
+
+      it('prend le nombre de tours du serveur, sans le recompter', () => {
+        // Un tour n'est pas un événement — un tour supplémentaire en produit deux — et le
+        // recompter ici serait réimplémenter une règle du jeu.
+        assert.equal(tally.turns, battle.turns);
+      });
+
+      it('compte chaque coup une fois et une seule, du bon côté', () => {
+        const attacks = battle.events.filter((event) => event.type === 'ATTACK');
+        const byPlayer = attacks.filter((event) => event.attacker === 'PLAYER');
+
+        assert.equal(tally.blowsLanded, byPlayer.length);
+        assert.equal(tally.blowsTaken, attacks.length - byPlayer.length);
+      });
+
+      it('somme les dégâts portés et encaissés séparément', () => {
+        const sum = (side: 'PLAYER' | 'ENEMY') =>
+          battle.events
+            .filter((event) => event.type === 'ATTACK' && event.attacker === side)
+            .reduce((total, event) => total + (event.damage ?? 0), 0);
+
+        assert.equal(tally.damageDealt, sum('PLAYER'));
+        assert.equal(tally.damageTaken, sum('ENEMY'));
+      });
+
+      it('finit sur les points de vie que le serveur a écrits, jamais sur une soustraction', () => {
+        assert.equal(tally.hpLeft, timelineHpLeft(battle));
+
+        if (battle.result === 'DEFEAT') {
+          assert.equal(tally.hpLeft, 0, 'un joueur vaincu ne garde rien');
+        } else {
+          assert.ok(tally.hpLeft > 0);
+        }
+      });
+
+      it('retient le dernier coup porté, celui qui a conclu', () => {
+        const attacks = battle.events.filter((event) => event.type === 'ATTACK');
+        const last = attacks[attacks.length - 1];
+
+        assert.deepEqual(tally.lastBlow, { by: last.attacker, damage: last.damage });
+      });
+
+      it('range les esquives et les relances du côté de qui en a bénéficié', () => {
+        const dodges = battle.events.filter((event) => event.type === 'DODGE');
+        const extras = battle.events.filter((event) => event.type === 'EXTRA_TURN');
+
+        // Une esquive est portée par l'attaquant dans le contrat : l'esquiveur est l'autre.
+        assert.equal(tally.dodges, dodges.filter((event) => event.attacker === 'ENEMY').length);
+        assert.equal(tally.dodgesConceded, dodges.filter((event) => event.attacker === 'PLAYER').length);
+
+        assert.equal(tally.extraTurns, extras.filter((event) => event.actor === 'PLAYER').length);
+        assert.equal(tally.extraTurnsConceded, extras.filter((event) => event.actor === 'ENEMY').length);
+        assert.equal(tally.dodges + tally.dodgesConceded, dodges.length);
+        assert.equal(tally.extraTurns + tally.extraTurnsConceded, extras.length);
+      });
+    });
+  }
+
+  it('n’a rien à raconter d’un combat sans le moindre coup', () => {
+    // Le serveur n'en produit pas, mais la fonction est pure et doit tenir sur son entrée
+    // vide plutôt que de rendre un `lastBlow` inventé.
+    const { tally } = buildBattleTimeline(fabricated(0));
+
+    assert.equal(tally.lastBlow, null);
+    assert.equal(tally.damageDealt, 0);
+    assert.equal(tally.blowsLanded, 0);
+  });
 });
 
 describe('l’ordre de cause à effet du tour supplémentaire', () => {
