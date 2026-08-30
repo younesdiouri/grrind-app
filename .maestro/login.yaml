@@ -1,0 +1,27 @@
+appId: app.grrind.e2e
+---
+# Le sous-flow de connexion, partagé par les deux scénarios du smoke test.
+#
+# La variante E2E choisit son jeu de données de santé sur l'adresse saisie ici : une adresse
+# qui contient `-empty-` donne un fournisseur sans séance, toutes les autres en donnent
+# quatre. C'est `src/features/health/e2e.ts` qui tranche, et seulement dans un bundle
+# construit avec `EXPO_PUBLIC_E2E=1`.
+- extendedWaitUntil:
+    visible: "Se connecter"
+    timeout: 30000
+- tapOn:
+    id: "login-email"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password"
+- inputText: ${PASSWORD}
+- tapOn: "Se connecter"
+
+# iOS propose d'enregistrer le mot de passe dans le trousseau. L'alerte est système, elle
+# n'appartient pas à l'app, et elle n'apparaît pas à tous les coups : on la referme si elle
+# est là, on ne l'attend pas.
+- runFlow:
+    when:
+      visible: "Plus tard"
+    commands:
+      - tapOn: "Plus tard"

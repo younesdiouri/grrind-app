@@ -18,6 +18,7 @@ export function Field({ label, error, style, ...input }: FieldProps) {
     <View style={styles.field}>
       <Text style={styles.label}>{label.toUpperCase()}</Text>
       <TextInput
+        accessibilityLabel={label}
         {...input}
         style={[styles.input, error !== undefined && styles.inputInvalid, style]}
         placeholderTextColor={color.textMuted}

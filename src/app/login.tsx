@@ -7,6 +7,7 @@ import { Field } from '@/components/Field';
 import { color, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { signIn } from '@/features/auth/session';
+import { isE2eBuild, setE2eHealthScenario } from '@/features/health/e2e';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -18,6 +19,10 @@ export default function LoginScreen() {
   const submit = async () => {
     setBusy(true);
     setFailure(null);
+
+    if (isE2eBuild) {
+      setE2eHealthScenario(email.includes('-empty-') ? 'empty' : 'multiple');
+    }
 
     const outcome = await signIn(email.trim(), password);
 
@@ -38,6 +43,7 @@ export default function LoginScreen() {
         <Text style={styles.intro}>Reprends là où tu t&apos;es arrêté.</Text>
 
         <Field
+          testID="login-email"
           label="Adresse e-mail"
           value={email}
           onChangeText={setEmail}
@@ -51,6 +57,7 @@ export default function LoginScreen() {
         />
 
         <Field
+          testID="login-password"
           label="Mot de passe"
           value={password}
           onChangeText={setPassword}

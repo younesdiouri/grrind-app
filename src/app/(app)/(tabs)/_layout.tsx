@@ -36,6 +36,14 @@ import { color, space } from '@/design/tokens';
  *
  * Il se pose donc juste après Santé, qui reste devant lui : c'est la synchronisation qui rend
  * un combattant plus fort, et l'ordre de la barre raconte cette dépendance-là.
+ *
+ * ————— Pourquoi chaque onglet porte un `testID` (#122) ————————————————————————————————
+ *
+ * iOS ne rend pas le libellé de l'onglet tel qu'il est écrit ici : il le compose avec son
+ * rôle et sa position — « Accueil » devient « Accueil, tab, 1 of 5 ». Un pilote E2E qui
+ * cherche le texte exact ne trouve donc rien, et celui qui cherche le texte composé dépend
+ * d'une phrase que ni nous ni la langue du simulateur ne décidons. `tabBarButtonTestID` pose
+ * un identifiant que personne ne reformule.
  */
 export default function TabsLayout() {
   return (
@@ -52,6 +60,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          tabBarButtonTestID: 'tab-accueil',
           title: 'GRRIND',
           tabBarLabel: 'Accueil',
           tabBarIcon: ({ color: tint }) => <TabIcon name="house" color={tint} />,
@@ -60,6 +69,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="sante"
         options={{
+          tabBarButtonTestID: 'tab-sante',
           title: 'Santé',
           tabBarIcon: ({ color: tint }) => (
             <TabIcon name="heart.text.square" color={tint} />
@@ -69,6 +79,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="combat"
         options={{
+          tabBarButtonTestID: 'tab-combat',
           title: 'Combat',
           tabBarIcon: ({ color: tint }) => <TabIcon name="bolt.shield" color={tint} />,
         }}
@@ -76,6 +87,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="guilde"
         options={{
+          tabBarButtonTestID: 'tab-guilde',
           title: 'Guilde',
           tabBarIcon: ({ color: tint }) => <TabIcon name="person.2" color={tint} />,
         }}
@@ -83,6 +95,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="reglages"
         options={{
+          tabBarButtonTestID: 'tab-reglages',
           title: 'Réglages',
           tabBarIcon: ({ color: tint }) => <TabIcon name="gearshape" color={tint} />,
         }}

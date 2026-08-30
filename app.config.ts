@@ -25,7 +25,9 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  * Une seule variable d'environnement, pas un système : `APP_VARIANT=development`, ou rien.
  * Posée par le profil `development` d'`eas.json` et par le script `npm run ios`.
  */
-const isDevelopmentVariant = process.env.APP_VARIANT === 'development';
+const variant = process.env.APP_VARIANT;
+const isDevelopmentVariant = variant === 'development';
+const isE2eVariant = variant === 'e2e';
 
 /**
  * L'identifiant de la variante de dev.
@@ -35,22 +37,25 @@ const isDevelopmentVariant = process.env.APP_VARIANT === 'development';
  * lit pour obtenir un jeton, donc le changer casserait le push des deux côtés.
  */
 const DEV_IDENTIFIER = 'app.grrind.dev';
+const E2E_IDENTIFIER = 'app.grrind.e2e';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  if (!isDevelopmentVariant) {
+  if (!isDevelopmentVariant && !isE2eVariant) {
     return config as ExpoConfig;
   }
 
+  const identifier = isE2eVariant ? E2E_IDENTIFIER : DEV_IDENTIFIER;
+
   return {
     ...(config as ExpoConfig),
-    name: 'GRRIND dev',
+    name: isE2eVariant ? 'GRRIND E2E' : 'GRRIND dev',
     /**
      * **Le schéma change aussi, et ce n'est pas un détail cosmétique.** Deux apps installées
      * qui répondent toutes les deux à `grrindapp://`, c'est iOS qui choisit laquelle ouvre un
      * lien — et il ne dit pas laquelle, ni ne s'en explique. Le jour où un lien de partage de
      * guilde ouvrira la mauvaise, on cherchera longtemps.
      */
-    scheme: 'grrindapp-dev',
+    scheme: isE2eVariant ? 'grrindapp-e2e' : 'grrindapp-dev',
     /**
      * Une icône visiblement différente, par le mécanisme d'Apple Icon Composer lui-même : le
      * même bundle, avec un dégradé ambre au lieu du bleu. Deux apps indiscernables sur
@@ -59,7 +64,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     icon: './assets/expo-dev.icon',
     ios: {
       ...config.ios,
-      bundleIdentifier: DEV_IDENTIFIER,
+      bundleIdentifier: identifier,
       icon: './assets/expo-dev.icon',
       entitlements: {
         ...config.ios?.entitlements,
@@ -92,7 +97,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       ...config.android,
-      package: DEV_IDENTIFIER,
+      package: identifier,
     },
   };
 };

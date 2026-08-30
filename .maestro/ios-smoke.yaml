@@ -1,0 +1,92 @@
+appId: app.grrind.e2e
+tags:
+  - smoke
+  - ios
+---
+# ————— Ce que ce flow prouve ————————————————————————————————————————————————————————————
+#
+# Deux comptes neufs, deux jeux de données de santé déterministes, et la chaîne complète entre
+# les deux : connexion, synchronisation, crédit, mise en scène, historique.
+#
+# ————— Deux règles de Maestro qu'on paye si on les oublie ————————————————————————————————
+#
+# **Le texte se compare en entier.** `"Accueil"` ne trouve pas un onglet dont iOS a composé le
+# libellé en « Accueil, tab, 1 of 5 ». D'où les `id:` sur la barre d'onglets — posés par
+# `tabBarButtonTestID` — et les `.*` là où le libellé porte plus que ce qu'on cherche.
+#
+# **L'écran de récompense est un seul élément.** Il est enveloppé dans un `Pressable`, qui
+# agrège l'accessibilité de tous ses enfants en une phrase unique. On y cherche donc des
+# fragments, jamais un texte exact.
+
+- launchApp:
+    clearState: true
+
+# ————— Scénario « aucune séance » ————————————————————————————————————————————————————————
+
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${EMPTY_EMAIL}
+
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 30000
+- assertVisible: "Aucune séance"
+- takeScreenshot: 01-empty-home
+
+- tapOn:
+    id: "tab-sante"
+- extendedWaitUntil:
+    visible: "Aucune activité trouvée"
+    timeout: 30000
+- takeScreenshot: 02-empty-health
+
+- tapOn:
+    id: "tab-reglages"
+- scrollUntilVisible:
+    element:
+      text: "Se déconnecter"
+    direction: DOWN
+- tapOn: "Se déconnecter"
+- extendedWaitUntil:
+    visible: "Connexion"
+    timeout: 15000
+
+# ————— Scénario « plusieurs séances » ————————————————————————————————————————————————————
+#
+# Quatre séances sont lisibles, trois tombent dans la fenêtre d'import : la quatrième a
+# quarante-cinq jours et prouve que la fenêtre est bien celle du client.
+#
+# **Un processus neuf, et ce n'est pas du confort.** Le coordinateur de synchronisation refuse
+# une seconde tentative dans les trente secondes qui suivent la précédente, et son horloge est
+# un singleton de module que la déconnexion n'efface pas. Enchaîner les deux sessions dans le
+# même processus ferait dépendre l'import du second compte du temps qu'a pris le premier
+# scénario — sous les trente secondes, rien ne part et rien ne le dit.
+
+- launchApp:
+    clearState: true
+
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${MULTIPLE_EMAIL}
+
+- extendedWaitUntil:
+    visible: ".*Toucher pour continuer.*"
+    timeout: 90000
+- assertVisible: ".*3 séances.*"
+- assertVisible: ".*Premiers pas.*"
+- takeScreenshot: 03-reward-summary
+
+# La mise en scène a pris l'écran toute seule, et c'est la règle : `mayOpenReward` laisse
+# passer tant que personne n'a touché la coquille de l'app depuis le lancement. Le formulaire
+# de connexion vit **hors** de cette coquille — c'est pour ça qu'y taper ne compte pas, et que
+# le joueur qui se connecte voit sa progression tout de suite plutôt qu'au lancement suivant.
+
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 20000
+- assertVisible: "3 séances.*"
+- takeScreenshot: 04-multiple-history

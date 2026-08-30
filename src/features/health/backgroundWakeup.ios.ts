@@ -4,6 +4,7 @@ import GrrindHealth from '@/../modules/grrind-health/src/GrrindHealthModule';
 
 import { shouldCommitAnchor } from '@/features/health/anchorPolicy';
 import { creditedNotice } from '@/features/health/creditedNotice';
+import { isE2eBuild } from '@/features/health/e2e';
 import { noteRegistration, noteWake } from '@/features/health/journal';
 import { sync } from '@/features/health/sync';
 
@@ -28,6 +29,10 @@ import { sync } from '@/features/health/sync';
  * prochain appel, au prochain lancement, retentera de lui-même.
  */
 export async function enableBackgroundWakeup(): Promise<void> {
+  if (isE2eBuild) {
+    return;
+  }
+
   try {
     await GrrindHealth.enableBackgroundDelivery();
     noteRegistration(true);
@@ -48,6 +53,10 @@ export async function enableBackgroundWakeup(): Promise<void> {
  * déclencheurs.
  */
 export function startBackgroundWakeup(): () => void {
+  if (isE2eBuild) {
+    return () => undefined;
+  }
+
   const subscription = GrrindHealth.addListener('onWorkoutsChanged', (event) => {
     void handleWakeup(event.anchor);
   });

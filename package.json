@@ -61,6 +61,7 @@
     "previews": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/use-module-hooks.ts scripts/build-previews.ts",
     "previews:check": "npm run previews && git diff --exit-code --stat previews && test -z \"$(git status --porcelain previews)\"",
     "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/use-module-hooks.ts \"src/**/*.test.ts\"",
+    "test:e2e:ios": "./scripts/e2e-ios.sh",
     "api:pull": "curl -sfL -o api/openapi.yaml https://raw.githubusercontent.com/younesdiouri/grrind-back/main/openapi.yaml",
     "api:generate": "npx --yes openapi-typescript@7.13.0 api/openapi.yaml -o src/api/schema.d.ts",
     "api:check": "npm run api:pull && npm run api:generate && git diff --exit-code --stat api/openapi.yaml src/api/schema.d.ts"
