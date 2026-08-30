@@ -406,6 +406,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_rewards_inventory_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventory/equipment/{slot}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_rewards_inventory_equip"];
+        post?: never;
+        delete: operations["delete_rewards_inventory_unequip"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventory/coins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_rewards_coin_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/daily-activity": {
         parameters: {
             query?: never;
@@ -515,7 +563,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -1179,14 +1227,127 @@ export interface components {
             /** @example 5108 */
             after: number;
         };
+        /** @description Un effet porté par un objet tombé — même vocabulaire que `ModifierType`, jamais un mécanisme parallèle. */
+        DroppedItemModifier: {
+            /** @enum {string} */
+            type: "XP_MULTIPLIER" | "LOOT_LUCK" | "STREAK_SHIELD" | "UNLOCK_SESSION_TYPE" | "STRENGTH_BONUS" | "ENDURANCE_BONUS" | "MOBILITY_BONUS" | "DEXTERITY_BONUS" | "HP_BONUS" | "DAMAGE_BONUS" | "MITIGATION_BONUS" | "EXTRA_TURN_BONUS" | "DODGE_BONUS";
+            /**
+             * @description Un entier dont l'unité dépend de `type` — un pourcentage pour `XP_MULTIPLIER`, des points d'XP répartis pour un bonus de caractéristique. Jamais un flottant sur une valeur de jeu.
+             * @example 5
+             */
+            value: number;
+            /** @description `null` = l'effet s'applique partout. Une valeur = seulement à cette discipline. */
+            discipline: components["schemas"]["Discipline"] | null;
+        };
+        /**
+         * @description Un objet tombé d'un tirage (#226), de quoi l'afficher **sans requête
+         *     supplémentaire** — même geste qu'un titre dans `PlayerTitle`.
+         */
+        DroppedItem: {
+            /**
+             * @description La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire.
+             * @example WORN_RUNNING_SHOES
+             */
+            key: string;
+            /**
+             * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
+             * @example Chaussures de course usées
+             */
+            name: string;
+            /** @enum {string} */
+            rarity: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY";
+            /** @enum {string} */
+            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON";
+            /** @description Dans l'ordre du catalogue. */
+            modifiers: components["schemas"]["DroppedItemModifier"][];
+            /**
+             * @description En pièces — de quoi afficher la valeur de l'objet sans recharger le catalogue.
+             * @example 30
+             */
+            priceCoins: number;
+        };
+        /**
+         * @description Un objet possédé (#30) — la même forme que `DroppedItem`, une seule clé de plus :
+         *     `quantity`. Ce n'est pas une troisième forme d'objet, c'est la même, augmentée d'un
+         *     fait qu'un tirage n'a jamais eu à porter — un objet qui tombe en crée ou en
+         *     incrémente une, il n'en a jamais une à afficher lui-même.
+         */
+        InventoryLine: components["schemas"]["DroppedItem"] & {
+            /**
+             * @description Le nombre d'exemplaires possédés — pas de vente ni de rebut en v1, il ne redescend jamais.
+             * @example 1
+             */
+            quantity: number;
+        };
+        /**
+         * @description `GET /api/inventory`, et ce que `PUT`/`DELETE /api/inventory/equipment/{slot}`
+         *     rendent après une mutation, pour un seul aller-retour — le sac, la doublure
+         *     équipée par emplacement, la bourse.
+         *
+         *     `equipment` porte toujours les sept emplacements d'`EquipmentSlot`, `null` pour
+         *     ceux qui sont vides — jamais une clé absente, qui forcerait le client à distinguer
+         *     « pas encore chargé » de « rien ici ». `items` porte tout ce que le joueur possède,
+         *     équipé compris : ce n'est pas une donnée à recouper contre `equipment`, c'est la
+         *     même ligne, vue sous un autre angle.
+         */
+        Inventory: {
+            /** @description Le solde de la bourse — cet écran lui appartient autant qu'au sac. */
+            coins: number;
+            equipment: {
+                HEAD: components["schemas"]["InventoryLine"] | null;
+                CHEST: components["schemas"]["InventoryLine"] | null;
+                HANDS: components["schemas"]["InventoryLine"] | null;
+                LEGS: components["schemas"]["InventoryLine"] | null;
+                FEET: components["schemas"]["InventoryLine"] | null;
+                ACCESSORY: components["schemas"]["InventoryLine"] | null;
+                WEAPON: components["schemas"]["InventoryLine"] | null;
+            };
+            items: components["schemas"]["InventoryLine"][];
+        };
+        /**
+         * @description Une écriture au ledger de pièces (#30) — le pendant, en beaucoup plus simple, de
+         *     `XpTransaction` : `amount` **est** l'écriture, il n'y a ni breakdown ni répartition
+         *     à recomposer.
+         */
+        CoinTransaction: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Ce qui a produit l'écriture — l'identifiant du workout ou du combat. Le nom du ledger, pas celui d'une séance.
+             */
+            sourceId: string;
+            /** @enum {string} */
+            reason: "WORKOUT_DROP" | "BATTLE_DROP";
+            /** @description Signé. Aucune ligne négative n'existe encore en v1 — la garde s'applique malgré tout à tout appel, quel que soit le signe. */
+            amount: number;
+            /**
+             * Format: date-time
+             * @description L'instant du fait — la date du sport ou du combat, pas celle de l'écriture.
+             */
+            occurredAt: string;
+        };
+        /**
+         * @description `GET /api/inventory/coins` : le solde, et une page de mouvements dans l'ordre du
+         *     fait — `occurredAt` décroissant, puis l'identifiant pour départager, même tri
+         *     qu'`XpHistoryPage` et `BattlePage`. Une pièce créditée par un vieux workout se
+         *     range à la date de ce workout, pas à celle de l'écriture — voir le docblock de
+         *     `CoinTransactionRepository::history()`.
+         */
+        CoinHistoryPage: {
+            balance: number;
+            transactions: components["schemas"]["CoinTransaction"][];
+            nextCursor: string | null;
+        };
         /**
          * @description Ce que le joueur reçoit pour **un** workout crédité. Un `SyncSummary` en contient
          *     autant qu'il y a eu de séances, dans l'ordre chronologique.
          *
          *     **L'ordre des champs est l'ordre de l'animation** : le client le joue de haut en
          *     bas — la séance se referme, la barre d'XP se remplit ligne à ligne, **les cinq
-         *     jauges de caractéristiques montent**, le niveau bascule, le titre tombe, puis le
-         *     loot et la série. Un champ déplacé change la mise en scène.
+         *     jauges de caractéristiques montent**, le niveau bascule, le titre tombe, le loot
+         *     se révèle, **puis** les pièces tombent dedans. Un champ déplacé change la mise
+         *     en scène.
          *
          *     `attributes` se place entre `xp` et `level`, et nulle part ailleurs : les
          *     caractéristiques sont la conséquence directe de l'XP qui vient de tomber, le
@@ -1194,11 +1355,22 @@ export interface components {
          *     répartition qui l'alimente.
          *
          *     **Un seul aller-retour.** Rien ici ne demande de recharger quoi que ce soit avant de
-         *     jouer l'animation — d'où le palier donné avant *et* après, et les titres déjà
-         *     traduits. `attributes` suit la même règle, Vitality comprise.
+         *     jouer l'animation — d'où le palier donné avant *et* après, les titres déjà
+         *     traduits, et `loot` qui porte de quoi afficher chaque objet sans recharger le
+         *     catalogue. `attributes` suit la même règle, Vitality comprise.
          *
-         *     `loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux Lots 6, 5
-         *     et 7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la
+         *     **`coins` se place entre `loot` et `streak`, jamais ailleurs** — même geste que
+         *     les jauges de caractéristiques et le palier de niveau, `{gained, before, after}`,
+         *     et pour la même raison : une bourse qui repartirait du solde final ne s'anime
+         *     pas. `before`/`after` sont lus sur le solde réel du joueur, jamais reconstitués
+         *     depuis `gained`.
+         *
+         *     **Une séance sans tirage** — non créditée, ou sans table éligible — porte
+         *     `loot: []` et un `coins` à gain nul, jamais des clés absentes : le client anime
+         *     la même séquence dans tous les cas.
+         *
+         *     `streak` et `unlockableNodes` restent **présents et vides** jusqu'aux Lots 5 et
+         *     7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la
          *     rendre optionnelle pour toujours.
          */
         RewardSummary: {
@@ -1278,8 +1450,20 @@ export interface components {
             };
             /** @description Vide le plus souvent — un titre est un événement rare, c'est ce qui en fait un. */
             titlesUnlocked: components["schemas"]["PlayerTitle"][];
-            /** @description Lot 6 : toujours vide aujourd'hui. */
-            loot: Record<string, never>[];
+            /** @description Ce qui est tombé de cette séance (#226). Vide le plus souvent — voir le docblock de `LootRoller` — et jamais absent : une séance non créditée ou sans table éligible porte `[]`. */
+            loot: components["schemas"]["DroppedItem"][];
+            /** @description Entre `loot` et `streak` : le loot se révèle, puis les pièces tombent dedans (#226). */
+            coins: {
+                /**
+                 * @description Peut valoir zéro : aucune table éligible, ou séance non créditée.
+                 * @example 12
+                 */
+                gained: number;
+                /** @example 40 */
+                before: number;
+                /** @example 52 */
+                after: number;
+            };
             /** @description Lot 5 : toujours `null` aujourd'hui. */
             streak: Record<string, never> | null;
             /** @description Lot 7 : toujours vide aujourd'hui. */
@@ -1522,16 +1706,41 @@ export interface components {
             result?: "VICTORY" | "DEFEAT";
         };
         /**
+         * @description Ce qu'une victoire a rapporté (#227) — persisté sur la ligne du combat, jamais
+         *     rejoué depuis la graine : le jour où `loot.yaml` est rééquilibré, rejouer un
+         *     vieux tirage sous les tables courantes rendrait un butin différent de celui que
+         *     le joueur a vu tomber.
+         *
+         *     **Vide pour une défaite, ou une victoire tranchée par `max_turns` sans KO** —
+         *     `loot: []` et `coins` à gain nul, jamais des clés absentes : une récompense de
+         *     consolation ferait du combat perdu la stratégie optimale, puisqu'il est plus
+         *     rapide à jouer qu'à gagner.
+         *
+         *     Même forme, mêmes clés, dans le même ordre que `loot`/`coins` sur
+         *     `RewardSummary` — les objets d'abord, les pièces ensuite — pour que le client
+         *     réutilise le composant qu'il a déjà écrit.
+         */
+        BattleReward: {
+            /** @description Vide pour une défaite, ou si l'adversaire n'a pas de table dédiée. */
+            loot: components["schemas"]["DroppedItem"][];
+            coins: {
+                /**
+                 * @description Peut valoir zéro : défaite, ou adversaire sans table dédiée.
+                 * @example 8
+                 */
+                gained: number;
+                /** @example 40 */
+                before: number;
+                /** @example 48 */
+                after: number;
+            };
+        };
+        /**
          * @description Un combat PvE joué et jugé — ce que rendent `POST /api/battles` et
          *     `GET /api/battles/{id}`, à l'identique.
          *
          *     **L'ordre des champs est l'ordre de l'animation**, et c'est un contrat, pas une
          *     convention d'écriture — même règle que `RewardSummary`.
-         *
-         *     **`rewards` est présent et vide dès maintenant.** Aucune récompense en V1, mais
-         *     il y en aura une : la déclarer plus tard obligerait un client déjà déployé à la
-         *     traiter comme facultative pour toujours — même argument que `loot`, `streak` et
-         *     `unlockableNodes` sur le `RewardSummary`.
          */
         Battle: {
             /** Format: uuid */
@@ -1552,8 +1761,7 @@ export interface components {
             enemy: components["schemas"]["BattleEnemy"];
             /** @description La timeline complète, dans l'ordre de l'animation. */
             events: components["schemas"]["BattleEvent"][];
-            /** @description Lot 6 : toujours vide aujourd'hui — voir la description de la classe. */
-            rewards: Record<string, never>[];
+            rewards: components["schemas"]["BattleReward"];
         };
         /**
          * @description Une ligne de `GET /api/battles` (#220) — **jamais la timeline**. `Battle` peut
@@ -1565,6 +1773,9 @@ export interface components {
          *     par `max_turns` sans KO — voir la description de `Battle.result`. C'est ce qui
          *     permet à la liste d'être colorée ligne par ligne sans aucun troisième état à
          *     dessiner.
+         *
+         *     `rewards` rend `Battle.rewards` à l'identique (#227) : c'est une ligne déjà
+         *     écrite, rien à recalculer pour l'afficher dans la liste.
          */
         BattleSummary: {
             /** Format: uuid */
@@ -1587,6 +1798,7 @@ export interface components {
             turns: number;
             /** Format: date-time */
             foughtAt: string;
+            rewards: components["schemas"]["BattleReward"];
         };
         /**
          * @description Une page d'historique, **dans l'ordre du combat** : `foughtAt` décroissant, puis
@@ -1645,8 +1857,14 @@ export interface components {
          *     tableau nu à la racine, même convention que `WorkoutPage` et `TitleBoard` : c'est ce
          *     qui laisse la place à un champ frère plus tard sans casser un client déjà déployé.
          *     Ennemis ordinaires puis boss, dans l'ordre de déclaration de chaque liste.
+         *
+         *     **`player` précède `enemies` (#227) : c'est le combattant de l'appelant,
+         *     modificateurs équipés compris** — le seul endroit de l'API où leur effet se lit
+         *     avant de s'engager dans un combat. `GET /api/progression` continue de rendre le
+         *     socle nu du ledger ; c'est délibéré.
          */
         EnemyCatalog: {
+            player: components["schemas"]["BattleFighter"];
             enemies: components["schemas"]["Enemy"][];
         };
         FightBattleRequest: {
@@ -1738,6 +1956,16 @@ export interface components {
         SelectTitleRequest: {
             /** @default null */
             titleId: string | null;
+        };
+        EquipItemRequest: {
+            /** @default  */
+            itemKey: string;
+        };
+        CoinHistoryQuery: {
+            /** @default null */
+            cursor: string | null;
+            /** @default 20 */
+            limit: number;
         };
         /** @enum {string} */
         WorkoutSource: "APPLE_HEALTH" | "HEALTH_CONNECT";
@@ -1915,7 +2143,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Le catalogue entier — ennemis ordinaires et boss, dans cet ordre, chacun avec son nom traduit et son niveau minimum. */
+            /** @description Le combattant de l'appelant, puis le catalogue entier — ennemis ordinaires et boss, dans cet ordre, chacun avec son nom traduit et son niveau minimum. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2823,6 +3051,120 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    get_rewards_inventory_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Le sac, la doublure équipée par emplacement, et le solde de pièces. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Inventory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    put_rewards_inventory_equip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slot: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EquipItemRequest"];
+            };
+        };
+        responses: {
+            /** @description L'inventaire, après échange : l'objet est en place, l'ancien occupant de l'emplacement — s'il y en avait un — est retourné au sac. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Inventory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Emplacement inconnu (`equipment-slot-unknown`), objet non possédé (`item-not-owned`), ou objet incompatible avec l'emplacement demandé (`equipment-slot-incompatible`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    delete_rewards_inventory_unequip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slot: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description L'inventaire, l'emplacement vidé. Le vider alors qu'il l'était déjà rend la même réponse. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Inventory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Emplacement inconnu (`equipment-slot-unknown`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    get_rewards_coin_history: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Le solde, et une page de mouvements du plus récent au plus ancien. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoinHistoryPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
             422: components["responses"]["UnprocessableEntity"];
         };
     };

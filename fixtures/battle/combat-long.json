@@ -1,8 +1,8 @@
 {
-  "id": "01a04ea7-df44-7b36-b844-4e6550428f4a",
+  "id": "01a054b7-3af4-7c28-bb9d-0dbb19c27508",
   "result": "DEFEAT",
-  "turns": 33,
-  "foughtAt": "2026-08-29T17:53:39+00:00",
+  "turns": 34,
+  "foughtAt": "2026-08-30T22:08:09+00:00",
   "player": {
     "hp": 373,
     "damage": 19,
@@ -68,28 +68,6 @@
       "targetHpRemaining": 304
     },
     {
-      "type": "EXTRA_TURN",
-      "actor": "ENEMY"
-    },
-    {
-      "type": "ATTACK",
-      "attacker": "ENEMY",
-      "damage": 23,
-      "mitigated": 3,
-      "targetHpRemaining": 281
-    },
-    {
-      "type": "DODGE",
-      "attacker": "PLAYER"
-    },
-    {
-      "type": "ATTACK",
-      "attacker": "ENEMY",
-      "damage": 23,
-      "mitigated": 3,
-      "targetHpRemaining": 258
-    },
-    {
       "type": "ATTACK",
       "attacker": "PLAYER",
       "damage": 17,
@@ -101,7 +79,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 235
+      "targetHpRemaining": 281
     },
     {
       "type": "ATTACK",
@@ -115,7 +93,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 212
+      "targetHpRemaining": 258
     },
     {
       "type": "ATTACK",
@@ -129,7 +107,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 189
+      "targetHpRemaining": 235
     },
     {
       "type": "ATTACK",
@@ -143,7 +121,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 166
+      "targetHpRemaining": 212
     },
     {
       "type": "ATTACK",
@@ -157,7 +135,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 143
+      "targetHpRemaining": 189
     },
     {
       "type": "ATTACK",
@@ -171,7 +149,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 120
+      "targetHpRemaining": 166
     },
     {
       "type": "ATTACK",
@@ -185,7 +163,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 97
+      "targetHpRemaining": 143
     },
     {
       "type": "ATTACK",
@@ -199,7 +177,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 74
+      "targetHpRemaining": 120
     },
     {
       "type": "ATTACK",
@@ -213,7 +191,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 51
+      "targetHpRemaining": 97
     },
     {
       "type": "ATTACK",
@@ -227,7 +205,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 28
+      "targetHpRemaining": 74
     },
     {
       "type": "ATTACK",
@@ -241,7 +219,7 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
-      "targetHpRemaining": 5
+      "targetHpRemaining": 51
     },
     {
       "type": "ATTACK",
@@ -255,6 +233,34 @@
       "attacker": "ENEMY",
       "damage": 23,
       "mitigated": 3,
+      "targetHpRemaining": 28
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 108
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
+      "targetHpRemaining": 5
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 17,
+      "mitigated": 2,
+      "targetHpRemaining": 91
+    },
+    {
+      "type": "ATTACK",
+      "attacker": "ENEMY",
+      "damage": 23,
+      "mitigated": 3,
       "targetHpRemaining": 0
     },
     {
@@ -262,5 +268,12 @@
       "result": "DEFEAT"
     }
   ],
-  "rewards": []
+  "rewards": {
+    "loot": [],
+    "coins": {
+      "gained": 0,
+      "before": 690,
+      "after": 690
+    }
+  }
 }

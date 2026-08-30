@@ -11,7 +11,7 @@ paths:
       operationId: get_combat_enemies_list
       responses:
         '200':
-          description: 'Le catalogue entier — ennemis ordinaires et boss, dans cet ordre, chacun avec son nom traduit et son niveau minimum.'
+          description: "Le combattant de l'appelant, puis le catalogue entier — ennemis ordinaires et boss, dans cet ordre, chacun avec son nom traduit et son niveau minimum."
           content:
             application/json:
               schema:
@@ -755,6 +755,113 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
+  /api/inventory:
+    get:
+      tags:
+        - Récompenses
+      operationId: get_rewards_inventory_show
+      responses:
+        '200':
+          description: 'Le sac, la doublure équipée par emplacement, et le solde de pièces.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  '/api/inventory/equipment/{slot}':
+    put:
+      tags:
+        - Récompenses
+      operationId: put_rewards_inventory_equip
+      parameters:
+        -
+          name: slot
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipItemRequest'
+      responses:
+        '200':
+          description: "L'inventaire, après échange : l'objet est en place, l'ancien occupant de l'emplacement — s'il y en avait un — est retourné au sac."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: "Emplacement inconnu (`equipment-slot-unknown`), objet non possédé (`item-not-owned`), ou objet incompatible avec l'emplacement demandé (`equipment-slot-incompatible`)."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+        - Récompenses
+      operationId: delete_rewards_inventory_unequip
+      parameters:
+        -
+          name: slot
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "L'inventaire, l'emplacement vidé. Le vider alors qu'il l'était déjà rend la même réponse."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: 'Emplacement inconnu (`equipment-slot-unknown`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /api/inventory/coins:
+    get:
+      tags:
+        - Récompenses
+      operationId: get_rewards_coin_history
+      parameters:
+        -
+          name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+            default: null
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+            minimum: 1
+      responses:
+        '200':
+          description: 'Le solde, et une page de mouvements du plus récent au plus ancien.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoinHistoryPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
   /api/daily-activity:
     put:
       tags:
@@ -952,6 +1059,10 @@ components:
             - 'https://grrind.app/problems/battle-not-found'
             - 'https://grrind.app/problems/enemy-key-unknown'
             - 'https://grrind.app/problems/enemy-level-too-low'
+            - 'https://grrind.app/problems/insufficient-coin-balance'
+            - 'https://grrind.app/problems/item-not-owned'
+            - 'https://grrind.app/problems/equipment-slot-unknown'
+            - 'https://grrind.app/problems/equipment-slot-incompatible'
         title:
           type: string
           example: Conflict
@@ -1734,8 +1845,210 @@ components:
           type: integer
           example: 5108
       type: object
+    DroppedItemModifier:
+      description: 'Un effet porté par un objet tombé — même vocabulaire que `ModifierType`, jamais un mécanisme parallèle.'
+      required:
+        - type
+        - value
+        - discipline
+      properties:
+        type:
+          type: string
+          enum:
+            - XP_MULTIPLIER
+            - LOOT_LUCK
+            - STREAK_SHIELD
+            - UNLOCK_SESSION_TYPE
+            - STRENGTH_BONUS
+            - ENDURANCE_BONUS
+            - MOBILITY_BONUS
+            - DEXTERITY_BONUS
+            - HP_BONUS
+            - DAMAGE_BONUS
+            - MITIGATION_BONUS
+            - EXTRA_TURN_BONUS
+            - DODGE_BONUS
+        value:
+          description: "Un entier dont l'unité dépend de `type` — un pourcentage pour `XP_MULTIPLIER`, des points d'XP répartis pour un bonus de caractéristique. Jamais un flottant sur une valeur de jeu."
+          type: integer
+          example: 5
+        discipline:
+          description: "`null` = l'effet s'applique partout. Une valeur = seulement à cette discipline."
+          nullable: true
+          allOf:
+            -
+              $ref: '#/components/schemas/Discipline'
+      type: object
+    DroppedItem:
+      description: "Un objet tombé d'un tirage (#226), de quoi l'afficher **sans requête\nsupplémentaire** — même geste qu'un titre dans `PlayerTitle`.\n"
+      required:
+        - key
+        - name
+        - rarity
+        - slot
+        - modifiers
+        - priceCoins
+      properties:
+        key:
+          description: "La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire."
+          type: string
+          example: WORN_RUNNING_SHOES
+        name:
+          description: 'Déjà traduit dans la langue du joueur — rien à recharger côté client.'
+          type: string
+          example: 'Chaussures de course usées'
+        rarity:
+          type: string
+          enum:
+            - COMMON
+            - UNCOMMON
+            - RARE
+            - EPIC
+            - LEGENDARY
+        slot:
+          type: string
+          enum:
+            - HEAD
+            - CHEST
+            - HANDS
+            - LEGS
+            - FEET
+            - ACCESSORY
+            - WEAPON
+        modifiers:
+          description: "Dans l'ordre du catalogue."
+          type: array
+          items:
+            $ref: '#/components/schemas/DroppedItemModifier'
+        priceCoins:
+          description: "En pièces — de quoi afficher la valeur de l'objet sans recharger le catalogue."
+          type: integer
+          example: 30
+      type: object
+    InventoryLine:
+      description: "Un objet possédé (#30) — la même forme que `DroppedItem`, une seule clé de plus :\n`quantity`. Ce n'est pas une troisième forme d'objet, c'est la même, augmentée d'un\nfait qu'un tirage n'a jamais eu à porter — un objet qui tombe en crée ou en\nincrémente une, il n'en a jamais une à afficher lui-même.\n"
+      type: object
+      allOf:
+        -
+          $ref: '#/components/schemas/DroppedItem'
+        -
+          required:
+            - quantity
+          properties:
+            quantity:
+              description: "Le nombre d'exemplaires possédés — pas de vente ni de rebut en v1, il ne redescend jamais."
+              type: integer
+              example: 1
+          type: object
+    Inventory:
+      description: "`GET /api/inventory`, et ce que `PUT`/`DELETE /api/inventory/equipment/{slot}`\nrendent après une mutation, pour un seul aller-retour — le sac, la doublure\néquipée par emplacement, la bourse.\n\n`equipment` porte toujours les sept emplacements d'`EquipmentSlot`, `null` pour\nceux qui sont vides — jamais une clé absente, qui forcerait le client à distinguer\n« pas encore chargé » de « rien ici ». `items` porte tout ce que le joueur possède,\néquipé compris : ce n'est pas une donnée à recouper contre `equipment`, c'est la\nmême ligne, vue sous un autre angle.\n"
+      required:
+        - coins
+        - equipment
+        - items
+      properties:
+        coins:
+          description: "Le solde de la bourse — cet écran lui appartient autant qu'au sac."
+          type: integer
+        equipment:
+          required:
+            - HEAD
+            - CHEST
+            - HANDS
+            - LEGS
+            - FEET
+            - ACCESSORY
+            - WEAPON
+          properties:
+            HEAD:
+              nullable: true
+              allOf:
+                -
+                  $ref: '#/components/schemas/InventoryLine'
+            CHEST:
+              nullable: true
+              allOf:
+                -
+                  $ref: '#/components/schemas/InventoryLine'
+            HANDS:
+              nullable: true
+              allOf:
+                -
+                  $ref: '#/components/schemas/InventoryLine'
+            LEGS:
+              nullable: true
+              allOf:
+                -
+                  $ref: '#/components/schemas/InventoryLine'
+            FEET:
+              nullable: true
+              allOf:
+                -
+                  $ref: '#/components/schemas/InventoryLine'
+            ACCESSORY:
+              nullable: true
+              allOf:
+                -
+                  $ref: '#/components/schemas/InventoryLine'
+            WEAPON:
+              nullable: true
+              allOf:
+                -
+                  $ref: '#/components/schemas/InventoryLine'
+          type: object
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryLine'
+      type: object
+    CoinTransaction:
+      description: "Une écriture au ledger de pièces (#30) — le pendant, en beaucoup plus simple, de\n`XpTransaction` : `amount` **est** l'écriture, il n'y a ni breakdown ni répartition\nà recomposer.\n"
+      required:
+        - id
+        - sourceId
+        - reason
+        - amount
+        - occurredAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        sourceId:
+          description: "Ce qui a produit l'écriture — l'identifiant du workout ou du combat. Le nom du ledger, pas celui d'une séance."
+          type: string
+          format: uuid
+        reason:
+          type: string
+          enum:
+            - WORKOUT_DROP
+            - BATTLE_DROP
+        amount:
+          description: "Signé. Aucune ligne négative n'existe encore en v1 — la garde s'applique malgré tout à tout appel, quel que soit le signe."
+          type: integer
+        occurredAt:
+          description: "L'instant du fait — la date du sport ou du combat, pas celle de l'écriture."
+          type: string
+          format: date-time
+      type: object
+    CoinHistoryPage:
+      description: "`GET /api/inventory/coins` : le solde, et une page de mouvements dans l'ordre du\nfait — `occurredAt` décroissant, puis l'identifiant pour départager, même tri\nqu'`XpHistoryPage` et `BattlePage`. Une pièce créditée par un vieux workout se\nrange à la date de ce workout, pas à celle de l'écriture — voir le docblock de\n`CoinTransactionRepository::history()`.\n"
+      required:
+        - balance
+        - transactions
+        - nextCursor
+      properties:
+        balance:
+          type: integer
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoinTransaction'
+        nextCursor:
+          type: string
+          nullable: true
+      type: object
     RewardSummary:
-      description: "Ce que le joueur reçoit pour **un** workout crédité. Un `SyncSummary` en contient\nautant qu'il y a eu de séances, dans l'ordre chronologique.\n\n**L'ordre des champs est l'ordre de l'animation** : le client le joue de haut en\nbas — la séance se referme, la barre d'XP se remplit ligne à ligne, **les cinq\njauges de caractéristiques montent**, le niveau bascule, le titre tombe, puis le\nloot et la série. Un champ déplacé change la mise en scène.\n\n`attributes` se place entre `xp` et `level`, et nulle part ailleurs : les\ncaractéristiques sont la conséquence directe de l'XP qui vient de tomber, le\nniveau celui du **total** qu'elles composent — il vient donc après la\nrépartition qui l'alimente.\n\n**Un seul aller-retour.** Rien ici ne demande de recharger quoi que ce soit avant de\njouer l'animation — d'où le palier donné avant *et* après, et les titres déjà\ntraduits. `attributes` suit la même règle, Vitality comprise.\n\n`loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux Lots 6, 5\net 7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la\nrendre optionnelle pour toujours.\n"
+      description: "Ce que le joueur reçoit pour **un** workout crédité. Un `SyncSummary` en contient\nautant qu'il y a eu de séances, dans l'ordre chronologique.\n\n**L'ordre des champs est l'ordre de l'animation** : le client le joue de haut en\nbas — la séance se referme, la barre d'XP se remplit ligne à ligne, **les cinq\njauges de caractéristiques montent**, le niveau bascule, le titre tombe, le loot\nse révèle, **puis** les pièces tombent dedans. Un champ déplacé change la mise\nen scène.\n\n`attributes` se place entre `xp` et `level`, et nulle part ailleurs : les\ncaractéristiques sont la conséquence directe de l'XP qui vient de tomber, le\nniveau celui du **total** qu'elles composent — il vient donc après la\nrépartition qui l'alimente.\n\n**Un seul aller-retour.** Rien ici ne demande de recharger quoi que ce soit avant de\njouer l'animation — d'où le palier donné avant *et* après, les titres déjà\ntraduits, et `loot` qui porte de quoi afficher chaque objet sans recharger le\ncatalogue. `attributes` suit la même règle, Vitality comprise.\n\n**`coins` se place entre `loot` et `streak`, jamais ailleurs** — même geste que\nles jauges de caractéristiques et le palier de niveau, `{gained, before, after}`,\net pour la même raison : une bourse qui repartirait du solde final ne s'anime\npas. `before`/`after` sont lus sur le solde réel du joueur, jamais reconstitués\ndepuis `gained`.\n\n**Une séance sans tirage** — non créditée, ou sans table éligible — porte\n`loot: []` et un `coins` à gain nul, jamais des clés absentes : le client anime\nla même séquence dans tous les cas.\n\n`streak` et `unlockableNodes` restent **présents et vides** jusqu'aux Lots 5 et\n7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la\nrendre optionnelle pour toujours.\n"
       required:
         - session
         - xp
@@ -1743,6 +2056,7 @@ components:
         - level
         - titlesUnlocked
         - loot
+        - coins
         - streak
         - unlockableNodes
         - rulesetVersion
@@ -1851,10 +2165,28 @@ components:
           items:
             $ref: '#/components/schemas/PlayerTitle'
         loot:
-          description: "Lot 6 : toujours vide aujourd'hui."
+          description: 'Ce qui est tombé de cette séance (#226). Vide le plus souvent — voir le docblock de `LootRoller` — et jamais absent : une séance non créditée ou sans table éligible porte `[]`.'
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/DroppedItem'
+        coins:
+          description: 'Entre `loot` et `streak` : le loot se révèle, puis les pièces tombent dedans (#226).'
+          required:
+            - gained
+            - before
+            - after
+          properties:
+            gained:
+              description: 'Peut valoir zéro : aucune table éligible, ou séance non créditée.'
+              type: integer
+              example: 12
+            before:
+              type: integer
+              example: 40
+            after:
+              type: integer
+              example: 52
+          type: object
         streak:
           description: "Lot 5 : toujours `null` aujourd'hui."
           type: object
@@ -2172,8 +2504,37 @@ components:
             - VICTORY
             - DEFEAT
       type: object
+    BattleReward:
+      description: "Ce qu'une victoire a rapporté (#227) — persisté sur la ligne du combat, jamais\nrejoué depuis la graine : le jour où `loot.yaml` est rééquilibré, rejouer un\nvieux tirage sous les tables courantes rendrait un butin différent de celui que\nle joueur a vu tomber.\n\n**Vide pour une défaite, ou une victoire tranchée par `max_turns` sans KO** —\n`loot: []` et `coins` à gain nul, jamais des clés absentes : une récompense de\nconsolation ferait du combat perdu la stratégie optimale, puisqu'il est plus\nrapide à jouer qu'à gagner.\n\nMême forme, mêmes clés, dans le même ordre que `loot`/`coins` sur\n`RewardSummary` — les objets d'abord, les pièces ensuite — pour que le client\nréutilise le composant qu'il a déjà écrit.\n"
+      required:
+        - loot
+        - coins
+      properties:
+        loot:
+          description: "Vide pour une défaite, ou si l'adversaire n'a pas de table dédiée."
+          type: array
+          items:
+            $ref: '#/components/schemas/DroppedItem'
+        coins:
+          required:
+            - gained
+            - before
+            - after
+          properties:
+            gained:
+              description: 'Peut valoir zéro : défaite, ou adversaire sans table dédiée.'
+              type: integer
+              example: 8
+            before:
+              type: integer
+              example: 40
+            after:
+              type: integer
+              example: 48
+          type: object
+      type: object
     Battle:
-      description: "Un combat PvE joué et jugé — ce que rendent `POST /api/battles` et\n`GET /api/battles/{id}`, à l'identique.\n\n**L'ordre des champs est l'ordre de l'animation**, et c'est un contrat, pas une\nconvention d'écriture — même règle que `RewardSummary`.\n\n**`rewards` est présent et vide dès maintenant.** Aucune récompense en V1, mais\nil y en aura une : la déclarer plus tard obligerait un client déjà déployé à la\ntraiter comme facultative pour toujours — même argument que `loot`, `streak` et\n`unlockableNodes` sur le `RewardSummary`.\n"
+      description: "Un combat PvE joué et jugé — ce que rendent `POST /api/battles` et\n`GET /api/battles/{id}`, à l'identique.\n\n**L'ordre des champs est l'ordre de l'animation**, et c'est un contrat, pas une\nconvention d'écriture — même règle que `RewardSummary`.\n"
       required:
         - id
         - result
@@ -2210,19 +2571,17 @@ components:
           items:
             $ref: '#/components/schemas/BattleEvent'
         rewards:
-          description: "Lot 6 : toujours vide aujourd'hui — voir la description de la classe."
-          type: array
-          items:
-            type: object
+          $ref: '#/components/schemas/BattleReward'
       type: object
     BattleSummary:
-      description: "Une ligne de `GET /api/battles` (#220) — **jamais la timeline**. `Battle` peut\ncompter deux cents événements (`max_turns`) ; vingt résumés par page restent\nlégers, et le client va chercher `GET /api/battles/{id}` au moment où il choisit\nun combat précis à rejouer.\n\n`result` est **toujours** `VICTORY` ou `DEFEAT`, y compris pour un combat conclu\npar `max_turns` sans KO — voir la description de `Battle.result`. C'est ce qui\npermet à la liste d'être colorée ligne par ligne sans aucun troisième état à\ndessiner.\n"
+      description: "Une ligne de `GET /api/battles` (#220) — **jamais la timeline**. `Battle` peut\ncompter deux cents événements (`max_turns`) ; vingt résumés par page restent\nlégers, et le client va chercher `GET /api/battles/{id}` au moment où il choisit\nun combat précis à rejouer.\n\n`result` est **toujours** `VICTORY` ou `DEFEAT`, y compris pour un combat conclu\npar `max_turns` sans KO — voir la description de `Battle.result`. C'est ce qui\npermet à la liste d'être colorée ligne par ligne sans aucun troisième état à\ndessiner.\n\n`rewards` rend `Battle.rewards` à l'identique (#227) : c'est une ligne déjà\nécrite, rien à recalculer pour l'afficher dans la liste.\n"
       required:
         - id
         - result
         - enemy
         - turns
         - foughtAt
+        - rewards
       properties:
         id:
           type: string
@@ -2251,6 +2610,8 @@ components:
         foughtAt:
           type: string
           format: date-time
+        rewards:
+          $ref: '#/components/schemas/BattleReward'
       type: object
     BattlePage:
       description: "Une page d'historique, **dans l'ordre du combat** : `foughtAt` décroissant, puis\nl'identifiant pour départager deux combats livrés à la même seconde.\n\n`nextCursor` est une **chaîne opaque** — le client la renvoie telle quelle. `null`\nsignifie la fin ; il n'y a pas de total, un défilement infini n'en a aucun usage.\n"
@@ -2313,10 +2674,13 @@ components:
           example: 9
       type: object
     EnemyCatalog:
-      description: "Le catalogue entier rendu par `GET /api/enemies` — niché sous `enemies`, jamais un\ntableau nu à la racine, même convention que `WorkoutPage` et `TitleBoard` : c'est ce\nqui laisse la place à un champ frère plus tard sans casser un client déjà déployé.\nEnnemis ordinaires puis boss, dans l'ordre de déclaration de chaque liste.\n"
+      description: "Le catalogue entier rendu par `GET /api/enemies` — niché sous `enemies`, jamais un\ntableau nu à la racine, même convention que `WorkoutPage` et `TitleBoard` : c'est ce\nqui laisse la place à un champ frère plus tard sans casser un client déjà déployé.\nEnnemis ordinaires puis boss, dans l'ordre de déclaration de chaque liste.\n\n**`player` précède `enemies` (#227) : c'est le combattant de l'appelant,\nmodificateurs équipés compris** — le seul endroit de l'API où leur effet se lit\navant de s'engager dans un combat. `GET /api/progression` continue de rendre le\nsocle nu du ledger ; c'est délibéré.\n"
       required:
+        - player
         - enemies
       properties:
+        player:
+          $ref: '#/components/schemas/BattleFighter'
         enemies:
           type: array
           items:
@@ -2518,6 +2882,24 @@ components:
           default: null
           maxLength: 64
       type: object
+    EquipItemRequest:
+      properties:
+        itemKey:
+          type: string
+          default: ''
+      type: object
+    CoinHistoryQuery:
+      properties:
+        cursor:
+          type: string
+          nullable: true
+          default: null
+        limit:
+          type: integer
+          default: 20
+          maximum: 50
+          minimum: 1
+      type: object
     WorkoutSource:
       type: string
       enum:
@@ -2713,6 +3095,8 @@ tags:
     name: Profil
   -
     name: Progression
+  -
+    name: Récompenses
   -
     name: Entraînement
 

@@ -1,8 +1,8 @@
 {
-  "id": "01a054b7-3454-7de8-bd23-e83937bdace8",
+  "id": "01a054b7-3678-7c39-826d-8f4c3038b7d3",
   "result": "VICTORY",
   "turns": 16,
-  "foughtAt": "2026-08-30T22:08:07+00:00",
+  "foughtAt": "2026-08-30T22:08:08+00:00",
   "player": {
     "hp": 140,
     "damage": 16,
@@ -96,11 +96,8 @@
       "targetHpRemaining": 80
     },
     {
-      "type": "ATTACK",
-      "attacker": "PLAYER",
-      "damage": 16,
-      "mitigated": 0,
-      "targetHpRemaining": 24
+      "type": "EXTRA_TURN",
+      "actor": "ENEMY"
     },
     {
       "type": "ATTACK",
@@ -114,7 +111,7 @@
       "attacker": "PLAYER",
       "damage": 16,
       "mitigated": 0,
-      "targetHpRemaining": 8
+      "targetHpRemaining": 24
     },
     {
       "type": "ATTACK",
@@ -124,8 +121,11 @@
       "targetHpRemaining": 56
     },
     {
-      "type": "EXTRA_TURN",
-      "actor": "ENEMY"
+      "type": "ATTACK",
+      "attacker": "PLAYER",
+      "damage": 16,
+      "mitigated": 0,
+      "targetHpRemaining": 8
     },
     {
       "type": "ATTACK",
@@ -147,11 +147,31 @@
     }
   ],
   "rewards": {
-    "loot": [],
+    "loot": [
+      {
+        "key": "WORN_RUNNING_SHOES",
+        "name": "Baskets usées",
+        "rarity": "COMMON",
+        "slot": "FEET",
+        "modifiers": [
+          {
+            "type": "XP_MULTIPLIER",
+            "value": 5,
+            "discipline": "RUNNING"
+          },
+          {
+            "type": "MOBILITY_BONUS",
+            "value": 1000,
+            "discipline": null
+          }
+        ],
+        "priceCoins": 30
+      }
+    ],
     "coins": {
-      "gained": 5,
-      "before": 0,
-      "after": 5
+      "gained": 4,
+      "before": 10,
+      "after": 14
     }
   }
 }

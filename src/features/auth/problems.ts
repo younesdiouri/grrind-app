@@ -266,6 +266,32 @@ function messageForProblem(problem: ProblemDetails): string {
     case 'https://grrind.app/problems/enemy-level-too-low':
       return "Cet adversaire demande un niveau que tu n'as pas encore.";
 
+    // ————— Le sac (younesdiouri/grrind-back#27 à #30) ————————————————————————————————
+
+    // Un bug de l'app, pas une situation de jeu : les sept emplacements viennent de la
+    // réponse d'inventaire, le joueur n'en saisit aucun. Même registre qu'`enemy-key-unknown`.
+    case 'https://grrind.app/problems/equipment-slot-unknown':
+      return "L'app a envoyé une requête que le serveur ne comprend pas.";
+
+    // Bug de l'app pour la même raison — sauf sur deux appareils : l'un peut tenter
+    // d'équiper un objet que l'autre vient d'équiper ailleurs, sur un sac rechargé depuis
+    // dix minutes. La phrase ne doit donc pas accuser d'une panne.
+    case 'https://grrind.app/problems/item-not-owned':
+      return "Cet objet n'est plus dans ton sac. Recharge-le et réessaie.";
+
+    // Le catalogue porte l'emplacement de chaque objet : l'écran ne devrait jamais
+    // provoquer ce refus. Bug de l'app, même registre que les deux précédents.
+    case 'https://grrind.app/problems/equipment-slot-incompatible':
+      return "Cet objet ne va pas dans cet emplacement.";
+
+    // Ne peut pas arriver aujourd'hui : rien ne se dépense avant la boutique du lot 6b
+    // (younesdiouri/grrind-back#229), pas encore fusionnée. Elle se traduit quand même
+    // parce que le `switch` est exhaustif — la retirer ferait échouer la compilation dès
+    // que le contrat en a besoin, et la laisser sans ce commentaire la ferait passer pour
+    // morte au prochain ménage.
+    case 'https://grrind.app/problems/insufficient-coin-balance':
+      return "Tu n'as pas assez de pièces.";
+
     default:
       return unnamedProblem(problem.type);
   }

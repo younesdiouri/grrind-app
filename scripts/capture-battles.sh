@@ -114,6 +114,15 @@ echo "→ victoire"
 neuf="$(register "battle-neuf-$stamp@grrind.app" "Neuf")"
 fight "$neuf" - '.result == "VICTORY"' victoire.json
 
+# ── victoire-avec-loot : une victoire qui rapporte (#124) ────────────────────────────
+# La bande de pièces de `SAND_JACKAL` tombe à chaque victoire — `victoire.json` le prouve
+# déjà — mais son tirage d'objet n'a que vingt pour cent de chances de sortir. Même boucle
+# que `fight`, sur un compte neuf distinct pour ne pas dépendre de l'ordre des essais
+# précédents, jusqu'à ce que `rewards.loot` porte au moins un objet.
+echo "→ victoire-avec-loot"
+comble="$(register "battle-comble-$stamp@grrind.app" "Comblé")"
+fight "$comble" - '.result == "VICTORY" and (.rewards.loot | length) > 0' victoire-avec-loot.json
+
 # ── defaite-boss : les cinq formes d'un coup ─────────────────────────────────────────
 # Un compte monté au niveau 19 contre `DUNE_SOVEREIGN` (700 PV, 40 de dégâts). Il perd, et la
 # timeline porte au passage une esquive et un tour supplémentaire : c'est la seule fixture où

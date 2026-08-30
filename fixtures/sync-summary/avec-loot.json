@@ -1,77 +1,71 @@
 {
-  "syncedAt": "2026-08-30T22:15:51+00:00",
+  "syncedAt": "2026-08-30T22:15:55+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054be-4603-753e-996b-3b1d179bd181",
+        "id": "01a054be-5842-77bc-a0d8-45bf3df23e09",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-28T22:15:50+00:00",
-        "endedAt": "2026-08-28T23:25:50+00:00",
-        "durationSeconds": 4200,
-        "distanceMeters": 12000,
+        "startedAt": "2026-08-29T22:15:55+00:00",
+        "endedAt": "2026-08-29T22:45:55+00:00",
+        "durationSeconds": 1800,
+        "distanceMeters": 5000,
         "calories": null,
         "elevationGainMeters": null,
         "averageHeartRate": null,
-        "externalId": "un-1"
+        "externalId": "loot-6"
       },
       "xp": {
-        "awarded": 186,
+        "awarded": 80,
         "breakdown": [
           {
             "source": "BASE",
-            "amount": 70
-          },
-          {
-            "source": "DIMINISHING",
-            "amount": -4
+            "amount": 30
           },
           {
             "source": "DISTANCE",
-            "amount": 120
+            "amount": 50
           }
         ],
         "reason": null
       },
       "attributes": {
         "strength": {
-          "gained": 9,
+          "gained": 4,
           "before": 0,
-          "after": 9
+          "after": 4
         },
         "endurance": {
-          "gained": 140,
+          "gained": 60,
           "before": 0,
-          "after": 140
+          "after": 60
         },
         "mobility": {
-          "gained": 9,
+          "gained": 4,
           "before": 0,
-          "after": 9
+          "after": 4
         },
         "dexterity": {
-          "gained": 28,
+          "gained": 12,
           "before": 0,
-          "after": 28
+          "after": 12
         },
         "vitality": {
           "before": 0,
-          "after": 94
+          "after": 41
         }
       },
       "level": {
         "before": 1,
         "xpIntoLevelBefore": 0,
         "xpToNextLevelBefore": 100,
-        "after": 2,
-        "reached": [
-          2
-        ],
-        "totalXp": 186,
-        "xpIntoLevel": 86,
-        "xpToNextLevel": 74,
-        "skillPointsGranted": 1
+        "after": 1,
+        "reached": [],
+        "totalXp": 80,
+        "xpIntoLevel": 80,
+        "xpToNextLevel": 20,
+        "skillPointsGranted": 0
       },
       "titlesUnlocked": [
         {
@@ -79,7 +73,7 @@
           "name": "Premiers pas",
           "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:15:51+00:00",
+          "unlockedAt": "2026-08-30T22:15:55+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -87,11 +81,31 @@
           }
         }
       ],
-      "loot": [],
+      "loot": [
+        {
+          "key": "TRAVELERS_CLOAK",
+          "name": "Cape du voyageur",
+          "rarity": "UNCOMMON",
+          "slot": "CHEST",
+          "modifiers": [
+            {
+              "type": "XP_MULTIPLIER",
+              "value": 8,
+              "discipline": null
+            },
+            {
+              "type": "ENDURANCE_BONUS",
+              "value": 1200,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 80
+        }
+      ],
       "coins": {
-        "gained": 11,
+        "gained": 7,
         "before": 0,
-        "after": 11
+        "after": 7
       },
       "streak": null,
       "unlockableNodes": [],
@@ -101,10 +115,10 @@
   "skipped": [],
   "totals": {
     "levelBefore": 1,
-    "levelAfter": 2,
+    "levelAfter": 1,
     "xpBefore": 0,
-    "xpAfter": 186,
-    "xpAwarded": 186,
+    "xpAfter": 80,
+    "xpAwarded": 80,
     "workoutCount": 1
   },
   "rulesetVersion": "v1-067495ed37f5"
