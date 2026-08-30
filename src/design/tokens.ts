@@ -30,6 +30,8 @@ export const palette = {
   lichen: '#B7E356',
   /** Dextérité, dans le cercle de vie. */
   blossom: '#FF6FB5',
+  /** La pièce, dans `color.coin` (#125). */
+  copper: '#C97B3D',
 } as const;
 
 export const color = {
@@ -42,6 +44,16 @@ export const color = {
   accent: palette.ember,
   /** Le niveau et les titres — ce qui se célèbre. */
   celebrate: palette.gold,
+  /**
+   * La pièce — la bourse, le prix d'une carte d'objet, un mouvement du ledger. Jamais
+   * `celebrate`, et c'est délibéré : l'or dit « le niveau et les titres — ce qui se célèbre »,
+   * une bourse ne se célèbre pas, elle se **consulte**. Les deux se jouent parfois dans le
+   * même écran — un niveau franchi, puis des pièces qui tombent, dans cet ordre, au bas d'un
+   * `RewardSummary` — et une seule teinte pour les deux brouillerait la lecture de ce qui vient
+   * de se produire deux fois. Même raison que `hpPlayer`/`hpEnemy` : un token propre, dont le
+   * nom dit ce qu'il désigne, plutôt qu'un emprunt de sens.
+   */
+  coin: palette.copper,
   /** Une ligne de breakdown positive. */
   gain: palette.mint,
   /** Une ligne de breakdown négative : rendements décroissants, plafond quotidien. */
@@ -386,4 +398,84 @@ export const notificationCategoryLabel: Partial<
 export const battleResultLabel: Record<components['schemas']['BattleSummary']['result'], string> = {
   VICTORY: 'Victoire',
   DEFEAT: 'Défaite',
+};
+
+/**
+ * La rareté d'un objet — cinq crans, `COMMON` à `LEGENDARY`. Le contrat ne la nomme pas comme
+ * un schéma à part : c'est un littéral porté par `DroppedItem`, comme `Attribute` l'est par
+ * `XpTransaction`. L'alias évite de retaper le chemin dans chaque composant qui la lit.
+ */
+export type ItemRarity = components['schemas']['DroppedItem']['rarity'];
+
+/** Les sept emplacements où un objet se porte, mêmes garde-fous que `ItemRarity`. */
+export type EquipmentSlot = components['schemas']['DroppedItem']['slot'];
+
+/** Les treize effets qu'un modificateur peut porter, mêmes garde-fous que `ItemRarity`. */
+export type ModifierType = components['schemas']['DroppedItemModifier']['type'];
+
+/**
+ * La rareté, en couleur — la seule information qu'une carte d'objet donne **avant** le nom.
+ * Cinq teintes déjà présentes dans la palette, choisies pour rester distinctes entre elles sur
+ * `color.background` : `fog` pour ce qui ne vaut pas la peine de s'arrêter, `mint` et
+ * `glacier` et `amethyst` pour les trois crans intermédiaires — trois hues déjà éloignées les
+ * unes des autres, empruntées au cercle de vie où elles jouent le même rôle de distinction à
+ * l'œil — et `gold` pour `LEGENDARY`, la même teinte que `color.celebrate` : un objet
+ * légendaire se célèbre comme un niveau franchi.
+ *
+ * Même garde-fou que les tables ci-dessus : la clé sort de l'union portée par `DroppedItem`,
+ * jamais recopiée, et le compilateur casse le jour où le back ouvre un sixième cran.
+ */
+export const rarityColor: Record<ItemRarity, string> = {
+  COMMON: palette.fog,
+  UNCOMMON: palette.mint,
+  RARE: palette.glacier,
+  EPIC: palette.amethyst,
+  LEGENDARY: palette.gold,
+};
+
+/** La rareté, rendue lisible. Même garde-fou, même raison que `rarityColor`. */
+export const rarityLabel: Record<ItemRarity, string> = {
+  COMMON: 'Commun',
+  UNCOMMON: 'Peu commun',
+  RARE: 'Rare',
+  EPIC: 'Épique',
+  LEGENDARY: 'Légendaire',
+};
+
+/** L'emplacement d'un objet, rendu lisible. Même garde-fou, même raison que `rarityLabel`. */
+export const equipmentSlotLabel: Record<EquipmentSlot, string> = {
+  HEAD: 'Tête',
+  CHEST: 'Torse',
+  HANDS: 'Mains',
+  LEGS: 'Jambes',
+  FEET: 'Pieds',
+  ACCESSORY: 'Accessoire',
+  WEAPON: 'Arme',
+};
+
+/**
+ * Le nom d'un effet de modificateur — pas sa valeur, qui a une unité par type et se met en
+ * phrase dans `formatModifier` (`features/inventory/format.ts`). `ModifierType` est un
+ * vocabulaire de domaine partagé par cinq consommateurs, pas une chaîne d'affichage : le nom
+ * de l'objet arrive traduit du serveur, celui de son effet non, et c'est le même cas que
+ * `XpLine.source` ou `AttributeKey`.
+ *
+ * `UNLOCK_SESSION_TYPE` : aucun objet livré n'en porte encore, mais le type est ouvert côté
+ * contrat et le `Record` doit le nommer — même raison que `insufficient-coin-balance` dans
+ * `problems.ts`, qui se traduit pour un cas qu'aucun appel ne provoque encore.
+ */
+export const modifierLabel: Record<ModifierType, string> = {
+  XP_MULTIPLIER: 'XP',
+  LOOT_LUCK: 'Chance de butin',
+  STREAK_SHIELD: 'Bouclier de série',
+  UNLOCK_SESSION_TYPE: 'Nouveau type de séance',
+  STRENGTH_BONUS: 'Force',
+  ENDURANCE_BONUS: 'Endurance',
+  MOBILITY_BONUS: 'Mobilité',
+  DEXTERITY_BONUS: 'Dextérité',
+  HP_BONUS: 'Points de vie',
+  DAMAGE_BONUS: 'Dégâts',
+  MITIGATION_BONUS: 'Mitigation',
+  EXTRA_TURN_BONUS: 'Tour supplémentaire',
+  DODGE_BONUS: 'Esquive',
 };
