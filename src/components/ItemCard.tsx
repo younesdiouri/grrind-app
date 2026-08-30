@@ -34,6 +34,12 @@ type ItemCardProps = {
  * porte seul la connaissance de leurs unités, treize d'entre elles. Un objet sans aucun
  * modificateur ne montre simplement pas cette section : une liste vide n'est pas une ligne à
  * afficher.
+ *
+ * Le prix se lit **nommé** — « Valeur », dans le registre de `slot` — et jamais comme un
+ * nombre nu : sur l'écran de récompense, une carte posée juste au-dessus de la ligne « BOURSE »
+ * affiche la même unité, la même couleur, à quelques pixels d'écart. Sans le mot, un prix se
+ * lit comme le gain que la bourse vient d'afficher — ce sont deux choses différentes, y compris
+ * quand elles valent le même nombre par coïncidence.
  */
 export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
   return (
@@ -62,7 +68,13 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
       )}
 
       <View style={styles.foot}>
-        <CoinAmount amount={item.priceCoins} />
+        {/* Un prix nommé, jamais un nombre nu à côté d'une bourse : sur l'écran de récompense,
+            « 30 pièces » juste sous « BOURSE 0 → 30 pièces » se lisait comme un encaissement.
+            Le libellé règle les deux contextes d'un coup, le drop comme le sac. */}
+        <View style={styles.price}>
+          <Text style={styles.priceLabel}>Valeur</Text>
+          <CoinAmount amount={item.priceCoins} />
+        </View>
         {equipped === true ? (
           <View style={styles.equippedBadge}>
             <Text style={styles.equippedLabel}>ÉQUIPÉ</Text>
@@ -102,6 +114,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.sm,
   },
+  price: { gap: space.xs },
+  // Même registre que `slot` : un libellé de carte, pas une donnée de jeu.
+  priceLabel: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   // Même idiome que `RoleBadge` : un statut se distingue en texte, sur la surface relevée,
   // jamais par une couleur de rôle qui appartiendrait déjà à autre chose — ici `gain`, celui
   // d'une ligne de breakdown positive.

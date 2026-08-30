@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { BEATS, buildTimeline, DETAILED_WORKOUTS, type SyncSummary } from './timeline.ts';
+import { BEATS, buildTimeline, DETAILED_WORKOUTS, type Beat, type SyncSummary } from './timeline.ts';
 
 /**
  * La timeline, éprouvée sur les **réponses réelles** du back.
@@ -27,6 +27,7 @@ const troisWorkouts = fixture('trois-workouts');
 const quinzeWorkouts = fixture('quinze-workouts');
 const toutEcarte = fixture('tout-ecarte');
 const marcheSansXp = fixture('marche-sans-xp');
+const avecLoot = fixture('avec-loot');
 
 const ATTRIBUTES: ('strength' | 'endurance' | 'mobility' | 'dexterity' | 'vitality')[] = [
   'strength',
@@ -280,9 +281,13 @@ describe('la timeline du SyncSummary', () => {
       .flatMap((workout) => workout.level.reached);
     assert.deepEqual(digest.levels, condensedLevels);
 
+    // Le budget a bougé avec #226 : les trois séances détaillées de cette fixture font
+    // tomber du loot et des pièces (voir `avecLoot` et le workout condensé n°14), et ce
+    // temps-là est légitime — c'est celui d'un titre, l'échelle du design system. Ce que le
+    // budget continue de garder, c'est que le **condensé**, lui, ne rejoue toujours rien.
     assert.ok(
-      timeline.duration < 20_000,
-      `quinze séances doivent tenir sous vingt secondes, pas ${timeline.duration}ms`,
+      timeline.duration < 24_000,
+      `quinze séances doivent tenir sous vingt-quatre secondes, pas ${timeline.duration}ms`,
     );
   });
 
@@ -414,11 +419,12 @@ describe('la timeline du SyncSummary', () => {
   });
 
   it('produit des rampes que `interpolate` sait lire', () => {
-    for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts, toutEcarte]) {
+    for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts, toutEcarte, avecLoot]) {
       const timeline = buildTimeline(summary);
 
       assertRampIsSane(timeline.bar, timeline.duration);
       assertRampIsSane(timeline.counter, timeline.duration);
+      assertRampIsSane(timeline.purse, timeline.duration);
       assertRampIsSane(timeline.crest, timeline.duration);
       assertRampIsSane(timeline.attributes.strength, timeline.duration);
       assertRampIsSane(timeline.attributes.endurance, timeline.duration);
@@ -561,5 +567,134 @@ describe('les cinq jauges de caractéristiques, entre le breakdown et le niveau'
       duringTheBeat.every((point) => point.value === 5),
       'la mobilité reste plate : rien à annoncer',
     );
+  });
+});
+
+/**
+ * Le loot, puis la bourse (#226) — le premier lot qui fait tomber quelque chose de plus qu'un
+ * titre. `avecLoot` porte une vraie « Cape du voyageur » et des pièces ; `quinzeWorkouts` porte
+ * l'objet du condensé, celui qu'on ne rejoue pas mais qu'on ne perd pas non plus.
+ */
+describe('le loot et la bourse, entre le titre et le streak (#226)', () => {
+  it('joue loot puis coins juste après le dernier titre, et rien entre les deux', () => {
+    const timeline = buildTimeline(avecLoot);
+    const kinds = timeline.beats.map((beat) => beat.kind);
+
+    const titleIndex = kinds.lastIndexOf('title');
+    const lootIndex = kinds.indexOf('loot');
+    const coinsIndex = kinds.indexOf('coins');
+
+    assert.ok(
+      titleIndex !== -1 && lootIndex !== -1 && coinsIndex !== -1,
+      'les trois battements sont bien joués sur cette fixture',
+    );
+    assert.ok(lootIndex > titleIndex, 'le loot vient après le dernier titre');
+    assert.equal(coinsIndex, lootIndex + 1, "rien ne sépare l'objet des pièces");
+
+    // L'ordre complet du payload, tel qu'il est joué : xp, attributes, titre, loot, coins.
+    const order = kinds.filter((kind) =>
+      ['xpLine', 'attributes', 'title', 'loot', 'coins'].includes(kind),
+    );
+    assert.deepEqual(order, ['xpLine', 'xpLine', 'attributes', 'title', 'loot', 'coins']);
+  });
+
+  it('un tirage bredouille et une bourse à gain nul ne consomment aucun temps', () => {
+    assert.ok(
+      troisWorkouts.imported.every((workout) => workout.coins.gained > 0),
+      'la fixture de départ fait bien tomber des pièces sur ses trois séances',
+    );
+
+    const bredouille: SyncSummary = {
+      ...troisWorkouts,
+      imported: troisWorkouts.imported.map((workout) => ({
+        ...workout,
+        loot: [],
+        coins: { gained: 0, before: workout.coins.before, after: workout.coins.before },
+      })),
+    };
+
+    const withoutLoot = buildTimeline(bredouille);
+    const withLoot = buildTimeline(troisWorkouts);
+
+    assert.equal(
+      withoutLoot.beats.some((beat) => beat.kind === 'loot' || beat.kind === 'coins'),
+      false,
+      'aucun battement de loot ni de bourse posé',
+    );
+    // La séquence de départ, elle, tient plus longtemps : c'est exactement le temps que le
+    // loot et la bourse lui coûtent sur les trois workouts.
+    assert.ok(withoutLoot.duration < withLoot.duration);
+  });
+
+  it("enchaîne la bourse d'un workout au suivant sans jamais recalculer une valeur", () => {
+    const timeline = buildTimeline(quinzeWorkouts);
+    const coinsBeats = timeline.beats.filter(
+      (beat): beat is Extract<Beat, { kind: 'coins' }> => beat.kind === 'coins',
+    );
+
+    // Les trois workouts détaillés de la fixture font tous tomber des pièces.
+    assert.equal(coinsBeats.length, DETAILED_WORKOUTS);
+
+    for (let i = 1; i < coinsBeats.length; i += 1) {
+      assert.equal(
+        coinsBeats[i].before,
+        coinsBeats[i - 1].after,
+        "l'après de l'un est l'avant du suivant, sans recalcul",
+      );
+    }
+
+    // Et la timeline ne fait que reporter les valeurs du contrat, jamais les recomposer.
+    coinsBeats.forEach((beat, index) => {
+      const workout = quinzeWorkouts.imported[index];
+      assert.equal(beat.before, workout.coins.before);
+      assert.equal(beat.after, workout.coins.after);
+      assert.equal(beat.gained, workout.coins.gained);
+    });
+  });
+
+  it('ne perd aucun objet du condensé : il ne rejoue pas un par un, mais reste au bilan', () => {
+    const timeline = buildTimeline(quinzeWorkouts);
+    const condensedLoot = quinzeWorkouts.imported
+      .slice(DETAILED_WORKOUTS)
+      .flatMap((workout) => workout.loot);
+
+    assert.ok(condensedLoot.length > 0, 'la fixture porte bien un objet tombé dans le condensé');
+    assert.equal(
+      timeline.beats.some((beat) => beat.kind === 'loot' && beat.workout >= DETAILED_WORKOUTS),
+      false,
+      'le condensé ne rejoue aucun objet un par un',
+    );
+
+    // Le budget du condensé ne déborde pas pour autant : c'est le bilan qui gagne du contenu,
+    // pas la séquence — même borne que ci-dessus, celle que le loot des trois séances
+    // détaillées a fait bouger, pas le condensé.
+    assert.ok(
+      timeline.duration < 24_000,
+      `quinze séances doivent tenir sous vingt-quatre secondes, pas ${timeline.duration}ms`,
+    );
+  });
+
+  it("la bourse du bilan ne bouge pas sur un lot où rien n'est tombé, même créditée en XP", () => {
+    const summary: SyncSummary = {
+      ...unWorkout,
+      imported: [
+        {
+          ...unWorkout.imported[0],
+          loot: [],
+          coins: { gained: 0, before: 40, after: 40 },
+        },
+      ],
+    };
+
+    assert.ok(summary.imported[0].xp.breakdown.length > 0, "de l'XP a bien été créditée");
+
+    const timeline = buildTimeline(summary);
+
+    assert.equal(
+      timeline.beats.some((beat) => beat.kind === 'coins'),
+      false,
+    );
+    assert.ok(timeline.purse.output.every((value) => value === 40), 'la bourse reste plate');
+    assert.equal(timeline.purse.output[timeline.purse.output.length - 1], 40);
   });
 });
