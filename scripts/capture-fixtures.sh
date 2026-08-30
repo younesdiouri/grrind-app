@@ -155,6 +155,30 @@ t4="$(register "marche-$stamp@grrind.app" "Marche")"
 import "$t4" marche-sans-xp.json \
   "$(workout "marche-1" walking $(( 1 * DAY )) 3600 5000)" > /dev/null
 
+# ── avec-loot : une séance qui fait tomber un objet (#124) ───────────────────────────
+# `STARTER_SESSION_DROP` ne rend un objet que trois fois sur dix, et seulement à partir de
+# vingt minutes de séance. Une seule capture ne suffit donc pas : on rejoue, sur un compte
+# neuf à chaque essai — pour ne pas laisser un niveau ou une charge du jour glisser d'un
+# tirage à l'autre — jusqu'à ce que `loot` porte au moins un objet. Borné à trente essais
+# (0.7^30 ≈ 2 chances sur 100 000 d'épuiser la borne), et bruyant s'il n'y arrive pas : une
+# fixture bredouille sous ce nom promettrait un objet qu'elle ne porte pas.
+echo "→ avec-loot"
+found=0
+for attempt in $(seq 1 30); do
+  t5="$(register "loot-$stamp-$attempt@grrind.app" "Loot")"
+  reply="$(import "$t5" - "$(workout "loot-$attempt" running $(( 1 * DAY )) 1800 5000)")"
+  if printf '%s' "$reply" | jq -e '(.imported[0].loot // []) | length > 0' > /dev/null; then
+    printf '%s' "$reply" | jq . > "$OUT/avec-loot.json"
+    found=1
+    echo "  avec-loot.json — $(printf '%s' "$reply" | jq -r '.imported[0].loot | length') objet(s) (essai $attempt)"
+    break
+  fi
+done
+if [ "$found" -ne 1 ]; then
+  echo "  ✗ avec-loot — aucune des 30 tentatives n'a fait tomber d'objet" >&2
+  exit 1
+fi
+
 echo
 echo "Fixtures écrites dans $OUT :"
 for f in "$OUT"/*.json; do

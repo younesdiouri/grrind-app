@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-27T18:22:52+00:00",
+  "syncedAt": "2026-08-30T22:06:52+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a04475-e6d4-7e4c-8392-5dcb37216362",
+        "id": "01a054b6-0d32-70c7-b2b2-b2be8eb98cca",
         "discipline": "WALKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-26T18:22:52+00:00",
-        "endedAt": "2026-08-26T19:22:52+00:00",
+        "startedAt": "2026-08-29T22:06:52+00:00",
+        "endedAt": "2026-08-29T23:06:52+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 5000,
         "calories": null,
@@ -60,9 +60,14 @@
       },
       "titlesUnlocked": [],
       "loot": [],
+      "coins": {
+        "gained": 0,
+        "before": 0,
+        "after": 0
+      },
       "streak": null,
       "unlockableNodes": [],
-      "rulesetVersion": "v1-d14f83f22074"
+      "rulesetVersion": "v1-067495ed37f5"
     }
   ],
   "skipped": [],
@@ -74,5 +79,5 @@
     "xpAwarded": 0,
     "workoutCount": 1
   },
-  "rulesetVersion": "v1-d14f83f22074"
+  "rulesetVersion": "v1-067495ed37f5"
 }

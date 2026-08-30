@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-27T18:22:51+00:00",
+  "syncedAt": "2026-08-30T22:06:50+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a04475-e1e4-760d-ad87-f424ce31723e",
+        "id": "01a054b6-080f-7024-b186-b05b2678e6c4",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-22T18:22:51+00:00",
-        "endedAt": "2026-08-22T19:22:51+00:00",
+        "startedAt": "2026-08-25T22:06:50+00:00",
+        "endedAt": "2026-08-25T23:06:50+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 10000,
         "calories": null,
@@ -75,7 +75,7 @@
           "name": "First Steps",
           "hint": "Complete your first session",
           "unlocked": true,
-          "unlockedAt": "2026-08-27T18:22:51+00:00",
+          "unlockedAt": "2026-08-30T22:06:50+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -84,18 +84,23 @@
         }
       ],
       "loot": [],
+      "coins": {
+        "gained": 8,
+        "before": 0,
+        "after": 8
+      },
       "streak": null,
       "unlockableNodes": [],
-      "rulesetVersion": "v1-d14f83f22074"
+      "rulesetVersion": "v1-067495ed37f5"
     },
     {
       "session": {
-        "id": "01a04475-e1ed-7e72-b51f-9aceffdc6161",
+        "id": "01a054b6-081d-72f2-b02e-6c8af67542b9",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-24T18:22:51+00:00",
-        "endedAt": "2026-08-24T19:22:51+00:00",
+        "startedAt": "2026-08-27T22:06:50+00:00",
+        "endedAt": "2026-08-27T23:06:50+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 30000,
         "calories": null,
@@ -158,18 +163,23 @@
       },
       "titlesUnlocked": [],
       "loot": [],
+      "coins": {
+        "gained": 10,
+        "before": 8,
+        "after": 18
+      },
       "streak": null,
       "unlockableNodes": [],
-      "rulesetVersion": "v1-d14f83f22074"
+      "rulesetVersion": "v1-067495ed37f5"
     },
     {
       "session": {
-        "id": "01a04475-e1f3-701a-af77-b24555d1eced",
+        "id": "01a054b6-0823-7587-9bd7-61de40fa80c1",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-26T18:22:51+00:00",
-        "endedAt": "2026-08-26T19:07:51+00:00",
+        "startedAt": "2026-08-29T22:06:50+00:00",
+        "endedAt": "2026-08-29T22:51:50+00:00",
         "durationSeconds": 2700,
         "distanceMeters": null,
         "calories": null,
@@ -225,10 +235,35 @@
         "skillPointsGranted": 0
       },
       "titlesUnlocked": [],
-      "loot": [],
+      "loot": [
+        {
+          "key": "WORN_RUNNING_SHOES",
+          "name": "Worn Running Shoes",
+          "rarity": "COMMON",
+          "slot": "FEET",
+          "modifiers": [
+            {
+              "type": "XP_MULTIPLIER",
+              "value": 5,
+              "discipline": "RUNNING"
+            },
+            {
+              "type": "MOBILITY_BONUS",
+              "value": 1000,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 30
+        }
+      ],
+      "coins": {
+        "gained": 8,
+        "before": 18,
+        "after": 26
+      },
       "streak": null,
       "unlockableNodes": [],
-      "rulesetVersion": "v1-d14f83f22074"
+      "rulesetVersion": "v1-067495ed37f5"
     }
   ],
   "skipped": [],
@@ -240,5 +275,5 @@
     "xpAwarded": 355,
     "workoutCount": 3
   },
-  "rulesetVersion": "v1-d14f83f22074"
+  "rulesetVersion": "v1-067495ed37f5"
 }
