@@ -1,3 +1,4 @@
+import avecLoot from '@/../fixtures/sync-summary/avec-loot.json';
 import marcheSansXp from '@/../fixtures/sync-summary/marche-sans-xp.json';
 import quinzeWorkouts from '@/../fixtures/sync-summary/quinze-workouts.json';
 import toutEcarte from '@/../fixtures/sync-summary/tout-ecarte.json';
@@ -28,6 +29,9 @@ import type { SyncSummary } from './timeline';
  *   l'explication. C'est le zéro qu'il ne faut surtout pas confondre avec celui de
  *   `toutEcarte`, où *rien* n'a été crédité. Les deux affichent zéro et ne disent pas du tout
  *   la même chose.
+ * - `avecLoot` — une seule séance, une vraie « Cape du voyageur » et des pièces (#226). C'est
+ *   la fixture qui prouve que `loot`/`coins` se jouent, et à leur place — après le titre,
+ *   avant que le bilan ne reprenne la main.
  *
  * Le `as unknown as` est là parce que TypeScript élargit les littéraux d'un import JSON en
  * `string`, quand le schéma généré attend les unions fermées (`"RUNNING"`, `"BASE"`…). Le
@@ -39,6 +43,7 @@ export const FIXTURES = {
   quinzeWorkouts: quinzeWorkouts as unknown as SyncSummary,
   toutEcarte: toutEcarte as unknown as SyncSummary,
   marcheSansXp: marcheSansXp as unknown as SyncSummary,
+  avecLoot: avecLoot as unknown as SyncSummary,
 } as const;
 
 export type FixtureName = keyof typeof FIXTURES;

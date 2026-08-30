@@ -18,6 +18,8 @@ import { Circle } from 'react-native-svg';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
+import { CoinAmount } from '@/components/CoinAmount';
+import { ItemCard } from '@/components/ItemCard';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
@@ -41,6 +43,7 @@ import { formatDuration } from '@/features/progression/format';
 import {
   buildTimeline,
   type Beat,
+  type DroppedItem,
   type RewardSummary,
   type SkippedWorkout,
   type SyncSummary,
@@ -66,10 +69,11 @@ import {
  *
  * ————— La lecture, de haut en bas ——————————————————————————————————————————————————————
  *
- * L'écran se lit en quatre temps, et chacun chasse le précédent — sauf le dernier.
+ * L'écran se lit en cinq temps, et chacun chasse le précédent — sauf le dernier.
  * **L'attente** — la barre est posée sur le palier du joueur, la séance monte. **Le calcul** —
  * les lignes tombent, la barre suit, elle bute en haut et l'or la traverse. **Le palier** — le
- * détail sort, le niveau prend tout le cadre, le titre tombe dedans. Rien ne cohabite : deux
+ * détail sort, le niveau prend tout le cadre, le titre tombe dedans. **Le loot** (#226) — un
+ * objet se pose, la bourse l'encaisse, de son avant à son après. Rien ne cohabite : deux
  * choses à lire en même temps, c'est aucune des deux qui est lue.
  *
  * **Puis le bilan** (#79), et lui ne sort pas. C'est la moitié qui manquait : chaque bloc était
@@ -297,11 +301,32 @@ export function SyncSummaryView({
           />
         ))}
 
-        {/* Le palier, par-dessus tout le reste : il chasse le détail au lieu de s'y ranger. */}
+        {/* Le palier, par-dessus tout le reste : il chasse le détail au lieu de s'y ranger.
+            Monté dès qu'un niveau bascule **ou** qu'un titre tombe seul (`avecLoot`, #226) —
+            un titre sans niveau reste un événement à montrer, pas un cas à sauter. */}
         {timeline.segments
-          .filter((segment) => summary.imported[segment.workout].level.reached.length > 0)
+          .filter((segment) => {
+            const workout = summary.imported[segment.workout];
+            return workout.level.reached.length > 0 || workout.titlesUnlocked.length > 0;
+          })
           .map((segment) => (
             <LevelStage
+              key={segment.workout}
+              clock={clock}
+              timeline={timeline}
+              segment={segment}
+              workout={summary.imported[segment.workout]}
+            />
+          ))}
+
+        {/* Le loot, puis la bourse — juste après le palier, avant le condensé ou le bilan. */}
+        {timeline.segments
+          .filter((segment) => {
+            const workout = summary.imported[segment.workout];
+            return workout.loot.length > 0 || workout.coins.gained > 0;
+          })
+          .map((segment) => (
+            <LootStage
               key={segment.workout}
               clock={clock}
               timeline={timeline}
@@ -328,6 +353,10 @@ export function SyncSummaryView({
             totals={timeline.totals}
             attributes={last.attributes}
             titles={summary.imported.flatMap((workout) => workout.titlesUnlocked)}
+            // Le condensé ne rejoue aucun objet un par un, mais aucun ne se perd : le bilan
+            // liste ceux du lot entier, détail et condensé confondus (#226).
+            loot={summary.imported.flatMap((workout) => workout.loot)}
+            coins={{ before: summary.imported[0].coins.before, after: last.coins.after }}
             skippedCount={summary.skipped.length}
             noCredit={soleReason(summary)}
           />
@@ -640,7 +669,9 @@ function LevelStage({
   const levels = timeline.beats.filter((beat) => beat.kind === 'level' && beat.workout === index);
   const titles = timeline.beats.filter((beat) => beat.kind === 'title' && beat.workout === index);
 
-  const at = levels[0].at;
+  // Un titre peut tomber sans qu'aucun niveau ne bascule (`avecLoot` en est la preuve, #226) :
+  // ce bloc s'ouvre alors sur le premier titre plutôt que sur un `levels[0]` qui n'existe pas.
+  const at = (levels[0] ?? titles[0]).at;
   const until = after(segment.until, at + duration.handoff * 2);
 
   const style = useAnimatedStyle(() => ({
@@ -661,12 +692,14 @@ function LevelStage({
 
   return (
     <Animated.View style={[styles.block, styles.podium, style]}>
-      <LevelFlip
-        clock={clock}
-        starts={levels.map((beat) => beat.at)}
-        ends={levels.map((beat) => beat.until)}
-        values={workout.level.reached}
-      />
+      {levels.length > 0 ? (
+        <LevelFlip
+          clock={clock}
+          starts={levels.map((beat) => beat.at)}
+          ends={levels.map((beat) => beat.until)}
+          values={workout.level.reached}
+        />
+      ) : null}
 
       {workout.titlesUnlocked.map((title, position) => (
         <TitleDrop
@@ -766,6 +799,81 @@ function Grant({ clock, at, until, count }: BeatProps & { count: number }) {
       <Text style={styles.grant}>
         {count} POINT{count > 1 ? 'S' : ''} DE COMPÉTENCE
       </Text>
+    </Animated.View>
+  );
+}
+
+/**
+ * Le loot, plein cadre — juste après le palier, sur le modèle de `LevelStage` : il paraît, il
+ * est chassé (#226).
+ *
+ * **Zéro battement, zéro rendu.** Le composant ne retente pas `workout.loot.length` ou
+ * `workout.coins.gained` : il lit directement le battement `coins`, qui n'existe précisément
+ * pas quand le tirage est bredouille et que la bourse ne bouge pas (#80, même geste) — deux
+ * sources de vérité sur la même décision finiraient par diverger.
+ *
+ * La bourse compte au centre par `useAnimatedProps`, comme le compteur d'XP et Vitality :
+ * c'est `timeline.purse` qui porte le mouvement, de bout en bout, et ce battement n'en lit
+ * qu'une fenêtre. `CoinAmount` ne convient pas ici — un `Text` ne s'anime pas au fil de
+ * `interpolate` — donc le format se répète, minimal, exactement comme le fait déjà le
+ * compteur d'XP juste au-dessus dans ce même fichier.
+ */
+function LootStage({
+  clock,
+  timeline,
+  segment,
+  workout,
+}: {
+  clock: Clock;
+  timeline: Timeline;
+  segment: Segment;
+  workout: RewardSummary;
+}) {
+  const index = segment.workout;
+  const lootBeats = timeline.beats.filter((beat) => beat.kind === 'loot' && beat.workout === index);
+  const coinsBeat = timeline.beats.find(
+    (beat): beat is Extract<Beat, { kind: 'coins' }> => beat.kind === 'coins' && beat.workout === index,
+  );
+
+  // La fenêtre est lue **avant** le worklet, jamais dedans — même raison qu'`AttributeStage` :
+  // un battement absent doit pouvoir sortir du composant, et un `return` conditionnel ne peut
+  // pas suivre un hook.
+  const at = lootBeats[0]?.at ?? coinsBeat?.at ?? 0;
+  const until = after(segment.until, at + duration.handoff * 2);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      clock.value,
+      [at, at + duration.handoff, until - duration.handoff, until],
+      [0, 1, 1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const purseProps = useAnimatedProps(() => {
+    const value = Math.round(
+      interpolate(clock.value, timeline.purse.input, timeline.purse.output, Extrapolation.CLAMP),
+    );
+    const text = `${value} ${value === 1 ? 'pièce' : 'pièces'}`;
+    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
+  });
+
+  if (coinsBeat === undefined) {
+    return null;
+  }
+
+  return (
+    <Animated.View style={[styles.block, styles.podium, style]}>
+      {workout.loot.map((item, position) => (
+        <ItemCard key={`${item.key}-${position}`} item={item} />
+      ))}
+
+      <AnimatedTextInput
+        style={styles.purse}
+        editable={false}
+        animatedProps={purseProps}
+        defaultValue={`${workout.coins.before} ${workout.coins.before === 1 ? 'pièce' : 'pièces'}`}
+      />
     </Animated.View>
   );
 }
@@ -877,12 +985,18 @@ function soleReason(summary: SyncSummary): XpNoCreditReason | null {
  * viennent de l'`after` du dernier `imported`, exactement là où le saut les pose. Rien n'est
  * refait ici, et rien ne peut donc diverger de ce que la séquence vient de montrer.
  *
+ * La bourse suit la même règle, et `totals` ne l'aide pas : `SyncTotals` ne porte pas les
+ * pièces. Le bilan reprend donc directement `imported[0].coins.before` et
+ * `imported[dernier].coins.after` (#226) — jamais une somme de `gained`, la même décision que
+ * grrind-back#79 a achetée pour la barre d'XP.
+ *
  * ————— Il tient dans un écran, ou il choisit ————————————————————————————————————————————
  *
  * Les blocs sont empilés au même endroit exprès — une vue défilante se battrait avec le geste
- * qui saute la séquence. Un lot peut débloquer plus de titres qu'il n'y a de place : ils se
- * comptent alors au lieu de s'empiler, parce qu'un bilan illisible ne vaut pas mieux qu'un
- * écran vide.
+ * qui saute la séquence. Un lot peut débloquer plus de titres — ou faire tomber plus
+ * d'objets — qu'il n'y a de place : ils se comptent alors au lieu de s'empiler, même geste et
+ * même seuil que les titres (`RECAP_TITLES`) — parce qu'un bilan illisible ne vaut pas mieux
+ * qu'un écran vide.
  *
  * L'anneau est celui du design system, sans enfant : ses arcs sont **statiques** ici, et c'est
  * le point — la redistribution vient d'avoir lieu sous les yeux du joueur, la rejouer en
@@ -894,6 +1008,8 @@ function Recap({
   totals,
   attributes,
   titles,
+  loot,
+  coins,
   skippedCount,
   noCredit,
 }: {
@@ -902,6 +1018,11 @@ function Recap({
   totals: SyncTotals;
   attributes: RewardSummary['attributes'];
   titles: RewardSummary['titlesUnlocked'];
+  /** Le lot entier, condensé compris — voir le docblock du composant. */
+  loot: DroppedItem[];
+  /** `imported[0].coins.before` → `imported[dernier].coins.after` : jamais une somme de
+   *  `gained`, `SyncTotals` ne porte pas la bourse et n'a pas à la porter. */
+  coins: { before: number; after: number };
   skippedCount: number;
   /** Non nul quand tout le lot a été crédité sans rapporter d'XP — voir `soleReason`. */
   noCredit: XpNoCreditReason | null;
@@ -923,6 +1044,15 @@ function Recap({
   // Deux badges tiennent, trois débordent. Au-delà, on compte — voir le docblock.
   const shown = titles.slice(0, RECAP_TITLES);
   const beyond = titles.length - shown.length;
+
+  // Même geste, même seuil — deux cartes d'objet tiennent, la troisième pousse le compte hors
+  // de l'écran (#226).
+  const shownLoot = loot.slice(0, RECAP_TITLES);
+  const beyondLoot = loot.length - shownLoot.length;
+
+  // La bourse ne bouge pas sur un lot qui n'a rien fait tomber : « 40 → 40 pièces » dirait un
+  // mouvement qui n'a pas eu lieu, la même distinction que « climbed »/« stay » plus haut.
+  const purseChanged = coins.after > coins.before;
 
   return (
     <Animated.View style={[styles.block, styles.podium, style]}>
@@ -958,6 +1088,29 @@ function Recap({
           et {beyond} autre{beyond > 1 ? 's' : ''} titre{beyond > 1 ? 's' : ''}
         </Text>
       ) : null}
+
+      {/* Le loot du lot entier, condensé compris — aucun objet ne s'y perd, même celui qui
+          n'a jamais rejoué son propre battement (#226). */}
+      {shownLoot.map((item, position) => (
+        <ItemCard key={`${item.key}-${position}`} item={item} />
+      ))}
+      {beyondLoot > 0 ? (
+        <Text style={styles.label}>
+          et {beyondLoot} autre{beyondLoot > 1 ? 's' : ''} objet{beyondLoot > 1 ? 's' : ''}
+        </Text>
+      ) : null}
+
+      {/* La bourse du bilan : jamais une somme de `gained`, voir le docblock. */}
+      <Text style={styles.label}>
+        BOURSE{' '}
+        {purseChanged ? (
+          <>
+            <CoinAmount amount={coins.before} /> → <CoinAmount amount={coins.after} />
+          </>
+        ) : (
+          <CoinAmount amount={coins.after} />
+        )}
+      </Text>
 
       {/* Les écarts se comptent ici sans se nommer : ils le sont déjà, plus bas, un par un. */}
       <Text style={styles.label}>
@@ -1066,6 +1219,9 @@ const styles = StyleSheet.create({
   },
   podium: { alignItems: 'center', justifyContent: 'center' },
   vitality: { color: color.text, padding: 0, textAlign: 'center' },
+  // Même couleur que `CoinAmount` (`color.coin`) : une pièce se consulte, elle ne se célèbre
+  // pas, même celle qui vient de tomber.
+  purse: { ...type.body, color: color.coin, padding: 0, textAlign: 'center' },
   label: { ...type.label, color: color.textMuted },
   breakdown: { gap: space.sm },
   // `alignSelf: 'stretch'` et non `alignItems: 'center'` : un `TextInput` n'a pas la largeur
