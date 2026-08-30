@@ -75,6 +75,23 @@ describe('formatModifier — les charges', () => {
   });
 });
 
+describe('formatModifier — le signe vient de la valeur, jamais écrit devant', () => {
+  // younesdiouri/grrind-back#224 : un bonus négatif — une malédiction, plus tard — ne doit
+  // pas pouvoir produire un combattant à zéro point de vie. Rien ici ne dessine cet état,
+  // mais le signe doit rester juste le jour où un objet le porte : `+-350` serait un défaut
+  // que personne ne verrait avant qu'un tel objet ne tombe.
+  it('n’ajoute pas de + devant un bonus de caractéristique négatif', () => {
+    assert.equal(formatModifier(modifier({ type: 'STRENGTH_BONUS', value: -350 })), 'Force -350');
+  });
+
+  it('n’ajoute pas de + devant un millième négatif, une fois converti en pourcentage', () => {
+    assert.equal(
+      formatModifier(modifier({ type: 'MITIGATION_BONUS', value: -180 })),
+      'Mitigation -18,0 %',
+    );
+  });
+});
+
 describe('formatModifier — l’effet sans grandeur connue', () => {
   // Aucun objet livré n'en porte : la valeur n'a pas d'unité documentée, et ce module refuse
   // de l'inventer plutôt que d'afficher un nombre qui ne voudrait rien dire.

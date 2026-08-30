@@ -27,6 +27,15 @@ type DroppedItemModifier = components['schemas']['DroppedItemModifier'];
  * - `UNLOCK_SESSION_TYPE` n'a encore aucun objet qui le porte : sa valeur n'a pas de sens
  *   connu, et ce module refuse de l'inventer. Seul le nom de l'effet s'affiche.
  *
+ * ————— Le signe ——————————————————————————————————————————————————————————————————————
+ *
+ * **Il vient de la valeur, jamais écrit devant.** Rien dans le contrat ne garantit `value`
+ * positif — c'est « un entier dont l'unité dépend de `type` » — et le back a annoncé le cas
+ * (younesdiouri/grrind-back#224) : un bonus négatif, une malédiction plus tard, ne doit pas
+ * pouvoir produire un combattant à zéro point de vie. Préfixer `+` sans condition afficherait
+ * alors `+-350`. `signPrefix` est le seul endroit qui décide du signe ; les quatre branches
+ * qui affichent un nombre l'appellent plutôt que d'écrire `+` en dur.
+ *
  * ————— La portée ——————————————————————————————————————————————————————————————————————
  *
  * `discipline === null` veut dire « partout » et ne se dit pas ; une discipline précise se
@@ -50,7 +59,7 @@ function formatMagnitude(type: DroppedItemModifier['type'], value: number): stri
   switch (type) {
     case 'XP_MULTIPLIER':
     case 'LOOT_LUCK':
-      return `+${value} %`;
+      return `${signPrefix(value)}${value} %`;
 
     case 'STRENGTH_BONUS':
     case 'ENDURANCE_BONUS':
@@ -58,15 +67,15 @@ function formatMagnitude(type: DroppedItemModifier['type'], value: number): stri
     case 'DEXTERITY_BONUS':
     case 'HP_BONUS':
     case 'DAMAGE_BONUS':
-      return `+${value}`;
+      return `${signPrefix(value)}${value}`;
 
     case 'MITIGATION_BONUS':
     case 'EXTRA_TURN_BONUS':
     case 'DODGE_BONUS':
-      return `+${(value / 10).toFixed(1).replace('.', ',')} %`;
+      return `${signPrefix(value)}${(value / 10).toFixed(1).replace('.', ',')} %`;
 
     case 'STREAK_SHIELD':
-      return `+${value} ${value === 1 ? 'charge' : 'charges'}`;
+      return `${signPrefix(value)}${value} ${value === 1 ? 'charge' : 'charges'}`;
 
     case 'UNLOCK_SESSION_TYPE':
       return null;
@@ -74,6 +83,16 @@ function formatMagnitude(type: DroppedItemModifier['type'], value: number): stri
     default:
       return unnamedModifier(type);
   }
+}
+
+/**
+ * `+` devant un nombre positif ou nul, rien devant un négatif — qui porte déjà son signe.
+ * Sans ce garde-fou, un bonus négatif comme `-350` s'afficherait `+-350` : la même règle que
+ * `BreakdownRow` applique déjà pour une ligne de breakdown, ici factorisée une fois pour les
+ * quatre branches qui préfixent un nombre ci-dessus.
+ */
+function signPrefix(value: number): string {
+  return value < 0 ? '' : '+';
 }
 
 /**
