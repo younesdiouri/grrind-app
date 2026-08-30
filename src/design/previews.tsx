@@ -19,6 +19,7 @@ import { InviteCodeBlock } from '@/components/InviteCodeBlock';
 import { ItemCard } from '@/components/ItemCard';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { PlayerFighterCard } from '@/components/PlayerFighterCard';
 import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
@@ -96,6 +97,20 @@ function guildMember(
     vitalityBreakdown: { windowAverageActiveKcal: 420, targetActiveKcal: 500, bonusPermille: 168 },
     role: 'MEMBER',
     joinedAt: '2025-11-03T08:00:00Z',
+    ...overrides,
+  };
+}
+
+/** Le combattant du joueur (#227), à trouer au cas par cas — voir les spécimens. */
+function playerFighter(
+  overrides: Partial<components['schemas']['BattleFighter']>,
+): components['schemas']['BattleFighter'] {
+  return {
+    hp: 140,
+    damage: 16,
+    mitigationPercent: 0,
+    extraTurnPercent: 0,
+    dodgePercent: 0,
     ...overrides,
   };
 }
@@ -708,6 +723,27 @@ export const PREVIEWS: Preview[] = [
     ),
   },
   {
+    slug: 'carte-combattant-joueur',
+    name: 'Carte du combattant',
+    group: 'Composants',
+    element: (
+      <>
+        {/* Même unité, même forme que `EnemyCard` (#227) : c'est ce qui rend la comparaison
+            possible d'un coup d'œil en tête du catalogue. */}
+        <Specimen label="En tête du catalogue">
+          <PlayerFighterCard player={playerFighter({})} />
+        </Specimen>
+        {/* Équipement porté : les trois taux montent, sans que rien ici ne les recompose — ils
+            arrivent déjà résolus par le serveur. */}
+        <Specimen label="Équipé">
+          <PlayerFighterCard
+            player={playerFighter({ hp: 210, damage: 22, mitigationPercent: 12, extraTurnPercent: 6, dodgePercent: 4 })}
+          />
+        </Specimen>
+      </>
+    ),
+  },
+  {
     slug: 'badge-issue-combat',
     name: 'Issue d’un combat',
     group: 'Composants',
@@ -731,18 +767,23 @@ export const PREVIEWS: Preview[] = [
     element: (
       <>
         <Specimen label="Victoire">
-          <BattleRow result="VICTORY" enemyName="Chacal des sables" turns="16 tours" when="Aujourd’hui, 15:25" />
+          <BattleRow result="VICTORY" enemyName="Chacal des sables" turns="16 tours" when="Aujourd’hui, 15:25" coinsGained={0} />
+        </Specimen>
+        {/* Le gain (#227) : les pièces seulement, jamais une carte d'objet — voir le docblock
+            de `coinsGained`. */}
+        <Specimen label="Victoire, avec un gain">
+          <BattleRow result="VICTORY" enemyName="Chacal des sables" turns="16 tours" when="Aujourd’hui, 15:25" coinsGained={4} />
         </Specimen>
         <Specimen label="Défaite, contre un boss">
-          <BattleRow result="DEFEAT" enemyName="Souverain des dunes" turns="21 tours" when="Hier, 09:05" />
+          <BattleRow result="DEFEAT" enemyName="Souverain des dunes" turns="21 tours" when="Hier, 09:05" coinsGained={0} />
         </Specimen>
         {/* Le singulier existe : un combat peut se conclure en un tour. */}
         <Specimen label="Un seul tour">
-          <BattleRow result="VICTORY" enemyName="Chacal de fer" turns="1 tour" when="20 août" />
+          <BattleRow result="VICTORY" enemyName="Chacal de fer" turns="1 tour" when="20 août" coinsGained={0} />
         </Specimen>
         {/* Le nom cède avant la pastille : c'est l'issue qui doit rester lisible en défilant. */}
         <Specimen label="Nom qui déborde">
-          <BattleRow result="DEFEAT" enemyName="Matriarche des tempêtes obsidiennes" turns="33 tours" when="12 août" />
+          <BattleRow result="DEFEAT" enemyName="Matriarche des tempêtes obsidiennes" turns="33 tours" when="12 août" coinsGained={0} />
         </Specimen>
       </>
     ),
