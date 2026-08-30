@@ -6,6 +6,7 @@ export type SyncSummary = components['schemas']['SyncSummary'];
 export type SyncTotals = components['schemas']['SyncTotals'];
 export type RewardSummary = components['schemas']['RewardSummary'];
 export type XpLine = components['schemas']['XpLine'];
+export type DroppedItem = components['schemas']['DroppedItem'];
 export type SkippedWorkout = SyncSummary['skipped'][number];
 /** Pourquoi une séance créditée n'a rien rapporté. `null` pour tout crédit normal. */
 export type XpNoCreditReason = NonNullable<RewardSummary['xp']['reason']>;
@@ -16,8 +17,15 @@ export type XpNoCreditReason = NonNullable<RewardSummary['xp']['reason']>;
  * **L'ordre des clés du payload est l'ordre de l'animation**, à deux niveaux désormais :
  * d'abord entre les workouts — `imported` est chronologique, celui du crédit — puis à
  * l'intérieur de chacun, `session → xp.breakdown → attributes → level.reached →
- * titlesUnlocked → loot → streak → unlockableNodes`. Cette fonction ne fait que le rendre
- * explicite : elle ne trie jamais, elle ne réordonne jamais.
+ * titlesUnlocked → loot → coins → streak → unlockableNodes`. Cette fonction ne fait que le
+ * rendre explicite : elle ne trie jamais, elle ne réordonne jamais.
+ *
+ * **`loot` puis `coins`, et rien entre les deux** (#226) : l'objet se révèle, la bourse
+ * l'encaisse. La bourse court de son `before` à son `after` — jamais de zéro à `gained` —
+ * exactement comme le palier de niveau ; `gained` ne sert qu'à décider s'il y a quelque chose
+ * à jouer. Un tirage bredouille et une bourse à gain nul ne consomment aucun temps, la même
+ * règle que les jauges à zéro (#80) : une séance sur deux ne fait rien tomber, et lui donner
+ * un temps d'écran vide dirait « il ne s'est rien passé » à quelqu'un qui vient de s'entraîner.
  *
  * **La continuité est offerte, pas calculée.** Chaque `RewardSummary` porte son palier de
  * départ (`xpIntoLevelBefore` / `xpToNextLevelBefore`), et celui du workout *i+1* est
@@ -70,6 +78,12 @@ export const BEATS = {
   levelFlip: duration.flip,
   /** Un titre tombe. */
   titleDrop: duration.drop,
+  /** Un objet tombe. Même échelle que `titleDrop`, et pour la même raison (#226) : un objet
+   *  est rare, il mérite le temps d'un titre — pas un temps neuf inventé pour l'occasion. */
+  lootDrop: duration.drop,
+  /** La bourse finit sa course, de `before` à `after` — même échelle qu'un palier ou qu'une
+   *  jauge qui se pose. */
+  coinsSettle: duration.settle,
   /** Ce que coûte un workout condensé, à ajouter au socle du condensé. */
   digestPerWorkout: 190,
   /** Le socle du condensé : le temps de lire « et 12 autres séances ». */
@@ -91,10 +105,12 @@ export const BEATS = {
    * là-bas ralentirait chaque liste de l'app pour régler un problème de cet écran-ci.
    *
    * Il se paie trois fois par séance détaillée — après le breakdown, dans le battement des
-   * jauges, après le palier — soit un peu plus d'une seconde. C'est ce qui fait passer une
-   * séance de trois secondes à quatre et demie environ, et quinze séances de quinze secondes
-   * à dix-neuf. Au-delà, on dépasse le budget que `timeline.test.ts` garde sur le condensé,
-   * et on ajoute des secondes que personne ne regarde.
+   * jauges, après le palier — et une quatrième quand du loot tombe (#226), après ce dernier.
+   * Soit un peu plus d'une seconde à chaque fois. C'est ce qui fait passer une séance de trois
+   * secondes à quatre et demie environ, et quinze séances de quinze secondes à dix-neuf — plus
+   * jusqu'à deux secondes par séance détaillée où du loot ou des pièces tombent. Au-delà, on
+   * dépasse le budget que `timeline.test.ts` garde sur le condensé, et on ajoute des secondes
+   * que personne ne regarde.
    */
   dwell: duration.breath,
   /**
@@ -149,6 +165,19 @@ export type Beat =
   | { kind: 'attributes'; at: number; until: number; workout: number }
   | { kind: 'level'; at: number; until: number; workout: number; level: number }
   | { kind: 'title'; at: number; until: number; workout: number; index: number }
+  /**
+   * Un objet tombe (#226). `index` pointe dans `workout.loot`, comme `title` pointe dans
+   * `titlesUnlocked` — la donnée elle-même reste dans le payload, la timeline ne fait que
+   * dater. Un seul jet aujourd'hui (voir le docblock du `LootRoller` côté back), mais le
+   * contrat rend un tableau : on anime le tableau, pas le « un ».
+   */
+  | { kind: 'loot'; at: number; until: number; workout: number; index: number }
+  /**
+   * La bourse encaisse ce que le loot vient de révéler — juste après lui, jamais avant
+   * (#226). `before`/`after` sont ceux du contrat, jamais recalculés : `gained` ne sert qu'à
+   * décider s'il y a quelque chose à jouer.
+   */
+  | { kind: 'coins'; at: number; until: number; workout: number; gained: number; before: number; after: number }
   /** Les workouts au-delà du détail, roulés en une montée continue. */
   | { kind: 'digest'; at: number; until: number; from: number; count: number; levels: number[] }
   /** Ce qui n'a rien rapporté, nommé. Toujours en dernier : c'est une note, pas une célébration. */
@@ -187,6 +216,15 @@ export type Timeline = {
   bar: Ramp;
   /** Le compteur d'XP, cumulé sur **toute** la synchronisation. */
   counter: Ramp;
+  /**
+   * La bourse, de bout en bout — même geste que `counter`, jamais une somme refaite ici.
+   *
+   * Elle tient plate tant qu'aucune séance ne fait tomber de pièces, court de `before` à
+   * `after` pendant le battement `coins` de chaque workout, et continue sous le condensé
+   * exactement comme `attributes` : la montée y est continue, sans dent-de-scie, parce que la
+   * bourse n'a rien d'un palier qui butte et retombe.
+   */
+  purse: Ramp;
   /**
    * Les cinq jauges de caractéristiques, de bout en bout — condensé compris, comme `bar` et
    * `counter`. Le condensé ne montre pas de cercle, mais les rampes continuent d'y courir
@@ -331,6 +369,7 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   const beats: Beat[] = [];
   const bar: Ramp = { input: [], output: [] };
   const counter: Ramp = { input: [], output: [] };
+  const purse: Ramp = { input: [], output: [] };
   const attributes: AttributeRamps = {
     strength: { input: [], output: [] },
     endurance: { input: [], output: [] },
@@ -367,6 +406,11 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     counter.output.push(value);
   };
 
+  const holdPurse = (at: number, value: number): void => {
+    purse.input.push(at);
+    purse.output.push(value);
+  };
+
   /**
    * Verrouille les cinq jauges sur une valeur, à un instant donné — la même technique que
    * `holdBar`, répétée cinq fois. Sans ce point, une jauge qui n'a encore rien à montrer
@@ -392,8 +436,11 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   // workout crédité, il n'y a pas de barre à animer — `tout-ecarte` passe directement à la
   // liste des écarts.
   const start = summary.imported.length > 0 ? fillBefore(summary.imported[0].level) : 0;
+  /** Le solde avant le tout premier workout crédité — le `before` que le bilan reprendra. */
+  const purseStart = summary.imported.length > 0 ? summary.imported[0].coins.before : 0;
   holdBar(0, start);
   holdCounter(0, 0);
+  holdPurse(0, purseStart);
   holdAttributes(
     0,
     summary.imported.length > 0 ? attributesAt(summary.imported[0].attributes, 'before') : zeroAttributes,
@@ -407,6 +454,7 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   if (summary.imported.length > 0) {
     const anticipation = push({ kind: 'rest', duration: duration.breath });
     holdBar(anticipation.until, start);
+    holdPurse(anticipation.until, purseStart);
   }
 
   detailed.forEach((workout, index) => {
@@ -414,6 +462,11 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     const session = push({ kind: 'session', duration: BEATS.sessionClose, workout: index });
     holdBar(session.at, fillBefore(workout.level));
     holdBar(session.until, fillBefore(workout.level));
+    // La bourse aussi se tient posée sur ce qu'elle valait avant cette séance — même geste
+    // que la barre, et pour la même raison : sans cette ancre, elle dériverait vers le
+    // prochain gain avant même que la séance en cours n'ait tombé le sien.
+    holdPurse(session.at, workout.coins.before);
+    holdPurse(session.until, workout.coins.before);
 
     // 2. `xp.breakdown` — ligne à ligne, dans l'ordre du calcul. La barre suit le cumul, le
     //    compteur suit le total de la **synchronisation** et non celui du workout : c'est une
@@ -547,8 +600,36 @@ export function buildTimeline(summary: SyncSummary): Timeline {
       holdBar(read.until, fillAfter(workout.level));
     }
 
-    // 5. `loot`, `streak`, `unlockableNodes` — présents et vides jusqu'aux Lots 6, 5 et 7.
-    //    On les saute tant qu'ils le sont ; on ne les rend pas optionnels pour autant.
+    // 5. `loot`, puis `coins` — juste après, rien entre les deux (#226). Un tirage bredouille
+    //    et une bourse à gain nul ne consomment aucun temps : même règle que les jauges à
+    //    zéro (#80), et pour la même raison — une séance sur deux ne fait rien tomber, lui
+    //    donner un temps d'écran vide dirait « il ne s'est rien passé » à quelqu'un qui vient
+    //    de s'entraîner, et ce serait la deuxième fois.
+    if (workout.loot.length > 0 || workout.coins.gained > 0) {
+      workout.loot.forEach((_, position) => {
+        push({ kind: 'loot', duration: BEATS.lootDrop, workout: index, index: position });
+      });
+
+      // La bourse court de son avant à son après — jamais de zéro à `gained`, qui ne sert
+      // qu'à décider si ce battement a lieu.
+      const coins = push({
+        kind: 'coins',
+        duration: BEATS.coinsSettle,
+        workout: index,
+        gained: workout.coins.gained,
+        before: workout.coins.before,
+        after: workout.coins.after,
+      });
+      holdPurse(coins.at, workout.coins.before);
+      holdPurse(coins.until, workout.coins.after);
+
+      // Le temps de lire ce qui vient de tomber, comme le breakdown et le palier.
+      const read = push({ kind: 'rest', duration: BEATS.dwell });
+      holdPurse(read.until, workout.coins.after);
+    }
+
+    // `streak`, `unlockableNodes` — présents et vides jusqu'aux Lots 5 et 7. On les saute
+    // tant qu'ils le sont ; on ne les rend pas optionnels pour autant.
   });
 
   // Le condensé : tout ce que le détail n'a pas joué, en une montée continue.
@@ -588,6 +669,12 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     // condensé : l'arrivée du dernier `imported` doit être exacte quand le joueur saute,
     // condensé compris — sans ça le saut sur `quinze-workouts` s'arrêterait un cran trop tôt.
     holdAttributes(span.until, last === undefined ? zeroAttributes : attributesAt(last.attributes, 'after'));
+
+    // La bourse, elle, ne fait pas de dent-de-scie : rien n'y « bute » comme un palier. Elle
+    // monte tout droit vers l'après du dernier workout du lot — un objet tombé dans le
+    // condensé ne rejoue pas son propre battement, mais la pièce qu'il a rapportée arrive
+    // bien ici, et se retrouve au bilan.
+    holdPurse(span.until, last === undefined ? purseStart : last.coins.after);
   }
 
   // Ce qui n'a rien rapporté, nommé — et **en dernier**. Un écart est une note en bas de page,
@@ -612,6 +699,7 @@ export function buildTimeline(summary: SyncSummary): Timeline {
   holdBar(closing.until, last === undefined ? start : fillAfter(last.level));
   holdCounter(closing.until, summary.totals?.xpAwarded ?? running);
   holdAttributes(closing.until, last === undefined ? zeroAttributes : attributesAt(last.attributes, 'after'));
+  holdPurse(closing.until, last === undefined ? purseStart : last.coins.after);
 
   // Un segment court de l'ouverture d'une séance à l'ouverture de la suivante ; le dernier
   // s'arrête là où le détail cède la place — au condensé, aux écarts, ou au bilan.
@@ -649,6 +737,7 @@ export function buildTimeline(summary: SyncSummary): Timeline {
     duration: cursor,
     bar: strictlyIncreasing(bar),
     counter: strictlyIncreasing(counter),
+    purse: strictlyIncreasing(purse),
     attributes: {
       strength: strictlyIncreasing(attributes.strength),
       endurance: strictlyIncreasing(attributes.endurance),
