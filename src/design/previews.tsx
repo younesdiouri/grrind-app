@@ -8,6 +8,7 @@ import { BattleRow } from '@/components/BattleRow';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
+import { CoinAmount } from '@/components/CoinAmount';
 import { DangerRow } from '@/components/DangerRow';
 import { DisciplineChip } from '@/components/DisciplineChip';
 import { EnemyCard } from '@/components/EnemyCard';
@@ -15,6 +16,7 @@ import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { HpBar } from '@/components/HpBar';
 import { InviteCodeBlock } from '@/components/InviteCodeBlock';
+import { ItemCard } from '@/components/ItemCard';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { RisalaCard } from '@/components/RisalaCard';
@@ -94,6 +96,21 @@ function guildMember(
     vitalityBreakdown: { windowAverageActiveKcal: 420, targetActiveKcal: 500, bonusPermille: 168 },
     role: 'MEMBER',
     joinedAt: '2025-11-03T08:00:00Z',
+    ...overrides,
+  };
+}
+
+/** Un objet du catalogue, à trouer au cas par cas — voir les spécimens. */
+function droppedItem(
+  overrides: Partial<components['schemas']['DroppedItem']>,
+): components['schemas']['DroppedItem'] {
+  return {
+    key: 'WORN_RUNNING_SHOES',
+    name: 'Baskets usées',
+    rarity: 'COMMON',
+    slot: 'FEET',
+    modifiers: [],
+    priceCoins: 30,
     ...overrides,
   };
 }
@@ -752,6 +769,83 @@ export const PREVIEWS: Preview[] = [
             combattant absent plutôt qu'à un combattant tombé. */}
         <Specimen label="Adversaire, à terre">
           <HpBar side="enemy" fill={0} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'montant-pieces',
+    name: 'Montant en pièces',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Un solde">
+          <CoinAmount amount={1240} />
+        </Specimen>
+        {/* Le singulier existe : un tirage peut ne rapporter qu'une seule pièce. */}
+        <Specimen label="Le singulier">
+          <CoinAmount amount={1} />
+        </Specimen>
+        {/* Signé : c'est ce dont l'historique du ledger a besoin, lui qui garde le signe même
+            si aucune ligne négative n'existe encore en v1. */}
+        <Specimen label="Signé — une ligne de l'historique">
+          <CoinAmount amount={12} signed />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'carte-objet',
+    name: 'Carte d’objet',
+    group: 'Composants',
+    element: (
+      <>
+        {/* La rareté se lit avant le nom : cinq crans, cinq teintes qui ne doivent pas se
+            confondre sur `color.background`. */}
+        <Specimen label="Un nom long, au rang le plus rare">
+          <ItemCard
+            item={droppedItem({
+              key: 'CINDER_SOVEREIGN_MANTLE',
+              name: 'Manteau du souverain des cendres',
+              rarity: 'LEGENDARY',
+              slot: 'CHEST',
+              modifiers: [{ type: 'XP_MULTIPLIER', value: 15, discipline: null }],
+              priceCoins: 480,
+            })}
+          />
+        </Specimen>
+        {/* Trois modificateurs, trois unités différentes, et un scopé sur une discipline : le
+            cas qui prouve que `formatModifier` fait tout le travail, ligne à ligne. */}
+        <Specimen label="Trois modificateurs, dont un scopé sur une discipline">
+          <ItemCard
+            item={droppedItem({
+              key: 'TRAVELERS_CLOAK',
+              name: 'Cape du voyageur',
+              rarity: 'UNCOMMON',
+              slot: 'CHEST',
+              modifiers: [
+                { type: 'XP_MULTIPLIER', value: 8, discipline: 'RUNNING' },
+                { type: 'ENDURANCE_BONUS', value: 1200, discipline: null },
+                { type: 'DODGE_BONUS', value: 30, discipline: null },
+              ],
+              priceCoins: 80,
+            })}
+          />
+        </Specimen>
+        {/* Une liste de modificateurs vide n'est pas une ligne à afficher : la section
+            disparaît, elle ne se vide pas. */}
+        <Specimen label="Sans aucun modificateur">
+          <ItemCard item={droppedItem({ rarity: 'COMMON', modifiers: [] })} />
+        </Specimen>
+        {/* Le sac seulement : un drop n'a jamais de quantité à porter. */}
+        <Specimen label="Dans le sac, une quantité à deux chiffres">
+          <ItemCard item={droppedItem({ rarity: 'RARE', slot: 'HANDS' })} quantity={12} />
+        </Specimen>
+        <Specimen label="Équipé">
+          <ItemCard item={droppedItem({ rarity: 'EPIC', slot: 'WEAPON' })} equipped />
+        </Specimen>
+        <Specimen label="Un prix à quatre chiffres">
+          <ItemCard item={droppedItem({ rarity: 'EPIC', priceCoins: 1999 })} />
         </Specimen>
       </>
     ),
