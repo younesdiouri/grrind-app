@@ -15,9 +15,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { CoinAmount } from '@/components/CoinAmount';
 import { hpBarFill, HpBar } from '@/components/HpBar';
+import { ItemCard } from '@/components/ItemCard';
 import { battleResultLabel, color, scale, space, type } from '@/design/tokens';
 import { formatTurns } from './format.ts';
+import { hasBattleReward } from './reward.ts';
 import {
   buildBattleTimeline,
   type Battle,
@@ -311,9 +314,30 @@ function Announce({ who, word, tone }: { who: string; word: string; tone?: { col
  * Il dit **ce qui s'est passé**, pas seulement qui a gagné. Les chiffres viennent du bilan de
  * `timeline.ts` — des sommes sur ce que le serveur a déjà envoyé, dont rien n'est accordé à
  * personne : voir le docblock de `BattleTally` pour la frontière avec la logique de jeu.
+ *
+ * ————— Le butin paraît ici, pas dans `timeline.ts` (#227) ——————————————————————————————
+ *
+ * Le bilan est déjà un **état** et non un passage : il paraît avec le verdict et y reste. Le
+ * butin s'y range donc à côté du reste plutôt que d'ouvrir un battement de plus après le
+ * verdict, ce qui allongerait un écran dont le budget a déjà été mesuré sur appareil
+ * (`BUDGET`, quatorze secondes). `buildBattleTimeline` ne sait donc rien de `rewards` — le
+ * composant le lit directement sur `battle`, une fois pour toutes.
+ *
+ * Les objets d'abord, les pièces ensuite : c'est l'ordre du contrat sur `BattleReward`, et le
+ * back l'a aligné sur `RewardSummary` exprès pour que `ItemCard` et `CoinAmount`, déjà écrits
+ * pour l'écran de récompense, se réutilisent tels quels ici.
+ *
+ * `hasBattleReward` tranche à elle seule ce qui paraît : une défaite, comme une victoire
+ * tranchée par `max_turns` sans KO, ne rapporte rien, et le back a refusé de dessiner une
+ * consolation pour ce cas — ni bourse vide, ni « rien trouvé ».
  */
 function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; done: boolean }) {
   const won = battle.result === 'VICTORY';
+  const reward = battle.rewards;
+  // « avant → après » seulement si la bourse a bougé : sur un lot qui n'a fait tomber que du
+  // loot sans pièces, écrire « 40 → 40 pièces » dirait un mouvement qui n'a pas eu lieu — même
+  // idiome que le `Recap` de `SyncSummaryView`.
+  const purseChanged = reward.coins.after > reward.coins.before;
 
   return (
     <View style={styles.recap}>
@@ -347,6 +371,29 @@ function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; do
         {won && <Score label="Vie restante" value={String(tally.hpLeft)} />}
       </View>
 
+      {/* Le butin — objets puis bourse, dans l'ordre du contrat. Rien ne paraît sur une
+          défaite ou un combat sans rapport : voir le docblock de `hasBattleReward`. */}
+      {hasBattleReward(reward) && (
+        <View style={styles.loot}>
+          {reward.loot.map((item, position) => (
+            <ItemCard key={`${item.key}-${position}`} item={item} />
+          ))}
+
+          <Score
+            label="Bourse"
+            value={
+              purseChanged ? (
+                <>
+                  <CoinAmount amount={reward.coins.before} /> → <CoinAmount amount={reward.coins.after} />
+                </>
+              ) : (
+                <CoinAmount amount={reward.coins.after} />
+              )
+            }
+          />
+        </View>
+      )}
+
       {/* L'affordance de sortie ne paraît qu'à la fin : avant, le seul geste est le saut, et
           l'annoncer pendant la séquence inviterait à la manquer. */}
       {done && <Text style={styles.exit}>Touche pour revenir</Text>}
@@ -354,7 +401,7 @@ function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; do
   );
 }
 
-function Score({ label, value }: { label: string; value: string }) {
+function Score({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <View style={styles.score}>
       <Text style={styles.scoreLabel}>{label}</Text>
@@ -489,6 +536,7 @@ const styles = StyleSheet.create({
   against: { ...type.body, color: color.text, textAlign: 'center' },
   lastBlow: { ...type.label, color: color.textMuted, letterSpacing: 0, textAlign: 'center' },
   tally: { alignSelf: 'stretch', gap: space.xs, paddingTop: space.sm },
+  loot: { alignSelf: 'stretch', gap: space.sm, paddingTop: space.sm },
   score: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
   scoreLabel: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   scoreValue: { ...type.label, color: color.text, letterSpacing: 0 },
