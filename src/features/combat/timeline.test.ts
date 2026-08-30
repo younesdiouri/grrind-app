@@ -99,7 +99,9 @@ function fabricated(attacks: number): Battle {
       dodgePercent: 0,
     },
     events,
-    rewards: [],
+    // Sans intérêt pour la timeline testée ici — elle ne joue que `events` — mais requis
+    // depuis #124 : un gain nul, la forme la plus fréquente d'une `BattleReward`.
+    rewards: { loot: [], coins: { gained: 0, before: 0, after: 0 } },
   };
 }
 

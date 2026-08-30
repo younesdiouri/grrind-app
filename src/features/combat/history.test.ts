@@ -10,6 +10,9 @@ function battle(id: string, foughtAt: string): BattleSummary {
     enemy: { key: 'SAND_JACKAL', name: 'Chacal des sables' },
     turns: 16,
     foughtAt,
+    // Sans intérêt pour l'accumulation de pages testée ici : un gain nul, comme une
+    // défaite. `rewards` est requis depuis #124, l'historique ne l'a jamais lu.
+    rewards: { loot: [], coins: { gained: 0, before: 0, after: 0 } },
   };
 }
 
