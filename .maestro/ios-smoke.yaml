@@ -41,6 +41,54 @@ tags:
     timeout: 30000
 - takeScreenshot: 02-empty-health
 
+# ————— Combat (#227) — le combattant du joueur, un combat gagné, son butin ————————————————
+#
+# `SAND_JACKAL` est le seul adversaire accessible à un compte neuf, et le socle livré le bat
+# toujours — `CombatCoverageTest::testTheShippedFighterSocleWinsTheLevelOneEncounter` le
+# garantit côté back. La victoire est donc déterministe ; le butin exact (`loot.yaml`, table
+# `SAND_JACKAL`) ne l'est pas, sauf la bourse, dont la borne basse n'est jamais nulle — c'est
+# elle qu'on vérifie, jamais un objet précis qui pourrait ne pas tomber.
+
+- tapOn:
+    id: "tab-combat"
+- extendedWaitUntil:
+    visible: "Adversaires"
+    timeout: 15000
+- assertVisible: "Toi"
+- takeScreenshot: 03-combat-catalog
+
+- tapOn: "Combattre"
+- extendedWaitUntil:
+    visible: ".*Chacal des sables.*"
+    timeout: 15000
+
+# Le combat, joué : ce sont les deux combattants qui paraissent avec leurs valeurs, avant même
+# le premier coup — pas d'attente du verdict naturel, qui prendrait jusqu'au budget de
+# `buildBattleTimeline` (quatorze secondes). Un tap saute directement à la fin, exactement le
+# geste qu'un joueur ferait.
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 10000
+- assertVisible: ".*Victoire.*"
+- assertVisible: ".*Bourse.*"
+- takeScreenshot: 04-battle-recap-loot
+
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible: "Adversaires"
+    timeout: 15000
+
+# La ligne d'historique porte les pièces, jamais les objets (#227) — voir le docblock de
+# `coinsGained` sur `BattleRow`. Elle est sous le catalogue, hors cadre sans défiler.
+- scrollUntilVisible:
+    element:
+      text: ".*pièce.*"
+    direction: DOWN
+- takeScreenshot: 05-combat-history-coins
+
 - tapOn:
     id: "tab-reglages"
 - scrollUntilVisible:
@@ -76,7 +124,7 @@ tags:
     timeout: 90000
 - assertVisible: ".*3 séances.*"
 - assertVisible: ".*Premiers pas.*"
-- takeScreenshot: 03-reward-summary
+- takeScreenshot: 06-reward-summary
 
 # La mise en scène a pris l'écran toute seule, et c'est la règle : `mayOpenReward` laisse
 # passer tant que personne n'a touché la coquille de l'app depuis le lancement. Le formulaire
@@ -89,4 +137,4 @@ tags:
     visible: "NIVEAU"
     timeout: 20000
 - assertVisible: "3 séances.*"
-- takeScreenshot: 04-multiple-history
+- takeScreenshot: 07-multiple-history

@@ -64,15 +64,18 @@ concerné.
 
 1. connexion avec le compte sans séance ;
 2. accueil vide, puis onglet Santé sur « Aucune activité trouvée » ;
-3. déconnexion depuis Réglages ;
-4. relance de l'app, puis connexion avec le compte à séances ;
-5. import des trois séances de la fenêtre et mise en scène jouée en entier ;
-6. retour à l'accueil, historique à trois séances.
+3. onglet Combat : le combattant du joueur en tête du catalogue, un combat gagné contre le
+   seul adversaire accessible à un compte neuf (`SAND_JACKAL`, victoire garantie côté back),
+   le bilan avec son butin, l'historique avec le gain ;
+4. déconnexion depuis Réglages ;
+5. relance de l'app, puis connexion avec le compte à séances ;
+6. import des trois séances de la fenêtre et mise en scène jouée en entier ;
+7. retour à l'accueil, historique à trois séances.
 
 ## Les captures
 
 `artifacts/e2e/` — ignoré par Git. On y trouve les captures explicites du flow
-(`01-empty-home` … `04-multiple-history`), le rapport JUnit `report.xml`, et pour chaque
+(`01-empty-home` … `07-multiple-history`), le rapport JUnit `report.xml`, et pour chaque
 exécution un dossier horodaté avec la capture, la **hiérarchie d'accessibilité** et les journaux
 de l'étape qui a échoué.
 
@@ -88,9 +91,11 @@ réponse. Quatre pièges connus, tous déjà payés :
   libellé en « Accueil, tab, 1 of 5 ». Les onglets se visent donc par `id` (`tab-accueil`,
   `tab-sante`, `tab-combat`, `tab-guilde`, `tab-reglages`), posés par `tabBarButtonTestID`.
   Ailleurs, un `.*` explicite là où le libellé porte plus que ce qu'on cherche.
-- **L'écran de récompense est un seul élément d'accessibilité.** Son `Pressable` agrège tous ses
-  enfants en une phrase. On y cherche des fragments (`".*Toucher pour continuer.*"`), jamais un
-  texte exact.
+- **L'écran de récompense, et l'écran de combat, sont chacun un seul élément d'accessibilité.**
+  Les deux enveloppent tout leur contenu dans un `Pressable` racine, qui agrège ses enfants en
+  une phrase. On y cherche des fragments (`".*Toucher pour continuer.*"`, `".*Victoire.*"`),
+  jamais un texte exact — et un `tapOn: point:` plutôt qu'un `tapOn:` sur un libellé, puisqu'il
+  n'y a rien à cibler individuellement dedans.
 - **`clearState` ne déconnecte pas.** Le jeton de rafraîchissement vit dans le trousseau
   (invariant n°3), qui survit à l'effacement du conteneur de données. Le script fait
   `xcrun simctl keychain <udid> reset` ; en pilotant Maestro à la main, il faut le faire aussi,
