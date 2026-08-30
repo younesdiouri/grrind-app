@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-30T22:06:51+00:00",
+  "syncedAt": "2026-08-30T22:15:52+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054b6-0a8a-7a57-84e2-945b5e6fef6f",
+        "id": "01a054be-4a77-7c03-a442-99eba8627dd8",
         "discipline": "HIKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-15T22:06:51+00:00",
-        "endedAt": "2026-08-15T23:36:51+00:00",
+        "startedAt": "2026-08-15T22:15:52+00:00",
+        "endedAt": "2026-08-15T23:45:52+00:00",
         "durationSeconds": 5400,
         "distanceMeters": 9000,
         "calories": null,
@@ -80,10 +80,10 @@
       "titlesUnlocked": [
         {
           "id": "first_steps",
-          "name": "First Steps",
-          "hint": "Complete your first session",
+          "name": "Premiers pas",
+          "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:06:51+00:00",
+          "unlockedAt": "2026-08-30T22:15:52+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -91,11 +91,31 @@
           }
         }
       ],
-      "loot": [],
+      "loot": [
+        {
+          "key": "WORN_RUNNING_SHOES",
+          "name": "Baskets usées",
+          "rarity": "COMMON",
+          "slot": "FEET",
+          "modifiers": [
+            {
+              "type": "XP_MULTIPLIER",
+              "value": 5,
+              "discipline": "RUNNING"
+            },
+            {
+              "type": "MOBILITY_BONUS",
+              "value": 1000,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 30
+        }
+      ],
       "coins": {
-        "gained": 13,
+        "gained": 9,
         "before": 0,
-        "after": 13
+        "after": 9
       },
       "streak": null,
       "unlockableNodes": [],
@@ -103,12 +123,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0a99-7217-a1aa-40bf0687f8a6",
+        "id": "01a054be-4a87-77e4-8816-3c216c641658",
         "discipline": "MOBILITY",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-16T22:06:51+00:00",
-        "endedAt": "2026-08-16T22:36:51+00:00",
+        "startedAt": "2026-08-16T22:15:52+00:00",
+        "endedAt": "2026-08-16T22:45:52+00:00",
         "durationSeconds": 1800,
         "distanceMeters": null,
         "calories": null,
@@ -168,9 +188,9 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 7,
-        "before": 13,
-        "after": 20
+        "gained": 5,
+        "before": 9,
+        "after": 14
       },
       "streak": null,
       "unlockableNodes": [],
@@ -178,12 +198,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0a9e-78a8-a520-7e2dd520fd84",
+        "id": "01a054be-4a8e-7dc7-ab19-331e9336e2e7",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-17T22:06:51+00:00",
-        "endedAt": "2026-08-17T22:56:51+00:00",
+        "startedAt": "2026-08-17T22:15:52+00:00",
+        "endedAt": "2026-08-17T23:05:52+00:00",
         "durationSeconds": 3000,
         "distanceMeters": null,
         "calories": null,
@@ -239,31 +259,11 @@
         "skillPointsGranted": 0
       },
       "titlesUnlocked": [],
-      "loot": [
-        {
-          "key": "TRAVELERS_CLOAK",
-          "name": "Traveler's Cloak",
-          "rarity": "UNCOMMON",
-          "slot": "CHEST",
-          "modifiers": [
-            {
-              "type": "XP_MULTIPLIER",
-              "value": 8,
-              "discipline": null
-            },
-            {
-              "type": "ENDURANCE_BONUS",
-              "value": 1200,
-              "discipline": null
-            }
-          ],
-          "priceCoins": 80
-        }
-      ],
+      "loot": [],
       "coins": {
-        "gained": 12,
-        "before": 20,
-        "after": 32
+        "gained": 15,
+        "before": 14,
+        "after": 29
       },
       "streak": null,
       "unlockableNodes": [],
@@ -271,12 +271,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0aa4-7e3a-adbb-187a6bf32d46",
+        "id": "01a054be-4a94-7dd9-8c57-ec0d8c045779",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-18T22:06:51+00:00",
-        "endedAt": "2026-08-18T23:21:51+00:00",
+        "startedAt": "2026-08-18T22:15:52+00:00",
+        "endedAt": "2026-08-18T23:30:52+00:00",
         "durationSeconds": 4500,
         "distanceMeters": 35000,
         "calories": null,
@@ -344,9 +344,9 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 10,
-        "before": 32,
-        "after": 42
+        "gained": 11,
+        "before": 29,
+        "after": 40
       },
       "streak": null,
       "unlockableNodes": [],
@@ -354,12 +354,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0aaa-7d1a-89cf-d19eb6261c64",
+        "id": "01a054be-4a9a-7a6a-951e-4f5033f6907a",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-19T22:06:51+00:00",
-        "endedAt": "2026-08-19T22:51:51+00:00",
+        "startedAt": "2026-08-19T22:15:52+00:00",
+        "endedAt": "2026-08-19T23:00:52+00:00",
         "durationSeconds": 2700,
         "distanceMeters": 7000,
         "calories": null,
@@ -422,8 +422,8 @@
       "loot": [],
       "coins": {
         "gained": 6,
-        "before": 42,
-        "after": 48
+        "before": 40,
+        "after": 46
       },
       "streak": null,
       "unlockableNodes": [],
@@ -431,12 +431,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0ab0-7949-8655-a304844eb049",
+        "id": "01a054be-4aa0-772a-b743-cb599e897687",
         "discipline": "HIKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-20T22:06:51+00:00",
-        "endedAt": "2026-08-20T23:36:51+00:00",
+        "startedAt": "2026-08-20T22:15:52+00:00",
+        "endedAt": "2026-08-20T23:45:52+00:00",
         "durationSeconds": 5400,
         "distanceMeters": 9000,
         "calories": null,
@@ -508,10 +508,10 @@
       "titlesUnlocked": [
         {
           "id": "apprentice",
-          "name": "Apprentice",
-          "hint": "Reach level 5",
+          "name": "Apprenti",
+          "hint": "Atteins le niveau 5",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:06:51+00:00",
+          "unlockedAt": "2026-08-30T22:15:52+00:00",
           "progress": {
             "current": 5,
             "target": 5,
@@ -519,31 +519,11 @@
           }
         }
       ],
-      "loot": [
-        {
-          "key": "TEMPERED_HEADBAND",
-          "name": "Tempered Headband",
-          "rarity": "RARE",
-          "slot": "HEAD",
-          "modifiers": [
-            {
-              "type": "XP_MULTIPLIER",
-              "value": 12,
-              "discipline": null
-            },
-            {
-              "type": "DEXTERITY_BONUS",
-              "value": 2400,
-              "discipline": null
-            }
-          ],
-          "priceCoins": 180
-        }
-      ],
+      "loot": [],
       "coins": {
-        "gained": 26,
-        "before": 48,
-        "after": 74
+        "gained": 32,
+        "before": 46,
+        "after": 78
       },
       "streak": null,
       "unlockableNodes": [],
@@ -551,12 +531,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0ab7-7d0d-a0fa-a24b4a4f7aca",
+        "id": "01a054be-4aa6-7997-815a-1681fd967649",
         "discipline": "MOBILITY",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-21T22:06:51+00:00",
-        "endedAt": "2026-08-21T22:36:51+00:00",
+        "startedAt": "2026-08-21T22:15:52+00:00",
+        "endedAt": "2026-08-21T22:45:52+00:00",
         "durationSeconds": 1800,
         "distanceMeters": null,
         "calories": null,
@@ -614,9 +594,9 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 12,
-        "before": 74,
-        "after": 86
+        "gained": 15,
+        "before": 78,
+        "after": 93
       },
       "streak": null,
       "unlockableNodes": [],
@@ -624,12 +604,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0abe-7e01-adbb-81a72c4e0655",
+        "id": "01a054be-4aad-7ba3-8979-e33e90677c9b",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-22T22:06:51+00:00",
-        "endedAt": "2026-08-22T22:56:51+00:00",
+        "startedAt": "2026-08-22T22:15:52+00:00",
+        "endedAt": "2026-08-22T23:05:52+00:00",
         "durationSeconds": 3000,
         "distanceMeters": null,
         "calories": null,
@@ -685,31 +665,11 @@
         "skillPointsGranted": 0
       },
       "titlesUnlocked": [],
-      "loot": [
-        {
-          "key": "TEMPERED_HEADBAND",
-          "name": "Tempered Headband",
-          "rarity": "RARE",
-          "slot": "HEAD",
-          "modifiers": [
-            {
-              "type": "XP_MULTIPLIER",
-              "value": 12,
-              "discipline": null
-            },
-            {
-              "type": "DEXTERITY_BONUS",
-              "value": 2400,
-              "discipline": null
-            }
-          ],
-          "priceCoins": 180
-        }
-      ],
+      "loot": [],
       "coins": {
-        "gained": 16,
-        "before": 86,
-        "after": 102
+        "gained": 26,
+        "before": 93,
+        "after": 119
       },
       "streak": null,
       "unlockableNodes": [],
@@ -717,12 +677,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0ac6-739f-b3c8-d9bbbede538b",
+        "id": "01a054be-4ab3-789c-83fe-eb51c1f29a33",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-23T22:06:51+00:00",
-        "endedAt": "2026-08-23T23:21:51+00:00",
+        "startedAt": "2026-08-23T22:15:52+00:00",
+        "endedAt": "2026-08-23T23:30:52+00:00",
         "durationSeconds": 4500,
         "distanceMeters": 35000,
         "calories": null,
@@ -788,9 +748,9 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 32,
-        "before": 102,
-        "after": 134
+        "gained": 34,
+        "before": 119,
+        "after": 153
       },
       "streak": null,
       "unlockableNodes": [],
@@ -798,12 +758,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0acc-7cc4-a055-13df9ec0dbee",
+        "id": "01a054be-4aba-700a-a657-3188feee7817",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-24T22:06:51+00:00",
-        "endedAt": "2026-08-24T22:51:51+00:00",
+        "startedAt": "2026-08-24T22:15:52+00:00",
+        "endedAt": "2026-08-24T23:00:52+00:00",
         "durationSeconds": 2700,
         "distanceMeters": 7000,
         "calories": null,
@@ -867,9 +827,9 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 35,
-        "before": 134,
-        "after": 169
+        "gained": 18,
+        "before": 153,
+        "after": 171
       },
       "streak": null,
       "unlockableNodes": [],
@@ -877,12 +837,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0ad2-7953-ab70-14c8e7254ab9",
+        "id": "01a054be-4ac0-7db4-9045-ab1f612c2388",
         "discipline": "HIKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-25T22:06:51+00:00",
-        "endedAt": "2026-08-25T23:36:51+00:00",
+        "startedAt": "2026-08-25T22:15:52+00:00",
+        "endedAt": "2026-08-25T23:45:52+00:00",
         "durationSeconds": 5400,
         "distanceMeters": 9000,
         "calories": null,
@@ -952,9 +912,9 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 18,
-        "before": 169,
-        "after": 187
+        "gained": 21,
+        "before": 171,
+        "after": 192
       },
       "streak": null,
       "unlockableNodes": [],
@@ -962,12 +922,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0ad9-711a-9a64-9218be12bcf2",
+        "id": "01a054be-4ac7-7147-860f-5246449eee9c",
         "discipline": "MOBILITY",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-26T22:06:51+00:00",
-        "endedAt": "2026-08-26T22:36:51+00:00",
+        "startedAt": "2026-08-26T22:15:52+00:00",
+        "endedAt": "2026-08-26T22:45:52+00:00",
         "durationSeconds": 1800,
         "distanceMeters": null,
         "calories": null,
@@ -1025,9 +985,9 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 13,
-        "before": 187,
-        "after": 200
+        "gained": 15,
+        "before": 192,
+        "after": 207
       },
       "streak": null,
       "unlockableNodes": [],
@@ -1035,12 +995,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0adf-72b4-b315-fc0b13684112",
+        "id": "01a054be-4acd-7ee0-9ff7-c602a6022c49",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-27T22:06:51+00:00",
-        "endedAt": "2026-08-27T22:56:51+00:00",
+        "startedAt": "2026-08-27T22:15:52+00:00",
+        "endedAt": "2026-08-27T23:05:52+00:00",
         "durationSeconds": 3000,
         "distanceMeters": null,
         "calories": null,
@@ -1098,31 +1058,11 @@
         "skillPointsGranted": 1
       },
       "titlesUnlocked": [],
-      "loot": [
-        {
-          "key": "LUCKY_RABBIT_CHARM",
-          "name": "Lucky Rabbit Charm",
-          "rarity": "UNCOMMON",
-          "slot": "ACCESSORY",
-          "modifiers": [
-            {
-              "type": "LOOT_LUCK",
-              "value": 10,
-              "discipline": null
-            },
-            {
-              "type": "DODGE_BONUS",
-              "value": 18,
-              "discipline": null
-            }
-          ],
-          "priceCoins": 90
-        }
-      ],
+      "loot": [],
       "coins": {
-        "gained": 16,
-        "before": 200,
-        "after": 216
+        "gained": 20,
+        "before": 207,
+        "after": 227
       },
       "streak": null,
       "unlockableNodes": [],
@@ -1130,13 +1070,13 @@
     },
     {
       "session": {
-        "id": "01a054b6-0ae7-7d53-8b3e-1c9adaedd240",
+        "id": "01a054be-4ad4-74bf-a88a-831564534d0a",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-28T22:06:51+00:00",
-        "endedAt": "2026-08-28T23:21:51+00:00",
-        "durationSeconds": 4500,
+        "startedAt": "2026-08-28T22:15:51+00:00",
+        "endedAt": "2026-08-28T23:30:52+00:00",
+        "durationSeconds": 4501,
         "distanceMeters": 35000,
         "calories": null,
         "elevationGainMeters": null,
@@ -1199,36 +1139,11 @@
         "skillPointsGranted": 0
       },
       "titlesUnlocked": [],
-      "loot": [
-        {
-          "key": "SWIFT_TRAIL_LEGGINGS",
-          "name": "Swift Trail Leggings",
-          "rarity": "RARE",
-          "slot": "LEGS",
-          "modifiers": [
-            {
-              "type": "XP_MULTIPLIER",
-              "value": 10,
-              "discipline": "HIKING"
-            },
-            {
-              "type": "LOOT_LUCK",
-              "value": 5,
-              "discipline": null
-            },
-            {
-              "type": "EXTRA_TURN_BONUS",
-              "value": 28,
-              "discipline": null
-            }
-          ],
-          "priceCoins": 180
-        }
-      ],
+      "loot": [],
       "coins": {
-        "gained": 19,
-        "before": 216,
-        "after": 235
+        "gained": 34,
+        "before": 227,
+        "after": 261
       },
       "streak": null,
       "unlockableNodes": [],
@@ -1236,12 +1151,12 @@
     },
     {
       "session": {
-        "id": "01a054b6-0af0-7110-a308-66243f136588",
+        "id": "01a054be-4adb-71ab-9fca-9eed78146bb5",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-29T22:06:51+00:00",
-        "endedAt": "2026-08-29T22:51:51+00:00",
+        "startedAt": "2026-08-29T22:15:51+00:00",
+        "endedAt": "2026-08-29T23:00:51+00:00",
         "durationSeconds": 2700,
         "distanceMeters": 7000,
         "calories": null,
@@ -1303,29 +1218,29 @@
       "titlesUnlocked": [],
       "loot": [
         {
-          "key": "LUCKY_RABBIT_CHARM",
-          "name": "Lucky Rabbit Charm",
-          "rarity": "UNCOMMON",
-          "slot": "ACCESSORY",
+          "key": "TEMPERED_HEADBAND",
+          "name": "Bandeau trempé",
+          "rarity": "RARE",
+          "slot": "HEAD",
           "modifiers": [
             {
-              "type": "LOOT_LUCK",
-              "value": 10,
+              "type": "XP_MULTIPLIER",
+              "value": 12,
               "discipline": null
             },
             {
-              "type": "DODGE_BONUS",
-              "value": 18,
+              "type": "DEXTERITY_BONUS",
+              "value": 2400,
               "discipline": null
             }
           ],
-          "priceCoins": 90
+          "priceCoins": 180
         }
       ],
       "coins": {
-        "gained": 15,
-        "before": 235,
-        "after": 250
+        "gained": 33,
+        "before": 261,
+        "after": 294
       },
       "streak": null,
       "unlockableNodes": [],

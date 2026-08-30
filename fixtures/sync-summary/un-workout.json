@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-30T22:06:50+00:00",
+  "syncedAt": "2026-08-30T22:15:51+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054b6-061f-74d5-8a73-e21891a17827",
+        "id": "01a054be-4603-753e-996b-3b1d179bd181",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-28T22:06:50+00:00",
-        "endedAt": "2026-08-28T23:16:50+00:00",
+        "startedAt": "2026-08-28T22:15:50+00:00",
+        "endedAt": "2026-08-28T23:25:50+00:00",
         "durationSeconds": 4200,
         "distanceMeters": 12000,
         "calories": null,
@@ -76,10 +76,10 @@
       "titlesUnlocked": [
         {
           "id": "first_steps",
-          "name": "First Steps",
-          "hint": "Complete your first session",
+          "name": "Premiers pas",
+          "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:06:50+00:00",
+          "unlockedAt": "2026-08-30T22:15:51+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -89,9 +89,9 @@
       ],
       "loot": [],
       "coins": {
-        "gained": 8,
+        "gained": 11,
         "before": 0,
-        "after": 8
+        "after": 11
       },
       "streak": null,
       "unlockableNodes": [],

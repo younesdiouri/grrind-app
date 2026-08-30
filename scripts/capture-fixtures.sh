@@ -58,6 +58,10 @@ workout() {
 }
 
 # Envoie un lot et écrit la réponse. `import <jeton> <fichier|-> <workout json...>`
+#
+# `Accept-Language: fr` parce que le client le pose toujours (`src/api/languageMiddleware.ts`,
+# #112) : un titre ou le nom d'un objet tombé sans cet en-tête décrit une réponse que personne
+# ne reçoit, pas la fixture qu'on prétend capturer.
 import() {
   local token="$1" out="$2"; shift 2
   local body
@@ -67,6 +71,7 @@ import() {
   reply="$(curl -sf -X POST "$API/api/workouts/import" \
     -H "Authorization: Bearer $token" \
     -H "Idempotency-Key: $(uuidgen)" \
+    -H 'Accept-Language: fr' \
     -H 'Content-Type: application/json' \
     -d "$body")"
 

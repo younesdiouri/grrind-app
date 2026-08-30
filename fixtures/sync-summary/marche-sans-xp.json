@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-30T22:06:52+00:00",
+  "syncedAt": "2026-08-30T22:15:52+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054b6-0d32-70c7-b2b2-b2be8eb98cca",
+        "id": "01a054be-4d18-773c-8960-64a98ba5a330",
         "discipline": "WALKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-29T22:06:52+00:00",
-        "endedAt": "2026-08-29T23:06:52+00:00",
+        "startedAt": "2026-08-29T22:15:52+00:00",
+        "endedAt": "2026-08-29T23:15:52+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 5000,
         "calories": null,

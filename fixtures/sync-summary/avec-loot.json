@@ -1,20 +1,20 @@
 {
-  "syncedAt": "2026-08-30T22:06:56+00:00",
+  "syncedAt": "2026-08-30T22:15:55+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054b6-1fb3-7d70-b222-cc56240867c7",
+        "id": "01a054be-5842-77bc-a0d8-45bf3df23e09",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-29T22:06:56+00:00",
-        "endedAt": "2026-08-29T22:36:56+00:00",
+        "startedAt": "2026-08-29T22:15:55+00:00",
+        "endedAt": "2026-08-29T22:45:55+00:00",
         "durationSeconds": 1800,
         "distanceMeters": 5000,
         "calories": null,
         "elevationGainMeters": null,
         "averageHeartRate": null,
-        "externalId": "loot-10"
+        "externalId": "loot-6"
       },
       "xp": {
         "awarded": 80,
@@ -70,10 +70,10 @@
       "titlesUnlocked": [
         {
           "id": "first_steps",
-          "name": "First Steps",
-          "hint": "Complete your first session",
+          "name": "Premiers pas",
+          "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:06:56+00:00",
+          "unlockedAt": "2026-08-30T22:15:55+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -84,7 +84,7 @@
       "loot": [
         {
           "key": "TRAVELERS_CLOAK",
-          "name": "Traveler's Cloak",
+          "name": "Cape du voyageur",
           "rarity": "UNCOMMON",
           "slot": "CHEST",
           "modifiers": [
@@ -103,9 +103,9 @@
         }
       ],
       "coins": {
-        "gained": 8,
+        "gained": 7,
         "before": 0,
-        "after": 8
+        "after": 7
       },
       "streak": null,
       "unlockableNodes": [],

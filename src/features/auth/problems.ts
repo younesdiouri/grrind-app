@@ -274,8 +274,8 @@ function messageForProblem(problem: ProblemDetails): string {
       return "L'app a envoyé une requête que le serveur ne comprend pas.";
 
     // Bug de l'app pour la même raison — sauf sur deux appareils : l'un peut tenter
-    // d'équiper un objet que l'autre vient de vendre ou d'équiper ailleurs, sur un sac
-    // rechargé depuis dix minutes. La phrase ne doit donc pas accuser d'une panne.
+    // d'équiper un objet que l'autre vient d'équiper ailleurs, sur un sac rechargé depuis
+    // dix minutes. La phrase ne doit donc pas accuser d'une panne.
     case 'https://grrind.app/problems/item-not-owned':
       return "Cet objet n'est plus dans ton sac. Recharge-le et réessaie.";
 
