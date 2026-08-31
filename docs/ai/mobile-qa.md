@@ -175,7 +175,7 @@ concerné.
 3. onglet Combat : le combattant du joueur en tête du catalogue, un combat gagné contre le
    seul adversaire accessible à un compte neuf (`SAND_JACKAL`, victoire garantie côté back),
    le bilan avec son butin, l'historique avec le gain ;
-4. déconnexion depuis Réglages ;
+4. onglet Réglages : le bloc Synchronisation (#82, #140), puis déconnexion ;
 5. relance de l'app, puis connexion avec le compte à séances ;
 6. import des trois séances de la fenêtre et mise en scène jouée en entier ;
 7. retour à l'accueil, historique à trois séances ;
@@ -195,7 +195,8 @@ demandera un compte E2E avec objet préchargé ou une fixture back dédiée ; ju
 ## Les captures
 
 `artifacts/e2e/` — ignoré par Git. On y trouve les captures explicites du flow
-(`01-empty-home` … `11-fighter-after-equip`), le rapport JUnit `report.xml`, et pour chaque
+(`01-empty-home` … `11-fighter-after-equip`, `05a-settings-sync` pour le bloc Synchronisation
+de Réglages), le rapport JUnit `report.xml`, et pour chaque
 exécution un dossier horodaté avec la capture, la **hiérarchie d'accessibilité** et les journaux
 de l'étape qui a échoué.
 
