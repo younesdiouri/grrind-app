@@ -209,8 +209,8 @@ export default function ReglagesScreen() {
  *
  * Ce bloc répondait déjà à « est-ce que l'observer tourne ? ». Il répond maintenant aussi à
  * la question que le joueur se pose vraiment quand il retombe sur l'écran de connexion :
- * `journal.sessionLost` porte laquelle des trois branches de `session.ts` a jeté la session,
- * et quand — jamais le jeton, sous aucune forme. Voir `sessionLostReason.ts`.
+ * `journal.sessionLost` porte lequel des quatre points de `session.ts` a jeté la session, et
+ * quand — jamais le jeton, sous aucune forme. Voir `sessionLostReason.ts`.
  */
 function Synchronisation() {
   const journal = useSyncExternalStore(subscribeToJournal, getJournal);
@@ -343,9 +343,14 @@ function withDuration(sentence: string, duration: number | null): string {
 }
 
 /**
- * Pourquoi la dernière session a été jetée, en une phrase — laquelle des trois branches de
+ * Pourquoi la dernière session a été jetée, en une phrase — lequel des quatre points de
  * `session.ts` a tiré. Jamais le jeton : `SessionLostReason` ne le porte pas, voir son
  * docblock (`sessionLostReason.ts`).
+ *
+ * `serverRefusal` se décline en deux phrases, pas une : « jeton de session » (le refresh
+ * token, `refreshEndpoint`) et « jeton d'accès » (le JWT, `authenticatedRoute`) n'accusent pas
+ * la même chose, et les confondre à l'écran referait disparaître la distinction que
+ * `sessionLostReason.ts` a précisément faite remonter jusqu'ici.
  *
  * Un `switch` sur trois cas fixes, définis dans ce client : pas de `default` qui renvoie à
  * `never`, cette exigence-là ne vaut que pour les pannes du contrat serveur
@@ -356,10 +361,11 @@ function sessionLostDetail(entry: SessionLostEntry): string {
     case 'missingToken':
       return 'Le jeton de session avait disparu du trousseau.';
     case 'serverRefusal': {
+      const label = entry.reason.origin === 'refreshEndpoint' ? 'jeton de session' : 'jeton d’accès';
       const type = shortProblemType(entry.reason.type);
       return type === null
-        ? `Le serveur a refusé le jeton (${entry.reason.status}).`
-        : `Le serveur a refusé le jeton (${entry.reason.status} · ${type}).`;
+        ? `Le serveur a refusé le ${label} (${entry.reason.status}).`
+        : `Le serveur a refusé le ${label} (${entry.reason.status} · ${type}).`;
     }
     case 'signedOut':
       return 'Déconnexion demandée depuis Réglages.';

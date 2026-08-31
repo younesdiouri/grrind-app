@@ -21,6 +21,7 @@ const EMPTY: SyncJournal = {
   wokeAt: null,
   registration: null,
   sessionLost: null,
+  sessionActive: false,
 };
 
 describe('une course sans verdict', () => {

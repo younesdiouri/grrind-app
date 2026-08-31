@@ -23,7 +23,12 @@ import {
   setAccessToken,
   writeRefreshToken,
 } from '@/features/auth/tokenStore';
-import { noteSessionLost } from '@/features/diagnostics/journal';
+import {
+  getJournal,
+  noteSessionAdopted,
+  noteSessionForgotten,
+  noteSessionLost,
+} from '@/features/diagnostics/journal';
 
 /**
  * La session, en un seul exemplaire.
@@ -81,6 +86,10 @@ export { getAccessToken };
 async function adopt(session: AuthSession): Promise<void> {
   await writeRefreshToken(session.tokens.refreshToken);
   setAccessToken(session.tokens.accessToken);
+  // Persisté, pas seulement en mémoire : `missingTokenReason` en a besoin dès le tout premier
+  // `performRefresh()` d'un futur process, avant que `state` ci-dessous n'ait pu valoir
+  // `'signedIn'` de nouveau. Voir le docblock de `journal.ts`.
+  noteSessionAdopted();
   publish({ status: 'signedIn', user: session.user });
 }
 
@@ -88,6 +97,10 @@ async function adopt(session: AuthSession): Promise<void> {
 async function forget(): Promise<void> {
   setAccessToken(null);
   await clearRefreshToken();
+  // Inconditionnel, que cet appel ait été précédé d'un `noteSessionLost()` ou non : sans ce
+  // reset, la prochaine ouverture retracerait un abandon fantôme sur un trousseau vide qui est
+  // pourtant le résultat attendu de ce `forget()`-ci. Voir le docblock de `journal.ts`.
+  noteSessionForgotten();
   publish({ status: 'signedOut' });
 }
 
@@ -103,10 +116,12 @@ async function performRefresh(): Promise<string | null> {
   if (refreshToken === null) {
     // Le piège du #143 : `restore()` passe ici à **chaque** démarrage, y compris quand
     // personne ne s'est jamais connecté sur cet appareil — un trousseau vide est alors le
-    // déroulement normal d'un premier lancement, pas un abandon. `state.status` est lu
-    // **avant** `forget()`, qui le remet à `signedOut` : `missingTokenReason` ne trace donc
-    // que si une session était réellement en cours. Voir son docblock.
-    const reason = missingTokenReason(state.status === 'signedIn');
+    // déroulement normal d'un premier lancement, pas un abandon. `state.status` ne peut pas
+    // trancher : au tout premier appel de `restore()` il vaut encore `'restoring'`, y compris
+    // pour l'utilisateur connecté hier dont le jeton a disparu entre deux ouvertures — le cas
+    // que le `#142` doit justement expliquer. `sessionActive` (le journal, persisté) répond à
+    // sa place : voir le docblock de `journal.ts` et celui de `missingTokenReason`.
+    const reason = missingTokenReason(getJournal().sessionActive);
     if (reason !== null) {
       noteSessionLost(reason);
     }
@@ -127,8 +142,11 @@ async function performRefresh(): Promise<string | null> {
     if (response.status === 401 || response.status === 422) {
       // Jeton inconnu, expiré, ou déjà consommé. Dans le dernier cas la famille vient d'être
       // révoquée : il n'y a plus de session à sauver, et s'accrocher au jeton ne ferait que
-      // rejouer la révocation à la prochaine ouverture.
-      noteSessionLost(serverRefusalReason(response.status, asProblem(error)?.type ?? null));
+      // rejouer la révocation à la prochaine ouverture. `refreshEndpoint` : c'est le refresh
+      // token lui-même qui est refusé, pas le JWT — voir `SessionLostReason`.
+      noteSessionLost(
+        serverRefusalReason('refreshEndpoint', response.status, asProblem(error)?.type ?? null),
+      );
       await forget();
       return null;
     }
@@ -162,10 +180,12 @@ const coordinator: RefreshCoordinator = createRefreshCoordinator({
 export async function refresh(staleToken: string | null, problem: unknown): Promise<string | null> {
   const parsed = asProblem(problem);
   if (meansSessionOver(parsed)) {
-    // Même branche que le refus de `/api/auth/refresh` plus haut — le serveur a refusé le
-    // jeton, seul l'endroit d'où vient le refus change. Le middleware n'appelle `refresh()`
-    // que sur un 401 (`authMiddleware.ts`), d'où le statut fixe.
-    noteSessionLost(serverRefusalReason(401, parsed?.type ?? null));
+    // `authenticatedRoute`, pas `refreshEndpoint` : ici c'est le **JWT** qui est jugé
+    // irrécupérable sur une route quelconque, pas le refresh token — les deux disent
+    // « le serveur a refusé le jeton », mais n'accusent pas la même chose, voir
+    // `SessionLostReason`. Le middleware n'appelle `refresh()` que sur un 401
+    // (`authMiddleware.ts`), d'où le statut fixe.
+    noteSessionLost(serverRefusalReason('authenticatedRoute', 401, parsed?.type ?? null));
     await forget();
     return null;
   }
@@ -264,8 +284,8 @@ export async function signOut(): Promise<void> {
     }
   }
 
-  // La seule des trois branches voulue : elle doit se distinguer des deux autres, sinon le
-  // journal dit qu'une session est partie sans jamais dire si c'était voulu.
+  // La seule des quatre voulue : elle doit se distinguer des trois autres, sinon le journal
+  // dit qu'une session est partie sans jamais dire si c'était voulu.
   noteSessionLost(signedOutReason());
   await forget();
 }

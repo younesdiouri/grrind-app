@@ -73,24 +73,46 @@ import type { SessionLostReason } from '@/features/auth/sessionLostReason';
  * que l'app se rappelle d'elle-même. D'où `features/diagnostics/`. Le déménagement n'a rien
  * changé au-dessus : mêmes choix, mêmes raisons, seuls les imports ont bougé.
  *
- * ————— Pourquoi la session a été jetée, et par laquelle branche (#143) —————————————————
+ * ————— Pourquoi la session a été jetée, et par lequel des quatre points (#143) —————————
  *
  * Le back ne révoque quasiment jamais de famille de refresh tokens (zéro sur 77 jetons sur une
  * fenêtre de mesure) : quand un joueur se retrouve déconnecté, c'est le **client** qui a jeté
- * la session, depuis l'une de trois branches de `session.ts` qui appellent toutes `forget()`
- * et produisent le même écran. Vu du téléphone, une déconnexion volontaire et une session
- * perdue sont indiscernables — et c'était précisément l'inconnue qui bloquait le `#142`.
+ * la session, depuis l'un de quatre points de `session.ts` qui appellent tous `forget()` et
+ * produisent le même écran. Vu du téléphone, une déconnexion volontaire et une session perdue
+ * sont indiscernables — et c'était précisément l'inconnue qui bloquait le `#142`.
  *
- * `sessionLost` porte laquelle des trois a tiré, et quand. La décision — *quelle* branche, et
- * le piège du trousseau vide au tout premier lancement, qui n'est pas un abandon — vit dans
- * `sessionLostReason.ts` (`features/auth/`), pure et testée sous `node --test` ; ce module-ci
- * ne fait qu'écrire ce qu'on lui tend, comme pour le reste du journal.
+ * `sessionLost` porte lequel des quatre a tiré, et quand. La décision — *si* et *lequel*, y
+ * compris la distinction entre un refus du refresh token et un refus du jeton d'accès sur une
+ * route quelconque, qui n'accusent pas la même chose — vit dans `sessionLostReason.ts`
+ * (`features/auth/`), pure et testée sous `node --test` ; ce module-ci ne fait qu'écrire ce
+ * qu'on lui tend, comme pour le reste du journal.
  *
  * **Jamais le jeton, sous aucune forme** — ni entier, ni tronqué, ni haché, ni sa longueur.
  * `SessionLostReason` ne le porte pas, et rien ici ne l'ajoute : c'est la session elle-même,
  * un journal qui la garderait deviendrait ce qu'il fallait protéger. Le back n'en garde qu'un
  * SHA-256 et ne l'expose nulle part ; ce client ne fait pas moins bien en ne gardant rien du
  * tout.
+ *
+ * ————— Le piège tient à *quand* `state.status` vaut `'signedIn'` (#143) ————————————————
+ *
+ * Le piège du trousseau vide n'est pas seulement « ne pas tracer un premier lancement » : il
+ * faut aussi *tracer* le cas que le `#142` doit expliquer, celui d'un utilisateur connecté
+ * hier dont le jeton a disparu du trousseau entre deux ouvertures. Au tout premier appel de
+ * `restore()`, `state.status` vaut encore `'restoring'` — jamais `'signedIn'`, même pour cet
+ * utilisateur-là — donc l'état en mémoire du process courant ne peut pas répondre à « une
+ * session existait-elle sur cet appareil ? ».
+ *
+ * `sessionActive` répond à ça, en persistant ce que `state.status === 'signedIn'` dirait s'il
+ * survivait à la fermeture de l'app : posé à `true` par `noteSessionAdopted()` (`adopt()`,
+ * `session.ts`), remis à `false` par `noteSessionForgotten()` (`forget()`,
+ * inconditionnellement, qu'un abandon ait été tracé ou non). Ce reset systématique est ce qui
+ * empêche une déconnexion volontaire de retracer un `missingToken` fantôme au lancement
+ * suivant : le trousseau vide qu'elle laisse est le résultat attendu, pas une nouvelle perte.
+ *
+ * Ce n'est pas une deuxième source de vérité sur l'authentification — voir la section
+ * « Ce que ce n'est pas » plus haut. Rien ne lit `sessionActive` pour décider ce que l'app
+ * montre ; `missingTokenReason` (`sessionLostReason.ts`) s'en sert uniquement pour décider
+ * *s'il faut écrire une ligne de diagnostic*, jamais pour l'état courant.
  */
 
 /** Ce que la dernière synchronisation a produit — les cinq issues de `SyncResult`. */
@@ -127,10 +149,19 @@ export type SyncJournal = {
    */
   registration: 'registered' | 'failed' | null;
   /**
-   * La dernière fois qu'une session a été jetée, et par laquelle des trois branches. `null` :
+   * La dernière fois qu'une session a été jetée, et par lequel des quatre points. `null` :
    * jamais, sur cet appareil. Voir la section du docblock ci-dessus.
    */
   sessionLost: SessionLostEntry | null;
+  /**
+   * Une session est-elle censée être active, d'après le dernier `adopt()`/`forget()` connu ?
+   * Persisté pour que `missingTokenReason` puisse répondre à « y avait-il une session à
+   * perdre ? » même au tout premier appel de `restore()`, où `state.status` (en mémoire) vaut
+   * encore `'restoring'`. Voir la section du docblock ci-dessus — ce n'est pas une deuxième
+   * source de vérité sur l'authentification, seulement la mémoire de ce que `session.ts` en
+   * pensait à la fin du dernier process.
+   */
+  sessionActive: boolean;
 };
 
 /** Une session jetée, datée. Voir `SessionLostReason` (`features/auth/sessionLostReason.ts`)
@@ -149,6 +180,7 @@ const EMPTY: SyncJournal = {
   wokeAt: null,
   registration: null,
   sessionLost: null,
+  sessionActive: false,
 };
 
 const FILE_NAME = 'sync-journal.json';
@@ -244,10 +276,33 @@ export function noteRegistration(registered: boolean): void {
 }
 
 /**
- * Une session vient d'être jetée — appelé par `session.ts`, aux trois branches qui appellent
- * `forget()`. `reason` est déjà tranché à l'appel : c'est `sessionLostReason.ts` qui décide
- * *si* et *par laquelle*, ce module-ci ne fait qu'écrire. Voir le docblock en tête de fichier.
+ * Une session vient d'être jetée — appelé par `session.ts`, aux points qui appellent
+ * `forget()` et ont tranché une raison à tracer. `reason` est déjà tranché à l'appel : c'est
+ * `sessionLostReason.ts` qui décide *si* et *par lequel*, ce module-ci ne fait qu'écrire. Voir
+ * le docblock en tête de fichier.
  */
 export function noteSessionLost(reason: SessionLostReason): void {
   record({ sessionLost: { at: new Date().toISOString(), reason } });
+}
+
+/**
+ * Une session vient d'être adoptée — appelé par `adopt()` (`session.ts`), inconditionnellement.
+ * Voir la section « Le piège tient à *quand* `state.status` vaut `'signedIn'` » en tête de
+ * fichier : c'est ce qui permet à `missingTokenReason` de répondre juste dès le tout premier
+ * `performRefresh()` d'un process, avant que `state` en mémoire n'ait eu la moindre chance de
+ * valoir `'signedIn'`.
+ */
+export function noteSessionAdopted(): void {
+  record({ sessionActive: true });
+}
+
+/**
+ * Une session vient d'être oubliée — appelé par `forget()` (`session.ts`),
+ * **inconditionnellement**, que `noteSessionLost` ait été appelé ou non pour ce même départ.
+ * Sans ce reset systématique, une déconnexion volontaire retracerait un `missingToken`
+ * fantôme au lancement suivant : le trousseau vide qu'elle laisse est le résultat attendu de
+ * `signOut()`, pas une nouvelle perte à expliquer.
+ */
+export function noteSessionForgotten(): void {
+  record({ sessionActive: false });
 }
