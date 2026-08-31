@@ -1,4 +1,4 @@
-import type { SyncJournal } from '@/features/health/journal';
+import type { SyncJournal } from '@/features/diagnostics/journal';
 
 /**
  * Ce que `journal.ts` laisse deviner sur le sort de la dernière course, sans y toucher.

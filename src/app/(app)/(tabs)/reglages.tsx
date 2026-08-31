@@ -24,7 +24,7 @@ import {
   type NotificationPermission,
 } from '@/features/notifications/useNotificationPermission';
 import { useHealthAccess } from '@/features/health/useHealthAccess';
-import { getJournal, subscribeToJournal, type SyncJournal } from '@/features/health/journal';
+import { getJournal, subscribeToJournal, type SyncJournal } from '@/features/diagnostics/journal';
 import { formatRunDuration, hasOrphanedRun, runDurationSeconds } from '@/features/health/runDiagnostics';
 import { useSyncStatus } from '@/features/health/useSync';
 import { formatAgo } from '@/features/progression/format';
