@@ -15,7 +15,7 @@ import {
   type EquipmentOutcome,
 } from '@/features/inventory/equipmentActions';
 import { noteEquipmentChanged } from '@/features/inventory/equipmentRevision';
-import { isEquipped, type Inventory } from '@/features/inventory/inventory';
+import { isEquippable, isEquipped, type Inventory } from '@/features/inventory/inventory';
 import { INVENTORY_QUERY_KEY, useInventory } from '@/features/inventory/useInventory';
 
 /**
@@ -92,11 +92,12 @@ export default function InventoryScreen() {
   const data = inventory.data;
   const activeSlot =
     selection ??
-    data?.items.find((line) => !isEquipped(data, line.key))?.slot ??
-    data?.items[0]?.slot ??
+    data?.items.find((line) => isEquippable(line) && !isEquipped(data, line.key))?.slot ??
+    data?.items.find(isEquippable)?.slot ??
     'HEAD';
   const equippedLine = data?.equipment[activeSlot] ?? null;
-  const compatibleItems = data?.items.filter((line) => line.slot === activeSlot) ?? [];
+  const compatibleItems =
+    data?.items.filter(isEquippable).filter((line) => line.slot === activeSlot) ?? [];
   const availableItems = compatibleItems.filter((line) => line.key !== equippedLine?.key);
 
   return (

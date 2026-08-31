@@ -1,16 +1,19 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+import type { components } from '@/api/schema';
 import { color, radius, type EquipmentSlot } from '@/design/tokens';
 
 type ItemPlaceholderProps = {
-  slot: EquipmentSlot;
+  kind: components['schemas']['DroppedItem']['kind'];
+  slot: components['schemas']['DroppedItem']['slot'];
   size?: number;
   tint?: string;
 };
 
 /** Une vignette provisoire par famille d'objet, remplaçable par l'illustration du catalogue. */
 export function ItemPlaceholder({
+  kind,
   slot,
   size = 56,
   tint = color.textMuted,
@@ -18,13 +21,21 @@ export function ItemPlaceholder({
   return (
     <View style={[styles.frame, { width: size, height: size }]}>
       <Svg width={size * 0.64} height={size * 0.64} viewBox="0 0 24 24">
-        <SlotGlyph slot={slot} tint={tint} />
+        <SlotGlyph kind={kind} slot={slot} tint={tint} />
       </Svg>
     </View>
   );
 }
 
-function SlotGlyph({ slot, tint }: { slot: EquipmentSlot; tint: string }) {
+function SlotGlyph({
+  kind,
+  slot,
+  tint,
+}: {
+  kind: components['schemas']['DroppedItem']['kind'];
+  slot: EquipmentSlot | null;
+  tint: string;
+}) {
   const common = {
     fill: 'none',
     stroke: tint,
@@ -32,6 +43,10 @@ function SlotGlyph({ slot, tint }: { slot: EquipmentSlot; tint: string }) {
     strokeLinejoin: 'round' as const,
     strokeWidth: 1.8,
   };
+
+  if (kind === 'CHEST') {
+    return <Path {...common} d="M4 10h16v10H4V10Zm-1-4h18v4H3V6Zm6 4v10m6-10v10" />;
+  }
 
   switch (slot) {
     case 'HEAD':
@@ -53,6 +68,8 @@ function SlotGlyph({ slot, tint }: { slot: EquipmentSlot; tint: string }) {
       );
     case 'WEAPON':
       return <Path {...common} d="m6 18 9-9m-1-4 5-1-1 5-9 9-3 1 1-3-2-2 2-2 2 2" />;
+    case null:
+      return null;
   }
 }
 

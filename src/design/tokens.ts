@@ -411,8 +411,8 @@ export const battleResultLabel: Record<components['schemas']['BattleSummary']['r
  */
 export type ItemRarity = components['schemas']['DroppedItem']['rarity'];
 
-/** Les sept emplacements où un objet se porte, mêmes garde-fous que `ItemRarity`. */
-export type EquipmentSlot = components['schemas']['DroppedItem']['slot'];
+/** Les sept emplacements où un équipement se porte. Les coffres n'en ont pas. */
+export type EquipmentSlot = NonNullable<components['schemas']['DroppedItem']['slot']>;
 
 /** Les treize effets qu'un modificateur peut porter, mêmes garde-fous que `ItemRarity`. */
 export type ModifierType = components['schemas']['DroppedItemModifier']['type'];
@@ -496,4 +496,5 @@ export const modifierLabel: Record<ModifierType, string> = {
 export const coinReasonLabel: Record<components['schemas']['CoinTransaction']['reason'], string> = {
   WORKOUT_DROP: 'Séance créditée',
   BATTLE_DROP: 'Combat gagné',
+  PURCHASE: 'Achat',
 };

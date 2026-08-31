@@ -292,6 +292,18 @@ function messageForProblem(problem: ProblemDetails): string {
     case 'https://grrind.app/problems/insufficient-coin-balance':
       return "Tu n'as pas assez de pièces.";
 
+    case 'https://grrind.app/problems/item-not-purchasable':
+      return "Cet objet n'est pas disponible à la boutique.";
+
+    case 'https://grrind.app/problems/item-already-owned':
+      return 'Tu possèdes déjà cet équipement.';
+
+    case 'https://grrind.app/problems/shop-level-too-low':
+      return "Ton niveau n'est pas encore suffisant pour cet objet.";
+
+    case 'https://grrind.app/problems/item-not-a-chest':
+      return "Cet objet n'est pas un coffre à ouvrir.";
+
     default:
       return unnamedProblem(problem.type);
   }

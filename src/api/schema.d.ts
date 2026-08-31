@@ -438,6 +438,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/inventory/chests/{key}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_rewards_inventory_open_chest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/inventory/coins": {
         parameters: {
             query?: never;
@@ -448,6 +464,38 @@ export interface paths {
         get: operations["get_rewards_coin_history"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_rewards_shop_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shop/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_rewards_shop_purchase"];
         delete?: never;
         options?: never;
         head?: never;
@@ -563,7 +611,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -1242,6 +1290,16 @@ export interface components {
         /**
          * @description Un objet tombé d'un tirage (#226), de quoi l'afficher **sans requête
          *     supplémentaire** — même geste qu'un titre dans `PlayerTitle`.
+         *
+         *     `slot` est nullable depuis le #230 : un coffre n'a pas d'emplacement.
+         *     Un objet qui tombe d'un tirage — séance ou combat — en porte en
+         *     revanche toujours un, un coffre ne tombant jamais d'un tirage.
+         *
+         *     `kind` distingue un équipement d'un coffre explicitement (#230) :
+         *     `slot === null` suffisait tant que le coffre était le seul objet sans
+         *     emplacement, mais c'était une déduction à écrire côté client plutôt
+         *     qu'une donnée du contrat — elle se serait tue en silence au premier
+         *     objet non équipable de plus.
          */
         DroppedItem: {
             /**
@@ -1250,14 +1308,22 @@ export interface components {
              */
             key: string;
             /**
+             * @description Ce que l'objet *est* — `EQUIPMENT` se porte, `CHEST` s'ouvre (#230). C'est sur ce champ que l'app décide « Équiper » ou « Ouvrir », jamais sur `slot === null`.
+             * @enum {string}
+             */
+            kind: "EQUIPMENT" | "CHEST";
+            /**
              * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
              * @example Chaussures de course usées
              */
             name: string;
             /** @enum {string} */
             rarity: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY";
-            /** @enum {string} */
-            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON";
+            /**
+             * @description `null` pour un coffre (#230) — il ne se porte pas, il s'ouvre.
+             * @enum {string|null}
+             */
+            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
             /** @description Dans l'ordre du catalogue. */
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
@@ -1305,6 +1371,67 @@ export interface components {
             items: components["schemas"]["InventoryLine"][];
         };
         /**
+         * @description Un objet de l'étal (#229) — la même forme que `DroppedItem`, avec ce qu'un joueur
+         *     précis en sait en plus. `owned` s'appuie sur la même règle que l'achat lui-même :
+         *     sans revente ni consommable, un objet déjà possédé ne redevient jamais achetable.
+         */
+        ShopListing: components["schemas"]["DroppedItem"] & {
+            /** @description Le solde actuel du joueur couvre `priceCoins`. */
+            affordable: boolean;
+            /** @description Déjà possédé — l'achat serait refusé (`item-already-owned`). */
+            owned: boolean;
+            /**
+             * @description Le niveau qui débloque l'achat — `shop.minimum_level` dans `items.yaml`.
+             * @example 5
+             */
+            minimumLevel: number;
+            /** @description Le joueur a atteint `minimumLevel`. Un objet verrouillé reste dans la liste : un étal qui cache ce qu'on ne peut pas encore acheter ne donne envie de rien. */
+            unlocked: boolean;
+        };
+        /**
+         * @description `GET /api/shop` : l'étal entier — un objet par entrée d'`items.yaml` dont
+         *     `shop.available` vaut `true`. Les EPIC et LEGENDARY n'y figurent jamais, voir le
+         *     docblock d'`ItemCatalog`. Le solde de pièces l'accompagne, comme sur `GET
+         *     /api/inventory` : le même écran de bourse, il n'a pas à faire un second appel
+         *     pour savoir s'il peut payer.
+         */
+        Shop: {
+            /** @description Le solde de la bourse — cet écran lui appartient autant qu'au sac. */
+            coins: number;
+            items: components["schemas"]["ShopListing"][];
+        };
+        /**
+         * @description `POST /api/shop/purchases` : l'objet acheté, ce qu'il a coûté, et le solde de
+         *     pièces avant *et* après — même geste qu'un `RewardSummary` avec ses deux paliers,
+         *     pour que la bourse se décrémente à l'écran sans que le client recalcule quoi que
+         *     ce soit.
+         */
+        Purchase: {
+            item: components["schemas"]["DroppedItem"];
+            /** @example 30 */
+            spentCoins: number;
+            /** @example 120 */
+            coinsBefore: number;
+            /** @example 90 */
+            coinsAfter: number;
+        };
+        /**
+         * @description `POST /api/inventory/chests/{key}/open` (#230) : ce que le coffre ouvert a
+         *     rendu — même forme qu'un drop de séance ou de combat, parce que c'en est un.
+         *     Le contenu ne se révèle jamais avant cet appel : ni `GET /api/inventory` ni
+         *     `GET /api/shop` ne rendent la table qui l'alimente.
+         */
+        ChestOpen: {
+            /** @description Vide le plus souvent — un tirage bredouille est un résultat à part entière. */
+            items: components["schemas"]["DroppedItem"][];
+            /** @example 15 */
+            coins: number;
+            /** @example 90 */
+            coinsBefore: number;
+            /** @example 105 */
+            coinsAfter: number;
+        };
+        /**
          * @description Une écriture au ledger de pièces (#30) — le pendant, en beaucoup plus simple, de
          *     `XpTransaction` : `amount` **est** l'écriture, il n'y a ni breakdown ni répartition
          *     à recomposer.
@@ -1314,12 +1441,12 @@ export interface components {
             id: string;
             /**
              * Format: uuid
-             * @description Ce qui a produit l'écriture — l'identifiant du workout ou du combat. Le nom du ledger, pas celui d'une séance.
+             * @description Ce qui a produit l'écriture — l'identifiant du workout, du combat, ou de la ligne d'inventaire achetée pour un `PURCHASE`.
              */
             sourceId: string;
             /** @enum {string} */
-            reason: "WORKOUT_DROP" | "BATTLE_DROP";
-            /** @description Signé. Aucune ligne négative n'existe encore en v1 — la garde s'applique malgré tout à tout appel, quel que soit le signe. */
+            reason: "WORKOUT_DROP" | "BATTLE_DROP" | "PURCHASE";
+            /** @description Signé — négatif pour `PURCHASE` (#229), positif pour les deux autres raisons. Un solde ne passe jamais sous zéro, quel que soit le signe de l'écriture qui le tenterait. */
             amount: number;
             /**
              * Format: date-time
@@ -1966,6 +2093,10 @@ export interface components {
             cursor: string | null;
             /** @default 20 */
             limit: number;
+        };
+        PurchaseItemRequest: {
+            /** @default  */
+            itemKey: string;
         };
         /** @enum {string} */
         WorkoutSource: "APPLE_HEALTH" | "HEALTH_CONNECT";
@@ -3143,6 +3274,48 @@ export interface operations {
             };
         };
     };
+    post_rewards_inventory_open_chest: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Le coffre est ouvert : les objets tombés, les pièces, le solde avant et après. Le contenu ne se révèle jamais avant cet appel. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChestOpen"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+            /** @description Coffre inconnu ou non possédé (`item-not-owned`), ou objet possédé qui n'est pas un coffre (`item-not-a-chest`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     get_rewards_coin_history: {
         parameters: {
             query?: {
@@ -3166,6 +3339,71 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    get_rewards_shop_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description L'étal — les EPIC et LEGENDARY n'y figurent jamais, voir le docblock d'ItemCatalog — avec ce que le joueur en sait et le solde de sa bourse. Un objet verrouillé par le niveau reste visible. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Shop"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    post_rewards_shop_purchase: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurchaseItemRequest"];
+            };
+        };
+        responses: {
+            /** @description L'achat est écrit : l'objet, ce qu'il a coûté, le solde de pièces avant et après. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Purchase"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+            /** @description Clé inconnue ou objet hors étal (`item-not-purchasable`), niveau insuffisant (`shop-level-too-low`), objet déjà possédé (`item-already-owned`), ou solde insuffisant (`insufficient-coin-balance`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
         };
     };
     put_training_daily_activity_upsert: {

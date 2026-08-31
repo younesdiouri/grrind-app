@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   EQUIPMENT_SLOT_ORDER,
   equippedSlots,
+  isEquippable,
   isEquipped,
   itemCount,
   type Inventory,
@@ -13,6 +14,7 @@ import {
 function line(overrides: Partial<InventoryLine> = {}): InventoryLine {
   return {
     key: 'WORN_RUNNING_SHOES',
+    kind: 'EQUIPMENT',
     name: 'Baskets usées',
     rarity: 'COMMON',
     slot: 'FEET',
@@ -41,6 +43,15 @@ function inventory(overrides: Partial<Inventory> = {}): Inventory {
 }
 
 describe("la doublure et le sac, tels que l'écran les lit (#30)", () => {
+  it('ne propose d’équiper que les objets que le contrat nomme EQUIPMENT', () => {
+    const equipment = line({ kind: 'EQUIPMENT', slot: 'FEET' });
+    const chest = line({ kind: 'CHEST', slot: null, key: 'DUNE_CHEST' });
+
+    assert.equal(isEquippable(equipment), true);
+    // Le coffre n'est pas reconnu grâce à son slot absent : `kind` est la donnée pérenne.
+    assert.equal(isEquippable(chest), false);
+  });
+
   it("rend les sept emplacements dans l'ordre du contrat, vides compris", () => {
     const slots = equippedSlots(inventory());
 

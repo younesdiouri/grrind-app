@@ -3,6 +3,10 @@ import type { EquipmentSlot } from '@/design/tokens';
 
 export type Inventory = components['schemas']['Inventory'];
 export type InventoryLine = components['schemas']['InventoryLine'];
+export type EquippableInventoryLine = InventoryLine & {
+  kind: 'EQUIPMENT';
+  slot: EquipmentSlot;
+};
 
 /**
  * L'ordre des sept emplacements, **celui du contrat** — de la tête aux pieds, puis ce qui se
@@ -56,6 +60,14 @@ export function equippedSlots(inventory: Inventory): EquippedSlot[] {
  */
 export function isEquipped(inventory: Inventory, itemKey: string): boolean {
   return EQUIPMENT_SLOT_ORDER.some((slot) => inventory.equipment[slot]?.key === itemKey);
+}
+
+/**
+ * La décision vient de `kind`. Le contrôle de `slot` rend seulement sûre la forme aplatie que
+ * génère OpenAPI, qui ne peut pas exprimer que `EQUIPMENT` implique un emplacement.
+ */
+export function isEquippable(line: InventoryLine): line is EquippableInventoryLine {
+  return line.kind === 'EQUIPMENT' && line.slot !== null;
 }
 
 /**
