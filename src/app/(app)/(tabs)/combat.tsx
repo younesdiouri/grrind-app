@@ -108,7 +108,12 @@ export default function CombatScreen() {
           {/* Le combattant du joueur, en tête — avant même le titre de la section, puisqu'il
               n'est pas un adversaire (#227). Requis au contrat : rien ne le montre tant que le
               catalogue n'est pas prêt, pas d'état « en attente ». */}
-          {catalog.step === 'ready' && <PlayerFighterCard player={catalog.player} />}
+          {catalog.step === 'ready' && (
+            <PlayerFighterCard
+              player={catalog.player}
+              onOpenBag={() => router.push('/inventaire')}
+            />
+          )}
 
           <Text style={styles.sectionTitle}>Adversaires</Text>
 

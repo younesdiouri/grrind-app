@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { components } from '@/api/schema';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BattleResultBadge } from '@/components/BattleResultBadge';
+import { BagRow } from '@/components/BagRow';
 import { BattleRow } from '@/components/BattleRow';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
@@ -739,6 +740,35 @@ export const PREVIEWS: Preview[] = [
           <PlayerFighterCard
             player={playerFighter({ hp: 210, damage: 22, mitigationPercent: 12, extraTurnPercent: 6, dodgePercent: 4 })}
           />
+        </Specimen>
+        {/* Avec l'accès au sac (#30) : c'est ici qu'on change d'équipement, juste avant de
+            s'engager, en regardant les chiffres qu'il va déplacer. */}
+        <Specimen label="Avec l'accès au sac">
+          <PlayerFighterCard player={playerFighter({})} onOpenBag={() => undefined} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'ligne-sac',
+    name: 'Ligne du sac',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Sur l'accueil">
+          <BagRow summary={{ coins: 240, itemCount: 6 }} onPress={() => undefined} />
+        </Specimen>
+        {/* Le singulier existe, et le sac vide aussi : un objet qui vient de tomber, ou aucun. */}
+        <Specimen label="Un seul objet">
+          <BagRow summary={{ coins: 8, itemCount: 1 }} onPress={() => undefined} />
+        </Specimen>
+        {/* Ce qu'on ne sait pas ne s'écrit pas — mais la ligne reste, elle est le seul chemin
+            vers le sac. */}
+        <Specimen label="Avant que l'inventaire soit chargé">
+          <BagRow onPress={() => undefined} />
+        </Specimen>
+        <Specimen label="Une bourse à quatre chiffres">
+          <BagRow summary={{ coins: 1999, itemCount: 24 }} onPress={() => undefined} />
         </Specimen>
       </>
     ),

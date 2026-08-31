@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { api } from '@/api/client';
 import type { components } from '@/api/schema';
 import { failureFrom, type Failure } from '@/features/auth/problems';
+import {
+  getEquipmentRevision,
+  subscribeToEquipment,
+} from '@/features/inventory/equipmentRevision';
 import { catalogFor, type CatalogEntry } from './catalog.ts';
 
 /**
@@ -69,6 +73,20 @@ export function useCatalog(): { catalog: Catalog; reload: () => void } {
     void load().then(setCatalog);
   }, [load]);
 
+  /**
+   * Combien de fois l'équipement a changé dans cette session (#30).
+   *
+   * `player` porte les modificateurs équipés : il vieillit donc dès qu'on porte ou retire un
+   * objet dans le sac. Et cet onglet ne se démonte pas — c'est tout l'intérêt d'une barre
+   * d'onglets — donc rien ne le relirait au retour. On se rebranche sur le compteur, comme
+   * `useBattleHistory` se rebranche sur les combats livrés, et pour la même raison : l'écran
+   * qu'on retrouve doit être celui d'après le geste, pas celui d'avant.
+   *
+   * Le catalogue lui-même n'a pas bougé, mais il arrive dans la même réponse : il n'y a rien
+   * à relire plus finement, et une route de moins vaut mieux qu'une lecture partielle.
+   */
+  const equipped = useSyncExternalStore(subscribeToEquipment, getEquipmentRevision);
+
   useEffect(() => {
     let alive = true;
 
@@ -81,7 +99,7 @@ export function useCatalog(): { catalog: Catalog; reload: () => void } {
     return () => {
       alive = false;
     };
-  }, [load]);
+  }, [load, equipped]);
 
   return { catalog, reload };
 }

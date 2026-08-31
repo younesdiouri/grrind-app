@@ -70,12 +70,23 @@ concerné.
 4. déconnexion depuis Réglages ;
 5. relance de l'app, puis connexion avec le compte à séances ;
 6. import des trois séances de la fenêtre et mise en scène jouée en entier ;
-7. retour à l'accueil, historique à trois séances.
+7. retour à l'accueil, historique à trois séances ;
+8. le sac : l'entrée de l'accueil, puis l'ouverture depuis le bloc du combattant, la doublure
+   et la bourse — et, **si le tirage a donné un objet**, l'équiper et voir le combattant avoir
+   changé au retour.
+
+L'étape 8 est la seule qui **dépend d'un tirage** : un objet ne tombe que trois fois sur dix
+par séance créditée, donc environ deux exécutions sur trois en font tomber un. Ce qui est
+certain — la bourse, les sept emplacements, le sac vide qui se nomme — se joue sans condition ;
+l'équipement vit dans un `runFlow` conditionnel, et son absence ne fait pas échouer le flow.
+Pour l'obtenir à coup sûr, on relance en boucle courte jusqu'à ce que `11-fighter-after-equip`
+paraisse : c'est la capture qui prouve, sur **le même compte**, que l'armure est passée de
+0 % à 2 % sans qu'on ait rechargé quoi que ce soit à la main.
 
 ## Les captures
 
 `artifacts/e2e/` — ignoré par Git. On y trouve les captures explicites du flow
-(`01-empty-home` … `07-multiple-history`), le rapport JUnit `report.xml`, et pour chaque
+(`01-empty-home` … `11-fighter-after-equip`), le rapport JUnit `report.xml`, et pour chaque
 exécution un dossier horodaté avec la capture, la **hiérarchie d'accessibilité** et les journaux
 de l'étape qui a échoué.
 
