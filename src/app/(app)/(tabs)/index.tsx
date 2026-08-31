@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -9,11 +10,14 @@ import {
   View,
 } from 'react-native';
 
+import { BagRow } from '@/components/BagRow';
 import { Button } from '@/components/Button';
 import { color, radius, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSyncStatus } from '@/features/health/useSync';
+import { itemCount } from '@/features/inventory/inventory';
+import { useInventory } from '@/features/inventory/useInventory';
 import { AttributeCard, LevelCard, WorkoutRow } from '@/features/progression/PlayerHomeView';
 // Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
 // renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
@@ -170,6 +174,12 @@ function PlayerHome({
         />
       ) : null}
 
+      {/* L'action, entre le résumé et l'archive — la place que le docblock de cet écran gardait
+          libre depuis le #84. Elle se dessine même sans son résumé : elle est le seul chemin
+          vers le sac, et une entrée qui n'apparaîtrait qu'une fois l'inventaire chargé serait
+          introuvable exactement quand le réseau va mal. */}
+      {home.step === 'ready' ? <BagEntry /> : null}
+
       {home.step === 'ready' && home.workouts.length === 0 ? (
         <View style={styles.card}>
           <Text style={styles.name}>Aucune séance</Text>
@@ -191,6 +201,28 @@ function PlayerHome({
         </>
       ) : null}
     </>
+  );
+}
+
+/**
+ * L'entrée du sac, et son résumé.
+ *
+ * Elle lit `GET /api/inventory` pour n'en montrer que deux nombres — le solde et le compte —,
+ * et c'est délibérément le **même cache** que l'écran du sac : ouvrir le sac depuis ici
+ * n'attend donc rien, et l'aller-retour n'est pas payé deux fois.
+ */
+function BagEntry() {
+  const inventory = useInventory();
+
+  return (
+    <BagRow
+      summary={
+        inventory.data === undefined
+          ? undefined
+          : { coins: inventory.data.coins, itemCount: itemCount(inventory.data) }
+      }
+      onPress={() => router.push('/inventaire')}
+    />
   );
 }
 

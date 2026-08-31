@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
-import { color, radius, space, type } from '@/design/tokens';
+import { color, opacity, radius, space, type } from '@/design/tokens';
 
 type PlayerFighterCardProps = {
   /**
@@ -11,6 +11,14 @@ type PlayerFighterCardProps = {
    * recompose.
    */
   player: components['schemas']['BattleFighter'];
+  /**
+   * Ouvrir le sac (#30). Facultatif : la carte se lit très bien sans, et le spécimen de
+   * preview le montre dans les deux états.
+   *
+   * C'est ici que le lien a un sens, et nulle part ailleurs dans cet onglet : on change
+   * d'équipement **juste avant** de s'engager, en regardant les chiffres qu'il va déplacer.
+   */
+  onOpenBag?: () => void;
 };
 
 /**
@@ -26,7 +34,7 @@ type PlayerFighterCardProps = {
  * ni `minimumLevel` — un combattant sans identité de catalogue et sans verrou de niveau, ce
  * n'est pas un `Enemy` auquel il manquerait des champs, c'est une forme différente.
  */
-export function PlayerFighterCard({ player }: PlayerFighterCardProps) {
+export function PlayerFighterCard({ player, onOpenBag }: PlayerFighterCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.name}>Toi</Text>
@@ -38,6 +46,17 @@ export function PlayerFighterCard({ player }: PlayerFighterCardProps) {
         <Stat label="Relance" value={`${player.extraTurnPercent} %`} />
         <Stat label="Esquive" value={`${player.dodgePercent} %`} />
       </View>
+
+      {onOpenBag === undefined ? null : (
+        <Pressable
+          style={({ pressed }) => [styles.bag, pressed && styles.pressed]}
+          onPress={onOpenBag}
+          accessibilityRole="button"
+          testID="open-bag"
+        >
+          <Text style={styles.bagLabel}>Équipement ›</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -63,6 +82,9 @@ const styles = StyleSheet.create({
   name: { ...type.body, color: color.text },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   stat: { gap: space.xs },
+  bag: { alignSelf: 'flex-start' },
+  pressed: { opacity: opacity.pressed },
+  bagLabel: { ...type.label, color: color.accent },
   statValue: { ...type.body, color: color.text },
   statLabel: { ...type.label, color: color.textMuted },
 });
