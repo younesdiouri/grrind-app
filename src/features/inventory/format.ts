@@ -1,7 +1,22 @@
 import type { components } from '@/api/schema';
 import { disciplineLabel, modifierLabel } from '@/design/tokens';
+import { formatWhen } from '@/features/progression/format';
 
 type DroppedItemModifier = components['schemas']['DroppedItemModifier'];
+
+/**
+ * Quand un mouvement du ledger de pièces a eu lieu — **passe par `formatWhen`, ne le recopie
+ * pas**. « Quand ce mouvement s'est-il produit » est exactement la question que se posent déjà
+ * l'historique des séances et celui des combats (`combat/format.ts`), et elle appelle la même
+ * réponse : aujourd'hui et hier avec l'heure, la date seule au-delà.
+ *
+ * `occurredAt` est la date du **fait** — la séance ou le combat qui a produit l'écriture —, pas
+ * celle de l'insertion en base. Dix séances importées d'un coup se rangent à dix journées
+ * différentes ; l'instant de l'écriture vit dans l'UUID v7 de la ligne et n'a rien à faire ici.
+ */
+export function formatOccurredAt(occurredAt: string, now: Date): string {
+  return formatWhen(occurredAt, now);
+}
 
 /**
  * Un modificateur d'objet, mis en phrase — « Endurance +1200 », « XP +8 % · Course
