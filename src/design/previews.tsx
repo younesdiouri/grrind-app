@@ -123,6 +123,7 @@ function droppedItem(
 ): components['schemas']['DroppedItem'] {
   return {
     key: 'WORN_RUNNING_SHOES',
+    kind: 'EQUIPMENT',
     name: 'Baskets usées',
     rarity: 'COMMON',
     slot: 'FEET',

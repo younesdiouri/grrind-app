@@ -81,7 +81,7 @@ export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoard
               pressed && styles.pressed,
             ]}
           >
-            <ItemPlaceholder slot={slot} size={40} tint={tint} />
+            <ItemPlaceholder kind="EQUIPMENT" slot={slot} size={40} tint={tint} />
             <Text
               style={[styles.slotLabel, active && styles.slotLabelActive]}
               numberOfLines={1}

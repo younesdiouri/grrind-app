@@ -43,10 +43,19 @@ type ItemCardProps = {
  * quand elles valent le même nombre par coïncidence.
  */
 export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
+  // `kind` décide le libellé. Le second cas EQUIPMENT est une ceinture de sûreté pour la forme
+  // OpenAPI aplatie : elle ne peut pas exprimer au type que ce variant porte toujours un slot.
+  const category =
+    item.kind === 'CHEST'
+      ? 'Coffre'
+      : item.slot === null
+        ? 'Équipement'
+        : equipmentSlotLabel[item.slot];
+
   return (
     <View style={[styles.card, { borderColor: rarityColor[item.rarity] }]}>
       <View style={styles.layout}>
-        <ItemPlaceholder slot={item.slot} tint={rarityColor[item.rarity]} />
+        <ItemPlaceholder kind={item.kind} slot={item.slot} tint={rarityColor[item.rarity]} />
 
         <View style={styles.content}>
           <View style={styles.head}>
@@ -60,7 +69,7 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
             {quantity === undefined ? null : <Text style={styles.quantity}>×{quantity}</Text>}
           </View>
 
-          <Text style={styles.slot}>{equipmentSlotLabel[item.slot]}</Text>
+          <Text style={styles.slot}>{category}</Text>
 
           {item.modifiers.length === 0 ? null : (
             <View style={styles.modifiers}>

@@ -20,6 +20,15 @@ tags:
 
 - launchApp
 
+# Un development build fraîchement réinstallé peut demander à iOS de confirmer l'ouverture de
+# l'URL Metro. Le build Release n'affiche pas cette feuille ; la branche garde donc les deux
+# parcours sur le même flow.
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+
 # Le development build affiche son onboarding natif après chaque `clearState`. Le build Release
 # ne l'affiche pas : cette branche conditionnelle ne change donc pas le parcours full.
 - runFlow:
@@ -185,6 +194,28 @@ tags:
 - assertVisible: ".*Tête.*"
 - assertVisible: ".*Arme.*"
 - takeScreenshot: 09-bag
+
+# La boutique reste dans le hub objets : on vérifie sa porte depuis le sac, sans acheter une
+# entrée de catalogue dont le prix et la disponibilité appartiennent au serveur.
+#
+# Les deux bornes sont des `id`, pas du texte. Le sac écrit « BOUTIQUE » sur sa porte et
+# « BOURSE » sur son solde, et l'étal écrit les deux mots lui aussi : une attente sur ce
+# texte-là serait vraie **avant** la transition comme après, et ce bloc passerait entier sans
+# que rien n'ait navigué. `shop-screen` n'existe que sur l'étal, `shop-entry` que dans le sac.
+- tapOn:
+    id: "shop-entry"
+- extendedWaitUntil:
+    visible:
+      id: "shop-screen"
+    timeout: 15000
+- takeScreenshot: 09a-shop
+- swipe:
+    start: "2%, 55%"
+    end: "95%, 55%"
+- extendedWaitUntil:
+    visible:
+      id: "shop-entry"
+    timeout: 15000
 
 # La bourse a une histoire (#129), et c'est le bloc du solde qui l'ouvre. Elle est **toujours**
 # garnie ici : les trois séances créditées ont chacune fait tomber des pièces, la bande de
