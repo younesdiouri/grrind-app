@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { CoinAmount } from '@/components/CoinAmount';
 import { ItemCard } from '@/components/ItemCard';
-import { color, equipmentSlotLabel, radius, space, type, type EquipmentSlot } from '@/design/tokens';
+import { color, equipmentSlotLabel, opacity, radius, space, type, type EquipmentSlot } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import {
   equipItem,
@@ -105,11 +105,21 @@ export default function InventoryScreen() {
 
       {data === undefined ? null : (
         <>
-          {/* La bourse en tête : cet écran lui appartient autant qu'au sac. */}
-          <View style={styles.purse}>
+          {/* La bourse en tête : cet écran lui appartient autant qu'au sac. Touchable depuis
+              #129 — c'est de là que le ledger de pièces s'ouvre, la seule porte vers son
+              histoire. */}
+          <Pressable
+            style={({ pressed }) => [styles.purse, pressed && styles.pressed]}
+            onPress={() => router.push('/bourse')}
+            accessibilityRole="button"
+            accessibilityLabel="Bourse"
+          >
             <Text style={styles.label}>BOURSE</Text>
-            <CoinAmount amount={data.coins} />
-          </View>
+            <View style={styles.purseAmount}>
+              <CoinAmount amount={data.coins} />
+              <Text style={styles.chevron}>›</Text>
+            </View>
+          </Pressable>
 
           {/* Un refus — objet non possédé, emplacement incompatible — au-dessus d'un sac qui
               reste juste : le geste a échoué, pas la lecture. */}
@@ -189,6 +199,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: space.md,
   },
+  // Même retour d'appui que `BagRow` : la ligne s'éteint sous le doigt, rien ne se déplace.
+  pressed: { opacity: opacity.pressed },
+  purseAmount: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  chevron: { ...type.body, color: color.textMuted },
   section: { ...type.label, color: color.textMuted, marginTop: space.md },
   slot: { gap: space.sm },
   /** Un emplacement libre : le nom, et ce qu'il n'a pas, sur une seule ligne. */
