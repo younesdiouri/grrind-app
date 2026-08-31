@@ -1,12 +1,12 @@
 import { api } from '@/api/client';
 import { failureFrom, type Failure } from '@/features/auth/problems';
 import { fingerprintOf } from '@/features/health/batchKey';
-import { noteSettled } from '@/features/health/journal';
+import { noteRunStarted, noteSettled } from '@/features/health/journal';
 import { healthProvider } from '@/features/health/current';
 import { batchKeys } from '@/features/health/keyStore';
 import type { WorkoutData } from '@/features/health/provider';
-import { sendUntilAnswered, type Answer, type Reply } from '@/features/health/replay';
-import { importTimeoutMsFor, retryDelaysFor } from '@/features/health/retryPolicy';
+import { sendUntilAnswered, type Reply } from '@/features/health/replay';
+import { retryDelaysFor, runBudgetMsFor } from '@/features/health/retryPolicy';
 import { createSyncCoordinator, type SyncOutcome, type SyncTrigger } from '@/features/health/syncCoordinator';
 import { windowStart } from '@/features/health/syncState';
 import { enqueuePending } from '@/features/reward/pending';
@@ -21,12 +21,35 @@ import type { SyncSummary } from '@/features/reward/timeline';
  * 2. Le fournisseur rend ce qui a bougé depuis (`provider.ts`, `current.ts`).
  * 3. Le lot obtient sa clé d'idempotence, appariée à son empreinte (`batchKey.ts`, `keyStore.ts`).
  * 4. `POST /api/workouts/import`, rejoué tant que l'issue est inconnue (`replay.ts`), selon un
- *    budget — nombre de rejeux et délai avant abandon — qui dépend du déclencheur
- *    (`retryPolicy.ts`).
+ *    nombre de rejeux qui dépend du déclencheur (`retryPolicy.ts`).
  * 5. Le `SyncSummary` part se faire jouer — ou pas, voir plus bas (`src/features/reward/`).
  *
  * Le tout est sérialisé par `syncCoordinator.ts` : **une seule synchronisation à la fois**, et
  * pas deux à trente secondes d'intervalle.
+ *
+ * ————— Un budget sur la course entière, pas sur le seul `POST` (#140) ——————————————————————
+ *
+ * En arrière-plan, un signal d'abandon naît à l'**entrée** de cette fonction et couvre les
+ * étapes 1 et 4 — le `GET` autant que le `POST` — parce que le `GET` peut à lui seul
+ * déclencher un rafraîchissement de jeton (401), et qu'un réveil sans personne pour regarder
+ * n'a que `runBudgetMsFor('background')` (`retryPolicy.ts`) avant le chien de garde natif
+ * d'iOS. Une course qui a passé tout son budget dans le refresh n'aura jamais tenté le
+ * `POST` — c'est la panne diagnostiquée en production le 2026-08-31 (#140).
+ *
+ * Ce que ce signal ne fait **jamais**, c'est annuler le rafraîchissement lui-même :
+ * `runDeadline()` n'est passé ni à `createAuthMiddleware`, ni à `session.refresh()`, ni à
+ * `publicApi` — l'invariant n°1 (voir `CLAUDE.md`) l'emporte sur ce budget. Un
+ * `POST /api/auth/refresh` interrompu en vol laisse le serveur avoir consommé le jeton sans
+ * que le client ait persisté la paire neuve : la prochaine ouverture rejoue un jeton mort, et
+ * le back révoque la famille entière — déconnexion de l'appareil. Un refresh déjà parti va
+ * donc au bout, quoi qu'il arrive à ce budget.
+ *
+ * Et parce que le rejeu post-refresh d'`authMiddleware.ts` clone la requête d'origine
+ * (`request.clone()`) pour la rejouer sur `Authorization` neuf, et que le polyfill `fetch` de
+ * React Native n'offre aucune garantie que `signal` survive à ce clonage, cette fonction ne
+ * compte pas sur l'abandon du transport pour s'arrêter à temps : elle se relit elle-même,
+ * après chaque étape coûteuse, via `exceeded()`. C'est ce qui rend l'abandon prouvable sous
+ * `node --test` plutôt que dépendant d'un polyfill.
  *
  * ————— Un chemin, quatre déclencheurs ——————————————————————————————————————————————————
  *
@@ -116,7 +139,14 @@ export type SyncResult =
   | { kind: 'nothingToSend' }
   /** Pas de fournisseur de santé sur cet appareil. */
   | { kind: 'unavailable' }
-  | { kind: 'failed'; failure: Failure };
+  | { kind: 'failed'; failure: Failure }
+  /**
+   * Notre propre budget (`runBudgetMsFor`, `retryPolicy.ts`) a expiré avant qu'un verdict ne
+   * tombe (#140). Distinct de `failed` : ce n'est pas un refus du serveur, on ne sait même
+   * pas s'il a été atteint. C'est ce qui permet à l'écran de le dire pour ce que c'est, plutôt
+   * que de le confondre avec une panne réseau — voir `outcomeDetail()` (`reglages.tsx`).
+   */
+  | { kind: 'budgetExceeded' };
 
 /** Le maximum que le contrat accepte dans un lot. */
 const MAX_BATCH = 200;
@@ -124,23 +154,35 @@ const MAX_BATCH = 200;
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Le signal d'abandon de la requête d'import, selon le budget du déclencheur
- * (`importTimeoutMsFor`, `retryPolicy.ts`).
+ * Le signal d'abandon de la course, selon le budget du déclencheur
+ * (`runBudgetMsFor`, `retryPolicy.ts`).
  *
  * `AbortSignal.timeout` n'existe pas sous le polyfill que React Native embarque
  * (`abort-controller` v3, antérieur à cette méthode) : `AbortController` et `setTimeout` font
- * le même travail, à la main. `cancel()` doit être appelé une fois la requête réglée — verdict
+ * le même travail, à la main. `cancel()` doit être appelé une fois la course réglée — verdict
  * ou abandon — sans quoi la minuterie tournerait pour rien après coup.
  */
-function importDeadline(trigger: SyncTrigger): { signal: AbortSignal | undefined; cancel: () => void } {
-  const timeoutMs = importTimeoutMsFor(trigger);
-  if (timeoutMs === null) {
+function runDeadline(trigger: SyncTrigger): { signal: AbortSignal | undefined; cancel: () => void } {
+  const budgetMs = runBudgetMsFor(trigger);
+  if (budgetMs === null) {
     return { signal: undefined, cancel: () => undefined };
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timer = setTimeout(() => controller.abort(), budgetMs);
   return { signal: controller.signal, cancel: () => clearTimeout(timer) };
+}
+
+/**
+ * Le budget a-t-il expiré ?
+ *
+ * Un point de contrôle explicite, posé avant chaque étape coûteuse plutôt que de compter sur
+ * l'abandon du transport pour interrompre la course à temps — voir le docblock en tête de
+ * fichier : le rejeu post-refresh d'`authMiddleware.ts` clone la requête, et le polyfill RN ne
+ * garantit pas que `signal` survive à ce clonage.
+ */
+function exceeded(deadline: { signal: AbortSignal | undefined }): boolean {
+  return deadline.signal?.aborted === true;
 }
 
 async function perform(trigger: SyncTrigger): Promise<SyncResult> {
@@ -149,42 +191,63 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
   // dire ailleurs ferait clignoter l'écran entre « en cours » et « rien à faire ».
   publish({ phase: 'syncing' });
 
-  if (!(await healthProvider.isAvailable())) {
-    return { kind: 'unavailable' };
-  }
+  // Et sur le disque (#140) : une course tuée par le chien de garde natif avant tout verdict
+  // n'appellera jamais `noteSettled()` plus bas. Sans cette ligne, rien ne distinguerait ça
+  // d'une synchronisation qui n'a simplement jamais eu lieu — voir `journal.ts`.
+  noteRunStarted();
 
-  // 1. Depuis quand. Le cache local évite un aller-retour, mais il n'est pas la vérité : ce
-  //    n'est pas une optimisation qu'on peut se permettre au prix d'un curseur faux.
-  const state = await api.GET('/api/workouts/sync-state');
-  if (state.data === undefined) {
-    return { kind: 'failed', failure: failureFrom(state.error) };
-  }
+  // Le budget de toute la course : le `GET` ci-dessous, le refresh qu'un 401 peut y déclencher,
+  // et le `POST` plus bas. Jamais le refresh lui-même — voir le docblock en tête de fichier.
+  const deadline = runDeadline(trigger);
 
-  // 2. Ce qui a bougé depuis.
-  const since = windowStart(state.data, new Date());
-  const found = await healthProvider.workoutsSince(since);
-
-  if (found.length === 0) {
-    return { kind: 'nothingToSend' };
-  }
-
-  // Le contrat borne le lot à 200. On garde les **plus récents** : c'est ce que le joueur a
-  // dans la tête en ouvrant l'app, et le reste n'est pas perdu — le curseur n'avancera que de
-  // ce qui est passé, donc la synchronisation suivante reprendra où celle-ci s'est arrêtée.
-  const workouts: WorkoutData[] = found.slice(-MAX_BATCH);
-
-  // 3. La clé, appariée au lot. Même lot qu'à la tentative d'avant → même clé → le serveur
-  //    ressort la réponse d'origine plutôt qu'une synchronisation vide.
-  const key = await batchKeys.keyFor(fingerprintOf(workouts.map((w) => w.externalId)));
-
-  // 4. L'envoi, rejoué tant qu'on ignore ce que le serveur a fait — sous un abandon en
-  //    arrière-plan (`importDeadline`) : un abandon est une panne de transport comme une autre
-  //    pour `sendUntilAnswered`, donc une issue **inconnue**, donc pas de commit d'ancre — voir
-  //    `anchorPolicy.ts`. La même différence se relira simplement au prochain réveil.
-  const deadline = importDeadline(trigger);
-  let answer: Answer<SyncSummary>;
   try {
-    answer = await sendUntilAnswered<SyncSummary>(
+    if (!(await healthProvider.isAvailable())) {
+      return { kind: 'unavailable' };
+    }
+
+    // 1. Depuis quand. Le cache local évite un aller-retour, mais il n'est pas la vérité : ce
+    //    n'est pas une optimisation qu'on peut se permettre au prix d'un curseur faux.
+    const state = await api.GET('/api/workouts/sync-state', { signal: deadline.signal });
+
+    if (exceeded(deadline)) {
+      return { kind: 'budgetExceeded' };
+    }
+
+    if (state.data === undefined) {
+      return { kind: 'failed', failure: failureFrom(state.error) };
+    }
+
+    // 2. Ce qui a bougé depuis. Non annulable — voir `runBudgetMsFor` — donc pas de point de
+    //    contrôle avant, seulement après.
+    const since = windowStart(state.data, new Date());
+    const found = await healthProvider.workoutsSince(since);
+
+    if (exceeded(deadline)) {
+      return { kind: 'budgetExceeded' };
+    }
+
+    if (found.length === 0) {
+      return { kind: 'nothingToSend' };
+    }
+
+    // Le contrat borne le lot à 200. On garde les **plus récents** : c'est ce que le joueur a
+    // dans la tête en ouvrant l'app, et le reste n'est pas perdu — le curseur n'avancera que de
+    // ce qui est passé, donc la synchronisation suivante reprendra où celle-ci s'est arrêtée.
+    const workouts: WorkoutData[] = found.slice(-MAX_BATCH);
+
+    // 3. La clé, appariée au lot. Même lot qu'à la tentative d'avant → même clé → le serveur
+    //    ressort la réponse d'origine plutôt qu'une synchronisation vide.
+    const key = await batchKeys.keyFor(fingerprintOf(workouts.map((w) => w.externalId)));
+
+    if (exceeded(deadline)) {
+      return { kind: 'budgetExceeded' };
+    }
+
+    // 4. L'envoi, rejoué tant qu'on ignore ce que le serveur a fait — sous le même budget que
+    //    le `GET` ci-dessus : un abandon est une panne de transport comme une autre pour
+    //    `sendUntilAnswered`, donc une issue **inconnue**, donc pas de commit d'ancre — voir
+    //    `anchorPolicy.ts`. La même différence se relira simplement au prochain réveil.
+    const answer = await sendUntilAnswered<SyncSummary>(
       () =>
         api.POST('/api/workouts/import', {
           params: { header: { 'Idempotency-Key': key } },
@@ -193,37 +256,42 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
         }) as unknown as Promise<Reply<SyncSummary>>,
       { delays: retryDelaysFor(trigger), sleep },
     );
+
+    if (!answer.ok) {
+      if (exceeded(deadline)) {
+        // Nommé plutôt que confondu avec une panne réseau : voir `SyncResult.budgetExceeded`.
+        return { kind: 'budgetExceeded' };
+      }
+
+      // La clé **reste** en place : aucun verdict n'est tombé, ou il en est tombé un que la
+      // prochaine tentative doit pouvoir rejouer à l'identique. L'effacer ici rouvrirait
+      // exactement la fenêtre que ce mécanisme ferme.
+      return { kind: 'failed', failure: failureFrom(answer.refusal) };
+    }
+
+    // Le lot a son verdict : la clé n'a plus rien à protéger, et la garder ferait rejouer une
+    // clé périmée sur un lot différent — un 409 `idempotency-key-reused` gratuit.
+    await batchKeys.forget();
+
+    // Une progression qui n'a rien crédité n'est pas un moment : `imported` vide veut dire que
+    // tout était déjà compté ou écarté, et ouvrir un plein écran là-dessus serait une fausse
+    // joie. C'est aussi ce que dit `totals === null`.
+    if (answer.data.imported.length > 0) {
+      // **Avant** de rendre le résultat, et sur le disque : à partir d'ici la progression est
+      // due au joueur, même si l'app meurt dans la seconde. Le serveur, lui, la considère déjà
+      // comptée et ne la renverra jamais. En file, pas en valeur : un réveil qui tombe pendant
+      // qu'un résumé précédent attend encore de se jouer ne doit pas l'effacer.
+      //
+      // `manual` est le seul déclencheur qui vienne d'un **geste** : le bouton de
+      // synchronisation, le tirer-pour-rafraîchir. Une progression qu'on vient de demander n'a
+      // pas à attendre le prochain lancement à froid — voir `wasSolicited` (#97).
+      enqueuePending(answer.data, trigger === 'manual');
+    }
+
+    return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
   } finally {
     deadline.cancel();
   }
-
-  if (!answer.ok) {
-    // La clé **reste** en place : aucun verdict n'est tombé, ou il en est tombé un que la
-    // prochaine tentative doit pouvoir rejouer à l'identique. L'effacer ici rouvrirait
-    // exactement la fenêtre que ce mécanisme ferme.
-    return { kind: 'failed', failure: failureFrom(answer.refusal) };
-  }
-
-  // Le lot a son verdict : la clé n'a plus rien à protéger, et la garder ferait rejouer une
-  // clé périmée sur un lot différent — un 409 `idempotency-key-reused` gratuit.
-  await batchKeys.forget();
-
-  // Une progression qui n'a rien crédité n'est pas un moment : `imported` vide veut dire que
-  // tout était déjà compté ou écarté, et ouvrir un plein écran là-dessus serait une fausse
-  // joie. C'est aussi ce que dit `totals === null`.
-  if (answer.data.imported.length > 0) {
-    // **Avant** de rendre le résultat, et sur le disque : à partir d'ici la progression est
-    // due au joueur, même si l'app meurt dans la seconde. Le serveur, lui, la considère déjà
-    // comptée et ne la renverra jamais. En file, pas en valeur : un réveil qui tombe pendant
-    // qu'un résumé précédent attend encore de se jouer ne doit pas l'effacer.
-    //
-    // `manual` est le seul déclencheur qui vienne d'un **geste** : le bouton de
-    // synchronisation, le tirer-pour-rafraîchir. Une progression qu'on vient de demander n'a
-    // pas à attendre le prochain lancement à froid — voir `wasSolicited` (#97).
-    enqueuePending(answer.data, trigger === 'manual');
-  }
-
-  return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
 }
 
 const coordinator = createSyncCoordinator<SyncResult>({
