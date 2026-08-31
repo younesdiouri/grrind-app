@@ -205,12 +205,13 @@ export default function ReglagesScreen() {
  * quatre minutes » est une information qu'un joueur a de bonnes raisons de vouloir, et ce bloc
  * est écrit pour rester en production.
  *
- * ————— Pourquoi j'ai été déconnecté (#143) ——————————————————————————————————————————————
+ * ————— Pourquoi j'ai été déconnecté (#143, #142) ————————————————————————————————————————
  *
  * Ce bloc répondait déjà à « est-ce que l'observer tourne ? ». Il répond maintenant aussi à
  * la question que le joueur se pose vraiment quand il retombe sur l'écran de connexion :
- * `journal.sessionLost` porte lequel des quatre points de `session.ts` a jeté la session, et
- * quand — jamais le jeton, sous aucune forme. Voir `sessionLostReason.ts`.
+ * `journal.sessionLost` porte lequel des points de `session.ts` a jeté la session — ou, depuis
+ * le `#142`, l'a simplement fait vaciller sans la jeter — et quand. Jamais le jeton, sous
+ * aucune forme. Voir `sessionLostReason.ts`.
  */
 function Synchronisation() {
   const journal = useSyncExternalStore(subscribeToJournal, getJournal);
@@ -343,16 +344,18 @@ function withDuration(sentence: string, duration: number | null): string {
 }
 
 /**
- * Pourquoi la dernière session a été jetée, en une phrase — lequel des quatre points de
- * `session.ts` a tiré. Jamais le jeton : `SessionLostReason` ne le porte pas, voir son
- * docblock (`sessionLostReason.ts`).
+ * Pourquoi la dernière session a été jetée — ou a vacillé sans l'être — en une phrase. Jamais
+ * le jeton : `SessionLostReason` ne le porte pas, voir son docblock (`sessionLostReason.ts`).
  *
  * `serverRefusal` se décline en deux phrases, pas une : « jeton de session » (le refresh
  * token, `refreshEndpoint`) et « jeton d'accès » (le JWT, `authenticatedRoute`) n'accusent pas
  * la même chose, et les confondre à l'écran referait disparaître la distinction que
- * `sessionLostReason.ts` a précisément faite remonter jusqu'ici.
+ * `sessionLostReason.ts` a précisément faite remonter jusqu'ici. `keychainUnavailable` (#142)
+ * se décline pareillement selon `operation` : `read` a produit l'écran de connexion, `write`
+ * non — la phrase doit le dire, sinon la ligne « Dernier abandon de session » ferait croire à
+ * un départ qui n'a pas eu lieu.
  *
- * Un `switch` sur trois cas fixes, définis dans ce client : pas de `default` qui renvoie à
+ * Un `switch` sur les `kind` fixes, définis dans ce client : pas de `default` qui renvoie à
  * `never`, cette exigence-là ne vaut que pour les pannes du contrat serveur
  * (`unnamedProblem`, `problems.ts`), pas pour une décision qui nous appartient.
  */
@@ -367,6 +370,10 @@ function sessionLostDetail(entry: SessionLostEntry): string {
         ? `Le serveur a refusé le ${label} (${entry.reason.status}).`
         : `Le serveur a refusé le ${label} (${entry.reason.status} · ${type}).`;
     }
+    case 'keychainUnavailable':
+      return entry.reason.operation === 'read'
+        ? 'Le trousseau de l’appareil était temporairement inaccessible en lecture.'
+        : 'Le trousseau de l’appareil était temporairement inaccessible en écriture ; la session est restée active jusqu’à la fermeture de l’app.';
     case 'signedOut':
       return 'Déconnexion demandée depuis Réglages.';
   }

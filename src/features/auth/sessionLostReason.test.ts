@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { missingTokenReason, serverRefusalReason, signedOutReason } from './sessionLostReason.ts';
+import {
+  keychainUnavailableReason,
+  missingTokenReason,
+  serverRefusalReason,
+  signedOutReason,
+} from './sessionLostReason.ts';
 
 /**
  * Ces tests tournent sous `node --test`, sans Expo, sans disque.
@@ -10,7 +15,9 @@ import { missingTokenReason, serverRefusalReason, signedOutReason } from './sess
  * session et un premier lancement affichent le même écran de connexion, et rien ne permet de
  * les distinguer après coup. Même chose pour les deux origines de `serverRefusal` : le refus
  * du refresh token et le refus du JWT produisent tous les deux `forget()`, sans rien à l'écran
- * qui les sépare.
+ * qui les sépare. Et même chose, à l'envers, pour les deux `operation` de `keychainUnavailable`
+ * (`#142`) : un appareil ne montre jamais que `read` a produit l'écran de connexion et que
+ * `write` ne l'a pas fait — seule cette distinction, ici, en fait la preuve.
  */
 
 describe('pourquoi une session a été jetée', () => {
@@ -59,16 +66,29 @@ describe('pourquoi une session a été jetée', () => {
     assert.deepEqual(signedOutReason(), { kind: 'signedOut' });
   });
 
-  it('les quatre traces restent discernables, y compris les deux origines de serverRefusal', () => {
+  it('trace un trousseau illisible, sans confondre lecture et écriture', () => {
+    assert.deepEqual(keychainUnavailableReason('read'), {
+      kind: 'keychainUnavailable',
+      operation: 'read',
+    });
+    assert.deepEqual(keychainUnavailableReason('write'), {
+      kind: 'keychainUnavailable',
+      operation: 'write',
+    });
+  });
+
+  it('les six traces restent discernables, y compris les deux origines de serverRefusal et les deux opérations de keychainUnavailable', () => {
     const signatures = new Set(
       [
         missingTokenReason(true),
         serverRefusalReason('refreshEndpoint', 401, null),
         serverRefusalReason('authenticatedRoute', 401, null),
+        keychainUnavailableReason('read'),
+        keychainUnavailableReason('write'),
         signedOutReason(),
       ].map((reason) => JSON.stringify(reason)),
     );
 
-    assert.equal(signatures.size, 4, 'les quatre points qui appellent forget() doivent rester discernables');
+    assert.equal(signatures.size, 6, 'les six raisons tracées doivent rester discernables');
   });
 });

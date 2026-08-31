@@ -73,7 +73,7 @@ import type { SessionLostReason } from '@/features/auth/sessionLostReason';
  * que l'app se rappelle d'elle-même. D'où `features/diagnostics/`. Le déménagement n'a rien
  * changé au-dessus : mêmes choix, mêmes raisons, seuls les imports ont bougé.
  *
- * ————— Pourquoi la session a été jetée, et par lequel des quatre points (#143) —————————
+ * ————— Pourquoi la session a été jetée — ou a vacillé (#143, #142) —————————————————————
  *
  * Le back ne révoque quasiment jamais de famille de refresh tokens (zéro sur 77 jetons sur une
  * fenêtre de mesure) : quand un joueur se retrouve déconnecté, c'est le **client** qui a jeté
@@ -81,7 +81,14 @@ import type { SessionLostReason } from '@/features/auth/sessionLostReason';
  * produisent le même écran. Vu du téléphone, une déconnexion volontaire et une session perdue
  * sont indiscernables — et c'était précisément l'inconnue qui bloquait le `#142`.
  *
- * `sessionLost` porte lequel des quatre a tiré, et quand. La décision — *si* et *lequel*, y
+ * Le `#142` a ajouté deux points de plus, qui ne se ressemblent pas aux quatre premiers : un
+ * trousseau illisible dans `performRefresh()` ne vide pas la session (`forget()` n'est pas
+ * appelé), mais produit quand même l'écran de connexion — vu du joueur, indiscernable d'un
+ * abandon, d'où la trace. Un trousseau inscriptible en échec dans `adopt()` ne va même pas
+ * jusque-là : la session reste `signedIn`, seul le disque est en retard sur la mémoire. Les
+ * deux partagent `keychainUnavailable` (`sessionLostReason.ts`), distingués par `operation`.
+ *
+ * `sessionLost` porte lequel des six a tiré, et quand. La décision — *si* et *lequel*, y
  * compris la distinction entre un refus du refresh token et un refus du jeton d'accès sur une
  * route quelconque, qui n'accusent pas la même chose — vit dans `sessionLostReason.ts`
  * (`features/auth/`), pure et testée sous `node --test` ; ce module-ci ne fait qu'écrire ce
@@ -96,8 +103,8 @@ import type { SessionLostReason } from '@/features/auth/sessionLostReason';
  * ————— Le piège tient à *quand* `state.status` vaut `'signedIn'` (#143) ————————————————
  *
  * Le piège du trousseau vide n'est pas seulement « ne pas tracer un premier lancement » : il
- * faut aussi *tracer* le cas que le `#142` doit expliquer, celui d'un utilisateur connecté
- * hier dont le jeton a disparu du trousseau entre deux ouvertures. Au tout premier appel de
+ * faut aussi *tracer* le cas d'un utilisateur connecté hier dont le jeton a disparu du
+ * trousseau entre deux ouvertures. Au tout premier appel de
  * `restore()`, `state.status` vaut encore `'restoring'` — jamais `'signedIn'`, même pour cet
  * utilisateur-là — donc l'état en mémoire du process courant ne peut pas répondre à « une
  * session existait-elle sur cet appareil ? ».
@@ -149,8 +156,9 @@ export type SyncJournal = {
    */
   registration: 'registered' | 'failed' | null;
   /**
-   * La dernière fois qu'une session a été jetée, et par lequel des quatre points. `null` :
-   * jamais, sur cet appareil. Voir la section du docblock ci-dessus.
+   * La dernière fois qu'une session a été jetée — ou a vacillé sans l'être — et par lequel des
+   * points de `session.ts`. `null` : jamais, sur cet appareil. Voir la section du docblock
+   * ci-dessus.
    */
   sessionLost: SessionLostEntry | null;
   /**
@@ -276,10 +284,11 @@ export function noteRegistration(registered: boolean): void {
 }
 
 /**
- * Une session vient d'être jetée — appelé par `session.ts`, aux points qui appellent
- * `forget()` et ont tranché une raison à tracer. `reason` est déjà tranché à l'appel : c'est
- * `sessionLostReason.ts` qui décide *si* et *par lequel*, ce module-ci ne fait qu'écrire. Voir
- * le docblock en tête de fichier.
+ * Une session vient d'être jetée — ou a simplement vacillé sans l'être (`keychainUnavailable`,
+ * `#142`, voir le docblock en tête de fichier). Appelé par `session.ts`, aux points qui ont
+ * tranché une raison à tracer ; ceux qui appellent `forget()` juste après ne sont plus les
+ * seuls depuis le `#142`. `reason` est déjà tranché à l'appel : c'est `sessionLostReason.ts`
+ * qui décide *si* et *par lequel*, ce module-ci ne fait qu'écrire.
  */
 export function noteSessionLost(reason: SessionLostReason): void {
   record({ sessionLost: { at: new Date().toISOString(), reason } });

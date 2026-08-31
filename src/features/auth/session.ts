@@ -12,6 +12,7 @@ import {
   type RefreshCoordinator,
 } from '@/features/auth/refreshCoordinator';
 import {
+  keychainUnavailableReason,
   missingTokenReason,
   serverRefusalReason,
   signedOutReason,
@@ -82,9 +83,21 @@ export { getAccessToken };
  * moment où cette réponse arrive : si l'app meurt entre les deux, la prochaine ouverture
  * présenterait un jeton consommé, ce que le back lit comme un rejeu — et il révoque la
  * famille. Persister d'abord réduit cette fenêtre à ce qu'on ne peut pas supprimer.
+ *
+ * **Et si l'écriture jette (#142) ?** Le trousseau peut refuser d'écrire pour la même raison
+ * qu'il peut refuser de lire — verrouillé, item inaccessible. Le client se retrouve alors avec
+ * un jeton en mémoire et rien sur le disque, alors que le serveur a déjà consommé l'ancien :
+ * c'est la vraie façon de perdre une session, à la prochaine ouverture. On ne l'aggrave pas en
+ * jetant *cette* session-ci : elle continue en mémoire jusqu'à la fermeture de l'app, ce qui
+ * vaut mieux qu'une déconnexion immédiate et certaine. On trace, pour que ce risque ne soit
+ * plus invisible.
  */
 async function adopt(session: AuthSession): Promise<void> {
-  await writeRefreshToken(session.tokens.refreshToken);
+  try {
+    await writeRefreshToken(session.tokens.refreshToken);
+  } catch {
+    noteSessionLost(keychainUnavailableReason('write'));
+  }
   setAccessToken(session.tokens.accessToken);
   // Persisté, pas seulement en mémoire : `missingTokenReason` en a besoin dès le tout premier
   // `performRefresh()` d'un futur process, avant que `state` ci-dessous n'ait pu valoir
@@ -96,7 +109,17 @@ async function adopt(session: AuthSession): Promise<void> {
 /** Oublie tout, localement. Le serveur a déjà tranché ou n'a plus rien à révoquer. */
 async function forget(): Promise<void> {
   setAccessToken(null);
-  await clearRefreshToken();
+  try {
+    await clearRefreshToken();
+  } catch {
+    // Le trousseau peut refuser d'effacer pour la même raison qu'il peut refuser de lire ou
+    // d'écrire (#142). Le jeton laissé sur le disque est de toute façon déjà mort à cet instant
+    // — inconnu, expiré, consommé, ou jamais écrit : les quatre appelants de `forget()` ont
+    // chacun leur propre raison de conclure que la session est finie. Pas de nouvelle trace ici
+    // : elle écraserait celle, plus utile, que l'appelant vient de poser juste avant — voir
+    // `noteSessionLost` (`diagnostics/journal.ts`). `forget()` doit surtout ne pas rejeter : un
+    // `catch` muet vaut mieux qu'un `restore()` qui ne termine jamais.
+  }
   // Inconditionnel, que cet appel ait été précédé d'un `noteSessionLost()` ou non : sans ce
   // reset, la prochaine ouverture retracerait un abandon fantôme sur un trousseau vide qui est
   // pourtant le résultat attendu de ce `forget()`-ci. Voir le docblock de `journal.ts`.
@@ -109,18 +132,34 @@ async function forget(): Promise<void> {
  * coordinateur, qui garantit qu'il n'en part qu'un à la fois.
  *
  * Il ne rejette jamais : un échec est une valeur (`null`), parce que l'appelant est un
- * middleware qui doit décider s'il rejoue ou s'il laisse remonter le 401 d'origine.
+ * middleware qui doit décider s'il rejoue ou s'il laisse remonter le 401 d'origine. Jusqu'au
+ * `#142`, cette promesse était fausse : `readRefreshToken()` peut jeter — trousseau verrouillé,
+ * item présent mais inaccessible — et rien ne l'attrapait. Un rejet ici traverse le
+ * coordinateur (qui relance), puis `restore()` (qui n'a pas de `catch`), et l'écran de
+ * démarrage ne se relâche jamais. Voir `keychainUnavailableReason` (`sessionLostReason.ts`).
  */
 async function performRefresh(): Promise<string | null> {
-  const refreshToken = await readRefreshToken();
+  let refreshToken: string | null;
+  try {
+    refreshToken = await readRefreshToken();
+  } catch {
+    // Un trousseau illisible n'est pas un trousseau vide : c'est la même incertitude que la
+    // panne réseau juste en dessous, et elle doit rendre la même valeur — « on ne sait pas »,
+    // jamais « il n'y a pas de session ». Surtout ne pas appeler `forget()` : effacer le
+    // refresh token ici transformerait une panne peut-être temporaire en déconnexion certaine,
+    // alors que le jeton est peut-être encore intact sur le disque.
+    noteSessionLost(keychainUnavailableReason('read'));
+    return null;
+  }
+
   if (refreshToken === null) {
     // Le piège du #143 : `restore()` passe ici à **chaque** démarrage, y compris quand
     // personne ne s'est jamais connecté sur cet appareil — un trousseau vide est alors le
     // déroulement normal d'un premier lancement, pas un abandon. `state.status` ne peut pas
     // trancher : au tout premier appel de `restore()` il vaut encore `'restoring'`, y compris
-    // pour l'utilisateur connecté hier dont le jeton a disparu entre deux ouvertures — le cas
-    // que le `#142` doit justement expliquer. `sessionActive` (le journal, persisté) répond à
-    // sa place : voir le docblock de `journal.ts` et celui de `missingTokenReason`.
+    // pour l'utilisateur connecté hier dont le jeton a disparu entre deux ouvertures.
+    // `sessionActive` (le journal, persisté) répond à sa place : voir le docblock de
+    // `journal.ts` et celui de `missingTokenReason`.
     const reason = missingTokenReason(getJournal().sessionActive);
     if (reason !== null) {
       noteSessionLost(reason);
@@ -200,7 +239,15 @@ export async function refresh(staleToken: string | null, problem: unknown): Prom
  * restauration soit finie, les deux doivent partager le même rafraîchissement.
  */
 export async function restore(): Promise<void> {
-  await coordinator.refresh(null);
+  try {
+    await coordinator.refresh(null);
+  } catch {
+    // Le dernier rempart (#142). `performRefresh()` ne devrait plus rejeter — c'est tout le
+    // sujet de ce ticket — mais `restore()` est appelé en `void` par l'écran de démarrage, qui
+    // ne relâche l'écran qu'en sortant de `restoring` : un rejet qui traverserait jusqu'ici sans
+    // `catch` figerait l'app pour de bon. Rien à tracer de plus, le point d'origine s'en est
+    // déjà chargé.
+  }
 
   // `adopt` et `forget` ont déjà tranché dans les cas nets. Reste la panne serveur, où on ne
   // sait rien : on montre la connexion sans effacer le trousseau, la prochaine ouverture
