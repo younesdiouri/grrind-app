@@ -10,6 +10,7 @@ import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
 import { CoinAmount } from '@/components/CoinAmount';
+import { CoinTransactionRow } from '@/components/CoinTransactionRow';
 import { DangerRow } from '@/components/DangerRow';
 import { DisciplineChip } from '@/components/DisciplineChip';
 import { EnemyCard } from '@/components/EnemyCard';
@@ -861,6 +862,25 @@ export const PREVIEWS: Preview[] = [
             si aucune ligne négative n'existe encore en v1. */}
         <Specimen label="Signé — une ligne de l'historique">
           <CoinAmount amount={12} signed />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'ligne-bourse',
+    name: 'Ligne de l’historique de la bourse',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Séance créditée">
+          <CoinTransactionRow reason="WORKOUT_DROP" amount={12} when="Aujourd’hui, 15:25" />
+        </Specimen>
+        <Specimen label="Combat gagné">
+          <CoinTransactionRow reason="BATTLE_DROP" amount={4} when="Hier, 09:05" />
+        </Specimen>
+        {/* Le singulier existe : un tirage peut ne rapporter qu'une seule pièce. */}
+        <Specimen label="Le singulier">
+          <CoinTransactionRow reason="WORKOUT_DROP" amount={1} when="20 août" />
         </Specimen>
       </>
     ),
