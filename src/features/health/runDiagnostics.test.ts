@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { SyncJournal } from './journal.ts';
+import type { SyncJournal } from '@/features/diagnostics/journal';
 import { formatRunDuration, hasOrphanedRun, runDurationSeconds } from './runDiagnostics.ts';
 
 /**
@@ -20,6 +20,8 @@ const EMPTY: SyncJournal = {
   failure: null,
   wokeAt: null,
   registration: null,
+  sessionLost: null,
+  sessionActive: false,
 };
 
 describe('une course sans verdict', () => {

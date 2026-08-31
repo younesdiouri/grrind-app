@@ -24,7 +24,12 @@ import {
   type NotificationPermission,
 } from '@/features/notifications/useNotificationPermission';
 import { useHealthAccess } from '@/features/health/useHealthAccess';
-import { getJournal, subscribeToJournal, type SyncJournal } from '@/features/health/journal';
+import {
+  getJournal,
+  subscribeToJournal,
+  type SessionLostEntry,
+  type SyncJournal,
+} from '@/features/diagnostics/journal';
 import { formatRunDuration, hasOrphanedRun, runDurationSeconds } from '@/features/health/runDiagnostics';
 import { useSyncStatus } from '@/features/health/useSync';
 import { formatAgo } from '@/features/progression/format';
@@ -199,6 +204,13 @@ export default function ReglagesScreen() {
  * Ils sont sortis de l'accueil au #84 et ne reviennent pas déguisés. « Dernière synchro il y a
  * quatre minutes » est une information qu'un joueur a de bonnes raisons de vouloir, et ce bloc
  * est écrit pour rester en production.
+ *
+ * ————— Pourquoi j'ai été déconnecté (#143) ——————————————————————————————————————————————
+ *
+ * Ce bloc répondait déjà à « est-ce que l'observer tourne ? ». Il répond maintenant aussi à
+ * la question que le joueur se pose vraiment quand il retombe sur l'écran de connexion :
+ * `journal.sessionLost` porte lequel des quatre points de `session.ts` a jeté la session, et
+ * quand — jamais le jeton, sous aucune forme. Voir `sessionLostReason.ts`.
  */
 function Synchronisation() {
   const journal = useSyncExternalStore(subscribeToJournal, getJournal);
@@ -262,6 +274,20 @@ function Synchronisation() {
         }
       />
 
+      {/* La question que le joueur se pose vraiment en retombant sur l'écran de connexion
+          (#143, voir le docblock ci-dessus). Vide tant que `session.ts` n'a jamais jeté de
+          session sur cet appareil — un premier lancement n'y compte pas, voir
+          `sessionLostReason.ts`. */}
+      <JournalLine
+        label="Dernier abandon de session"
+        value={journal.sessionLost === null ? null : formatAgo(journal.sessionLost.at, now)}
+        detail={
+          journal.sessionLost === null
+            ? 'Aucune session n’a été jetée sur cet appareil.'
+            : sessionLostDetail(journal.sessionLost)
+        }
+      />
+
       <Button
         label="Synchroniser maintenant"
         onPress={refresh}
@@ -314,6 +340,47 @@ function outcomeDetail(journal: SyncJournal): string | null {
 /** Ajoute la mesure de la course à la fin de la phrase, quand elle existe. */
 function withDuration(sentence: string, duration: number | null): string {
   return duration === null ? sentence : `${sentence} Réglée en ${formatRunDuration(duration)}.`;
+}
+
+/**
+ * Pourquoi la dernière session a été jetée, en une phrase — lequel des quatre points de
+ * `session.ts` a tiré. Jamais le jeton : `SessionLostReason` ne le porte pas, voir son
+ * docblock (`sessionLostReason.ts`).
+ *
+ * `serverRefusal` se décline en deux phrases, pas une : « jeton de session » (le refresh
+ * token, `refreshEndpoint`) et « jeton d'accès » (le JWT, `authenticatedRoute`) n'accusent pas
+ * la même chose, et les confondre à l'écran referait disparaître la distinction que
+ * `sessionLostReason.ts` a précisément faite remonter jusqu'ici.
+ *
+ * Un `switch` sur trois cas fixes, définis dans ce client : pas de `default` qui renvoie à
+ * `never`, cette exigence-là ne vaut que pour les pannes du contrat serveur
+ * (`unnamedProblem`, `problems.ts`), pas pour une décision qui nous appartient.
+ */
+function sessionLostDetail(entry: SessionLostEntry): string {
+  switch (entry.reason.kind) {
+    case 'missingToken':
+      return 'Le jeton de session avait disparu du trousseau.';
+    case 'serverRefusal': {
+      const label = entry.reason.origin === 'refreshEndpoint' ? 'jeton de session' : 'jeton d’accès';
+      const type = shortProblemType(entry.reason.type);
+      return type === null
+        ? `Le serveur a refusé le ${label} (${entry.reason.status}).`
+        : `Le serveur a refusé le ${label} (${entry.reason.status} · ${type}).`;
+    }
+    case 'signedOut':
+      return 'Déconnexion demandée depuis Réglages.';
+  }
+}
+
+/** Le dernier segment d'un `type` de `ProblemDetails` — l'URI complète n'apporte rien de plus
+ *  ici, et alourdit la ligne. */
+function shortProblemType(type: string | null): string | null {
+  if (type === null) {
+    return null;
+  }
+
+  const segments = type.split('/');
+  return segments[segments.length - 1] ?? type;
 }
 
 /** Un fait daté, et ce qu'il veut dire. Le tiret dit « jamais », pas « zéro ». */

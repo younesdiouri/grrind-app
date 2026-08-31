@@ -5,7 +5,7 @@ import GrrindHealth from '@/../modules/grrind-health/src/GrrindHealthModule';
 import { shouldCommitAnchor } from '@/features/health/anchorPolicy';
 import { creditedNotice } from '@/features/health/creditedNotice';
 import { isE2eBuild } from '@/features/health/e2e';
-import { noteRegistration, noteWake } from '@/features/health/journal';
+import { noteRegistration, noteWake } from '@/features/diagnostics/journal';
 import { sync } from '@/features/health/sync';
 
 /**

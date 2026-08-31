@@ -1,7 +1,7 @@
 import { api } from '@/api/client';
 import { failureFrom, type Failure } from '@/features/auth/problems';
 import { fingerprintOf } from '@/features/health/batchKey';
-import { noteRunStarted, noteSettled } from '@/features/health/journal';
+import { noteRunStarted, noteSettled } from '@/features/diagnostics/journal';
 import { healthProvider } from '@/features/health/current';
 import { batchKeys } from '@/features/health/keyStore';
 import type { WorkoutData } from '@/features/health/provider';
