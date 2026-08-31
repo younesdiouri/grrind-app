@@ -175,6 +175,26 @@ tags:
 - assertVisible: "ARME"
 - takeScreenshot: 09-bag
 
+# La bourse a une histoire (#129), et c'est le bloc du solde qui l'ouvre. Elle est **toujours**
+# garnie ici : les trois séances créditées ont chacune fait tomber des pièces, la bande de
+# `STARTER_SESSION_DROP` n'ayant pas de borne basse nulle. Contrairement au loot, rien à
+# conditionner.
+- tapOn: "BOURSE"
+- extendedWaitUntil:
+    visible: "SOLDE"
+    timeout: 15000
+- assertVisible: ".*Séance créditée.*"
+- takeScreenshot: 09b-coin-ledger
+
+# Et on revient au sac pour la suite — par le geste de bord, comme plus bas : `back` ne replie
+# pas la pile depuis une vue défilante.
+- swipe:
+    start: "2%, 55%"
+    end: "95%, 55%"
+- extendedWaitUntil:
+    visible: "BOURSE"
+    timeout: 15000
+
 # On déroule **avant** de conditionner : `when: visible` ne voit que ce qui est à l'écran, et le
 # bouton d'un objet vit sous la doublure. Sans ce défilement, un sac garni se testait comme un
 # sac vide — la branche était sautée alors qu'il y avait de quoi la jouer.
