@@ -4,33 +4,15 @@ import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { CoinAmount } from '@/components/CoinAmount';
 import { ItemCard } from '@/components/ItemCard';
 import { color, radius, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { INVENTORY_QUERY_KEY } from '@/features/inventory/useInventory';
 import { purchaseItem, type PurchaseOutcome } from '@/features/shop/actions';
+import { purchaseControl } from '@/features/shop/shopState';
 import { SHOP_QUERY_KEY, useShop } from '@/features/shop/useShop';
-
-type Listing = NonNullable<ReturnType<typeof useShop>['data']>['items'][number];
-
-function purchaseControl(item: Listing): { label: string; disabled: boolean } {
-  if (!item.unlocked) {
-    return { label: `Niveau ${item.minimumLevel}`, disabled: true };
-  }
-
-  // `owned` bloque l'équipement, jamais le coffre : celui-ci s'empile et chaque exemplaire
-  // reste une ouverture. La décision suit `kind`, pas l'absence d'emplacement.
-  if (item.kind === 'EQUIPMENT' && item.owned) {
-    return { label: 'Déjà possédé', disabled: true };
-  }
-
-  if (!item.affordable) {
-    return { label: 'Pas assez de pièces', disabled: true };
-  }
-
-  return { label: 'Acheter', disabled: false };
-}
 
 /** L'étal : tout ce que le serveur rend reste visible, y compris ce qui est verrouillé. */
 export default function ShopScreen() {
@@ -61,7 +43,7 @@ export default function ShopScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
+    <ScrollView contentContainerStyle={styles.screen} testID="shop-screen">
       <Stack.Screen options={{ title: 'Boutique' }} />
 
       {shop.isPending ? (
@@ -83,7 +65,14 @@ export default function ShopScreen() {
           <Text style={styles.section}>BOUTIQUE</Text>
           <View style={styles.purse}>
             <Text style={styles.label}>BOURSE</Text>
-            <CoinAmount amount={shop.data.coins} />
+            {purchase?.kind === 'purchased' ? (
+              <AnimatedCoinBalance
+                before={purchase.purchase.coinsBefore}
+                after={purchase.purchase.coinsAfter}
+              />
+            ) : (
+              <CoinAmount amount={shop.data.coins} />
+            )}
           </View>
 
           {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
@@ -91,11 +80,8 @@ export default function ShopScreen() {
           {purchase?.kind === 'purchased' ? (
             <View style={styles.card} accessibilityLiveRegion="polite">
               <Text style={styles.name}>Achat effectué</Text>
-              <View style={styles.balance}>
-                <CoinAmount amount={purchase.purchase.coinsBefore} />
-                <Text style={styles.chevron}>›</Text>
-                <CoinAmount amount={purchase.purchase.coinsAfter} />
-              </View>
+              <Text style={styles.detail}>Dépensé</Text>
+              <CoinAmount amount={purchase.purchase.spentCoins} />
             </View>
           ) : null}
 
@@ -133,11 +119,9 @@ const styles = StyleSheet.create({
   },
   card: { backgroundColor: color.surface, borderRadius: radius.md, padding: space.md, gap: space.sm },
   listing: { gap: space.sm },
-  balance: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   label: { ...type.label, color: color.textMuted },
   section: { ...type.label, color: color.textMuted },
   name: { ...type.title, color: color.text },
   detail: { ...type.body, color: color.textMuted },
   refusal: { ...type.body, color: color.danger, textAlign: 'center' },
-  chevron: { ...type.body, color: color.textMuted },
 });

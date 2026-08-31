@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { CoinAmount } from '@/components/CoinAmount';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
@@ -276,16 +277,19 @@ export default function InventoryScreen() {
           {openedChest?.kind === 'opened' ? (
             <View style={styles.drawer} accessibilityLiveRegion="polite">
               <Text style={styles.label}>CONTENU DU COFFRE</Text>
-              {openedChest.chest.items.length === 0 ? (
+              {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0 ? (
                 <Text style={styles.detail}>Le coffre était vide.</Text>
               ) : (
-                openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)
+                <>
+                  {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
+                  <Text style={styles.detail}>Pièces trouvées</Text>
+                  <CoinAmount amount={openedChest.chest.coins} />
+                </>
               )}
-              <View style={styles.purseAmount}>
-                <CoinAmount amount={openedChest.chest.coinsBefore} />
-                <Text style={styles.chevron}>›</Text>
-                <CoinAmount amount={openedChest.chest.coinsAfter} />
-              </View>
+              <AnimatedCoinBalance
+                before={openedChest.chest.coinsBefore}
+                after={openedChest.chest.coinsAfter}
+              />
             </View>
           ) : null}
         </>
