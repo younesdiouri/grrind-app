@@ -18,8 +18,19 @@ tags:
 # agrège l'accessibilité de tous ses enfants en une phrase unique. On y cherche donc des
 # fragments, jamais un texte exact.
 
-- launchApp:
-    clearState: true
+- launchApp
+
+# Le development build affiche son onboarding natif après chaque `clearState`. Le build Release
+# ne l'affiche pas : cette branche conditionnelle ne change donc pas le parcours full.
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
 
 # ————— Scénario « aucune séance » ————————————————————————————————————————————————————————
 
@@ -111,8 +122,8 @@ tags:
 # même processus ferait dépendre l'import du second compte du temps qu'a pris le premier
 # scénario — sous les trente secondes, rien ne part et rien ne le dit.
 
-- launchApp:
-    clearState: true
+- stopApp
+- launchApp
 
 - runFlow:
     file: login.yaml
@@ -171,8 +182,8 @@ tags:
 # Les sept emplacements sont toujours là, vides compris : c'est la moitié de ce que cet écran
 # montre, et le contrat les sert précisément pour qu'on n'ait pas à distinguer « pas chargé »
 # de « rien ici ».
-- assertVisible: "TÊTE"
-- assertVisible: "ARME"
+- assertVisible: ".*Tête.*"
+- assertVisible: ".*Arme.*"
 - takeScreenshot: 09-bag
 
 # La bourse a une histoire (#129), et c'est le bloc du solde qui l'ouvre. Elle est **toujours**

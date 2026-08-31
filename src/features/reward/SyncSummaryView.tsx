@@ -19,6 +19,7 @@ import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { CoinAmount } from '@/components/CoinAmount';
+import { CoinIcon } from '@/components/CoinIcon';
 import { ItemCard } from '@/components/ItemCard';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { SessionCard } from '@/components/SessionCard';
@@ -814,9 +815,7 @@ function Grant({ clock, at, until, count }: BeatProps & { count: number }) {
  *
  * La bourse compte au centre par `useAnimatedProps`, comme le compteur d'XP et Vitality :
  * c'est `timeline.purse` qui porte le mouvement, de bout en bout, et ce battement n'en lit
- * qu'une fenêtre. `CoinAmount` ne convient pas ici — un `Text` ne s'anime pas au fil de
- * `interpolate` — donc le format se répète, minimal, exactement comme le fait déjà le
- * compteur d'XP juste au-dessus dans ce même fichier.
+ * qu'une fenêtre. Le jeton, lui, reste posé pendant que seul le nombre s'anime.
  */
 function LootStage({
   clock,
@@ -854,7 +853,7 @@ function LootStage({
     const value = Math.round(
       interpolate(clock.value, timeline.purse.input, timeline.purse.output, Extrapolation.CLAMP),
     );
-    const text = `${value} ${value === 1 ? 'pièce' : 'pièces'}`;
+    const text = `${value}`;
     return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
   });
 
@@ -868,12 +867,20 @@ function LootStage({
         <ItemCard key={`${item.key}-${position}`} item={item} />
       ))}
 
-      <AnimatedTextInput
+      <View
         style={styles.purse}
-        editable={false}
-        animatedProps={purseProps}
-        defaultValue={`${workout.coins.before} ${workout.coins.before === 1 ? 'pièce' : 'pièces'}`}
-      />
+        accessible
+        accessibilityLabel={`Bourse, ${workout.coins.after} pièces`}
+      >
+        <CoinIcon size={28} />
+        <AnimatedTextInput
+          style={styles.purseValue}
+          editable={false}
+          animatedProps={purseProps}
+          defaultValue={`${workout.coins.before}`}
+          accessibilityElementsHidden
+        />
+      </View>
     </Animated.View>
   );
 }
@@ -1101,16 +1108,18 @@ function Recap({
       ) : null}
 
       {/* La bourse du bilan : jamais une somme de `gained`, voir le docblock. */}
-      <Text style={styles.label}>
-        BOURSE{' '}
+      <View style={styles.recapPurse}>
+        <Text style={styles.label}>BOURSE</Text>
         {purseChanged ? (
-          <>
-            <CoinAmount amount={coins.before} /> → <CoinAmount amount={coins.after} />
-          </>
+          <View style={styles.purseChange}>
+            <CoinAmount amount={coins.before} />
+            <Text style={styles.arrow}>→</Text>
+            <CoinAmount amount={coins.after} />
+          </View>
         ) : (
           <CoinAmount amount={coins.after} />
         )}
-      </Text>
+      </View>
 
       {/* Les écarts se comptent ici sans se nommer : ils le sont déjà, plus bas, un par un. */}
       <Text style={styles.label}>
@@ -1219,9 +1228,10 @@ const styles = StyleSheet.create({
   },
   podium: { alignItems: 'center', justifyContent: 'center' },
   vitality: { color: color.text, padding: 0, textAlign: 'center' },
-  // Même couleur que `CoinAmount` (`color.coin`) : une pièce se consulte, elle ne se célèbre
-  // pas, même celle qui vient de tomber.
-  purse: { ...type.body, color: color.coin, padding: 0, textAlign: 'center' },
+  purse: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  // Même couleur que `CoinAmount` (`color.coin`) : le nombre se consulte, même quand il vient
+  // de tomber. L'icône voisine porte désormais l'unité.
+  purseValue: { ...type.title, color: color.coin, padding: 0, minWidth: space.xl },
   label: { ...type.label, color: color.textMuted },
   breakdown: { gap: space.sm },
   // `alignSelf: 'stretch'` et non `alignItems: 'center'` : un `TextInput` n'a pas la largeur
@@ -1248,6 +1258,9 @@ const styles = StyleSheet.create({
   /** Un palier franchi se célèbre ; un palier tenu se lit simplement. */
   recapClimb: { color: color.celebrate },
   recapStay: { color: color.text },
+  recapPurse: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  purseChange: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  arrow: { ...type.body, color: color.textMuted },
   digestCount: { ...type.display, color: color.text },
   skipped: { gap: space.xs, pointerEvents: 'none' },
   skippedRow: { flexDirection: 'row', gap: space.sm, alignItems: 'baseline' },

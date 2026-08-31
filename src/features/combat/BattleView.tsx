@@ -384,7 +384,9 @@ function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; do
             value={
               purseChanged ? (
                 <>
-                  <CoinAmount amount={reward.coins.before} /> → <CoinAmount amount={reward.coins.after} />
+                  <CoinAmount amount={reward.coins.before} />
+                  <Text style={styles.scoreValue}>→</Text>
+                  <CoinAmount amount={reward.coins.after} />
                 </>
               ) : (
                 <CoinAmount amount={reward.coins.after} />
@@ -402,10 +404,16 @@ function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; do
 }
 
 function Score({ label, value }: { label: string; value: React.ReactNode }) {
+  const isText = typeof value === 'string' || typeof value === 'number';
+
   return (
     <View style={styles.score}>
       <Text style={styles.scoreLabel}>{label}</Text>
-      <Text style={styles.scoreValue}>{value}</Text>
+      {isText ? (
+        <Text style={styles.scoreValue}>{value}</Text>
+      ) : (
+        <View style={styles.scoreValueRow}>{value}</View>
+      )}
     </View>
   );
 }
@@ -540,5 +548,6 @@ const styles = StyleSheet.create({
   score: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
   scoreLabel: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   scoreValue: { ...type.label, color: color.text, letterSpacing: 0 },
+  scoreValueRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   exit: { ...type.label, color: color.textMuted, letterSpacing: 0, paddingTop: space.md },
 });

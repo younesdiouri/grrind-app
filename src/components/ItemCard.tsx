@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
 import { CoinAmount } from '@/components/CoinAmount';
+import { ItemPlaceholder } from '@/components/ItemPlaceholder';
 import { formatModifier } from '@/features/inventory/format';
 import { color, equipmentSlotLabel, radius, rarityColor, rarityLabel, space, type } from '@/design/tokens';
 
@@ -44,42 +45,47 @@ type ItemCardProps = {
 export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
   return (
     <View style={[styles.card, { borderColor: rarityColor[item.rarity] }]}>
-      <View style={styles.head}>
-        <View style={styles.identity}>
-          <Text style={[styles.rarity, { color: rarityColor[item.rarity] }]}>
-            {rarityLabel[item.rarity].toUpperCase()}
-          </Text>
-          <Text style={styles.name}>{item.name}</Text>
-        </View>
+      <View style={styles.layout}>
+        <ItemPlaceholder slot={item.slot} tint={rarityColor[item.rarity]} />
 
-        {quantity === undefined ? null : <Text style={styles.quantity}>×{quantity}</Text>}
-      </View>
+        <View style={styles.content}>
+          <View style={styles.head}>
+            <View style={styles.identity}>
+              <Text style={[styles.rarity, { color: rarityColor[item.rarity] }]}>
+                {rarityLabel[item.rarity].toUpperCase()}
+              </Text>
+              <Text style={styles.name}>{item.name}</Text>
+            </View>
 
-      <Text style={styles.slot}>{equipmentSlotLabel[item.slot]}</Text>
-
-      {item.modifiers.length === 0 ? null : (
-        <View style={styles.modifiers}>
-          {item.modifiers.map((modifier, index) => (
-            <Text key={index} style={styles.modifier}>
-              {formatModifier(modifier)}
-            </Text>
-          ))}
-        </View>
-      )}
-
-      <View style={styles.foot}>
-        {/* Un prix nommé, jamais un nombre nu à côté d'une bourse : sur l'écran de récompense,
-            « 30 pièces » juste sous « BOURSE 0 → 30 pièces » se lisait comme un encaissement.
-            Le libellé règle les deux contextes d'un coup, le drop comme le sac. */}
-        <View style={styles.price}>
-          <Text style={styles.priceLabel}>Valeur</Text>
-          <CoinAmount amount={item.priceCoins} />
-        </View>
-        {equipped === true ? (
-          <View style={styles.equippedBadge}>
-            <Text style={styles.equippedLabel}>ÉQUIPÉ</Text>
+            {quantity === undefined ? null : <Text style={styles.quantity}>×{quantity}</Text>}
           </View>
-        ) : null}
+
+          <Text style={styles.slot}>{equipmentSlotLabel[item.slot]}</Text>
+
+          {item.modifiers.length === 0 ? null : (
+            <View style={styles.modifiers}>
+              {item.modifiers.map((modifier, index) => (
+                <Text key={index} style={styles.modifier}>
+                  {formatModifier(modifier)}
+                </Text>
+              ))}
+            </View>
+          )}
+
+          <View style={styles.foot}>
+            {/* Un prix nommé, jamais un nombre nu à côté d'une bourse : le pictogramme dit
+                désormais l'unité, « Valeur » continue de dire le rôle de ce montant. */}
+            <View style={styles.price}>
+              <Text style={styles.priceLabel}>Valeur</Text>
+              <CoinAmount amount={item.priceCoins} />
+            </View>
+            {equipped === true ? (
+              <View style={styles.equippedBadge}>
+                <Text style={styles.equippedLabel}>ÉQUIPÉ</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -87,12 +93,14 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
 
 const styles = StyleSheet.create({
   card: {
+    alignSelf: 'stretch',
     backgroundColor: color.surface,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     padding: space.md,
-    gap: space.sm,
   },
+  layout: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  content: { flex: 1, gap: space.sm },
   head: {
     flexDirection: 'row',
     justifyContent: 'space-between',

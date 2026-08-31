@@ -185,11 +185,12 @@ previews HTML en sont dérivées. Une preview qui bouge alors que personne ne l'
 une carte poussée vers Claude Design qui décrit un composant qui n'existe plus — et ça ne se
 remarque nulle part ailleurs.
 
-Et une sixième, qui ne se lance que quand un écran ou un enchaînement d'écrans a bougé :
-`npm run test:e2e:ios`, le smoke test iOS sur Simulator (#122). La procédure complète vit dans
-`docs/ai/mobile-qa.md`, la règle dans `AGENTS.md`. Elle est plus lente que les autres et ne se
-joue pas à chaque commit — mais un écran qu'on n'a pas vu tourner n'a pas été vérifié, et les
-captures d'`artifacts/e2e/` sont là pour être lues, pas seulement produites.
+Et une sixième, qui ne se lance que quand un écran ou un enchaînement d'écrans a bougé : le smoke
+test iOS sur Simulator (#122). Pendant l'implémentation, `npm run e2e:ios:dev` prépare une fois le
+development build et Metro, puis `npm run e2e:ios:flow` rejoue le parcours sans rebuild natif.
+`npm run e2e:ios:full` reste la validation propre finale. La procédure complète vit dans
+`docs/ai/mobile-qa.md`, la règle dans `AGENTS.md`. Un écran qu'on n'a pas vu tourner n'a pas été
+vérifié, et les captures d'`artifacts/e2e/` sont là pour être lues, pas seulement produites.
 
 `api:check` a le même rôle pour le contrat, dans l'autre sens : il retire `openapi.yaml` du
 back et régénère `schema.d.ts`. Un diff, et c'est que le contrat a bougé sans qu'on le suive.

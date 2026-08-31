@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { Button } from '@/components/Button';
 import { CoinAmount } from '@/components/CoinAmount';
+import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
 import { color, equipmentSlotLabel, opacity, radius, space, type, type EquipmentSlot } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
@@ -14,7 +15,7 @@ import {
   type EquipmentOutcome,
 } from '@/features/inventory/equipmentActions';
 import { noteEquipmentChanged } from '@/features/inventory/equipmentRevision';
-import { equippedSlots, isEquipped, type Inventory } from '@/features/inventory/inventory';
+import { isEquipped, type Inventory } from '@/features/inventory/inventory';
 import { INVENTORY_QUERY_KEY, useInventory } from '@/features/inventory/useInventory';
 
 /**
@@ -58,8 +59,13 @@ export default function InventoryScreen() {
    */
   const [pending, setPending] = useState<EquipmentSlot | null>(null);
   const [refusal, setRefusal] = useState<Failure | null>(null);
+  const [selection, setSelection] = useState<EquipmentSlot | null>(null);
 
   const apply = async (slot: EquipmentSlot, mutate: () => Promise<EquipmentOutcome>) => {
+    // Une fois le geste explicite, cette zone devient la sélection de l'utilisateur. Sans ça,
+    // le fallback automatique sautait vers le prochain objet non équipé dès la réponse reçue :
+    // l'équipement avait réussi, mais son badge disparaissait aussitôt du tiroir affiché.
+    setSelection(slot);
     setPending(slot);
     setRefusal(null);
 
@@ -84,6 +90,14 @@ export default function InventoryScreen() {
   // Lu une fois, hors du JSX : `inventory.data` est une propriété d'un objet que TypeScript
   // ne peut pas garder affinée à l'intérieur des fermetures d'un `map`.
   const data = inventory.data;
+  const activeSlot =
+    selection ??
+    data?.items.find((line) => !isEquipped(data, line.key))?.slot ??
+    data?.items[0]?.slot ??
+    'HEAD';
+  const equippedLine = data?.equipment[activeSlot] ?? null;
+  const compatibleItems = data?.items.filter((line) => line.slot === activeSlot) ?? [];
+  const availableItems = compatibleItems.filter((line) => line.key !== equippedLine?.key);
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
@@ -125,63 +139,79 @@ export default function InventoryScreen() {
               reste juste : le geste a échoué, pas la lecture. */}
           {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
 
-          <Text style={styles.section}>Équipement</Text>
-          {equippedSlots(data).map(({ slot, line }) =>
-            /* Un emplacement libre tient sur **une** ligne : les sept, écrits chacun sur deux
-               lignes, occupaient tout l'écran d'un joueur qui n'a encore rien — et poussaient
-               le sac, la seule chose qu'il vienne regarder, sous la ligne de flottaison. Ils
-               restent tous là, c'est ce que le contrat sert et c'est une information ; ils ne
-               prennent simplement plus la place de ce qu'ils n'ont pas. */
-            line === null ? (
-              <View key={slot} style={styles.emptySlot}>
-                <Text style={styles.label}>{equipmentSlotLabel[slot].toUpperCase()}</Text>
-                <Text style={styles.detail}>Vide</Text>
+          <View style={styles.sectionHead}>
+            <View style={styles.sectionCopy}>
+              <Text style={styles.section}>ÉQUIPEMENT</Text>
+              <Text style={styles.name}>Ta doublure</Text>
+            </View>
+            <Text style={styles.hint}>Choisis une zone</Text>
+          </View>
+
+          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
+
+          <View style={styles.drawer}>
+            <View style={styles.drawerHead}>
+              <View style={styles.sectionCopy}>
+                <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
+                <Text style={styles.drawerTitle}>
+                  {equippedLine === null ? 'Emplacement libre' : 'Objet équipé'}
+                </Text>
               </View>
-            ) : (
-              <View key={slot} style={styles.slot}>
-                <Text style={styles.label}>{equipmentSlotLabel[slot].toUpperCase()}</Text>
-                <ItemCard item={line} quantity={line.quantity} equipped />
+              <Text style={styles.count}>
+                {compatibleItems.length} compatible{compatibleItems.length === 1 ? '' : 's'}
+              </Text>
+            </View>
+
+            {equippedLine === null ? null : (
+              <View style={styles.current}>
+                <ItemCard item={equippedLine} quantity={equippedLine.quantity} equipped />
                 <Button
                   label="Retirer"
                   variant="quiet"
-                  busy={pending === slot}
-                  disabled={pending !== null && pending !== slot}
-                  onPress={() => void apply(slot, () => unequipSlot(slot))}
+                  busy={pending === activeSlot}
+                  disabled={pending !== null && pending !== activeSlot}
+                  onPress={() => void apply(activeSlot, () => unequipSlot(activeSlot))}
                 />
               </View>
-            ),
-          )}
+            )}
 
-          <Text style={styles.section}>Sac</Text>
-          {data.items.length === 0 ? (
-            <View style={styles.card}>
-              <Text style={styles.name}>Ton sac est vide</Text>
-              <Text style={styles.detail}>
-                Les objets tombent des séances créditées et des combats gagnés.
-              </Text>
-            </View>
-          ) : null}
+            {availableItems.length > 0 ? <Text style={styles.label}>DANS TON SAC</Text> : null}
 
-          {data.items.map((line) => {
-            const worn = isEquipped(data, line.key);
+            {availableItems.map((line) => (
+              <Pressable
+                key={line.key}
+                accessibilityRole="button"
+                accessibilityLabel={`Équiper — ${line.name}`}
+                accessibilityHint={`Remplace l’objet porté sur ${equipmentSlotLabel[line.slot].toLowerCase()}`}
+                disabled={pending !== null}
+                onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
+                style={({ pressed }) => [
+                  styles.itemChoice,
+                  pressed && styles.pressed,
+                  pending !== null && styles.inert,
+                ]}
+              >
+                <ItemCard item={line} quantity={line.quantity} />
+                <View style={styles.equipHint}>
+                  <Text style={styles.equipHintText}>
+                    {pending === line.slot ? 'Équipement…' : 'Toucher pour équiper'}
+                  </Text>
+                  <Text style={styles.chevron}>›</Text>
+                </View>
+              </Pressable>
+            ))}
 
-            return (
-              <View key={line.key} style={styles.slot}>
-                <ItemCard item={line} quantity={line.quantity} equipped={worn} />
-                {/* Rien à proposer sur ce qu'on porte déjà : l'emplacement se libère depuis la
-                    doublure, au-dessus, où le geste a un sens. */}
-                {worn ? null : (
-                  <Button
-                    label={`Équiper — ${equipmentSlotLabel[line.slot]}`}
-                    variant="quiet"
-                    busy={pending === line.slot}
-                    disabled={pending !== null && pending !== line.slot}
-                    onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
-                  />
-                )}
+            {availableItems.length === 0 ? (
+              <View style={styles.emptyChoice}>
+                <Text style={styles.detail}>
+                  {equippedLine === null
+                    ? 'Aucun objet compatible dans ton sac.'
+                    : 'Aucune autre option pour cet emplacement.'}
+                </Text>
+                <Text style={styles.emptyHint}>Tes prochains drops apparaîtront ici.</Text>
               </View>
-            );
-          })}
+            ) : null}
+          </View>
         </>
       )}
     </ScrollView>
@@ -203,10 +233,49 @@ const styles = StyleSheet.create({
   pressed: { opacity: opacity.pressed },
   purseAmount: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   chevron: { ...type.body, color: color.textMuted },
-  section: { ...type.label, color: color.textMuted, marginTop: space.md },
-  slot: { gap: space.sm },
-  /** Un emplacement libre : le nom, et ce qu'il n'a pas, sur une seule ligne. */
-  emptySlot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: space.md,
+    marginTop: space.md,
+  },
+  sectionCopy: { gap: space.xs },
+  section: { ...type.label, color: color.accent },
+  hint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
+  drawer: {
+    backgroundColor: color.surface,
+    borderRadius: radius.md,
+    padding: space.md,
+    gap: space.md,
+  },
+  drawerHead: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: space.sm,
+  },
+  drawerTitle: { ...type.title, color: color.text },
+  count: { ...type.label, color: color.textMuted, letterSpacing: 0 },
+  current: { gap: space.sm },
+  itemChoice: { gap: space.sm },
+  inert: { opacity: opacity.inert },
+  equipHint: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.sm,
+  },
+  equipHintText: { ...type.label, color: color.text, letterSpacing: 0 },
+  emptyChoice: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: color.border,
+    borderRadius: radius.md,
+    padding: space.md,
+    gap: space.xs,
+  },
+  emptyHint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   card: {
     backgroundColor: color.surface,
     borderRadius: radius.md,
