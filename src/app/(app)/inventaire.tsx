@@ -116,26 +116,31 @@ export default function InventoryScreen() {
           {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
 
           <Text style={styles.section}>Équipement</Text>
-          {equippedSlots(data).map(({ slot, line }) => (
-            <View key={slot} style={styles.slot}>
-              <Text style={styles.label}>{equipmentSlotLabel[slot].toUpperCase()}</Text>
-
-              {line === null ? (
-                <Text style={styles.detail}>Rien à cet emplacement</Text>
-              ) : (
-                <>
-                  <ItemCard item={line} quantity={line.quantity} equipped />
-                  <Button
-                    label="Retirer"
-                    variant="quiet"
-                    busy={pending === slot}
-                    disabled={pending !== null && pending !== slot}
-                    onPress={() => void apply(slot, () => unequipSlot(slot))}
-                  />
-                </>
-              )}
-            </View>
-          ))}
+          {equippedSlots(data).map(({ slot, line }) =>
+            /* Un emplacement libre tient sur **une** ligne : les sept, écrits chacun sur deux
+               lignes, occupaient tout l'écran d'un joueur qui n'a encore rien — et poussaient
+               le sac, la seule chose qu'il vienne regarder, sous la ligne de flottaison. Ils
+               restent tous là, c'est ce que le contrat sert et c'est une information ; ils ne
+               prennent simplement plus la place de ce qu'ils n'ont pas. */
+            line === null ? (
+              <View key={slot} style={styles.emptySlot}>
+                <Text style={styles.label}>{equipmentSlotLabel[slot].toUpperCase()}</Text>
+                <Text style={styles.detail}>Vide</Text>
+              </View>
+            ) : (
+              <View key={slot} style={styles.slot}>
+                <Text style={styles.label}>{equipmentSlotLabel[slot].toUpperCase()}</Text>
+                <ItemCard item={line} quantity={line.quantity} equipped />
+                <Button
+                  label="Retirer"
+                  variant="quiet"
+                  busy={pending === slot}
+                  disabled={pending !== null && pending !== slot}
+                  onPress={() => void apply(slot, () => unequipSlot(slot))}
+                />
+              </View>
+            ),
+          )}
 
           <Text style={styles.section}>Sac</Text>
           {data.items.length === 0 ? (
@@ -186,6 +191,8 @@ const styles = StyleSheet.create({
   },
   section: { ...type.label, color: color.textMuted, marginTop: space.md },
   slot: { gap: space.sm },
+  /** Un emplacement libre : le nom, et ce qu'il n'a pas, sur une seule ligne. */
+  emptySlot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   card: {
     backgroundColor: color.surface,
     borderRadius: radius.md,

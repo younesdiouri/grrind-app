@@ -138,3 +138,73 @@ tags:
     timeout: 20000
 - assertVisible: "3 séances.*"
 - takeScreenshot: 07-multiple-history
+
+# ————— Le sac (#30) — les deux entrées, et le combattant qui suit ————————————————————————
+#
+# Le second compte vient de créditer trois séances : il a donc des pièces à coup sûr — la bande
+# de `STARTER_SESSION_DROP` n'a pas de borne basse nulle — mais **pas forcément un objet**, qui
+# ne tombe que trois fois sur dix par séance créditée. Ce qui est certain se prouve sans
+# condition ; l'équipement, seulement s'il y a de quoi.
+#
+# **Le parcours passe par l'onglet Combat, et ce n'est pas un raccourci.** C'est la seule façon
+# d'avoir un avant et un après du **même** combattant : le catalogue se capture, on ouvre le sac
+# depuis lui, on équipe, on revient. Sans l'avant, « les chiffres ont changé » n'est pas une
+# preuve, c'est une affirmation.
+
+# L'entrée de l'accueil existe et porte son résumé — c'est tout ce qu'on lui demande ici.
+- assertVisible:
+    id: "bag-row"
+
+- tapOn:
+    id: "tab-combat"
+- extendedWaitUntil:
+    visible: "Toi"
+    timeout: 15000
+- takeScreenshot: 08-fighter-before
+
+# La seconde entrée : on change d'équipement là où l'on voit les chiffres qu'il va déplacer.
+- tapOn:
+    id: "open-bag"
+- extendedWaitUntil:
+    visible: "BOURSE"
+    timeout: 15000
+# Les sept emplacements sont toujours là, vides compris : c'est la moitié de ce que cet écran
+# montre, et le contrat les sert précisément pour qu'on n'ait pas à distinguer « pas chargé »
+# de « rien ici ».
+- assertVisible: "TÊTE"
+- assertVisible: "ARME"
+- takeScreenshot: 09-bag
+
+# On déroule **avant** de conditionner : `when: visible` ne voit que ce qui est à l'écran, et le
+# bouton d'un objet vit sous la doublure. Sans ce défilement, un sac garni se testait comme un
+# sac vide — la branche était sautée alors qu'il y avait de quoi la jouer.
+- scrollUntilVisible:
+    element:
+      text: ".*Équiper.*"
+    direction: DOWN
+    optional: true
+
+- runFlow:
+    when:
+      visible: ".*Équiper.*"
+    commands:
+      - tapOn: ".*Équiper.*"
+      - extendedWaitUntil:
+          visible: "ÉQUIPÉ"
+          timeout: 15000
+      - takeScreenshot: 10-bag-equipped
+
+      # Le retour par le geste de bord, et non par `back` : depuis une vue défilante qu'on
+      # vient de parcourir, le raccourci de Maestro n'a pas replié la pile — on restait sur le
+      # sac, à chercher une barre d'onglets qu'il cachait.
+      - swipe:
+          start: "2%, 55%"
+          end: "95%, 55%"
+      - extendedWaitUntil:
+          visible: "Adversaires"
+          timeout: 15000
+
+      # Et le combattant a suivi, sans qu'on ait rien rechargé à la main : l'onglet n'a jamais
+      # été démonté, c'est le compteur d'équipement qui lui a fait relire son catalogue. La
+      # comparaison se fait avec `08-fighter-before`, même compte, même écran.
+      - takeScreenshot: 11-fighter-after-equip

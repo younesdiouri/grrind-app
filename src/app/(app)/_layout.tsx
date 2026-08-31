@@ -42,6 +42,11 @@ export default function AppLayout() {
         headerStyle: { backgroundColor: color.background },
         headerTintColor: color.text,
         contentStyle: { backgroundColor: color.background },
+        // Le chevron seul, jamais le titre de l'écran précédent : celui des onglets n'en a
+        // pas, et iOS repliait alors sur le **nom de la route** — un bouton « ‹ (tabs) » en
+        // haut de chaque écran poussé, découvert sur une capture du sac (#30). Les trois
+        // écrans poussés le portaient déjà.
+        headerBackButtonDisplayMode: 'minimal',
       }}
     >
       {/* La barre d'onglets porte désormais ses propres en-têtes (#41) : sans
