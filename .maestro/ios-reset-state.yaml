@@ -1,0 +1,7 @@
+appId: app.grrind.e2e
+---
+# Remise à zéro ciblée du conteneur applicatif. Le script réinitialise séparément le Keychain,
+# qui survit à `clearState`, puis rouvre l'URL du development build quand le flow utilise Metro.
+- launchApp:
+    clearState: true
+- stopApp

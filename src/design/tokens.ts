@@ -32,6 +32,8 @@ export const palette = {
   blossom: '#FF6FB5',
   /** La pièce, dans `color.coin` (#125). */
   copper: '#C97B3D',
+  /** Le reflet gravé de la pièce — distinct de l'or des niveaux. */
+  copperLight: '#E5A15B',
 } as const;
 
 export const color = {
@@ -54,6 +56,8 @@ export const color = {
    * nom dit ce qu'il désigne, plutôt qu'un emprunt de sens.
    */
   coin: palette.copper,
+  /** Le relief du pictogramme de monnaie. */
+  coinHighlight: palette.copperLight,
   /** Une ligne de breakdown positive. */
   gain: palette.mint,
   /** Une ligne de breakdown négative : rendements décroissants, plafond quotidien. */
