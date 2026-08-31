@@ -7,6 +7,7 @@ import { batchKeys } from '@/features/health/keyStore';
 import type { WorkoutData } from '@/features/health/provider';
 import { sendUntilAnswered, type Reply } from '@/features/health/replay';
 import { retryDelaysFor, runBudgetMsFor } from '@/features/health/retryPolicy';
+import { BudgetExceeded, withinBudget } from '@/features/health/runBudget';
 import { createSyncCoordinator, type SyncOutcome, type SyncTrigger } from '@/features/health/syncCoordinator';
 import { windowStart } from '@/features/health/syncState';
 import { enqueuePending } from '@/features/reward/pending';
@@ -47,9 +48,13 @@ import type { SyncSummary } from '@/features/reward/timeline';
  * Et parce que le rejeu post-refresh d'`authMiddleware.ts` clone la requête d'origine
  * (`request.clone()`) pour la rejouer sur `Authorization` neuf, et que le polyfill `fetch` de
  * React Native n'offre aucune garantie que `signal` survive à ce clonage, cette fonction ne
- * compte pas sur l'abandon du transport pour s'arrêter à temps : elle se relit elle-même,
- * après chaque étape coûteuse, via `exceeded()`. C'est ce qui rend l'abandon prouvable sous
- * `node --test` plutôt que dépendant d'un polyfill.
+ * compte pas sur l'abandon du transport pour s'arrêter à temps : le `GET` et le `POST` sont
+ * courus contre le budget par `withinBudget()` (`runBudget.ts`), qui rend `BudgetExceeded` dès
+ * que le signal s'abat, que l'appel sous-jacent ait ou non fini par le remarquer lui-même. Un
+ * simple point de contrôle posé *après* un `await` ne suffisait pas : quand le budget expire
+ * pendant l'attente, l'`await` ne revient jamais jusqu'à ce point — `fetch` rejette sur
+ * `AbortError`, et l'exception saute par-dessus (revue de la #141). `withinBudget` rend cet
+ * abandon prouvable sous `node --test` plutôt que dépendant d'un polyfill.
  *
  * ————— Un chemin, quatre déclencheurs ——————————————————————————————————————————————————
  *
@@ -176,10 +181,12 @@ function runDeadline(trigger: SyncTrigger): { signal: AbortSignal | undefined; c
 /**
  * Le budget a-t-il expiré ?
  *
- * Un point de contrôle explicite, posé avant chaque étape coûteuse plutôt que de compter sur
- * l'abandon du transport pour interrompre la course à temps — voir le docblock en tête de
- * fichier : le rejeu post-refresh d'`authMiddleware.ts` clone la requête, et le polyfill RN ne
- * garantit pas que `signal` survive à ce clonage.
+ * Réservé aux deux étapes qui ne passent pas par le réseau — la lecture HealthKit et la clé
+ * d'idempotence, ni l'une ni l'autre courues par `withinBudget()` (`runBudget.ts`) — et posé
+ * *après* elles, jamais avant : la lecture HealthKit n'est pas annulable (`runBudgetMsFor`,
+ * `retryPolicy.ts`), donc il n'y a rien à interrompre plus tôt, seulement à constater une fois
+ * qu'elle a rendu la main. Le `GET` et le `POST`, eux, sont courus contre le budget directement
+ * — voir le docblock en tête de fichier.
  */
 function exceeded(deadline: { signal: AbortSignal | undefined }): boolean {
   return deadline.signal?.aborted === true;
@@ -207,11 +214,14 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
 
     // 1. Depuis quand. Le cache local évite un aller-retour, mais il n'est pas la vérité : ce
     //    n'est pas une optimisation qu'on peut se permettre au prix d'un curseur faux.
-    const state = await api.GET('/api/workouts/sync-state', { signal: deadline.signal });
-
-    if (exceeded(deadline)) {
-      return { kind: 'budgetExceeded' };
-    }
+    //
+    // Couru contre le budget, pas seulement bordé par lui : voir `withinBudget()`
+    // (`runBudget.ts`) et le docblock en tête de fichier — un point de contrôle posé après
+    // cet `await` ne s'exécuterait jamais si le budget expire pendant l'attente elle-même.
+    const state = await withinBudget(
+      api.GET('/api/workouts/sync-state', { signal: deadline.signal }),
+      deadline.signal,
+    );
 
     if (state.data === undefined) {
       return { kind: 'failed', failure: failureFrom(state.error) };
@@ -243,26 +253,26 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
       return { kind: 'budgetExceeded' };
     }
 
-    // 4. L'envoi, rejoué tant qu'on ignore ce que le serveur a fait — sous le même budget que
-    //    le `GET` ci-dessus : un abandon est une panne de transport comme une autre pour
-    //    `sendUntilAnswered`, donc une issue **inconnue**, donc pas de commit d'ancre — voir
-    //    `anchorPolicy.ts`. La même différence se relira simplement au prochain réveil.
-    const answer = await sendUntilAnswered<SyncSummary>(
-      () =>
-        api.POST('/api/workouts/import', {
-          params: { header: { 'Idempotency-Key': key } },
-          body: { workouts },
-          signal: deadline.signal,
-        }) as unknown as Promise<Reply<SyncSummary>>,
-      { delays: retryDelaysFor(trigger), sleep },
+    // 4. L'envoi, rejoué tant qu'on ignore ce que le serveur a fait, et couru contre le même
+    //    budget que le `GET` — le rejeu post-refresh d'un 401 sur ce `POST` a la même faiblesse
+    //    que celui du `GET` (voir `withinBudget()`), donc le même traitement : un abandon est
+    //    une panne de transport comme une autre pour `sendUntilAnswered`, donc une issue
+    //    **inconnue**, donc pas de commit d'ancre — voir `anchorPolicy.ts`. La même différence
+    //    se relira simplement au prochain réveil.
+    const answer = await withinBudget(
+      sendUntilAnswered<SyncSummary>(
+        () =>
+          api.POST('/api/workouts/import', {
+            params: { header: { 'Idempotency-Key': key } },
+            body: { workouts },
+            signal: deadline.signal,
+          }) as unknown as Promise<Reply<SyncSummary>>,
+        { delays: retryDelaysFor(trigger), sleep },
+      ),
+      deadline.signal,
     );
 
     if (!answer.ok) {
-      if (exceeded(deadline)) {
-        // Nommé plutôt que confondu avec une panne réseau : voir `SyncResult.budgetExceeded`.
-        return { kind: 'budgetExceeded' };
-      }
-
       // La clé **reste** en place : aucun verdict n'est tombé, ou il en est tombé un que la
       // prochaine tentative doit pouvoir rejouer à l'identique. L'effacer ici rouvrirait
       // exactement la fenêtre que ce mécanisme ferme.
@@ -289,6 +299,17 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
     }
 
     return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
+  } catch (error) {
+    // `withinBudget()` (`runBudget.ts`) jette `BudgetExceeded` quand c'est le budget qui a
+    // tranché, jamais sur une vraie panne de transport survenue pendant qu'il tenait encore —
+    // voir son docblock. Tout le reste est une panne comme `sync()` en attrapait déjà une avant
+    // cette fonction : la classer ici plutôt que de la laisser remonter garde `perform()`
+    // cohérente avec son propre type de retour.
+    if (error instanceof BudgetExceeded) {
+      return { kind: 'budgetExceeded' };
+    }
+
+    return { kind: 'failed', failure: failureFrom(error) };
   } finally {
     deadline.cancel();
   }
