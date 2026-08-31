@@ -111,6 +111,13 @@ tags:
 
 - tapOn:
     id: "tab-reglages"
+# Le bloc Synchronisation (#82, #140) : sur le compte E2E, `isE2eBuild` court-circuite le réveil
+# HealthKit (`backgroundWakeup.ios.ts`), donc « Dernier réveil en arrière-plan » et
+# « Inscription au réveil » restent à `—` — c'est attendu, pas un défaut du flow. La ligne
+# « Dernière synchronisation », elle, porte le verdict de la synchronisation au lancement, avec
+# sa durée mesurée (`runDurationSeconds`, `runDiagnostics.ts`).
+- assertVisible: "Synchronisation"
+- takeScreenshot: 05a-settings-sync
 - scrollUntilVisible:
     element:
       text: "Se déconnecter"

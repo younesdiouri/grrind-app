@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { importTimeoutMsFor, retryDelaysFor } from './retryPolicy.ts';
+import { retryDelaysFor, runBudgetMsFor } from './retryPolicy.ts';
 
 describe('la politique de rejeu selon le déclencheur', () => {
   it('rejoue trois fois pendant que quelqu\'un regarde l\'écran', () => {
@@ -15,14 +15,14 @@ describe('la politique de rejeu selon le déclencheur', () => {
   });
 });
 
-describe("le budget de la requête d'import selon le déclencheur", () => {
+describe('le budget de la course selon le déclencheur (#140)', () => {
   it("n'a pas de couperet en avant-plan : quelqu'un regarde", () => {
-    assert.equal(importTimeoutMsFor('launch'), null);
-    assert.equal(importTimeoutMsFor('foreground'), null);
-    assert.equal(importTimeoutMsFor('manual'), null);
+    assert.equal(runBudgetMsFor('launch'), null);
+    assert.equal(runBudgetMsFor('foreground'), null);
+    assert.equal(runBudgetMsFor('manual'), null);
   });
 
-  it("laisse dix secondes au réveil, sous le chien de garde natif de 25 s", () => {
-    assert.equal(importTimeoutMsFor('background'), 10_000);
+  it('couvre toute la course en arrière-plan — le GET, le refresh qu\'il peut déclencher et le POST —, sous le chien de garde natif de 25 s', () => {
+    assert.equal(runBudgetMsFor('background'), 12_000);
   });
 });

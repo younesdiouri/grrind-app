@@ -21,13 +21,14 @@ import type { SyncResult } from '@/features/health/sync';
  * a tranché, rejouer ne changerait rien.
  *
  * Ce qui ne compte pas, c'est l'issue **inconnue** : réseau coupé, 500, panne d'idempotence en
- * cours, ou chien de garde natif (25 s) expiré avant qu'on sache. Ne pas commettre dans ce cas
- * fait relire la même différence au prochain réveil — sans conséquence, puisque rien n'a
- * bougé côté serveur, alors que commettre à tort ferait perdre une séance pour de bon : l'ancre
- * ne recule jamais.
+ * cours, notre propre abandon (`budgetExceeded`, #140) ou chien de garde natif (25 s) expiré
+ * avant qu'on sache. Ne pas commettre dans ce cas fait relire la même différence au prochain
+ * réveil — sans conséquence, puisque rien n'a bougé côté serveur, alors que commettre à tort
+ * ferait perdre une séance pour de bon : l'ancre ne recule jamais.
  *
- * `outcomeUnknown()` porte déjà exactement ce partage côté rejeu (`replay.ts`) ; ce n'est pas
- * ici qu'on en invente un second.
+ * `outcomeUnknown()` porte déjà exactement ce partage côté rejeu (`replay.ts`) pour les refus
+ * du serveur ; `budgetExceeded` n'en passe même pas par là — c'est un abandon **de notre
+ * fait**, avant tout refus, et il se range du même côté pour la même raison.
  */
 export function shouldCommitAnchor(result: SyncResult): boolean {
   switch (result.kind) {
@@ -40,6 +41,12 @@ export function shouldCommitAnchor(result: SyncResult): boolean {
     // pratique le réveil n'existe que parce que HealthKit a répondu, donc ce cas ne se
     // rencontre pas ici.
     case 'unavailable':
+      return false;
+
+    // Notre budget (`retryPolicy.ts`, #140) a expiré avant qu'un verdict ne tombe : le
+    // serveur a peut-être déjà tout crédité, on ne le sait tout simplement pas. Même
+    // traitement qu'une panne de transport.
+    case 'budgetExceeded':
       return false;
 
     case 'failed':

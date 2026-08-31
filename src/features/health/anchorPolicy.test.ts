@@ -31,6 +31,10 @@ describe("l'ancre HealthKit après un verdict de synchronisation", () => {
     assert.equal(shouldCommitAnchor({ kind: 'unavailable' }), false);
   });
 
+  it("n'avance pas quand notre propre budget a coupé la course avant un verdict (#140)", () => {
+    assert.equal(shouldCommitAnchor({ kind: 'budgetExceeded' }), false);
+  });
+
   it("n'avance pas sur une issue inconnue : hors ligne", () => {
     assert.equal(
       shouldCommitAnchor({ kind: 'failed', failure: { kind: 'offline' } }),

@@ -13,16 +13,35 @@ import type { Failure } from '@/features/auth/problems';
  * se jouer à la prochaine ouverture. Entre les deux, aucune trace.
  *
  * Le pire cas est celui qui arrive vraiment : le serveur dort — `fly.io` arrête la machine
- * quand personne ne l'utilise — et le réveil dispose de dix secondes sans rejeu
- * (`retryPolicy.ts`). Un démarrage à froid passe au-dessus, l'import est abandonné, l'issue
- * reste inconnue, l'ancre n'avance pas. **Rien n'est perdu** : la même différence se relit au
- * réveil suivant. Mais vu du téléphone, c'est indiscernable d'un observer qui ne s'est jamais
- * inscrit.
+ * quand personne ne l'utilise — et le réveil ne dispose que de douze secondes sans rejeu pour
+ * toute la course (`retryPolicy.ts`). Un démarrage à froid passe au-dessus, l'import est
+ * abandonné, l'issue reste inconnue, l'ancre n'avance pas. **Rien n'est perdu** : la même
+ * différence se relit au réveil suivant. Mais vu du téléphone, c'est indiscernable d'un
+ * observer qui ne s'est jamais inscrit.
  *
  * Deux lignes séparent les deux cas, et c'est tout l'objet de ce module : le dernier **réveil
  * reçu**, et la dernière **synchronisation aboutie**. Un réveil récent avec une synchro
  * ancienne accuse le réseau ou le serveur ; pas de réveil depuis trois jours accuse
  * l'inscription.
+ *
+ * ————— L'ouverture de l'app détruisait la preuve (#140) ——————————————————————————————————
+ *
+ * `settledAt` n'a qu'un seul emplacement, et `sync('launch')` l'écrase avant que quiconque ait
+ * pu lire ce qu'il contenait. Une course tuée par le chien de garde natif — le budget de
+ * `retryPolicy.ts` protège du reste, pas de ça — n'appelle jamais `noteSettled()` : elle ne
+ * laissait donc aucune trace, et la première ouverture qui suit efface même la dernière ligne
+ * valable avant de l'avoir montrée à qui vient la consulter.
+ *
+ * `runStartedAt` répond à ça : posé à l'**entrée** de `perform()` (`sync.ts`), pas dans
+ * `sync()` — un appel `throttled` n'entre jamais dans `perform()` et ne doit rien écrire — il
+ * survit, lui, à l'ouverture suivante. Une entrée plus récente que la dernière sortie
+ * (`settledAt`) est un fait écrit, pas une soustraction de dates faite par le lecteur : voir
+ * `hasOrphanedRun()` (`runDiagnostics.ts`, séparé de ce fichier pour la même raison
+ * qu'`anchorPolicy.ts` est séparé de `sync.ts` — voir son docblock).
+ *
+ * Une course coupée par **notre** budget, elle, ressort par `noteSettled()` comme n'importe
+ * quel autre verdict — `outcome: 'budgetExceeded'` — parce qu'on garde la main pour l'écrire.
+ * Seul le couperet natif, qui ne la rend pas, laisse une entrée orpheline.
  *
  * ————— Ce que ce n'est pas ————————————————————————————————————————————————————————————
  *
@@ -46,10 +65,18 @@ import type { Failure } from '@/features/auth/problems';
  * échouer la synchronisation qu'il observe : ce serait le comble d'un module de diagnostic.
  */
 
-/** Ce que la dernière synchronisation a produit — les quatre issues de `SyncResult`. */
-export type JournalOutcome = 'summary' | 'nothingToSend' | 'unavailable' | 'failed';
+/** Ce que la dernière synchronisation a produit — les cinq issues de `SyncResult`. */
+export type JournalOutcome = 'summary' | 'nothingToSend' | 'unavailable' | 'failed' | 'budgetExceeded';
 
 export type SyncJournal = {
+  /**
+   * Quand une course est entrée dans `perform()` pour la dernière fois. ISO 8601.
+   *
+   * Voir le docblock en tête de fichier : c'est cette ligne, comparée à `settledAt`, qui rend
+   * une interruption par le chien de garde natif lisible au lieu de disparaître à l'ouverture
+   * suivante.
+   */
+  runStartedAt: string | null;
   /** Quand un verdict est tombé pour la dernière fois, quel qu'il soit. ISO 8601. */
   settledAt: string | null;
   outcome: JournalOutcome | null;
@@ -74,6 +101,7 @@ export type SyncJournal = {
 };
 
 const EMPTY: SyncJournal = {
+  runStartedAt: null,
   settledAt: null,
   outcome: null,
   imported: null,
@@ -138,6 +166,15 @@ function record(patch: Partial<SyncJournal>): void {
   for (const listener of listeners) {
     listener();
   }
+}
+
+/**
+ * Une course vient de commencer — appelé depuis `perform()` (`sync.ts`), et de là seulement :
+ * un appel `throttled` ou qui rejoint une synchronisation déjà en vol n'entre jamais dans
+ * `perform()`, et ne doit rien écrire ici. Voir le docblock en tête de fichier.
+ */
+export function noteRunStarted(): void {
+  record({ runStartedAt: new Date().toISOString() });
 }
 
 /** Un verdict est tombé. Appelé par `sync.ts`, pour les quatre déclencheurs. */

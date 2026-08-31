@@ -25,6 +25,7 @@ import {
 } from '@/features/notifications/useNotificationPermission';
 import { useHealthAccess } from '@/features/health/useHealthAccess';
 import { getJournal, subscribeToJournal, type SyncJournal } from '@/features/health/journal';
+import { formatRunDuration, hasOrphanedRun, runDurationSeconds } from '@/features/health/runDiagnostics';
 import { useSyncStatus } from '@/features/health/useSync';
 import { formatAgo } from '@/features/progression/format';
 
@@ -159,12 +160,39 @@ export default function ReglagesScreen() {
  *
  * - **l'observer HealthKit ne tourne pas** — l'inscription a échoué, ou l'autorisation manque ;
  * - **il tourne, et c'est le serveur qui n'a pas répondu** — le back dort (`fly.io` arrête la
- *   machine sans trafic) et le réveil ne dispose que de dix secondes sans rejeu, un budget
- *   dimensionné sur le chien de garde natif d'iOS, pas sur un démarrage à froid.
+ *   machine sans trafic) et le réveil ne dispose que de douze secondes sans rejeu pour toute la
+ *   course, un budget dimensionné sur le chien de garde natif d'iOS, pas sur un démarrage à
+ *   froid.
  *
  * Le second cas ne perd rien : l'ancre n'avance pas, la même différence se relit au réveil
  * suivant. Mais il fallait pouvoir les distinguer, et c'est exactement ce que les deux
  * premières lignes de ce bloc font.
+ *
+ * ————— La troisième réponse (#82, #140) ————————————————————————————————————————————————
+ *
+ * « Est-ce que l'observer tourne ? » a une réponse que ce bloc ne savait pas encore donner :
+ * « il a tourné mais n'a pas eu le temps ». Deux formes, très différentes à l'écran :
+ *
+ * - **une course est en cours**, dans ce process précis — `useSyncStatus` le sait déjà, en
+ *   mémoire, il n'y a rien à déduire du journal ;
+ * - **une course a été interrompue** — le chien de garde natif l'a coupée avant qu'elle ait pu
+ *   écrire quoi que ce soit (`hasOrphanedRun`, `runDiagnostics.ts`). Notre propre budget, lui,
+ *   écrit toujours un verdict avant de rendre la main (`outcome: 'budgetExceeded'` plus bas) —
+ *   ce n'est donc jamais lui qui produit ce second cas.
+ *
+ * ————— Combien de temps, pas seulement « interrompue » (complément du 2026-08-31) ———————
+ *
+ * Aucune course en arrière-plan n'a jamais abouti à un import crédité depuis le début du
+ * développement du réveil : la notification « séance comptée » (`announce()`,
+ * `backgroundWakeup.ios.ts`) n'est jamais partie. « Interrompue » ne suffit donc pas à décider
+ * si les douze secondes du budget (`retryPolicy.ts`) sont la bonne valeur, ou si c'est tout le
+ * reste — bootstrap, refresh, lecture HealthKit — qui déborde avant même de l'atteindre.
+ *
+ * `runDurationSeconds` (`runDiagnostics.ts`) répond à ça, sans rien ajouter au disque : la
+ * durée se calcule à la lecture, sur les deux instants déjà notés. Elle rejoint la phrase de
+ * `outcomeDetail()` — « Réglée en 1,3 s. » sur un verdict qui a fini par tomber, « Interrompue
+ * après 12 s » sur notre propre abandon — et manque, seule, sur une course orpheline : on sait
+ * qu'elle a duré au moins jusqu'au couperet natif, jamais combien.
  *
  * ————— Ce n'est pas un banc de développement ——————————————————————————————————————————
  *
@@ -180,10 +208,25 @@ function Synchronisation() {
   const now = new Date();
 
   const syncing = status.phase === 'syncing';
+  // Le process en cours l'emporte toujours sur le journal : lui seul sait qu'une course va
+  // sortir par `noteSettled()` d'un instant à l'autre, ce que le disque seul ne peut pas dire.
+  const interrupted = !syncing && hasOrphanedRun(journal);
 
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Synchronisation</Text>
+
+      {syncing ? (
+        <Text style={styles.body}>Une synchronisation est en cours.</Text>
+      ) : null}
+
+      {interrupted ? (
+        <Text style={styles.body}>
+          Une synchronisation en arrière-plan a été interrompue avant d’obtenir une réponse du
+          serveur. Rien n’est perdu : elle reprendra au prochain réveil ou à la prochaine
+          ouverture.
+        </Text>
+      ) : null}
 
       <JournalLine
         label="Dernière synchronisation"
@@ -230,26 +273,47 @@ function Synchronisation() {
 }
 
 /**
- * Ce que la dernière synchronisation a produit, en une phrase.
+ * Ce que la dernière synchronisation a produit, en une phrase — et combien de temps elle a
+ * pris, quand la question a une réponse (`runDurationSeconds`, `runDiagnostics.ts`).
  *
  * Le refus est stocké **tel quel** sur le disque et rendu ici par `messageFor` : un message
  * figé au moment de l'écriture survivrait à sa propre correction.
  */
 function outcomeDetail(journal: SyncJournal): string | null {
+  const duration = runDurationSeconds(journal);
+
   switch (journal.outcome) {
     case null:
       return 'GRRIND n’a pas encore parlé au serveur sur cet appareil.';
     case 'summary':
-      return journal.imported === null || journal.imported === 0
-        ? 'Rien de neuf à créditer.'
-        : `${journal.imported} séance${journal.imported > 1 ? 's' : ''} créditée${journal.imported > 1 ? 's' : ''}.`;
+      return withDuration(
+        journal.imported === null || journal.imported === 0
+          ? 'Rien de neuf à créditer.'
+          : `${journal.imported} séance${journal.imported > 1 ? 's' : ''} créditée${journal.imported > 1 ? 's' : ''}.`,
+        duration,
+      );
     case 'nothingToSend':
-      return 'Aucune activité trouvée dans Santé.';
+      return withDuration('Aucune activité trouvée dans Santé.', duration);
     case 'unavailable':
-      return 'Cet appareil ne donne pas accès aux données de santé.';
+      return withDuration('Cet appareil ne donne pas accès aux données de santé.', duration);
     case 'failed':
-      return journal.failure === null ? 'La synchronisation a échoué.' : messageFor(journal.failure);
+      return withDuration(
+        journal.failure === null ? 'La synchronisation a échoué.' : messageFor(journal.failure),
+        duration,
+      );
+    // Notre propre budget a coupé la course avant qu'un verdict ne tombe (#140) : ni un refus
+    // du serveur, ni une panne réseau, donc pas `messageFor`. Rien n'est perdu. La durée mesure
+    // ici le budget lui-même — c'est ce qui manquait pour savoir s'il est le bon.
+    case 'budgetExceeded':
+      return duration === null
+        ? 'Interrompue avant d’obtenir une réponse du serveur. Rien n’est perdu : la prochaine synchronisation reprendra où celle-ci s’est arrêtée.'
+        : `Interrompue après ${formatRunDuration(duration)} sans réponse du serveur. Rien n’est perdu : la prochaine synchronisation reprendra où celle-ci s’est arrêtée.`;
   }
+}
+
+/** Ajoute la mesure de la course à la fin de la phrase, quand elle existe. */
+function withDuration(sentence: string, duration: number | null): string {
+  return duration === null ? sentence : `${sentence} Réglée en ${formatRunDuration(duration)}.`;
 }
 
 /** Un fait daté, et ce qu'il veut dire. Le tiret dit « jamais », pas « zéro ». */
