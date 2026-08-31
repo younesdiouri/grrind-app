@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { BattleResultBadge } from '@/components/BattleResultBadge';
+import { CoinAmount } from '@/components/CoinAmount';
 import type { components } from '@/api/schema';
 import { color, space, type } from '@/design/tokens';
 
@@ -14,6 +15,15 @@ type BattleRowProps = {
   turns: string;
   /** Déjà en phrase — `formatFoughtAt`. La ligne n'a pas d'horloge. */
   when: string;
+  /**
+   * `BattleSummary.rewards.coins.gained` (#227), rendu à l'identique — rien à recalculer.
+   *
+   * **Jamais le loot.** Vingt lignes portant chacune une carte d'objet ne seraient plus une
+   * liste, ce serait un mur ; et le butin d'un combat précis se retrouve déjà en l'ouvrant, ce
+   * que la liste permet sans qu'il faille le répéter ici. Zéro ne s'affiche pas non plus — un
+   * combat sans gain ne montre rien de plus qu'avant #227.
+   */
+  coinsGained: number;
 };
 
 /**
@@ -23,7 +33,7 @@ type BattleRowProps = {
  * mènera au rejeu n'est pas ici non plus — c'est un geste de navigation, il vivra à l'endroit
  * qui compose la ligne, comme `GuildMemberRow` dans son roster.
  */
-export function BattleRow({ result, enemyName, turns, when }: BattleRowProps) {
+export function BattleRow({ result, enemyName, turns, when, coinsGained }: BattleRowProps) {
   return (
     <View style={styles.row}>
       <BattleResultBadge result={result} />
@@ -36,6 +46,8 @@ export function BattleRow({ result, enemyName, turns, when }: BattleRowProps) {
           {turns} · {when}
         </Text>
       </View>
+
+      {coinsGained > 0 && <CoinAmount amount={coinsGained} />}
     </View>
   );
 }

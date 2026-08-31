@@ -1,6 +1,7 @@
 import combatLong from '@/../fixtures/battle/combat-long.json';
 import defaiteBoss from '@/../fixtures/battle/defaite-boss.json';
 import victoire from '@/../fixtures/battle/victoire.json';
+import victoireAvecLoot from '@/../fixtures/battle/victoire-avec-loot.json';
 
 import type { Battle } from './timeline.ts';
 
@@ -12,12 +13,17 @@ import type { Battle } from './timeline.ts';
  *
  * - `victoire` — compte neuf, `SAND_JACKAL` choisi par le serveur. 15 tours, 17 événements,
  *   aucune mitigation des deux côtés : des attaques nues. C'est le socle, et il prouve que
- *   l'animation tient avant toute forme rare.
+ *   l'animation tient avant toute forme rare. Une victoire qui rapporte déjà quelques pièces,
+ *   sans loot — voir `victoireAvecLoot` pour l'objet.
+ * - `victoireAvecLoot` — le même compte, capturé après un tirage (#227) : `SAND_JACKAL` fait
+ *   tomber des Baskets usées et 4 pièces. C'est la fixture qui prouve qu'un butin ne déplace
+ *   pas un seul battement de `buildBattleTimeline` — le bilan le lit, la timeline l'ignore.
  * - `defaiteBoss` — un compte monté au niveau 19 contre `DUNE_SOVEREIGN`. 19 tours,
  *   24 événements, et **les cinq formes d'un coup** : une esquive, trois tours
  *   supplémentaires, et le joueur qui tombe. C'est la fixture qui porte tout le vocabulaire.
+ *   `rewards` y est vide : une défaite ne rapporte rien.
  * - `combatLong` — le même compte contre `IRON_JACKAL`. 33 tours, 36 événements : le plus
- *   long que l'équilibrage actuel produise.
+ *   long que l'équilibrage actuel produise, et une autre défaite sans rapport.
  *
  * ————— Ce que ces fixtures ne prouvent pas, et qu'il ne faut pas maquiller ——————————————
  *
@@ -38,6 +44,7 @@ import type { Battle } from './timeline.ts';
  */
 export const BATTLE_FIXTURES = {
   victoire: victoire as unknown as Battle,
+  victoireAvecLoot: victoireAvecLoot as unknown as Battle,
   defaiteBoss: defaiteBoss as unknown as Battle,
   combatLong: combatLong as unknown as Battle,
 } as const;

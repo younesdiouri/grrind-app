@@ -5,6 +5,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { BattleRow } from '@/components/BattleRow';
 import { Button } from '@/components/Button';
 import { EnemyCard } from '@/components/EnemyCard';
+import { PlayerFighterCard } from '@/components/PlayerFighterCard';
 import { color, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { fight } from '@/features/combat/fight';
@@ -97,12 +98,18 @@ export default function CombatScreen() {
               enemyName={item.enemy.name}
               turns={formatTurns(item.turns)}
               when={formatFoughtAt(item.foughtAt, now)}
+              coinsGained={item.rewards.coins.gained}
             />
           </Pressable>
         </Link>
       )}
       ListHeaderComponent={
         <View style={styles.header}>
+          {/* Le combattant du joueur, en tête — avant même le titre de la section, puisqu'il
+              n'est pas un adversaire (#227). Requis au contrat : rien ne le montre tant que le
+              catalogue n'est pas prêt, pas d'état « en attente ». */}
+          {catalog.step === 'ready' && <PlayerFighterCard player={catalog.player} />}
+
           <Text style={styles.sectionTitle}>Adversaires</Text>
 
           {catalog.step === 'loading' && <ActivityIndicator color={color.accent} />}
