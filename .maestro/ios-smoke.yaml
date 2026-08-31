@@ -186,6 +186,21 @@ tags:
 - assertVisible: ".*Arme.*"
 - takeScreenshot: 09-bag
 
+# La boutique reste dans le hub objets : on vérifie sa porte depuis le sac, sans acheter une
+# entrée de catalogue dont le prix et la disponibilité appartiennent au serveur.
+- tapOn:
+    id: "shop-entry"
+- extendedWaitUntil:
+    visible: "BOUTIQUE"
+    timeout: 15000
+- takeScreenshot: 09a-shop
+- swipe:
+    start: "2%, 55%"
+    end: "95%, 55%"
+- extendedWaitUntil:
+    visible: "BOURSE"
+    timeout: 15000
+
 # La bourse a une histoire (#129), et c'est le bloc du solde qui l'ouvre. Elle est **toujours**
 # garnie ici : les trois séances créditées ont chacune fait tomber des pièces, la bande de
 # `STARTER_SESSION_DROP` n'ayant pas de borne basse nulle. Contrairement au loot, rien à

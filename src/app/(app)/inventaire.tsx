@@ -17,6 +17,7 @@ import {
 import { noteEquipmentChanged } from '@/features/inventory/equipmentRevision';
 import { isEquippable, isEquipped, type Inventory } from '@/features/inventory/inventory';
 import { INVENTORY_QUERY_KEY, useInventory } from '@/features/inventory/useInventory';
+import { openChest, type ChestOpenOutcome } from '@/features/shop/actions';
 
 /**
  * Le sac, la doublure et la bourse — #30, poussé depuis l'accueil et depuis l'onglet Combat.
@@ -58,8 +59,10 @@ export default function InventoryScreen() {
    * se contredisent, et c'est la dernière arrivée qui gagnerait.
    */
   const [pending, setPending] = useState<EquipmentSlot | null>(null);
+  const [pendingChest, setPendingChest] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<Failure | null>(null);
   const [selection, setSelection] = useState<EquipmentSlot | null>(null);
+  const [openedChest, setOpenedChest] = useState<ChestOpenOutcome | null>(null);
 
   const apply = async (slot: EquipmentSlot, mutate: () => Promise<EquipmentOutcome>) => {
     // Une fois le geste explicite, cette zone devient la sélection de l'utilisateur. Sans ça,
@@ -85,6 +88,24 @@ export default function InventoryScreen() {
     // équipés, et cet onglet-là ne se démonte pas. Sur la réponse, jamais sur l'intention —
     // un refus n'a rien changé.
     noteEquipmentChanged();
+  };
+
+  const revealChest = async (itemKey: string) => {
+    setPendingChest(itemKey);
+    setRefusal(null);
+    // Un ancien résultat n'est jamais le contenu du coffre qu'on va toucher maintenant.
+    setOpenedChest(null);
+
+    const outcome = await openChest(itemKey);
+    setPendingChest(null);
+
+    if (outcome.kind === 'refused') {
+      setRefusal(outcome.failure);
+      return;
+    }
+
+    setOpenedChest(outcome);
+    void queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
   };
 
   // Lu une fois, hors du JSX : `inventory.data` est une propriété d'un objet que TypeScript
@@ -136,6 +157,20 @@ export default function InventoryScreen() {
             </View>
           </Pressable>
 
+          <Pressable
+            style={({ pressed }) => [styles.shopEntry, pressed && styles.pressed]}
+            onPress={() => router.push('/boutique')}
+            accessibilityRole="button"
+            accessibilityLabel="Boutique"
+            testID="shop-entry"
+          >
+            <View>
+              <Text style={styles.label}>BOUTIQUE</Text>
+              <Text style={styles.detail}>Dépenser tes pièces</Text>
+            </View>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
+
           {/* Un refus — objet non possédé, emplacement incompatible — au-dessus d'un sac qui
               reste juste : le geste a échoué, pas la lecture. */}
           {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
@@ -170,7 +205,7 @@ export default function InventoryScreen() {
                   label="Retirer"
                   variant="quiet"
                   busy={pending === activeSlot}
-                  disabled={pending !== null && pending !== activeSlot}
+                  disabled={pendingChest !== null || (pending !== null && pending !== activeSlot)}
                   onPress={() => void apply(activeSlot, () => unequipSlot(activeSlot))}
                 />
               </View>
@@ -184,12 +219,12 @@ export default function InventoryScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Équiper — ${line.name}`}
                 accessibilityHint={`Remplace l’objet porté sur ${equipmentSlotLabel[line.slot].toLowerCase()}`}
-                disabled={pending !== null}
+                disabled={pending !== null || pendingChest !== null}
                 onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
                 style={({ pressed }) => [
                   styles.itemChoice,
                   pressed && styles.pressed,
-                  pending !== null && styles.inert,
+                  (pending !== null || pendingChest !== null) && styles.inert,
                 ]}
               >
                 <ItemCard item={line} quantity={line.quantity} />
@@ -213,6 +248,46 @@ export default function InventoryScreen() {
               </View>
             ) : null}
           </View>
+
+          {data.items.filter((line) => line.kind === 'CHEST').length > 0 ? (
+            <View style={styles.drawer}>
+              <View style={styles.drawerHead}>
+                <View style={styles.sectionCopy}>
+                  <Text style={styles.label}>COFFRES</Text>
+                  <Text style={styles.drawerTitle}>À ouvrir</Text>
+                </View>
+              </View>
+              {data.items
+                .filter((line) => line.kind === 'CHEST')
+                .map((line) => (
+                  <View key={line.key} style={styles.current}>
+                    <ItemCard item={line} quantity={line.quantity} />
+                    <Button
+                      label="Ouvrir"
+                      busy={pendingChest === line.key}
+                      disabled={pending !== null || (pendingChest !== null && pendingChest !== line.key)}
+                      onPress={() => void revealChest(line.key)}
+                    />
+                  </View>
+                ))}
+            </View>
+          ) : null}
+
+          {openedChest?.kind === 'opened' ? (
+            <View style={styles.drawer} accessibilityLiveRegion="polite">
+              <Text style={styles.label}>CONTENU DU COFFRE</Text>
+              {openedChest.chest.items.length === 0 ? (
+                <Text style={styles.detail}>Le coffre était vide.</Text>
+              ) : (
+                openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)
+              )}
+              <View style={styles.purseAmount}>
+                <CoinAmount amount={openedChest.chest.coinsBefore} />
+                <Text style={styles.chevron}>›</Text>
+                <CoinAmount amount={openedChest.chest.coinsAfter} />
+              </View>
+            </View>
+          ) : null}
         </>
       )}
     </ScrollView>
@@ -223,6 +298,14 @@ const styles = StyleSheet.create({
   screen: { padding: space.lg, gap: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   purse: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: color.surface,
+    borderRadius: radius.md,
+    padding: space.md,
+  },
+  shopEntry: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import type { Failure, ProblemDetails } from '@/features/auth/problems';
 
+import { createActionKeys } from './actionKeys.ts';
 import { chestOpenIntention, forgetsKeyAfter, purchaseIntention } from './keyPolicy.ts';
 
 function problem(type: ProblemDetails['type']): Failure {
@@ -17,6 +18,50 @@ describe('les intentions boutique et coffre', () => {
   it('garde la même intention à travers un retry', () => {
     assert.equal(purchaseIntention('WORN_RUNNING_SHOES'), purchaseIntention('WORN_RUNNING_SHOES'));
     assert.equal(chestOpenIntention('DUNE_CHEST'), chestOpenIntention('DUNE_CHEST'));
+  });
+});
+
+describe('les clés d’actions boutique', () => {
+  it('conserve chaque clé logique séparément à travers un redémarrage', async () => {
+    let disk: Record<string, string> = {};
+    let minted = 0;
+    const boot = () =>
+      createActionKeys({
+        read: async () => disk,
+        write: async (next) => {
+          disk = next;
+        },
+        mint: () => `clé-${++minted}`,
+      });
+
+    const purchase = purchaseIntention('WORN_RUNNING_SHOES');
+    const chest = chestOpenIntention('DUNE_CHEST');
+    const firstPurchaseKey = await boot().keyFor(purchase);
+    const firstChestKey = await boot().keyFor(chest);
+
+    assert.equal(await boot().keyFor(purchase), firstPurchaseKey);
+    assert.equal(await boot().keyFor(chest), firstChestKey);
+    assert.equal(minted, 2, 'un retry ne frappe jamais une nouvelle clé');
+  });
+
+  it('oublie seulement l’action qui a obtenu un verdict', async () => {
+    let disk: Record<string, string> = {};
+    const keys = createActionKeys({
+      read: async () => disk,
+      write: async (next) => {
+        disk = next;
+      },
+      mint: () => crypto.randomUUID(),
+    });
+    const purchase = purchaseIntention('WORN_RUNNING_SHOES');
+    const chest = chestOpenIntention('DUNE_CHEST');
+    const purchaseKey = await keys.keyFor(purchase);
+    const chestKey = await keys.keyFor(chest);
+
+    await keys.forget(purchase);
+
+    assert.notEqual(await keys.keyFor(purchase), purchaseKey);
+    assert.equal(await keys.keyFor(chest), chestKey);
   });
 });
 
