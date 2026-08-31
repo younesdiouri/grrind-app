@@ -12,12 +12,18 @@ import {
   type RefreshCoordinator,
 } from '@/features/auth/refreshCoordinator';
 import {
+  missingTokenReason,
+  serverRefusalReason,
+  signedOutReason,
+} from '@/features/auth/sessionLostReason';
+import {
   clearRefreshToken,
   getAccessToken,
   readRefreshToken,
   setAccessToken,
   writeRefreshToken,
 } from '@/features/auth/tokenStore';
+import { noteSessionLost } from '@/features/diagnostics/journal';
 
 /**
  * La session, en un seul exemplaire.
@@ -95,12 +101,21 @@ async function forget(): Promise<void> {
 async function performRefresh(): Promise<string | null> {
   const refreshToken = await readRefreshToken();
   if (refreshToken === null) {
+    // Le piège du #143 : `restore()` passe ici à **chaque** démarrage, y compris quand
+    // personne ne s'est jamais connecté sur cet appareil — un trousseau vide est alors le
+    // déroulement normal d'un premier lancement, pas un abandon. `state.status` est lu
+    // **avant** `forget()`, qui le remet à `signedOut` : `missingTokenReason` ne trace donc
+    // que si une session était réellement en cours. Voir son docblock.
+    const reason = missingTokenReason(state.status === 'signedIn');
+    if (reason !== null) {
+      noteSessionLost(reason);
+    }
     await forget();
     return null;
   }
 
   try {
-    const { data, response } = await publicApi.POST('/api/auth/refresh', {
+    const { data, error, response } = await publicApi.POST('/api/auth/refresh', {
       body: { refreshToken },
     });
 
@@ -113,6 +128,7 @@ async function performRefresh(): Promise<string | null> {
       // Jeton inconnu, expiré, ou déjà consommé. Dans le dernier cas la famille vient d'être
       // révoquée : il n'y a plus de session à sauver, et s'accrocher au jeton ne ferait que
       // rejouer la révocation à la prochaine ouverture.
+      noteSessionLost(serverRefusalReason(response.status, asProblem(error)?.type ?? null));
       await forget();
       return null;
     }
@@ -144,7 +160,12 @@ const coordinator: RefreshCoordinator = createRefreshCoordinator({
  * le contrat.
  */
 export async function refresh(staleToken: string | null, problem: unknown): Promise<string | null> {
-  if (meansSessionOver(asProblem(problem))) {
+  const parsed = asProblem(problem);
+  if (meansSessionOver(parsed)) {
+    // Même branche que le refus de `/api/auth/refresh` plus haut — le serveur a refusé le
+    // jeton, seul l'endroit d'où vient le refus change. Le middleware n'appelle `refresh()`
+    // que sur un 401 (`authMiddleware.ts`), d'où le statut fixe.
+    noteSessionLost(serverRefusalReason(401, parsed?.type ?? null));
     await forget();
     return null;
   }
@@ -243,5 +264,8 @@ export async function signOut(): Promise<void> {
     }
   }
 
+  // La seule des trois branches voulue : elle doit se distinguer des deux autres, sinon le
+  // journal dit qu'une session est partie sans jamais dire si c'était voulu.
+  noteSessionLost(signedOutReason());
   await forget();
 }

@@ -1,9 +1,10 @@
 import { File, Paths } from 'expo-file-system';
 
 import type { Failure } from '@/features/auth/problems';
+import type { SessionLostReason } from '@/features/auth/sessionLostReason';
 
 /**
- * Ce que l'app se rappelle de ses dernières synchronisations — et **pourquoi c'est écrit**.
+ * Ce que l'app se rappelle d'elle-même — et **pourquoi c'est écrit**.
  *
  * ————— La question à laquelle ce fichier répond ————————————————————————————————————————
  *
@@ -63,6 +64,33 @@ import type { Failure } from '@/features/auth/problems';
  *
  * L'échec est **avalé partout**. Un journal qu'on n'arrive pas à écrire ne doit jamais faire
  * échouer la synchronisation qu'il observe : ce serait le comble d'un module de diagnostic.
+ *
+ * ————— Le déménagement hors de `health/` (#143) ———————————————————————————————————————
+ *
+ * Ce fichier vivait dans `features/health/`. `session.ts` (`features/auth/`) a dû y écrire à
+ * son tour — voir la section suivante — et faire dépendre `auth/` de `health/` pour ça
+ * n'aurait eu aucun sens : ce module ne parle déjà plus seulement de santé, il porte tout ce
+ * que l'app se rappelle d'elle-même. D'où `features/diagnostics/`. Le déménagement n'a rien
+ * changé au-dessus : mêmes choix, mêmes raisons, seuls les imports ont bougé.
+ *
+ * ————— Pourquoi la session a été jetée, et par laquelle branche (#143) —————————————————
+ *
+ * Le back ne révoque quasiment jamais de famille de refresh tokens (zéro sur 77 jetons sur une
+ * fenêtre de mesure) : quand un joueur se retrouve déconnecté, c'est le **client** qui a jeté
+ * la session, depuis l'une de trois branches de `session.ts` qui appellent toutes `forget()`
+ * et produisent le même écran. Vu du téléphone, une déconnexion volontaire et une session
+ * perdue sont indiscernables — et c'était précisément l'inconnue qui bloquait le `#142`.
+ *
+ * `sessionLost` porte laquelle des trois a tiré, et quand. La décision — *quelle* branche, et
+ * le piège du trousseau vide au tout premier lancement, qui n'est pas un abandon — vit dans
+ * `sessionLostReason.ts` (`features/auth/`), pure et testée sous `node --test` ; ce module-ci
+ * ne fait qu'écrire ce qu'on lui tend, comme pour le reste du journal.
+ *
+ * **Jamais le jeton, sous aucune forme** — ni entier, ni tronqué, ni haché, ni sa longueur.
+ * `SessionLostReason` ne le porte pas, et rien ici ne l'ajoute : c'est la session elle-même,
+ * un journal qui la garderait deviendrait ce qu'il fallait protéger. Le back n'en garde qu'un
+ * SHA-256 et ne l'expose nulle part ; ce client ne fait pas moins bien en ne gardant rien du
+ * tout.
  */
 
 /** Ce que la dernière synchronisation a produit — les cinq issues de `SyncResult`. */
@@ -98,6 +126,18 @@ export type SyncJournal = {
    * Mais il doit laisser une trace lisible quelque part, et c'est ici.
    */
   registration: 'registered' | 'failed' | null;
+  /**
+   * La dernière fois qu'une session a été jetée, et par laquelle des trois branches. `null` :
+   * jamais, sur cet appareil. Voir la section du docblock ci-dessus.
+   */
+  sessionLost: SessionLostEntry | null;
+};
+
+/** Une session jetée, datée. Voir `SessionLostReason` (`features/auth/sessionLostReason.ts`)
+ *  pour ce que `reason` peut porter — jamais le jeton, sous aucune forme. */
+export type SessionLostEntry = {
+  at: string;
+  reason: SessionLostReason;
 };
 
 const EMPTY: SyncJournal = {
@@ -108,6 +148,7 @@ const EMPTY: SyncJournal = {
   failure: null,
   wokeAt: null,
   registration: null,
+  sessionLost: null,
 };
 
 const FILE_NAME = 'sync-journal.json';
@@ -200,4 +241,13 @@ export function noteWake(): void {
 /** L'inscription au réveil a été tentée. */
 export function noteRegistration(registered: boolean): void {
   record({ registration: registered ? 'registered' : 'failed' });
+}
+
+/**
+ * Une session vient d'être jetée — appelé par `session.ts`, aux trois branches qui appellent
+ * `forget()`. `reason` est déjà tranché à l'appel : c'est `sessionLostReason.ts` qui décide
+ * *si* et *par laquelle*, ce module-ci ne fait qu'écrire. Voir le docblock en tête de fichier.
+ */
+export function noteSessionLost(reason: SessionLostReason): void {
+  record({ sessionLost: { at: new Date().toISOString(), reason } });
 }

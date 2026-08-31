@@ -20,6 +20,7 @@ const EMPTY: SyncJournal = {
   failure: null,
   wokeAt: null,
   registration: null,
+  sessionLost: null,
 };
 
 describe('une course sans verdict', () => {
