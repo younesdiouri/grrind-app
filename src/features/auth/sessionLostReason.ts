@@ -1,22 +1,28 @@
 import type { ProblemType } from '@/features/auth/problems';
 
 /**
- * Pourquoi une session a été jetée, et par lequel des quatre points de `session.ts` qui
- * appellent `forget()`. C'est la seule information qui manquait pour faire avancer le `#142` :
- * le back ne révoque aucune famille de refresh tokens, donc c'est forcément l'un de ces quatre
- * points qui a tiré, et rien ne disait lequel. `SessionLostEntry` (`diagnostics/journal.ts`)
- * persiste ce que ce module construit ; il ne persiste rien lui-même.
+ * Pourquoi une session a été jetée — ou, depuis le `#142`, pourquoi elle a simplement vacillé
+ * sans être jetée. `SessionLostEntry` (`diagnostics/journal.ts`) persiste ce que ce module
+ * construit ; il ne persiste rien lui-même.
  *
- * Quatre points, trois `kind` : deux d'entre eux — le refus de `/api/auth/refresh` et le refus
- * d'une route authentifiée quelconque (`meansSessionOver`, `problems.ts`) — partagent
- * `serverRefusal`, parce que les deux disent « le serveur a refusé le jeton », mais se
- * distinguent par `origin`. Voir le commentaire de `serverRefusal` plus bas : les fondre sans
- * cette distinction aurait reproduit, un cran plus bas, exactement l'indiscernabilité que ce
- * ticket existe pour supprimer.
+ * Quatre `kind`. Deux d'entre eux — le refus de `/api/auth/refresh` et le refus d'une route
+ * authentifiée quelconque (`meansSessionOver`, `problems.ts`) — partagent `serverRefusal`,
+ * parce que les deux disent « le serveur a refusé le jeton », mais se distinguent par `origin`.
+ * Voir le commentaire de `serverRefusal` plus bas : les fondre sans cette distinction aurait
+ * reproduit, un cran plus bas, exactement l'indiscernabilité que ce module existe pour
+ * supprimer. `keychainUnavailable` fait le même choix, pour la même raison, entre `read` et
+ * `write` — voir son commentaire.
+ *
+ * **Ce module ne dit plus seulement « `forget()` a été appelé »** (`#142`). `keychainUnavailable`
+ * couvre aussi le cas où `session.ts` a tracé sans jeter : un trousseau illisible ne vide pas la
+ * session, et un trousseau inscriptible en échec ne l'interrompt pas non plus. Voir le
+ * commentaire de `keychainUnavailable` ci-dessous, et celui de `noteSessionLost`
+ * (`diagnostics/journal.ts`).
  *
  * Séparé de `session.ts` pour la même raison que `refreshCoordinator.ts` en est séparé : la
- * distinction la plus délicate du `#143` se prouve sous `node --test`, pas sur un appareil où
- * les quatre points produisent le même écran. `session.ts` dépend d'`expo-secure-store` et
+ * distinction la plus délicate du `#143`, et celle du `#142`, se prouvent sous `node --test`,
+ * pas sur un appareil où plusieurs de ces cas produisent le même écran — mais pas tous : voir
+ * `keychainUnavailable`. `session.ts` dépend d'`expo-secure-store` et
  * d'`openapi-fetch`, aucun des deux ne se charge sous `node --test` — ce module-ci n'a lui
  * aucune dépendance d'exécution, et porte donc la seule part testable de la décision.
  *
@@ -52,6 +58,28 @@ export type SessionLostReason =
       status: number;
       type: ProblemType | null;
     }
+  | {
+      kind: 'keychainUnavailable';
+      /**
+       * `expo-secure-store` a jeté au lieu de rendre une valeur (`#142`) — trousseau verrouillé,
+       * item présent mais inaccessible (`errSecInteractionNotAllowed` et consorts). Ce n'est ni
+       * un jeton absent (`missingToken`) ni un refus du serveur : personne n'a tranché, le
+       * trousseau n'a simplement pas répondu.
+       *
+       * `read` : `performRefresh()` n'a pas pu **lire** le trousseau. Le refresh token est peut-
+       * être toujours là — on ne le sait pas, et c'est justement le point : ni `forget()`
+       * n'est appelé, ni le disque n'est touché. `state` retombe quand même sur `signedOut`
+       * (`restore()` doit relâcher l'écran de démarrage), donc vu du joueur c'est indiscernable
+       * d'un vrai départ ; d'où la trace, pour que ce ne soit plus indiscernable d'ici.
+       *
+       * `write` : `adopt()` n'a pas pu **écrire** la paire neuve. Moins visible que `read` : la
+       * session reste `signedIn` en mémoire jusqu'à la fermeture de l'app, seul le disque est en
+       * retard. Elle mérite quand même une trace, parce que le disque garde alors un refresh
+       * token déjà consommé par le serveur — la vraie façon de perdre une session, à la
+       * prochaine ouverture.
+       */
+      operation: 'read' | 'write';
+    }
   | { kind: 'signedOut' };
 
 /**
@@ -64,9 +92,9 @@ export type SessionLostReason =
  *
  * `hadSession` ne peut **pas** venir de `state.status === 'signedIn'` : au tout premier appel
  * de `restore()`, `state` vaut encore `{ status: 'restoring' }`, y compris pour un utilisateur
- * connecté hier dont le jeton a disparu du trousseau entre deux ouvertures — exactement le
- * symptôme que le `#142` doit expliquer. L'appelant doit donc lire `hadSession` depuis un
- * marqueur **persisté** qui survit à la fermeture de l'app (`sessionActive`, dans le journal),
+ * connecté hier dont le jeton a disparu du trousseau entre deux ouvertures. L'appelant doit donc
+ * lire `hadSession` depuis un marqueur **persisté** qui survit à la fermeture de l'app
+ * (`sessionActive`, dans le journal),
  * pas depuis l'état en mémoire du seul process courant. Sans cette garde, le journal se
  * remplirait d'un faux positif à chaque ouverture déconnectée et noierait l'événement rare
  * qu'on cherche.
@@ -82,6 +110,19 @@ export function serverRefusalReason(
   type: ProblemType | null,
 ): SessionLostReason {
   return { kind: 'serverRefusal', origin, status, type };
+}
+
+/**
+ * Le trousseau a jeté au lieu de rendre une valeur — voir le commentaire de la branche
+ * `keychainUnavailable` ci-dessus pour ce que chaque `operation` veut dire.
+ *
+ * Ne prend jamais l'erreur elle-même en paramètre : `expo-secure-store` ne remonte qu'un statut
+ * Keychain, jamais le secret qu'il protège, mais ce module n'a de toute façon rien à faire d'un
+ * détail qui ne changerait pas la décision — voir le docblock en tête de fichier, « jamais le
+ * jeton, sous aucune forme ».
+ */
+export function keychainUnavailableReason(operation: 'read' | 'write'): SessionLostReason {
+  return { kind: 'keychainUnavailable', operation };
 }
 
 /** L'utilisateur a demandé `signOut()`. Toujours tracée : c'est le seul départ voulu. */
