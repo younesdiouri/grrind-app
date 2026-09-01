@@ -22,6 +22,8 @@ const EMPTY: SyncJournal = {
   registration: null,
   sessionLost: null,
   sessionActive: false,
+  accessTokenReusedAt: null,
+  accessTokenReuses: 0,
 };
 
 describe('une course sans verdict', () => {

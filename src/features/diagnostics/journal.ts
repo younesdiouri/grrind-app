@@ -116,6 +116,14 @@ import type { SessionLostReason } from '@/features/auth/sessionLostReason';
  * empêche une déconnexion volontaire de retracer un `missingToken` fantôme au lancement
  * suivant : le trousseau vide qu'elle laisse est le résultat attendu, pas une nouvelle perte.
  *
+ * ————— Ce qu'un démarrage n'a *pas* eu besoin de faire (#146) —————————————————————————
+ *
+ * `accessTokenReusedAt` et `accessTokenReuses` notent l'inverse des lignes ci-dessus : non pas
+ * une session perdue, mais une rotation évitée. Sans elles, le `#146` serait invisible dans les
+ * deux sens — un démarrage qui reprend et un démarrage qui rotationne affichent exactement le
+ * même écran, et c'est précisément ce que le ticket reproche au comportement d'avant. Voir
+ * `storedSession.ts`, et `noteAccessTokenReused()` plus bas.
+ *
  * Ce n'est pas une deuxième source de vérité sur l'authentification — voir la section
  * « Ce que ce n'est pas » plus haut. Rien ne lit `sessionActive` pour décider ce que l'app
  * montre ; `missingTokenReason` (`sessionLostReason.ts`) s'en sert uniquement pour décider
@@ -170,6 +178,20 @@ export type SyncJournal = {
    * pensait à la fin du dernier process.
    */
   sessionActive: boolean;
+  /**
+   * Le dernier démarrage qui a **repris** une session au lieu d'en faire tourner une neuve
+   * (`#146`). `null` : jamais, sur cet appareil — soit la version est trop récente pour avoir
+   * déjà eu un jeton d'accès à reprendre, soit tous les démarrages sont tombés sur un jeton
+   * expiré.
+   */
+  accessTokenReusedAt: string | null;
+  /**
+   * Combien de rotations ont été évitées depuis l'installation. C'est **la** mesure du `#146` :
+   * la ligne du dessus dit que le correctif est vivant, celle-ci dit s'il a servi. Une valeur
+   * qui ne bouge pas sur plusieurs jours d'usage accuse la persistance du jeton d'accès, pas la
+   * décision — et les deux se corrigent à des endroits différents.
+   */
+  accessTokenReuses: number;
 };
 
 /** Une session jetée, datée. Voir `SessionLostReason` (`features/auth/sessionLostReason.ts`)
@@ -189,6 +211,8 @@ const EMPTY: SyncJournal = {
   registration: null,
   sessionLost: null,
   sessionActive: false,
+  accessTokenReusedAt: null,
+  accessTokenReuses: 0,
 };
 
 const FILE_NAME = 'sync-journal.json';
@@ -314,4 +338,23 @@ export function noteSessionAdopted(): void {
  */
 export function noteSessionForgotten(): void {
   record({ sessionActive: false });
+}
+
+/**
+ * Un démarrage vient de reprendre la session stockée sans faire tourner le refresh token —
+ * appelé par `restore()` (`session.ts`), voir le docblock de `storedSession.ts` pour ce que ça
+ * évite.
+ *
+ * `sessionActive` est réaffirmé au passage : il l'est déjà, sinon il n'y aurait rien eu à
+ * reprendre. Mais le journal et le trousseau sont deux disques qui peuvent diverger — un
+ * fichier illisible repart d'`EMPTY`, où `sessionActive` vaut `false` — et un `false` laissé là
+ * ferait taire `missingTokenReason` sur la vraie perte, celle qui suivrait. Le marqueur suit ce
+ * que `session.ts` sait, pas ce que le fichier avait retenu.
+ */
+export function noteAccessTokenReused(): void {
+  record({
+    accessTokenReusedAt: new Date().toISOString(),
+    accessTokenReuses: getJournal().accessTokenReuses + 1,
+    sessionActive: true,
+  });
 }

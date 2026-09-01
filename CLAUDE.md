@@ -50,10 +50,25 @@ Elle ne fait pas doublon avec l'unicité `(source, externalId)` côté serveur :
 **double crédit**, celle-là rend la **réponse d'origine**. Sans clé, un client qui rejoue reçoit
 une synchronisation vide au lieu de sa mise en scène — l'XP serait juste, l'animation perdue.
 
-### 3. Le JWT vit en mémoire, le refresh token dans le Keychain
+### 3. Les deux jetons vont dans le Keychain, et un démarrage ne fait pas tourner le refresh
 
-L'access token dure 15 minutes et ne se révoque pas : le persister n'apporte rien et l'expose.
-Le refresh token va dans `expo-secure-store`, jamais dans `AsyncStorage`.
+Le refresh token va dans `expo-secure-store`, jamais dans `AsyncStorage`. **Le jeton d'accès y
+va aussi** depuis le #146, avec son instant d'expiration et le profil du dernier `adopt()` —
+même magasin, même classe de protection : c'est un porteur de session, il ne va pas ailleurs.
+
+Ce n'est pas de la commodité, c'est le correctif d'une déconnexion mesurée en production. Le
+raisonnement d'avant — « quinze minutes, le persister n'apporte rien » — coûtait une **rotation
+entière du refresh token à chaque naissance de process**, réveil en arrière-plan compris, et
+chaque rotation traverse une fenêtre irréductible : entre le `COMMIT` du serveur et l'écriture
+du trousseau, un process tué perd le successeur, et l'ouverture suivante présente un jeton
+consommé — que le back lit comme un rejeu, et il révoque la famille. Le 2026-09-01, un réveil
+qui n'avait rien à faire tourner a coûté la session cinquante minutes plus tard.
+
+`restore()` reprend donc la session stockée **sans rien faire tourner** tant que le jeton
+d'accès est valide, marge de 60 s comprise (`storedSession.ts`, pur et testé). Il ne rotate que
+sur un jeton expiré, absent ou illisible — un trousseau muet retombe sur la rotation, jamais sur
+une déconnexion (#142). Le chemin paresseux ne bouge pas : un 401 appelle toujours `refresh()`,
+et c'est lui le filet.
 
 ## `SyncSummary` : l'ordre des clés est l'ordre de l'animation
 
