@@ -572,6 +572,15 @@ export function buildTimeline(summary: SyncSummary): Timeline {
 
       // L'anneau a fini de se redistribuer : Vitality se pose, seule, sur le reste du battement.
       holdAttributes(attributesBeat.until, after);
+
+      // Et la barre **tient sa butée** pendant tout le battement. Elle ne joue rien ici — c'est
+      // le tour des jauges — mais ne poser aucun point revient à la laisser à `interpolate`,
+      // qui ne connaît pas les beats : elle descendrait en ligne droite depuis le repos de
+      // lecture jusqu'au zéro de la bascule, et se viderait pendant les ~1,8 s du cercle. La
+      // bascule ne ferait alors plus retomber une barre pleine, et l'or de la crête s'allumerait
+      // sur un remplissage déjà nul. Un point immobile suffit : c'est le même geste que les
+      // `holdBar` de `session`, et pour la même raison.
+      holdBar(attributesBeat.until, workout.level.reached.length > 0 ? 1 : fillAfter(workout.level));
     }
 
     // 3. `level.reached` — un basculement par niveau franchi. Plusieurs d'un coup est un cas

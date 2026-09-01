@@ -37,6 +37,21 @@ const ATTRIBUTES: ('strength' | 'endurance' | 'mobility' | 'dexterity' | 'vitali
   'vitality',
 ];
 
+/**
+ * La valeur d'une rampe à un instant quelconque — exactement ce que `interpolate` lit sur le
+ * thread UI, y compris **entre** deux points. Une rampe se juge là, pas seulement sur les
+ * instants qu'elle porte : un point manquant ne se voit qu'au milieu du trou qu'il laisse.
+ */
+function fillAt(ramp: { input: number[]; output: number[] }, at: number): number {
+  const next = ramp.input.findIndex((instant) => instant >= at);
+  if (next <= 0) return ramp.output[next === 0 ? 0 : ramp.output.length - 1];
+
+  const span = ramp.input[next] - ramp.input[next - 1];
+  const progress = span === 0 ? 0 : (at - ramp.input[next - 1]) / span;
+
+  return ramp.output[next - 1] + progress * (ramp.output[next] - ramp.output[next - 1]);
+}
+
 /** La rampe est-elle exploitable par `interpolate` ? */
 function assertRampIsSane(ramp: { input: number[]; output: number[] }, duration: number): void {
   assert.equal(ramp.input.length, ramp.output.length, 'autant de points que de valeurs');
@@ -486,6 +501,33 @@ describe('les cinq jauges de caractéristiques, entre le breakdown et le niveau'
         assert.equal(attributesBeat.until, firstLevel.at, 'et cède la place exactement au premier niveau');
       }
     });
+  });
+
+  it('laisse la barre tenir sa butée pendant tout le battement, sans la vider', () => {
+    // Le défaut : le battement des jauges ne posait **aucun** point de barre. Entre le repos
+    // de lecture qui le précède et le zéro de la bascule qui le suit, `interpolate` ne connaît
+    // pas les beats — elle tire une droite. La barre se vidait donc lentement pendant les
+    // ~1,8 s du cercle, et la bascule ne faisait plus retomber une barre pleine : elle
+    // rattrapait une barre déjà vide, sous un or de crête allumé sur du néant.
+    //
+    // Ce test échantillonne la rampe comme le fait le composant, pas seulement à ses points :
+    // c'est entre eux que le défaut vivait.
+    for (const summary of [unWorkout, troisWorkouts, quinzeWorkouts, avecLoot]) {
+      const timeline = buildTimeline(summary);
+
+      for (const beat of timeline.beats) {
+        if (beat.kind !== 'attributes') continue;
+
+        const departure = fillAt(timeline.bar, beat.at);
+        for (const at of [beat.at, (beat.at + beat.until) / 2, beat.until]) {
+          assert.equal(
+            fillAt(timeline.bar, at),
+            departure,
+            `la barre a bougé à ${at} pendant le battement ${beat.at}-${beat.until}`,
+          );
+        }
+      }
+    }
   });
 
   it("n'en pose aucun quand rien n'a été crédité", () => {
