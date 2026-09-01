@@ -17,15 +17,20 @@ import {
   serverRefusalReason,
   signedOutReason,
 } from '@/features/auth/sessionLostReason';
+import { expiryFrom, isUsable, type StoredSession } from '@/features/auth/storedSession';
 import {
   clearRefreshToken,
+  clearStoredSession,
   getAccessToken,
   readRefreshToken,
+  readStoredSession,
   setAccessToken,
   writeRefreshToken,
+  writeStoredSession,
 } from '@/features/auth/tokenStore';
 import {
   getJournal,
+  noteAccessTokenReused,
   noteSessionAdopted,
   noteSessionForgotten,
   noteSessionLost,
@@ -98,6 +103,23 @@ async function adopt(session: AuthSession): Promise<void> {
   } catch {
     noteSessionLost(keychainUnavailableReason('write'));
   }
+
+  try {
+    await writeStoredSession({
+      accessToken: session.tokens.accessToken,
+      expiresAt: expiryFrom(session.tokens.expiresIn, new Date()),
+      user: session.user,
+    });
+  } catch {
+    // Pas de trace ici, et ce n'est pas un oubli : cette écriture-là n'est qu'une **avance**
+    // prise sur le prochain démarrage (#146). Si elle échoue, ce démarrage-là fera tourner le
+    // refresh token comme il le faisait avant le ticket — donc exactement le comportement que
+    // tout le reste du fichier sait déjà tenir. Une trace la ferait concourir avec la panne
+    // d'écriture juste au-dessus, qui n'a pas la même gravité du tout et qui n'a qu'un seul
+    // emplacement dans le journal : celle-là laisse le disque porter un refresh token déjà
+    // consommé, la vraie façon de perdre une session.
+  }
+
   setAccessToken(session.tokens.accessToken);
   // Persisté, pas seulement en mémoire : `missingTokenReason` en a besoin dès le tout premier
   // `performRefresh()` d'un futur process, avant que `state` ci-dessous n'ait pu valoir
@@ -120,6 +142,17 @@ async function forget(): Promise<void> {
     // `noteSessionLost` (`diagnostics/journal.ts`). `forget()` doit surtout ne pas rejeter : un
     // `catch` muet vaut mieux qu'un `restore()` qui ne termine jamais.
   }
+
+  try {
+    await clearStoredSession();
+  } catch {
+    // Deux `try` et pas un seul : ces deux items sont indépendants dans le trousseau, et le
+    // second doit partir même quand le premier a refusé de s'effacer. Un jeton d'accès laissé
+    // là ferait reprendre, au démarrage suivant, une session dont le refresh token vient d'être
+    // effacé ou révoqué — elle tiendrait quelques minutes avant de retomber sur l'écran de
+    // connexion, ce qui est pire que d'y retomber tout de suite.
+  }
+
   // Inconditionnel, que cet appel ait été précédé d'un `noteSessionLost()` ou non : sans ce
   // reset, la prochaine ouverture retracerait un abandon fantôme sur un trousseau vide qui est
   // pourtant le résultat attendu de ce `forget()`-ci. Voir le docblock de `journal.ts`.
@@ -233,12 +266,56 @@ export async function refresh(staleToken: string | null, problem: unknown): Prom
 }
 
 /**
+ * Reprendre la session stockée, si son jeton d'accès a encore de quoi servir.
+ *
+ * **C'est le correctif du #146**, et il tient en une inversion : le démarrage demande d'abord
+ * au disque s'il a quelque chose d'utilisable, et ne fait tourner le refresh token que si la
+ * réponse est non. Voir `storedSession.ts` pour ce que ça évite, et pourquoi la marge
+ * d'`isUsable` penche du côté de la rotation de trop.
+ *
+ * Rend `true` quand la session a été reprise — l'appelant n'a alors plus rien à faire.
+ */
+async function resumeStoredSession(): Promise<boolean> {
+  let stored: StoredSession | null;
+  try {
+    stored = await readStoredSession();
+  } catch {
+    // Un trousseau qui refuse de rendre le jeton d'accès **retombe sur la rotation**, jamais
+    // sur une déconnexion : un magasin illisible n'est pas un magasin vide (#142), et cette
+    // lecture-ci n'est de toute façon qu'un raccourci. Pas de trace non plus — le journal n'a
+    // qu'un emplacement pour `sessionLost`, et si le trousseau est vraiment muet,
+    // `performRefresh()` va le constater dans l'instant sur la lecture qui compte, celle du
+    // refresh token, et y poser la trace qui a du sens.
+    return false;
+  }
+
+  if (!isUsable(stored, new Date())) {
+    return false;
+  }
+
+  setAccessToken(stored.accessToken);
+  noteAccessTokenReused();
+  publish({ status: 'signedIn', user: stored.user });
+  return true;
+}
+
+/**
  * Au démarrage : le trousseau porte-t-il une session ?
  *
- * Passe par le coordinateur, et pas par `performRefresh` : si une requête part avant que la
+ * Un jeton d'accès encore valide suffit à répondre oui, **sans rien faire tourner** (#146,
+ * `resumeStoredSession` ci-dessus). Sinon — expiré, absent, illisible — on rotationne, et ça
+ * passe par le coordinateur plutôt que par `performRefresh` : si une requête part avant que la
  * restauration soit finie, les deux doivent partager le même rafraîchissement.
+ *
+ * **Le chemin paresseux ne bouge pas.** Une requête qui revient en 401 appelle toujours
+ * `refresh()`, et c'est lui le filet : un jeton que l'horloge de l'appareil croyait valide mais
+ * que le serveur refuse fait tourner la paire au premier appel, exactement comme avant.
  */
 export async function restore(): Promise<void> {
+  if (await resumeStoredSession()) {
+    return;
+  }
+
   try {
     await coordinator.refresh(null);
   } catch {

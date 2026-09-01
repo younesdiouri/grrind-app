@@ -289,6 +289,20 @@ function Synchronisation() {
         }
       />
 
+      {/* L'inverse de la ligne du dessus, et la mesure du #146 : un démarrage qui a repris la
+          session au lieu d'en faire tourner une neuve. Chaque rotation évitée est une fois de
+          moins où l'app traverse la fenêtre qui a coûté la session du 2026-09-01 — voir
+          `storedSession.ts`. */}
+      <JournalLine
+        label="Dernier démarrage sans renouvellement"
+        value={
+          journal.accessTokenReusedAt === null
+            ? null
+            : formatAgo(journal.accessTokenReusedAt, now)
+        }
+        detail={reuseDetail(journal)}
+      />
+
       <Button
         label="Synchroniser maintenant"
         onPress={refresh}
@@ -377,6 +391,29 @@ function sessionLostDetail(entry: SessionLostEntry): string {
     case 'signedOut':
       return 'Déconnexion demandée depuis Réglages.';
   }
+}
+
+/**
+ * Ce que les rotations évitées valent, en une phrase (#146).
+ *
+ * Le compte, et pas seulement la date : « il y a deux minutes » dit que le correctif est vivant
+ * sur cet appareil, le total dit s'il a servi. Un compte resté à zéro alors que l'app s'ouvre
+ * plusieurs fois par jour accuse la **persistance** du jeton d'accès, jamais la décision de le
+ * reprendre — et les deux se corrigent à des endroits différents (`tokenStore.ts` d'un côté,
+ * `storedSession.ts` de l'autre).
+ *
+ * « Renouvellement » et pas « rotation » : c'est un joueur qui lit cette carte, et le mot qui
+ * décrit le mécanisme côté serveur ne lui apprend rien de plus que celui qui décrit ce qui lui
+ * arrive.
+ */
+function reuseDetail(journal: SyncJournal): string | null {
+  if (journal.accessTokenReusedAt === null) {
+    return 'Aucun démarrage n’a encore repris une session sans renouveler ses jetons.';
+  }
+
+  return journal.accessTokenReuses === 1
+    ? 'Un renouvellement de jetons évité depuis l’installation.'
+    : `${journal.accessTokenReuses} renouvellements de jetons évités depuis l’installation.`;
 }
 
 /** Le dernier segment d'un `type` de `ProblemDetails` — l'URI complète n'apporte rien de plus
