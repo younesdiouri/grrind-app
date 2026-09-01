@@ -97,4 +97,13 @@ describe("la doublure et le sac, tels que l'écran les lit (#30)", () => {
     assert.equal(itemCount(bag), 5);
     assert.equal(itemCount(inventory()), 0);
   });
+
+  it('garantit que chaque emplacement libre a une ligne null et conserve la clé du slot (#128)', () => {
+    const slots = equippedSlots(inventory());
+    for (const slot of EQUIPMENT_SLOT_ORDER) {
+      const match = slots.find((entry) => entry.slot === slot);
+      assert.ok(match !== undefined);
+      assert.equal(match.line, null);
+    }
+  });
 });
