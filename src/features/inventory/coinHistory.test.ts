@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { coinReasonLabel } from '@/design/tokens.ts';
 import { appendPage, EMPTY_HISTORY, hasMore, type CoinHistoryPage, type CoinTransaction } from './coinHistory.ts';
 
 function transaction(id: string, occurredAt: string, amount = 12): CoinTransaction {
@@ -75,4 +76,25 @@ describe('l’accumulation de l’historique de la bourse', () => {
     assert.deepEqual(EMPTY_HISTORY.transactions, []);
     assert.equal(hasMore(EMPTY_HISTORY), false);
   });
+
+  it('enchaîne les pages et conserve le dernier curseur', () => {
+    const first = page([transaction('t1', '2026-08-29T15:00:00+00:00')], 'c1', 100);
+    const second = page([transaction('t2', '2026-08-29T14:00:00+00:00')], 'c2', 150);
+
+    const history = [first, second].reduce(appendPage, EMPTY_HISTORY);
+
+    assert.equal(history.nextCursor, 'c2');
+    assert.equal(history.transactions.length, 2);
+  });
 });
+
+
+describe('la mise en phrase des raisons du ledger', () => {
+  it('associe un libellé clair à chaque raison d’écriture', () => {
+    assert.equal(coinReasonLabel.WORKOUT_DROP, 'Séance créditée');
+    assert.equal(coinReasonLabel.BATTLE_DROP, 'Combat gagné');
+    assert.equal(coinReasonLabel.PURCHASE, 'Achat');
+  });
+});
+
+
