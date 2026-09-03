@@ -17,6 +17,10 @@ import {
   serverRefusalReason,
   signedOutReason,
 } from '@/features/auth/sessionLostReason';
+import {
+  registrationRequest,
+  type RegisterInput,
+} from '@/features/auth/registrationRequest';
 import { expiryFrom, isUsable, type StoredSession } from '@/features/auth/storedSession';
 import {
   clearRefreshToken,
@@ -351,22 +355,12 @@ export async function signIn(email: string, password: string): Promise<AuthOutco
   }
 }
 
-export type RegisterInput = {
-  email: string;
-  password: string;
-  displayName: string;
-  /**
-   * Fuseau IANA de l'appareil. **Le streak et le plafond quotidien se calculent dedans**, et
-   * le contrat en fait un attribut de profil que le serveur ne déduit jamais : c'est au client
-   * de l'envoyer, et à l'utilisateur de le corriger ensuite s'il déménage.
-   */
-  timezone: string;
-};
+export type { RegisterInput } from '@/features/auth/registrationRequest';
 
 export async function register(input: RegisterInput): Promise<AuthOutcome> {
   try {
     const { data, error } = await publicApi.POST('/api/auth/register', {
-      body: input,
+      body: registrationRequest(input),
     });
 
     if (data === undefined) {

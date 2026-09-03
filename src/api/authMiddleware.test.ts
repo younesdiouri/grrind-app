@@ -156,10 +156,15 @@ describe("le middleware d'authentification", () => {
 
     const { data } = await client.PATCH('/api/me', {
       // `notificationPreferences` n'est pas un ajout de ce test : le contrat pose un défaut
-      // (`[]`) sur les trois champs d'`UpdateProfileRequest`, ce qui les rend tous requis à la
-      // génération. La liste vide est le cas nominal d'un PATCH qui ne touche pas aux
-      // préférences — c'est écrit tel quel côté serveur.
-      body: { displayName: 'Ada', timezone: 'Europe/Paris', notificationPreferences: [] },
+      // (`[]` / `null`) sur les quatre champs d'`UpdateProfileRequest`, ce qui les rend tous
+      // requis à la génération. La liste vide est le cas nominal d'un PATCH qui ne touche pas
+      // aux préférences — c'est écrit tel quel côté serveur.
+      body: {
+        displayName: 'Ada',
+        timezone: 'Europe/Paris',
+        locale: null,
+        notificationPreferences: [],
+      },
     });
 
     assert.ok(data);

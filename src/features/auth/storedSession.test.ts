@@ -77,6 +77,12 @@ describe('parseStoredSession', () => {
     assert.deepEqual(parseStoredSession(JSON.stringify(written)), written);
   });
 
+  it("relit une session écrite avant l'ajout de locale au profil", () => {
+    const written = session({ user: { id: 'ancien-profil' } as StoredSession['user'] });
+
+    assert.deepEqual(parseStoredSession(JSON.stringify(written)), written);
+  });
+
   it('rend null sur un item absent', () => {
     assert.equal(parseStoredSession(null), null);
   });

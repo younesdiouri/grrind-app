@@ -20,6 +20,7 @@ function line(overrides: Partial<InventoryLine> = {}): InventoryLine {
     slot: 'FEET',
     modifiers: [],
     priceCoins: 30,
+    imageUrl: 'https://api.grrind.app/game-images/items/worn-running-shoes.png',
     quantity: 1,
     ...overrides,
   };

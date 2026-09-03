@@ -16,6 +16,7 @@ function listing(overrides: Partial<Listing> = {}): Listing {
     slot: 'FEET',
     modifiers: [],
     priceCoins: 30,
+    imageUrl: 'https://api.grrind.app/game-images/items/worn-running-shoes.png',
     affordable: true,
     owned: false,
     minimumLevel: 1,

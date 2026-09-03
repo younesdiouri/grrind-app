@@ -131,6 +131,7 @@ function droppedItem(
     slot: 'FEET',
     modifiers: [],
     priceCoins: 30,
+    imageUrl: 'https://api.grrind.app/game-images/items/worn-running-shoes.png',
     ...overrides,
   };
 }
