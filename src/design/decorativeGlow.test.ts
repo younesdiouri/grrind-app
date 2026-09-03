@@ -14,4 +14,8 @@ describe('les halos décoratifs', () => {
   it('disparaît avec la préférence système sans masquer la couleur sémantique', () => {
     assert.equal(decorativeGlow('soft', true), undefined);
   });
+
+  it('reste coupé tant que la préférence système est inconnue ou inaccessible', () => {
+    assert.equal(decorativeGlow('soft', null), undefined);
+  });
 });

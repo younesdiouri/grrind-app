@@ -16,7 +16,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { CoinAmount } from '@/components/CoinAmount';
 import { CoinIcon } from '@/components/CoinIcon';
@@ -126,7 +126,8 @@ export function SyncSummaryView({
   const timeline = useMemo(() => buildTimeline(summary), [summary]);
   const clock = useSharedValue(0);
   const reducedMotion = useReducedMotion();
-  const eventGlow = decorativeGlow('lit', reducedMotion);
+  const nothingCredited = timeline.totals === null;
+  const eventGlow = nothingCredited ? undefined : decorativeGlow('lit', reducedMotion);
   const levelGlow = decorativeGlow('flare', reducedMotion);
 
   /**
@@ -152,8 +153,6 @@ export function SyncSummaryView({
    * plus une course, c'est un compte rendu. Il n'y a donc **pas de barre du tout** ; une
    * piste vide promettrait une course qui n'a pas eu lieu.
    */
-  const nothingCredited = timeline.totals === null;
-
   const play = () => {
     setDone(false);
     clock.value = 0;
@@ -367,6 +366,7 @@ export function SyncSummaryView({
           <Recap
             clock={clock}
             at={recap.at}
+            halo={eventGlow}
             totals={timeline.totals}
             attributes={last.attributes}
             titles={summary.imported.flatMap((workout) => workout.titlesUnlocked)}
@@ -526,7 +526,7 @@ function AttributeStage({
 }) {
   const index = segment.workout;
   const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index);
-  const geometry = ringGeometry('hero');
+  const geometry = ringGeometry('hero', halo?.spread ?? 0);
   const fontSize = vitalityFontSize(workout.attributes.vitality.after, geometry.innerDiameter, type.display.fontSize);
 
   // La fenêtre est lue **avant** le worklet, jamais dedans : un `beat` absent (#80) doit
@@ -575,6 +575,7 @@ function AttributeStage({
         }}
         vitality={workout.attributes.vitality.after}
         size="hero"
+        halo={halo}
         center={
           <AnimatedTextInput
             style={[type.display, styles.vitality, { fontSize }]}
@@ -647,14 +648,12 @@ function LiveArc({
       ),
     };
     const arc = arcsOf(live).find((candidate) => candidate.attribute === attribute);
-    const { circumference, length, offset } = arcStroke(
+    return arcPresentation(
       arc?.from ?? 0,
       arc?.to ?? 0,
       geometry.radius,
       geometry.strokeWidth,
     );
-
-    return { strokeDasharray: `${length} ${circumference - length}`, strokeDashoffset: offset };
   });
 
   return (
@@ -667,9 +666,8 @@ function LiveArc({
           stroke={attributeColor[attribute]}
           strokeWidth={geometry.strokeWidth + halo.spread}
           strokeOpacity={halo.opacity}
-          strokeLinecap="round"
-          fill="none"
           animatedProps={animatedProps}
+          fill="none"
         />
       )}
       <AnimatedCircle
@@ -678,9 +676,8 @@ function LiveArc({
         r={geometry.radius}
         stroke={attributeColor[attribute]}
         strokeWidth={geometry.strokeWidth}
-        strokeLinecap="round"
-        fill="none"
         animatedProps={animatedProps}
+        fill="none"
       />
     </>
   );
@@ -1066,6 +1063,7 @@ function soleReason(summary: SyncSummary): XpNoCreditReason | null {
 function Recap({
   clock,
   at,
+  halo,
   totals,
   attributes,
   titles,
@@ -1076,6 +1074,7 @@ function Recap({
 }: {
   clock: Clock;
   at: number;
+  halo: ReturnType<typeof decorativeGlow>;
   totals: SyncTotals;
   attributes: RewardSummary['attributes'];
   titles: RewardSummary['titlesUnlocked'];
@@ -1118,7 +1117,7 @@ function Recap({
   return (
     <Animated.View style={[styles.block, styles.podium, style]}>
       <View style={styles.recapRing}>
-        <AttributeRing attributes={arcs} vitality={vitality} size="hero" />
+        <AttributeRing attributes={arcs} vitality={vitality} size="hero" halo={halo} />
         {/* Même disposition que la carte d'accueil, et pour la même raison : la légende prend
             la largeur qui reste, sinon ses libellés se replient lettre par lettre. */}
         <View style={styles.recapLegend}>

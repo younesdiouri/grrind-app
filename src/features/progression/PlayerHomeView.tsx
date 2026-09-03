@@ -13,7 +13,7 @@ import Animated, {
 import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { arcStroke, arcsOf, ringGeometry, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ringGeometry, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
@@ -189,11 +189,11 @@ export function AttributeCard({
   // Calculée une fois par montage, comme `arcsOf` : les bornes de chaque arc ne bougent pas
   // pendant la course, seule la valeur partagée fait avancer `to` de `from` jusqu'à elles.
   const staticArcs = arcsOf(arcs);
-  const geometry = ringGeometry('hero');
-  const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
-
   const progress = useSharedValue(0);
   const halo = decorativeGlow('soft', useReducedMotion());
+  const geometry = ringGeometry('hero', halo?.spread ?? 0);
+  const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
+
 
   const play = () => {
     progress.value = 0;
@@ -215,6 +215,7 @@ export function AttributeCard({
           attributes={arcs}
           vitality={vitality}
           size="hero"
+          halo={halo}
           center={
             <AnimatedTextInput
               style={[type.display, styles.vitalityText, { fontSize }]}
@@ -295,9 +296,7 @@ function GrowingArc({
 }) {
   const animatedProps = useAnimatedProps(() => {
     const to = interpolate(progress.value, [0, 1], [arc.from, arc.to], Extrapolation.CLAMP);
-    const { circumference, length, offset } = arcStroke(arc.from, to, geometry.radius, geometry.strokeWidth);
-
-    return { strokeDasharray: `${length} ${circumference - length}`, strokeDashoffset: offset };
+    return arcPresentation(arc.from, to, geometry.radius, geometry.strokeWidth);
   });
 
   return (
@@ -310,9 +309,8 @@ function GrowingArc({
           stroke={attributeColor[arc.attribute]}
           strokeWidth={geometry.strokeWidth + halo.spread}
           strokeOpacity={halo.opacity}
-          strokeLinecap="round"
-          fill="none"
           animatedProps={animatedProps}
+          fill="none"
         />
       )}
       <AnimatedCircle
@@ -321,9 +319,8 @@ function GrowingArc({
         r={geometry.radius}
         stroke={attributeColor[arc.attribute]}
         strokeWidth={geometry.strokeWidth}
-        strokeLinecap="round"
-        fill="none"
         animatedProps={animatedProps}
+        fill="none"
       />
     </>
   );

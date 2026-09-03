@@ -52,7 +52,7 @@ export const color = {
   textMuted: palette.fog,
   /** L'XP gagnée, et l'accent du produit. */
   accent: palette.ember,
-  /** Le niveau et les titres — ce qui se célèbre. */
+  /** Le niveau — la lumière blanche reste exceptionnelle. */
   celebrate: palette.gold,
   /**
    * La pièce — la bourse, le prix d'une carte d'objet, un mouvement du ledger. Jamais

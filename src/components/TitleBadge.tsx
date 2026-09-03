@@ -28,13 +28,13 @@ export function TitleBadge({ name, caption }: TitleBadgeProps) {
 }
 
 const styles = StyleSheet.create({
-  worn: { ...type.label, color: color.celebrate },
+  worn: { ...type.label, color: color.accent },
   card: {
     backgroundColor: color.surfaceRaised,
     borderRadius: radius.md,
     padding: space.md,
     gap: space.xs,
   },
-  caption: { ...type.label, color: color.celebrate },
+  caption: { ...type.label, color: color.accent },
   name: { ...type.title, color: color.text },
 });
