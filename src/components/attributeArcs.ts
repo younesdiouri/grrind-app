@@ -1,4 +1,5 @@
-import { ring, type Attribute } from '@/design/tokens';
+import { glow, ring, type Attribute } from '@/design/tokens';
+import type { GlowTier } from '@/design/decorativeGlow';
 
 /**
  * La répartition d'un cercle de vie — quatre arcs, un par caractéristique, dont la longueur
@@ -116,6 +117,14 @@ export function ringGeometry(size: RingSize, haloSpread = 0): RingGeometry {
     origin: diameter / 2,
     innerDiameter: radius * 2 - strokeWidth * 2,
   };
+}
+
+/**
+ * Un écran qui choisit un tier réserve son viewport avant de savoir si le halo sera visible.
+ * Réduire les animations masque ainsi la lumière, sans jamais déplacer le contenu.
+ */
+export function ringViewport(size: RingSize, haloTier?: GlowTier): RingGeometry {
+  return ringGeometry(size, haloTier === undefined ? 0 : glow[haloTier].spread);
 }
 
 export type ArcStroke = {

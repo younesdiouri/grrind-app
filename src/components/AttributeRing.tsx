@@ -2,10 +2,10 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Circle, G, Svg } from 'react-native-svg';
 
-import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type AttributeArc, type RingSize } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringViewport, type AttributeArc, type RingSize } from '@/components/attributeArcs';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { attributeColor, attributeLabel, color, opacity, radius, space, type } from '@/design/tokens';
-import { decorativeGlow } from '@/design/decorativeGlow';
+import { decorativeGlow, type GlowTier } from '@/design/decorativeGlow';
 import type { Attribute } from '@/design/tokens';
 
 type AttributeRingProps = {
@@ -39,6 +39,8 @@ type AttributeRingProps = {
   center?: ReactNode;
   /** La lumière est explicite : un profil tiers ne peut pas commencer à briller par défaut. */
   halo?: ReturnType<typeof decorativeGlow>;
+  /** Réserve le viewport du tier opt-in, même si la préférence masque son halo. */
+  haloTier?: GlowTier;
 };
 
 /**
@@ -46,8 +48,8 @@ type AttributeRingProps = {
  * le total, Vitality en chiffre au centre — la seule disposition où le dessin démontre la
  * valeur qu'il affiche (#69).
  */
-export function AttributeRing({ attributes, vitality, size = 'inline', children, center, halo }: AttributeRingProps) {
-  const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringGeometry(size, halo?.spread ?? 0);
+export function AttributeRing({ attributes, vitality, size = 'inline', children, center, halo, haloTier }: AttributeRingProps) {
+  const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringViewport(size, haloTier);
   const typeScale = size === 'hero' ? type.display : type.title;
   const fontSize = vitalityFontSize(vitality, innerDiameter, typeScale.fontSize);
 

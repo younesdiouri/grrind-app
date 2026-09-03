@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { glow } from '@/design/tokens';
+import { decorativeGlow } from '@/design/decorativeGlow';
 
-import { arcPresentation, arcStroke, arcsOf, ringGeometry } from './attributeArcs.ts';
+import { arcPresentation, arcStroke, arcsOf, ringGeometry, ringViewport } from './attributeArcs.ts';
 
 describe('la répartition d’un cercle de vie', () => {
   it('donne quatre arcs égaux quand les quatre parts le sont', () => {
@@ -76,6 +77,21 @@ describe('la géométrie d’un cercle de vie', () => {
       assert.equal(geometry.diameter, outerEdge * 2);
       assert.equal(geometry.innerDiameter, geometry.radius * 2 - geometry.strokeWidth * 2);
     }
+  });
+
+  it('garde le viewport d’un écran opt-in fixe quand le halo devient visible, inconnu ou réduit', () => {
+    const visible = decorativeGlow('lit', false);
+    const unknown = decorativeGlow('lit', null);
+    const reduced = decorativeGlow('lit', true);
+    const viewportFor = (_halo: ReturnType<typeof decorativeGlow>) => ringViewport('hero', 'lit');
+    const optInViewport = viewportFor(visible);
+
+    assert.ok(visible !== undefined);
+    assert.equal(unknown, undefined);
+    assert.equal(reduced, undefined);
+    assert.deepEqual(viewportFor(unknown), optInViewport);
+    assert.deepEqual(viewportFor(reduced), optInViewport);
+    assert.notDeepEqual(ringViewport('hero'), optInViewport);
   });
 });
 

@@ -13,7 +13,7 @@ import Animated, {
 import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { arcPresentation, arcsOf, ringGeometry, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ringViewport, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
@@ -191,7 +191,7 @@ export function AttributeCard({
   const staticArcs = arcsOf(arcs);
   const progress = useSharedValue(0);
   const halo = decorativeGlow('soft', useReducedMotion());
-  const geometry = ringGeometry('hero', halo?.spread ?? 0);
+  const geometry = ringViewport('hero', 'soft');
   const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
 
 
@@ -216,6 +216,7 @@ export function AttributeCard({
           vitality={vitality}
           size="hero"
           halo={halo}
+          haloTier="soft"
           center={
             <AnimatedTextInput
               style={[type.display, styles.vitalityText, { fontSize }]}

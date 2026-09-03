@@ -16,7 +16,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringViewport, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { CoinAmount } from '@/components/CoinAmount';
 import { CoinIcon } from '@/components/CoinIcon';
@@ -526,7 +526,7 @@ function AttributeStage({
 }) {
   const index = segment.workout;
   const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index);
-  const geometry = ringGeometry('hero', halo?.spread ?? 0);
+  const geometry = ringViewport('hero', 'lit');
   const fontSize = vitalityFontSize(workout.attributes.vitality.after, geometry.innerDiameter, type.display.fontSize);
 
   // La fenêtre est lue **avant** le worklet, jamais dedans : un `beat` absent (#80) doit
@@ -576,6 +576,7 @@ function AttributeStage({
         vitality={workout.attributes.vitality.after}
         size="hero"
         halo={halo}
+        haloTier="lit"
         center={
           <AnimatedTextInput
             style={[type.display, styles.vitality, { fontSize }]}
@@ -1117,7 +1118,7 @@ function Recap({
   return (
     <Animated.View style={[styles.block, styles.podium, style]}>
       <View style={styles.recapRing}>
-        <AttributeRing attributes={arcs} vitality={vitality} size="hero" halo={halo} />
+        <AttributeRing attributes={arcs} vitality={vitality} size="hero" halo={halo} haloTier="lit" />
         {/* Même disposition que la carte d'accueil, et pour la même raison : la légende prend
             la largeur qui reste, sinon ses libellés se replient lettre par lettre. */}
         <View style={styles.recapLegend}>
