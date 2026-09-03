@@ -4,7 +4,9 @@ import { Circle, G, Svg } from 'react-native-svg';
 
 import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type AttributeArc, type RingSize } from '@/components/attributeArcs';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
+import { decorativeGlow } from '@/design/decorativeGlow';
 import { attributeColor, attributeLabel, color, opacity, radius, space, type } from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import type { Attribute } from '@/design/tokens';
 
 type AttributeRingProps = {
@@ -47,6 +49,7 @@ export function AttributeRing({ attributes, vitality, size = 'inline', children,
   const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringGeometry(size);
   const typeScale = size === 'hero' ? type.display : type.title;
   const fontSize = vitalityFontSize(vitality, innerDiameter, typeScale.fontSize);
+  const halo = decorativeGlow('soft', useReducedMotion());
 
   return (
     <View style={styles.wrapper}>
@@ -59,7 +62,14 @@ export function AttributeRing({ attributes, vitality, size = 'inline', children,
         <G transform={`rotate(-90 ${origin} ${origin})`}>
           {children ??
             arcsOf(attributes).map((arc) => (
-              <Arc key={arc.attribute} arc={arc} radius={ringRadius} origin={origin} strokeWidth={strokeWidth} />
+              <Arc
+                key={arc.attribute}
+                arc={arc}
+                radius={ringRadius}
+                origin={origin}
+                strokeWidth={strokeWidth}
+                halo={halo}
+              />
             ))}
         </G>
       </Svg>
@@ -74,10 +84,16 @@ export function AttributeRing({ attributes, vitality, size = 'inline', children,
   );
 }
 
-type ArcProps = { arc: AttributeArc; radius: number; origin: number; strokeWidth: number };
+type ArcProps = {
+  arc: AttributeArc;
+  radius: number;
+  origin: number;
+  strokeWidth: number;
+  halo: ReturnType<typeof decorativeGlow>;
+};
 
 /** Un arc statique — la géométrie du trait vient d'`arcStroke`, partagée avec l'anneau animé. */
-function Arc({ arc, radius: arcRadius, origin, strokeWidth }: ArcProps) {
+function Arc({ arc, radius: arcRadius, origin, strokeWidth, halo }: ArcProps) {
   const { circumference, length, offset } = arcStroke(arc.from, arc.to, arcRadius, strokeWidth);
 
   // Une part réelle (voir `arcsOf`, qui a déjà écarté les parts nulles) peut être trop fine
@@ -90,17 +106,35 @@ function Arc({ arc, radius: arcRadius, origin, strokeWidth }: ArcProps) {
   }
 
   return (
-    <Circle
-      cx={origin}
-      cy={origin}
-      r={arcRadius}
-      stroke={attributeColor[arc.attribute]}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      fill="none"
-      strokeDasharray={`${length} ${circumference - length}`}
-      strokeDashoffset={offset}
-    />
+    <>
+      {/* Les deux tracés lisent exactement la même géométrie nette : élargir la lueur ne
+          raccourcit ni ne décale l'arc qu'elle entoure. */}
+      {halo === undefined ? null : (
+        <Circle
+          cx={origin}
+          cy={origin}
+          r={arcRadius}
+          stroke={attributeColor[arc.attribute]}
+          strokeWidth={strokeWidth + halo.spread}
+          strokeOpacity={halo.opacity}
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={`${length} ${circumference - length}`}
+          strokeDashoffset={offset}
+        />
+      )}
+      <Circle
+        cx={origin}
+        cy={origin}
+        r={arcRadius}
+        stroke={attributeColor[arc.attribute]}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        fill="none"
+        strokeDasharray={`${length} ${circumference - length}`}
+        strokeDashoffset={offset}
+      />
+    </>
   );
 }
 

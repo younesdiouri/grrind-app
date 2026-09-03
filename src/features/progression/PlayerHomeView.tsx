@@ -18,7 +18,9 @@ import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
+import { decorativeGlow } from '@/design/decorativeGlow';
 import { attributeColor, color, curve, duration, radius, space, type } from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
   formatDistance,
@@ -66,6 +68,7 @@ export function LevelCard({ progression }: { progression: Progression }) {
   const filled = total === 0 ? 1 : progression.xpIntoLevel / total;
 
   const progress = useSharedValue(0);
+  const halo = decorativeGlow('soft', useReducedMotion());
 
   const play = () => {
     progress.value = 0;
@@ -85,7 +88,7 @@ export function LevelCard({ progression }: { progression: Progression }) {
   });
 
   return (
-    <View style={styles.level} onLayout={play}>
+    <View style={[styles.level, halo === undefined ? undefined : { boxShadow: halo.boxShadow }]} onLayout={play}>
       {/* Le niveau devant, le cumul à droite : c'est le niveau qu'on vient voir, et le
           total qui le justifie. Le titre porté se range sous le total parce qu'il se gagne
           par l'XP, pas par le palier. */}
@@ -190,6 +193,7 @@ export function AttributeCard({
   const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
 
   const progress = useSharedValue(0);
+  const halo = decorativeGlow('soft', useReducedMotion());
 
   const play = () => {
     progress.value = 0;
@@ -221,7 +225,7 @@ export function AttributeCard({
           }
         >
           {staticArcs.map((arc) => (
-            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} />
+            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} halo={halo} />
           ))}
         </AttributeRing>
 
@@ -282,10 +286,12 @@ function GrowingArc({
   arc,
   progress,
   geometry,
+  halo,
 }: {
   arc: AttributeArc;
   progress: SharedValue<number>;
   geometry: RingGeometry;
+  halo: ReturnType<typeof decorativeGlow>;
 }) {
   const animatedProps = useAnimatedProps(() => {
     const to = interpolate(progress.value, [0, 1], [arc.from, arc.to], Extrapolation.CLAMP);
@@ -295,16 +301,31 @@ function GrowingArc({
   });
 
   return (
-    <AnimatedCircle
-      cx={geometry.origin}
-      cy={geometry.origin}
-      r={geometry.radius}
-      stroke={attributeColor[arc.attribute]}
-      strokeWidth={geometry.strokeWidth}
-      strokeLinecap="round"
-      fill="none"
-      animatedProps={animatedProps}
-    />
+    <>
+      {halo === undefined ? null : (
+        <AnimatedCircle
+          cx={geometry.origin}
+          cy={geometry.origin}
+          r={geometry.radius}
+          stroke={attributeColor[arc.attribute]}
+          strokeWidth={geometry.strokeWidth + halo.spread}
+          strokeOpacity={halo.opacity}
+          strokeLinecap="round"
+          fill="none"
+          animatedProps={animatedProps}
+        />
+      )}
+      <AnimatedCircle
+        cx={geometry.origin}
+        cy={geometry.origin}
+        r={geometry.radius}
+        stroke={attributeColor[arc.attribute]}
+        strokeWidth={geometry.strokeWidth}
+        strokeLinecap="round"
+        fill="none"
+        animatedProps={animatedProps}
+      />
+    </>
   );
 }
 

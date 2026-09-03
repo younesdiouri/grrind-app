@@ -26,6 +26,7 @@ import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
+import { decorativeGlow } from '@/design/decorativeGlow';
 import {
   attributeColor,
   color,
@@ -40,6 +41,7 @@ import {
   xpNoCreditReasonLabel,
   type Attribute,
 } from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import { formatDuration } from '@/features/progression/format';
 import {
   buildTimeline,
@@ -123,6 +125,9 @@ export function SyncSummaryView({
 }) {
   const timeline = useMemo(() => buildTimeline(summary), [summary]);
   const clock = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const eventGlow = decorativeGlow('lit', reducedMotion);
+  const levelGlow = decorativeGlow('flare', reducedMotion);
 
   /**
    * La séquence est-elle arrivée au bout.
@@ -253,7 +258,16 @@ export function SyncSummaryView({
           non trois animations à la suite. */}
       <Animated.View style={counterStyle}>
         <AnimatedTextInput
-          style={[styles.counter, nothingCredited && styles.counterQuiet]}
+          style={[
+            styles.counter,
+            nothingCredited && styles.counterQuiet,
+            eventGlow === undefined
+              ? undefined
+              : {
+                  textShadowColor: eventGlow.textShadowColor,
+                  textShadowRadius: eventGlow.textShadowRadius,
+                },
+          ]}
           editable={false}
           animatedProps={counterProps}
           defaultValue="0"
@@ -299,6 +313,7 @@ export function SyncSummaryView({
             timeline={timeline}
             segment={segment}
             workout={summary.imported[segment.workout]}
+            halo={eventGlow}
           />
         ))}
 
@@ -317,6 +332,7 @@ export function SyncSummaryView({
               timeline={timeline}
               segment={segment}
               workout={summary.imported[segment.workout]}
+              halo={levelGlow}
             />
           ))}
 
@@ -500,11 +516,13 @@ function AttributeStage({
   timeline,
   segment,
   workout,
+  halo,
 }: {
   clock: Clock;
   timeline: Timeline;
   segment: Segment;
   workout: RewardSummary;
+  halo: ReturnType<typeof decorativeGlow>;
 }) {
   const index = segment.workout;
   const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index);
@@ -567,7 +585,14 @@ function AttributeStage({
         }
       >
         {ATTRIBUTE_ORDER.map((attribute) => (
-          <LiveArc key={attribute} attribute={attribute} clock={clock} timeline={timeline} geometry={geometry} />
+          <LiveArc
+            key={attribute}
+            attribute={attribute}
+            clock={clock}
+            timeline={timeline}
+            geometry={geometry}
+            halo={halo}
+          />
         ))}
       </AttributeRing>
     </Animated.View>
@@ -586,11 +611,13 @@ function LiveArc({
   clock,
   timeline,
   geometry,
+  halo,
 }: {
   attribute: Attribute;
   clock: Clock;
   timeline: Timeline;
   geometry: RingGeometry;
+  halo: ReturnType<typeof decorativeGlow>;
 }) {
   const animatedProps = useAnimatedProps(() => {
     const live = {
@@ -631,16 +658,31 @@ function LiveArc({
   });
 
   return (
-    <AnimatedCircle
-      cx={geometry.origin}
-      cy={geometry.origin}
-      r={geometry.radius}
-      stroke={attributeColor[attribute]}
-      strokeWidth={geometry.strokeWidth}
-      strokeLinecap="round"
-      fill="none"
-      animatedProps={animatedProps}
-    />
+    <>
+      {halo === undefined ? null : (
+        <AnimatedCircle
+          cx={geometry.origin}
+          cy={geometry.origin}
+          r={geometry.radius}
+          stroke={attributeColor[attribute]}
+          strokeWidth={geometry.strokeWidth + halo.spread}
+          strokeOpacity={halo.opacity}
+          strokeLinecap="round"
+          fill="none"
+          animatedProps={animatedProps}
+        />
+      )}
+      <AnimatedCircle
+        cx={geometry.origin}
+        cy={geometry.origin}
+        r={geometry.radius}
+        stroke={attributeColor[attribute]}
+        strokeWidth={geometry.strokeWidth}
+        strokeLinecap="round"
+        fill="none"
+        animatedProps={animatedProps}
+      />
+    </>
   );
 }
 
@@ -660,11 +702,13 @@ function LevelStage({
   timeline,
   segment,
   workout,
+  halo,
 }: {
   clock: Clock;
   timeline: Timeline;
   segment: Segment;
   workout: RewardSummary;
+  halo: ReturnType<typeof decorativeGlow>;
 }) {
   const index = segment.workout;
   const levels = timeline.beats.filter((beat) => beat.kind === 'level' && beat.workout === index);
@@ -699,6 +743,7 @@ function LevelStage({
           starts={levels.map((beat) => beat.at)}
           ends={levels.map((beat) => beat.until)}
           values={workout.level.reached}
+          halo={halo}
         />
       ) : null}
 
@@ -724,11 +769,13 @@ function LevelFlip({
   starts,
   ends,
   values,
+  halo,
 }: {
   clock: Clock;
   starts: number[];
   ends: number[];
   values: number[];
+  halo: ReturnType<typeof decorativeGlow>;
 }) {
   /** Le palier en cours : le dernier dont l'instant est passé. */
   const current = (at: number) => {
@@ -760,10 +807,17 @@ function LevelFlip({
   });
 
   return (
-    <Animated.View style={[styles.flip, style]}>
+    <Animated.View
+      style={[styles.flip, style, halo === undefined ? undefined : { boxShadow: halo.boxShadow }]}
+    >
       <Text style={styles.flipLabel}>NIVEAU</Text>
       <AnimatedTextInput
-        style={styles.flipValue}
+        style={[
+          styles.flipValue,
+          halo === undefined
+            ? undefined
+            : { textShadowColor: halo.textShadowColor, textShadowRadius: halo.textShadowRadius },
+        ]}
         editable={false}
         animatedProps={valueProps}
         defaultValue={`${values[0]}`}

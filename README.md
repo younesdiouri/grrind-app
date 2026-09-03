@@ -111,7 +111,9 @@ npm test        # `node --test`, sans Expo ni appareil — les deux modules purs
 
 Les composants React Native sont la source de vérité ; les previews HTML en sont **dérivées**
 via `react-native-web`. L'inverse coûterait une traduction CSS → RN sur chaque composant, à vie :
-React Native n'a ni cascade, ni `flexDirection: row` par défaut, ni ombre portable.
+React Native n'a ni cascade ni `flexDirection: row` par défaut. Les halos restent explicitement
+tokenisés : `boxShadow` requiert la New Architecture et ne doit jamais devenir un effet implicite
+de toutes les surfaces.
 
 ```bash
 npm run previews         # src/design/previews.tsx → previews/*.html
@@ -120,8 +122,10 @@ npm run previews:check   # régénère, et échoue sur un diff — le même file
 
 Chaque fichier s'ouvre sur `<!-- @dsCard group="…" -->`, le marqueur qui range la carte dans le
 volet Design System à la synchronisation. Les tokens — couleurs, typographie, espacements,
-**durées et courbes** — vivent dans `src/design/tokens.ts` : aucune valeur en dur dans un
-composant. Les durées sortent du spike, mesurées sur un iPhone physique.
+**durées, courbes et halos** — vivent dans `src/design/tokens.ts` : aucune valeur en dur dans un
+composant. Les halos décoratifs respectent la préférence système « Réduire les animations » ;
+ils ne remplacent jamais une couleur sémantique lisible. Les durées sortent du spike, mesurées
+sur un iPhone physique.
 
 ## Le spike
 
