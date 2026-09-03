@@ -935,6 +935,11 @@ export interface components {
              * @example Europe/Paris
              */
             timezone: string;
+            /**
+             * @description Langue persistée du joueur, utilisée aussi pour ses notifications asynchrones.
+             * @enum {string}
+             */
+            locale: "en" | "fr";
             /** Format: date-time */
             registeredAt: string;
             /** @description Le titre porté, ou `null` si le joueur n'en a débloqué aucun ou n'en affiche aucun. */
@@ -942,9 +947,9 @@ export interface components {
             /** @description Le plus proche d'aboutir parmi ceux qui restent. `null` quand il les a tous. */
             nextTitle: components["schemas"]["PlayerTitle"] | null;
             /**
-             * @description Toutes les catégories connues, jamais seulement celles coupées (#132) — le
-             *     client lit l'état exact de chacune plutôt que de connaître le défaut. Clé =
-             *     valeur de `NotificationCategory`, valeur = activée.
+             * @description Toutes les catégories vivantes : le client lit l'état exact de chacune plutôt
+             *     que de connaître le défaut. Clé = valeur de `NotificationCategory`, valeur =
+             *     activée.
              * @example {
              *       "GUILD_ACTIVITY": true
              *     }
@@ -1331,6 +1336,12 @@ export interface components {
              * @example 30
              */
             priceCoins: number;
+            /**
+             * Format: uri
+             * @description URL absolue de l'image livrée par le serveur.
+             * @example https://api.grrind.app/game-images/placeholder.png
+             */
+            imageUrl: string;
         };
         /**
          * @description Un objet possédé (#30) — la même forme que `DroppedItem`, une seule clé de plus :
@@ -1381,7 +1392,7 @@ export interface components {
             /** @description Déjà possédé — l'achat serait refusé (`item-already-owned`). */
             owned: boolean;
             /**
-             * @description Le niveau qui débloque l'achat — `shop.minimum_level` dans `items.yaml`.
+             * @description Le niveau qui débloque l'achat — `shop.minimum_level` du catalogue DB publié.
              * @example 5
              */
             minimumLevel: number;
@@ -1389,7 +1400,7 @@ export interface components {
             unlocked: boolean;
         };
         /**
-         * @description `GET /api/shop` : l'étal entier — un objet par entrée d'`items.yaml` dont
+         * @description `GET /api/shop` : l'étal entier — un objet par entrée du catalogue DB publié dont
          *     `shop.available` vaut `true`. Les EPIC et LEGENDARY n'y figurent jamais, voir le
          *     docblock d'`ItemCatalog`. Le solde de pièces l'accompagne, comme sur `GET
          *     /api/inventory` : le même écran de bourse, il n'a pas à faire un second appel
@@ -1766,7 +1777,7 @@ export interface components {
          *
          *     **Le nom arrive traduit**, comme les titres : le client n'a pas de table de
          *     correspondance. `key` reste stable d'une locale à l'autre — c'est l'entrée du
-         *     catalogue (`combat.yaml`), pas une donnée d'affichage.
+         *     catalogue DB publié, pas une donnée d'affichage.
          */
         BattleEnemy: {
             /** @example SAND_JACKAL */
@@ -1834,7 +1845,7 @@ export interface components {
         };
         /**
          * @description Ce qu'une victoire a rapporté (#227) — persisté sur la ligne du combat, jamais
-         *     rejoué depuis la graine : le jour où `loot.yaml` est rééquilibré, rejouer un
+         *     rejoué depuis la graine : le jour où le catalogue DB de loot est rééquilibré, rejouer un
          *     vieux tirage sous les tables courantes rendrait un butin différent de celui que
          *     le joueur a vu tomber.
          *
@@ -2051,6 +2062,11 @@ export interface components {
             displayName: string | null;
             /** @default null */
             timezone: string | null;
+            /**
+             * @default null
+             * @enum {string|null}
+             */
+            locale: "en" | "fr" | null;
             /** @default [] */
             notificationPreferences: components["schemas"]["NotificationPreferenceRequest"][];
         };
@@ -2063,6 +2079,11 @@ export interface components {
             displayName: string;
             /** @default UTC */
             timezone: string;
+            /**
+             * @default null
+             * @enum {string|null}
+             */
+            locale: "en" | "fr" | null;
         };
         SocialSignInRequest: {
             /** @default  */
@@ -2073,6 +2094,11 @@ export interface components {
             codeVerifier: string | null;
             /** @default UTC */
             timezone: string;
+            /**
+             * @default null
+             * @enum {string|null}
+             */
+            locale: "en" | "fr" | null;
         };
         XpHistoryQuery: {
             /** @default null */
