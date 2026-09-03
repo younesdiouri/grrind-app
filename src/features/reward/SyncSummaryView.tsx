@@ -54,6 +54,7 @@ import {
   type SyncTotals,
   type XpNoCreditReason,
 } from './timeline';
+import { recapCards } from './recap';
 
 /**
  * L'écran du produit : le moment dopamine, désormais sur **un lot** de séances.
@@ -90,15 +91,6 @@ import {
  * Ce que ce composant **ne fait pas** : construire les rampes, ni dessiner. Les premières
  * vivent dans `timeline.ts`, le dessin dans le design system. Il ne garde que le mouvement.
  */
-/**
- * Combien de titres le bilan montre avant de les compter.
- *
- * Deux badges tiennent sous l'anneau sur un iPhone ; le troisième pousse les comptes hors de
- * l'écran. Un titre est un événement rare — en débloquer trois d'un coup veut dire qu'on
- * revient de vacances, et c'est exactement le lot où le bilan doit rester lisible.
- */
-const RECAP_TITLES = 2;
-
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -1052,10 +1044,9 @@ function soleReason(summary: SyncSummary): XpNoCreditReason | null {
  * ————— Il tient dans un écran, ou il choisit ————————————————————————————————————————————
  *
  * Les blocs sont empilés au même endroit exprès — une vue défilante se battrait avec le geste
- * qui saute la séquence. Un lot peut débloquer plus de titres — ou faire tomber plus
- * d'objets — qu'il n'y a de place : ils se comptent alors au lieu de s'empiler, même geste et
- * même seuil que les titres (`RECAP_TITLES`) — parce qu'un bilan illisible ne vaut pas mieux
- * qu'un écran vide.
+ * qui saute la séquence. Titres et objets se partagent donc un même budget de cartes ; tous
+ * ceux qui ne tiennent pas se comptent au lieu de s'empiler, parce qu'un bilan illisible ne
+ * vaut pas mieux qu'un écran vide.
  *
  * L'anneau est celui du design system, sans enfant : ses arcs sont **statiques** ici, et c'est
  * le point — la redistribution vient d'avoir lieu sous les yeux du joueur, la rejouer en
@@ -1102,14 +1093,7 @@ function Recap({
   };
 
   const climbed = totals.levelAfter > totals.levelBefore;
-  // Deux badges tiennent, trois débordent. Au-delà, on compte — voir le docblock.
-  const shown = titles.slice(0, RECAP_TITLES);
-  const beyond = titles.length - shown.length;
-
-  // Même geste, même seuil — deux cartes d'objet tiennent, la troisième pousse le compte hors
-  // de l'écran (#226).
-  const shownLoot = loot.slice(0, RECAP_TITLES);
-  const beyondLoot = loot.length - shownLoot.length;
+  const recap = recapCards(titles, loot);
 
   // La bourse ne bouge pas sur un lot qui n'a rien fait tomber : « 40 → 40 pièces » dirait un
   // mouvement qui n'a pas eu lieu, la même distinction que « climbed »/« stay » plus haut.
@@ -1141,23 +1125,25 @@ function Recap({
         </Text>
       </Text>
 
-      {shown.map((title) => (
+      {recap.titles.map((title) => (
         <TitleBadge key={title.id} name={title.name} caption="Titre débloqué" />
       ))}
-      {beyond > 0 ? (
+      {recap.remainingTitles > 0 ? (
         <Text style={styles.label}>
-          et {beyond} autre{beyond > 1 ? 's' : ''} titre{beyond > 1 ? 's' : ''}
+          et {recap.remainingTitles} autre{recap.remainingTitles > 1 ? 's' : ''} titre
+          {recap.remainingTitles > 1 ? 's' : ''}
         </Text>
       ) : null}
 
       {/* Le loot du lot entier, condensé compris — aucun objet ne s'y perd, même celui qui
           n'a jamais rejoué son propre battement (#226). */}
-      {shownLoot.map((item, position) => (
+      {recap.loot.map((item, position) => (
         <ItemCard key={`${item.key}-${position}`} item={item} />
       ))}
-      {beyondLoot > 0 ? (
+      {recap.remainingLoot > 0 ? (
         <Text style={styles.label}>
-          et {beyondLoot} autre{beyondLoot > 1 ? 's' : ''} objet{beyondLoot > 1 ? 's' : ''}
+          et {recap.remainingLoot} autre{recap.remainingLoot > 1 ? 's' : ''} objet
+          {recap.remainingLoot > 1 ? 's' : ''}
         </Text>
       ) : null}
 
