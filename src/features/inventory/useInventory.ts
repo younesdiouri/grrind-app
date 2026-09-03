@@ -3,11 +3,10 @@ import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { queryOrFailure } from '@/api/queryOrFailure';
 import type { Failure } from '@/features/auth/problems';
+import { INVENTORY_QUERY_KEY } from './inventoryCache.ts';
 import type { Inventory } from './inventory.ts';
 
-/** La clé unique du sac — aucun paramètre, comme la route : un inventaire n'est jamais celui
- *  d'un autre, `#[CurrentUser]` côté serveur. */
-export const INVENTORY_QUERY_KEY = ['inventory'] as const;
+export { INVENTORY_QUERY_KEY } from './inventoryCache.ts';
 
 async function fetchInventory(): Promise<Inventory> {
   return queryOrFailure(() => api.GET('/api/inventory'));

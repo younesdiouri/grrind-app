@@ -31,6 +31,11 @@ type BagRowProps = {
  * écran, et un solde qu'on ne voit qu'en ouvrant est un solde qu'on oublie.
  */
 export function BagRow({ summary, onPress, glow }: BagRowProps) {
+  const accessibilityLabel =
+    summary === undefined
+      ? 'Sac et bourse'
+      : `Sac et bourse, ${summary.itemCount} objet${summary.itemCount > 1 ? 's' : ''}, ${summary.coins} pièce${summary.coins > 1 ? 's' : ''}`;
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -40,7 +45,7 @@ export function BagRow({ summary, onPress, glow }: BagRowProps) {
       ]}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel="Sac et bourse"
+      accessibilityLabel={accessibilityLabel}
       testID="bag-row"
     >
       <View style={styles.identity}>
