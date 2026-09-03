@@ -83,14 +83,13 @@ describe('la géométrie d’un cercle de vie', () => {
     const visible = decorativeGlow('lit', false);
     const unknown = decorativeGlow('lit', null);
     const reduced = decorativeGlow('lit', true);
-    const viewportFor = (_halo: ReturnType<typeof decorativeGlow>) => ringViewport('hero', 'lit');
-    const optInViewport = viewportFor(visible);
+    const optInViewport = ringViewport('hero', visible);
 
-    assert.ok(visible !== undefined);
-    assert.equal(unknown, undefined);
-    assert.equal(reduced, undefined);
-    assert.deepEqual(viewportFor(unknown), optInViewport);
-    assert.deepEqual(viewportFor(reduced), optInViewport);
+    assert.equal(visible.effect, glow.lit);
+    assert.equal(unknown.effect, undefined);
+    assert.equal(reduced.effect, undefined);
+    assert.deepEqual(ringViewport('hero', unknown), optInViewport);
+    assert.deepEqual(ringViewport('hero', reduced), optInViewport);
     assert.notDeepEqual(ringViewport('hero'), optInViewport);
   });
 });

@@ -5,7 +5,7 @@ import { Circle, G, Svg } from 'react-native-svg';
 import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringViewport, type AttributeArc, type RingSize } from '@/components/attributeArcs';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { attributeColor, attributeLabel, color, opacity, radius, space, type } from '@/design/tokens';
-import { decorativeGlow, type GlowTier } from '@/design/decorativeGlow';
+import type { DecorativeGlow } from '@/design/decorativeGlow';
 import type { Attribute } from '@/design/tokens';
 
 type AttributeRingProps = {
@@ -37,10 +37,8 @@ type AttributeRingProps = {
    * défaut quand personne ne le fournit.
    */
   center?: ReactNode;
-  /** La lumière est explicite : un profil tiers ne peut pas commencer à briller par défaut. */
-  halo?: ReturnType<typeof decorativeGlow>;
-  /** Réserve le viewport du tier opt-in, même si la préférence masque son halo. */
-  haloTier?: GlowTier;
+  /** La lumière est explicite : tier, viewport et effet ne peuvent pas diverger. */
+  glow?: DecorativeGlow;
 };
 
 /**
@@ -48,8 +46,8 @@ type AttributeRingProps = {
  * le total, Vitality en chiffre au centre — la seule disposition où le dessin démontre la
  * valeur qu'il affiche (#69).
  */
-export function AttributeRing({ attributes, vitality, size = 'inline', children, center, halo, haloTier }: AttributeRingProps) {
-  const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringViewport(size, haloTier);
+export function AttributeRing({ attributes, vitality, size = 'inline', children, center, glow }: AttributeRingProps) {
+  const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringViewport(size, glow);
   const typeScale = size === 'hero' ? type.display : type.title;
   const fontSize = vitalityFontSize(vitality, innerDiameter, typeScale.fontSize);
 
@@ -70,7 +68,7 @@ export function AttributeRing({ attributes, vitality, size = 'inline', children,
                 radius={ringRadius}
                 origin={origin}
                 strokeWidth={strokeWidth}
-                halo={halo}
+                glow={glow}
               />
             ))}
         </G>
@@ -91,12 +89,13 @@ type ArcProps = {
   radius: number;
   origin: number;
   strokeWidth: number;
-  halo: ReturnType<typeof decorativeGlow>;
+  glow?: DecorativeGlow;
 };
 
 /** Un arc statique — la géométrie du trait vient d'`arcStroke`, partagée avec l'anneau animé. */
-function Arc({ arc, radius: arcRadius, origin, strokeWidth, halo }: ArcProps) {
+function Arc({ arc, radius: arcRadius, origin, strokeWidth, glow }: ArcProps) {
   const presentation = arcPresentation(arc.from, arc.to, arcRadius, strokeWidth);
+  const effect = glow?.effect;
 
   // Une part réelle (voir `arcsOf`, qui a déjà écarté les parts nulles) peut être trop fine
   // pour survivre à la compensation des bouts ronds : rien à dessiner n'est pas la même chose
@@ -111,14 +110,14 @@ function Arc({ arc, radius: arcRadius, origin, strokeWidth, halo }: ArcProps) {
     <>
       {/* Les deux tracés lisent exactement la même géométrie nette : élargir la lueur ne
           raccourcit ni ne décale l'arc qu'elle entoure. */}
-      {halo === undefined ? null : (
+      {effect === undefined ? null : (
         <Circle
           cx={origin}
           cy={origin}
           r={arcRadius}
           stroke={attributeColor[arc.attribute]}
-          strokeWidth={strokeWidth + halo.spread}
-          strokeOpacity={halo.opacity}
+          strokeWidth={strokeWidth + effect.spread}
+          strokeOpacity={effect.opacity}
           strokeLinecap={presentation.strokeLinecap}
           fill="none"
           strokeDasharray={presentation.strokeDasharray}

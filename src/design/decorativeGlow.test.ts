@@ -6,16 +6,16 @@ import { decorativeGlow } from './decorativeGlow.ts';
 
 describe('les halos décoratifs', () => {
   it('conserve les trois intensités comme vocabulaire fermé', () => {
-    assert.equal(decorativeGlow('soft', false), glow.soft);
-    assert.equal(decorativeGlow('lit', false), glow.lit);
-    assert.equal(decorativeGlow('flare', false), glow.flare);
+    assert.deepEqual(decorativeGlow('soft', false), { tier: 'soft', effect: glow.soft });
+    assert.deepEqual(decorativeGlow('lit', false), { tier: 'lit', effect: glow.lit });
+    assert.deepEqual(decorativeGlow('flare', false), { tier: 'flare', effect: glow.flare });
   });
 
   it('disparaît avec la préférence système sans masquer la couleur sémantique', () => {
-    assert.equal(decorativeGlow('soft', true), undefined);
+    assert.deepEqual(decorativeGlow('soft', true), { tier: 'soft', effect: undefined });
   });
 
   it('reste coupé tant que la préférence système est inconnue ou inaccessible', () => {
-    assert.equal(decorativeGlow('soft', null), undefined);
+    assert.deepEqual(decorativeGlow('soft', null), { tier: 'soft', effect: undefined });
   });
 });

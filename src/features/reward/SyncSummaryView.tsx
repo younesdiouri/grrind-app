@@ -26,7 +26,7 @@ import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
-import { decorativeGlow } from '@/design/decorativeGlow';
+import { decorativeGlow, type DecorativeGlow } from '@/design/decorativeGlow';
 import {
   attributeColor,
   color,
@@ -127,7 +127,7 @@ export function SyncSummaryView({
   const clock = useSharedValue(0);
   const reducedMotion = useReducedMotion();
   const nothingCredited = timeline.totals === null;
-  const eventGlow = nothingCredited ? undefined : decorativeGlow('lit', reducedMotion);
+  const eventGlow = decorativeGlow('lit', nothingCredited ? true : reducedMotion);
   const levelGlow = decorativeGlow('flare', reducedMotion);
 
   /**
@@ -260,11 +260,11 @@ export function SyncSummaryView({
           style={[
             styles.counter,
             nothingCredited && styles.counterQuiet,
-            eventGlow === undefined
+            eventGlow.effect === undefined
               ? undefined
               : {
-                  textShadowColor: eventGlow.textShadowColor,
-                  textShadowRadius: eventGlow.textShadowRadius,
+                  textShadowColor: eventGlow.effect.textShadowColor,
+                  textShadowRadius: eventGlow.effect.textShadowRadius,
                 },
           ]}
           editable={false}
@@ -312,7 +312,7 @@ export function SyncSummaryView({
             timeline={timeline}
             segment={segment}
             workout={summary.imported[segment.workout]}
-            halo={eventGlow}
+            glow={eventGlow}
           />
         ))}
 
@@ -331,7 +331,7 @@ export function SyncSummaryView({
               timeline={timeline}
               segment={segment}
               workout={summary.imported[segment.workout]}
-              halo={levelGlow}
+              glow={levelGlow}
             />
           ))}
 
@@ -366,7 +366,7 @@ export function SyncSummaryView({
           <Recap
             clock={clock}
             at={recap.at}
-            halo={eventGlow}
+            glow={eventGlow}
             totals={timeline.totals}
             attributes={last.attributes}
             titles={summary.imported.flatMap((workout) => workout.titlesUnlocked)}
@@ -516,17 +516,17 @@ function AttributeStage({
   timeline,
   segment,
   workout,
-  halo,
+  glow,
 }: {
   clock: Clock;
   timeline: Timeline;
   segment: Segment;
   workout: RewardSummary;
-  halo: ReturnType<typeof decorativeGlow>;
+  glow: DecorativeGlow;
 }) {
   const index = segment.workout;
   const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index);
-  const geometry = ringViewport('hero', 'lit');
+  const geometry = ringViewport('hero', glow);
   const fontSize = vitalityFontSize(workout.attributes.vitality.after, geometry.innerDiameter, type.display.fontSize);
 
   // La fenêtre est lue **avant** le worklet, jamais dedans : un `beat` absent (#80) doit
@@ -575,8 +575,7 @@ function AttributeStage({
         }}
         vitality={workout.attributes.vitality.after}
         size="hero"
-        halo={halo}
-        haloTier="lit"
+        glow={glow}
         center={
           <AnimatedTextInput
             style={[type.display, styles.vitality, { fontSize }]}
@@ -593,7 +592,7 @@ function AttributeStage({
             clock={clock}
             timeline={timeline}
             geometry={geometry}
-            halo={halo}
+            glow={glow}
           />
         ))}
       </AttributeRing>
@@ -613,13 +612,13 @@ function LiveArc({
   clock,
   timeline,
   geometry,
-  halo,
+  glow,
 }: {
   attribute: Attribute;
   clock: Clock;
   timeline: Timeline;
   geometry: RingGeometry;
-  halo: ReturnType<typeof decorativeGlow>;
+  glow: DecorativeGlow;
 }) {
   const animatedProps = useAnimatedProps(() => {
     const live = {
@@ -659,14 +658,14 @@ function LiveArc({
 
   return (
     <>
-      {halo === undefined ? null : (
+      {glow.effect === undefined ? null : (
         <AnimatedCircle
           cx={geometry.origin}
           cy={geometry.origin}
           r={geometry.radius}
           stroke={attributeColor[attribute]}
-          strokeWidth={geometry.strokeWidth + halo.spread}
-          strokeOpacity={halo.opacity}
+          strokeWidth={geometry.strokeWidth + glow.effect.spread}
+          strokeOpacity={glow.effect.opacity}
           animatedProps={animatedProps}
           fill="none"
         />
@@ -700,13 +699,13 @@ function LevelStage({
   timeline,
   segment,
   workout,
-  halo,
+  glow,
 }: {
   clock: Clock;
   timeline: Timeline;
   segment: Segment;
   workout: RewardSummary;
-  halo: ReturnType<typeof decorativeGlow>;
+  glow: DecorativeGlow;
 }) {
   const index = segment.workout;
   const levels = timeline.beats.filter((beat) => beat.kind === 'level' && beat.workout === index);
@@ -741,7 +740,7 @@ function LevelStage({
           starts={levels.map((beat) => beat.at)}
           ends={levels.map((beat) => beat.until)}
           values={workout.level.reached}
-          halo={halo}
+          glow={glow}
         />
       ) : null}
 
@@ -767,13 +766,13 @@ function LevelFlip({
   starts,
   ends,
   values,
-  halo,
+  glow,
 }: {
   clock: Clock;
   starts: number[];
   ends: number[];
   values: number[];
-  halo: ReturnType<typeof decorativeGlow>;
+  glow: DecorativeGlow;
 }) {
   /** Le palier en cours : le dernier dont l'instant est passé. */
   const current = (at: number) => {
@@ -806,15 +805,15 @@ function LevelFlip({
 
   return (
     <Animated.View
-      style={[styles.flip, style, halo === undefined ? undefined : { boxShadow: halo.boxShadow }]}
+      style={[styles.flip, style, glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }]}
     >
       <Text style={styles.flipLabel}>NIVEAU</Text>
       <AnimatedTextInput
         style={[
           styles.flipValue,
-          halo === undefined
+          glow.effect === undefined
             ? undefined
-            : { textShadowColor: halo.textShadowColor, textShadowRadius: halo.textShadowRadius },
+            : { textShadowColor: glow.effect.textShadowColor, textShadowRadius: glow.effect.textShadowRadius },
         ]}
         editable={false}
         animatedProps={valueProps}
@@ -1064,7 +1063,7 @@ function soleReason(summary: SyncSummary): XpNoCreditReason | null {
 function Recap({
   clock,
   at,
-  halo,
+  glow,
   totals,
   attributes,
   titles,
@@ -1075,7 +1074,7 @@ function Recap({
 }: {
   clock: Clock;
   at: number;
-  halo: ReturnType<typeof decorativeGlow>;
+  glow: DecorativeGlow;
   totals: SyncTotals;
   attributes: RewardSummary['attributes'];
   titles: RewardSummary['titlesUnlocked'];
@@ -1118,7 +1117,7 @@ function Recap({
   return (
     <Animated.View style={[styles.block, styles.podium, style]}>
       <View style={styles.recapRing}>
-        <AttributeRing attributes={arcs} vitality={vitality} size="hero" halo={halo} haloTier="lit" />
+        <AttributeRing attributes={arcs} vitality={vitality} size="hero" glow={glow} />
         {/* Même disposition que la carte d'accueil, et pour la même raison : la légende prend
             la largeur qui reste, sinon ses libellés se replient lettre par lettre. */}
         <View style={styles.recapLegend}>

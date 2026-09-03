@@ -151,7 +151,7 @@ export default function InventoryScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.purse,
-              purseGlow === undefined ? undefined : { boxShadow: purseGlow.boxShadow },
+              purseGlow.effect === undefined ? undefined : { boxShadow: purseGlow.effect.boxShadow },
               pressed && styles.pressed,
             ]}
             onPress={() => router.push('/bourse')}
