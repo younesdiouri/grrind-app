@@ -45,6 +45,7 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { formatDuration } from '@/features/progression/format';
 import {
   buildTimeline,
+  hasAwardedXp,
   type Beat,
   type DroppedItem,
   type RewardSummary,
@@ -127,7 +128,7 @@ export function SyncSummaryView({
   const clock = useSharedValue(0);
   const reducedMotion = useReducedMotion();
   const nothingCredited = timeline.totals === null;
-  const eventGlow = decorativeGlow('lit', nothingCredited ? true : reducedMotion);
+  const eventGlow = decorativeGlow('lit', hasAwardedXp(timeline.totals) ? reducedMotion : true);
   const levelGlow = decorativeGlow('flare', reducedMotion);
 
   /**

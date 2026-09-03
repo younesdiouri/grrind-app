@@ -1,9 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CoinAmount } from '@/components/CoinAmount';
-import { decorativeGlow, type DecorativeGlow } from '@/design/decorativeGlow';
+import type { DecorativeGlow } from '@/design/decorativeGlow';
 import { color, opacity, radius, space, type } from '@/design/tokens';
-import { useReducedMotion } from '@/design/useReducedMotion';
 
 type BagRowProps = {
   /**
@@ -16,8 +15,8 @@ type BagRowProps = {
    */
   summary?: { coins: number; itemCount: number };
   onPress: () => void;
-  /** La preview choisit un état lumineux concret ; l'app lit toujours la préférence système. */
-  glow?: DecorativeGlow;
+  /** Déjà résolu par l'écran ; la ligne reste pure, y compris dans la preview SSR. */
+  glow: DecorativeGlow;
 };
 
 /**
@@ -31,10 +30,7 @@ type BagRowProps = {
  * Elle porte la bourse autant que le sac : les deux vivent dans la même réponse et sur le même
  * écran, et un solde qu'on ne voit qu'en ouvrant est un solde qu'on oublie.
  */
-export function BagRow({ summary, onPress, glow: suppliedGlow }: BagRowProps) {
-  const systemGlow = decorativeGlow('soft', useReducedMotion());
-  const glow = suppliedGlow ?? systemGlow;
-
+export function BagRow({ summary, onPress, glow }: BagRowProps) {
   return (
     <Pressable
       style={({ pressed }) => [

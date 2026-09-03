@@ -2,7 +2,28 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { glow } from './tokens.ts';
-import { decorativeGlow } from './decorativeGlow.ts';
+import { decorativeGlow, type DecorativeGlow } from './decorativeGlow.ts';
+
+/** Le compilateur est le seul endroit où les couples impossibles se prouvent. */
+function assertGlowTypes() {
+  const soft = decorativeGlow('soft', false);
+  const exactSoft: DecorativeGlow<'soft'> = soft;
+  const anyTier: DecorativeGlow = soft;
+
+  void exactSoft;
+  void anyTier;
+
+  // @ts-expect-error Le vert ne peut pas se faire passer pour le tier cyan.
+  const incoherent: DecorativeGlow = { tier: 'soft', effect: glow.lit };
+  // @ts-expect-error Un appelant ne peut pas changer le tier après sa résolution.
+  soft.tier = 'lit';
+  // @ts-expect-error Un appelant ne peut pas allumer un effet après Réduire les animations.
+  decorativeGlow('soft', true).effect = glow.soft;
+
+  void incoherent;
+}
+
+void assertGlowTypes;
 
 describe('les halos décoratifs', () => {
   it('conserve les trois intensités comme vocabulaire fermé', () => {

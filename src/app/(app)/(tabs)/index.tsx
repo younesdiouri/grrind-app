@@ -12,7 +12,9 @@ import {
 
 import { BagRow } from '@/components/BagRow';
 import { Button } from '@/components/Button';
+import { decorativeGlow } from '@/design/decorativeGlow';
 import { color, radius, space, type } from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSyncStatus } from '@/features/health/useSync';
@@ -213,6 +215,7 @@ function PlayerHome({
  */
 function BagEntry() {
   const inventory = useInventory();
+  const glow = decorativeGlow('soft', useReducedMotion());
 
   return (
     <BagRow
@@ -222,6 +225,7 @@ function BagEntry() {
           : { coins: inventory.data.coins, itemCount: itemCount(inventory.data) }
       }
       onPress={() => router.push('/inventaire')}
+      glow={glow}
     />
   );
 }

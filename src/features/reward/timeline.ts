@@ -11,6 +11,11 @@ export type SkippedWorkout = SyncSummary['skipped'][number];
 /** Pourquoi une séance créditée n'a rien rapporté. `null` pour tout crédit normal. */
 export type XpNoCreditReason = NonNullable<RewardSummary['xp']['reason']>;
 
+/** Le halo vert suit le total XP que le compteur affiche, jamais le seul fait d'un import. */
+export function hasAwardedXp(totals: SyncTotals | null): boolean {
+  return totals !== null && totals.xpAwarded > 0;
+}
+
 /**
  * Le `SyncSummary` traduit en **une seule** timeline continue.
  *
