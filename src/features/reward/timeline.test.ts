@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { BEATS, buildTimeline, DETAILED_WORKOUTS, type Beat, type SyncSummary } from './timeline.ts';
+import { BEATS, buildTimeline, hasAwardedXp, DETAILED_WORKOUTS, type Beat, type SyncSummary } from './timeline.ts';
 
 /**
  * La timeline, éprouvée sur les **réponses réelles** du back.
@@ -158,6 +158,11 @@ describe('la timeline du SyncSummary', () => {
       const expected = span === 0 ? 1 : level.xpIntoLevelBefore / span;
 
       assert.ok(timeline.bar.output.every((fill) => fill === expected));
+    });
+
+    it('ne traite pas son zéro importé comme un gain XP à éclairer', () => {
+      assert.equal(hasAwardedXp(buildTimeline(marcheSansXp).totals), false);
+      assert.equal(hasAwardedXp(buildTimeline(unWorkout).totals), true);
     });
 
     it('se referme quand même sur un bilan : la séance a bien été comptée', () => {

@@ -16,7 +16,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type RingGeometry } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringViewport, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { CoinAmount } from '@/components/CoinAmount';
 import { CoinIcon } from '@/components/CoinIcon';
@@ -26,6 +26,7 @@ import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
+import { decorativeGlow, type DecorativeGlow } from '@/design/decorativeGlow';
 import {
   attributeColor,
   color,
@@ -40,9 +41,11 @@ import {
   xpNoCreditReasonLabel,
   type Attribute,
 } from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import { formatDuration } from '@/features/progression/format';
 import {
   buildTimeline,
+  hasAwardedXp,
   type Beat,
   type DroppedItem,
   type RewardSummary,
@@ -51,6 +54,7 @@ import {
   type SyncTotals,
   type XpNoCreditReason,
 } from './timeline';
+import { recapCards } from './recap';
 
 /**
  * L'écran du produit : le moment dopamine, désormais sur **un lot** de séances.
@@ -87,15 +91,6 @@ import {
  * Ce que ce composant **ne fait pas** : construire les rampes, ni dessiner. Les premières
  * vivent dans `timeline.ts`, le dessin dans le design system. Il ne garde que le mouvement.
  */
-/**
- * Combien de titres le bilan montre avant de les compter.
- *
- * Deux badges tiennent sous l'anneau sur un iPhone ; le troisième pousse les comptes hors de
- * l'écran. Un titre est un événement rare — en débloquer trois d'un coup veut dire qu'on
- * revient de vacances, et c'est exactement le lot où le bilan doit rester lisible.
- */
-const RECAP_TITLES = 2;
-
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -123,6 +118,10 @@ export function SyncSummaryView({
 }) {
   const timeline = useMemo(() => buildTimeline(summary), [summary]);
   const clock = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const nothingCredited = timeline.totals === null;
+  const eventGlow = decorativeGlow('lit', hasAwardedXp(timeline.totals) ? reducedMotion : true);
+  const levelGlow = decorativeGlow('flare', reducedMotion);
 
   /**
    * La séquence est-elle arrivée au bout.
@@ -147,8 +146,6 @@ export function SyncSummaryView({
    * plus une course, c'est un compte rendu. Il n'y a donc **pas de barre du tout** ; une
    * piste vide promettrait une course qui n'a pas eu lieu.
    */
-  const nothingCredited = timeline.totals === null;
-
   const play = () => {
     setDone(false);
     clock.value = 0;
@@ -253,7 +250,16 @@ export function SyncSummaryView({
           non trois animations à la suite. */}
       <Animated.View style={counterStyle}>
         <AnimatedTextInput
-          style={[styles.counter, nothingCredited && styles.counterQuiet]}
+          style={[
+            styles.counter,
+            nothingCredited && styles.counterQuiet,
+            eventGlow.effect === undefined
+              ? undefined
+              : {
+                  textShadowColor: eventGlow.effect.textShadowColor,
+                  textShadowRadius: eventGlow.effect.textShadowRadius,
+                },
+          ]}
           editable={false}
           animatedProps={counterProps}
           defaultValue="0"
@@ -299,6 +305,7 @@ export function SyncSummaryView({
             timeline={timeline}
             segment={segment}
             workout={summary.imported[segment.workout]}
+            glow={eventGlow}
           />
         ))}
 
@@ -317,6 +324,7 @@ export function SyncSummaryView({
               timeline={timeline}
               segment={segment}
               workout={summary.imported[segment.workout]}
+              glow={levelGlow}
             />
           ))}
 
@@ -351,6 +359,7 @@ export function SyncSummaryView({
           <Recap
             clock={clock}
             at={recap.at}
+            glow={eventGlow}
             totals={timeline.totals}
             attributes={last.attributes}
             titles={summary.imported.flatMap((workout) => workout.titlesUnlocked)}
@@ -500,15 +509,17 @@ function AttributeStage({
   timeline,
   segment,
   workout,
+  glow,
 }: {
   clock: Clock;
   timeline: Timeline;
   segment: Segment;
   workout: RewardSummary;
+  glow: DecorativeGlow;
 }) {
   const index = segment.workout;
   const beat = timeline.beats.find((b) => b.kind === 'attributes' && b.workout === index);
-  const geometry = ringGeometry('hero');
+  const geometry = ringViewport('hero', glow);
   const fontSize = vitalityFontSize(workout.attributes.vitality.after, geometry.innerDiameter, type.display.fontSize);
 
   // La fenêtre est lue **avant** le worklet, jamais dedans : un `beat` absent (#80) doit
@@ -557,6 +568,7 @@ function AttributeStage({
         }}
         vitality={workout.attributes.vitality.after}
         size="hero"
+        glow={glow}
         center={
           <AnimatedTextInput
             style={[type.display, styles.vitality, { fontSize }]}
@@ -567,7 +579,14 @@ function AttributeStage({
         }
       >
         {ATTRIBUTE_ORDER.map((attribute) => (
-          <LiveArc key={attribute} attribute={attribute} clock={clock} timeline={timeline} geometry={geometry} />
+          <LiveArc
+            key={attribute}
+            attribute={attribute}
+            clock={clock}
+            timeline={timeline}
+            geometry={geometry}
+            glow={glow}
+          />
         ))}
       </AttributeRing>
     </Animated.View>
@@ -586,11 +605,13 @@ function LiveArc({
   clock,
   timeline,
   geometry,
+  glow,
 }: {
   attribute: Attribute;
   clock: Clock;
   timeline: Timeline;
   geometry: RingGeometry;
+  glow: DecorativeGlow;
 }) {
   const animatedProps = useAnimatedProps(() => {
     const live = {
@@ -620,27 +641,38 @@ function LiveArc({
       ),
     };
     const arc = arcsOf(live).find((candidate) => candidate.attribute === attribute);
-    const { circumference, length, offset } = arcStroke(
+    return arcPresentation(
       arc?.from ?? 0,
       arc?.to ?? 0,
       geometry.radius,
       geometry.strokeWidth,
     );
-
-    return { strokeDasharray: `${length} ${circumference - length}`, strokeDashoffset: offset };
   });
 
   return (
-    <AnimatedCircle
-      cx={geometry.origin}
-      cy={geometry.origin}
-      r={geometry.radius}
-      stroke={attributeColor[attribute]}
-      strokeWidth={geometry.strokeWidth}
-      strokeLinecap="round"
-      fill="none"
-      animatedProps={animatedProps}
-    />
+    <>
+      {glow.effect === undefined ? null : (
+        <AnimatedCircle
+          cx={geometry.origin}
+          cy={geometry.origin}
+          r={geometry.radius}
+          stroke={attributeColor[attribute]}
+          strokeWidth={geometry.strokeWidth + glow.effect.spread}
+          strokeOpacity={glow.effect.opacity}
+          animatedProps={animatedProps}
+          fill="none"
+        />
+      )}
+      <AnimatedCircle
+        cx={geometry.origin}
+        cy={geometry.origin}
+        r={geometry.radius}
+        stroke={attributeColor[attribute]}
+        strokeWidth={geometry.strokeWidth}
+        animatedProps={animatedProps}
+        fill="none"
+      />
+    </>
   );
 }
 
@@ -660,11 +692,13 @@ function LevelStage({
   timeline,
   segment,
   workout,
+  glow,
 }: {
   clock: Clock;
   timeline: Timeline;
   segment: Segment;
   workout: RewardSummary;
+  glow: DecorativeGlow;
 }) {
   const index = segment.workout;
   const levels = timeline.beats.filter((beat) => beat.kind === 'level' && beat.workout === index);
@@ -699,6 +733,7 @@ function LevelStage({
           starts={levels.map((beat) => beat.at)}
           ends={levels.map((beat) => beat.until)}
           values={workout.level.reached}
+          glow={glow}
         />
       ) : null}
 
@@ -724,11 +759,13 @@ function LevelFlip({
   starts,
   ends,
   values,
+  glow,
 }: {
   clock: Clock;
   starts: number[];
   ends: number[];
   values: number[];
+  glow: DecorativeGlow;
 }) {
   /** Le palier en cours : le dernier dont l'instant est passé. */
   const current = (at: number) => {
@@ -760,10 +797,17 @@ function LevelFlip({
   });
 
   return (
-    <Animated.View style={[styles.flip, style]}>
+    <Animated.View
+      style={[styles.flip, style, glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }]}
+    >
       <Text style={styles.flipLabel}>NIVEAU</Text>
       <AnimatedTextInput
-        style={styles.flipValue}
+        style={[
+          styles.flipValue,
+          glow.effect === undefined
+            ? undefined
+            : { textShadowColor: glow.effect.textShadowColor, textShadowRadius: glow.effect.textShadowRadius },
+        ]}
         editable={false}
         animatedProps={valueProps}
         defaultValue={`${values[0]}`}
@@ -1000,10 +1044,9 @@ function soleReason(summary: SyncSummary): XpNoCreditReason | null {
  * ————— Il tient dans un écran, ou il choisit ————————————————————————————————————————————
  *
  * Les blocs sont empilés au même endroit exprès — une vue défilante se battrait avec le geste
- * qui saute la séquence. Un lot peut débloquer plus de titres — ou faire tomber plus
- * d'objets — qu'il n'y a de place : ils se comptent alors au lieu de s'empiler, même geste et
- * même seuil que les titres (`RECAP_TITLES`) — parce qu'un bilan illisible ne vaut pas mieux
- * qu'un écran vide.
+ * qui saute la séquence. Titres et objets se partagent donc un même budget de cartes ; tous
+ * ceux qui ne tiennent pas se comptent au lieu de s'empiler, parce qu'un bilan illisible ne
+ * vaut pas mieux qu'un écran vide.
  *
  * L'anneau est celui du design system, sans enfant : ses arcs sont **statiques** ici, et c'est
  * le point — la redistribution vient d'avoir lieu sous les yeux du joueur, la rejouer en
@@ -1012,6 +1055,7 @@ function soleReason(summary: SyncSummary): XpNoCreditReason | null {
 function Recap({
   clock,
   at,
+  glow,
   totals,
   attributes,
   titles,
@@ -1022,6 +1066,7 @@ function Recap({
 }: {
   clock: Clock;
   at: number;
+  glow: DecorativeGlow;
   totals: SyncTotals;
   attributes: RewardSummary['attributes'];
   titles: RewardSummary['titlesUnlocked'];
@@ -1048,14 +1093,7 @@ function Recap({
   };
 
   const climbed = totals.levelAfter > totals.levelBefore;
-  // Deux badges tiennent, trois débordent. Au-delà, on compte — voir le docblock.
-  const shown = titles.slice(0, RECAP_TITLES);
-  const beyond = titles.length - shown.length;
-
-  // Même geste, même seuil — deux cartes d'objet tiennent, la troisième pousse le compte hors
-  // de l'écran (#226).
-  const shownLoot = loot.slice(0, RECAP_TITLES);
-  const beyondLoot = loot.length - shownLoot.length;
+  const recap = recapCards(titles, loot);
 
   // La bourse ne bouge pas sur un lot qui n'a rien fait tomber : « 40 → 40 pièces » dirait un
   // mouvement qui n'a pas eu lieu, la même distinction que « climbed »/« stay » plus haut.
@@ -1064,7 +1102,7 @@ function Recap({
   return (
     <Animated.View style={[styles.block, styles.podium, style]}>
       <View style={styles.recapRing}>
-        <AttributeRing attributes={arcs} vitality={vitality} size="hero" />
+        <AttributeRing attributes={arcs} vitality={vitality} size="hero" glow={glow} />
         {/* Même disposition que la carte d'accueil, et pour la même raison : la légende prend
             la largeur qui reste, sinon ses libellés se replient lettre par lettre. */}
         <View style={styles.recapLegend}>
@@ -1087,23 +1125,25 @@ function Recap({
         </Text>
       </Text>
 
-      {shown.map((title) => (
+      {recap.titles.map((title) => (
         <TitleBadge key={title.id} name={title.name} caption="Titre débloqué" />
       ))}
-      {beyond > 0 ? (
+      {recap.remainingTitles > 0 ? (
         <Text style={styles.label}>
-          et {beyond} autre{beyond > 1 ? 's' : ''} titre{beyond > 1 ? 's' : ''}
+          et {recap.remainingTitles} autre{recap.remainingTitles > 1 ? 's' : ''} titre
+          {recap.remainingTitles > 1 ? 's' : ''}
         </Text>
       ) : null}
 
       {/* Le loot du lot entier, condensé compris — aucun objet ne s'y perd, même celui qui
           n'a jamais rejoué son propre battement (#226). */}
-      {shownLoot.map((item, position) => (
+      {recap.loot.map((item, position) => (
         <ItemCard key={`${item.key}-${position}`} item={item} />
       ))}
-      {beyondLoot > 0 ? (
+      {recap.remainingLoot > 0 ? (
         <Text style={styles.label}>
-          et {beyondLoot} autre{beyondLoot > 1 ? 's' : ''} objet{beyondLoot > 1 ? 's' : ''}
+          et {recap.remainingLoot} autre{recap.remainingLoot > 1 ? 's' : ''} objet
+          {recap.remainingLoot > 1 ? 's' : ''}
         </Text>
       ) : null}
 

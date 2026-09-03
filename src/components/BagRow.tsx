@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CoinAmount } from '@/components/CoinAmount';
+import type { DecorativeGlow } from '@/design/decorativeGlow';
 import { color, opacity, radius, space, type } from '@/design/tokens';
 
 type BagRowProps = {
@@ -14,6 +15,8 @@ type BagRowProps = {
    */
   summary?: { coins: number; itemCount: number };
   onPress: () => void;
+  /** Déjà résolu par l'écran ; la ligne reste pure, y compris dans la preview SSR. */
+  glow: DecorativeGlow;
 };
 
 /**
@@ -27,13 +30,22 @@ type BagRowProps = {
  * Elle porte la bourse autant que le sac : les deux vivent dans la même réponse et sur le même
  * écran, et un solde qu'on ne voit qu'en ouvrant est un solde qu'on oublie.
  */
-export function BagRow({ summary, onPress }: BagRowProps) {
+export function BagRow({ summary, onPress, glow }: BagRowProps) {
+  const accessibilityLabel =
+    summary === undefined
+      ? 'Sac et bourse'
+      : `Sac et bourse, ${summary.itemCount} objet${summary.itemCount > 1 ? 's' : ''}, ${summary.coins} pièce${summary.coins > 1 ? 's' : ''}`;
+
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.row,
+        glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow },
+        pressed && styles.pressed,
+      ]}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel="Sac et bourse"
+      accessibilityLabel={accessibilityLabel}
       testID="bag-row"
     >
       <View style={styles.identity}>

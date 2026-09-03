@@ -13,27 +13,35 @@ import type { components } from '@/api/schema';
  */
 
 export const palette = {
-  night: '#0B0D12',
-  slate: '#161A22',
-  steel: '#232936',
-  fog: '#8A93A6',
-  chalk: '#E8ECF4',
-  ember: '#FF6B35',
-  gold: '#FFC857',
-  mint: '#3DDC97',
-  rust: '#E5484D',
+  night: '#050816',
+  slate: '#0B1124',
+  steel: '#16213D',
+  fog: '#8290AE',
+  chalk: '#EAF6FF',
+  /** L'accent est froid : l'action n'emprunte plus la chaleur de la pièce. */
+  ember: '#35E4FF',
+  /** Le blanc incandescent n'appartient qu'au palier et au légendaire. */
+  gold: '#F7FCFF',
+  mint: '#75FFB2',
+  rust: '#FF5ACD',
   /** Force, dans le cercle de vie (#69). */
-  amethyst: '#B388FF',
+  amethyst: '#A98BFF',
   /** Endurance, dans le cercle de vie. */
-  glacier: '#4CC9F0',
+  glacier: '#67D8FF',
   /** Mobilité, dans le cercle de vie. */
-  lichen: '#B7E356',
+  lichen: '#C2FF6C',
   /** Dextérité, dans le cercle de vie. */
-  blossom: '#FF6FB5',
+  blossom: '#FF79CE',
   /** La pièce, dans `color.coin` (#125). */
-  copper: '#C97B3D',
+  copper: '#FFB454',
   /** Le reflet gravé de la pièce — distinct de l'or des niveaux. */
-  copperLight: '#E5A15B',
+  copperLight: '#FFD18A',
+  /** La lumière cyan ne devient un halo que via `glow`, jamais implicitement par `color`. */
+  cyanHalo: 'rgba(53, 228, 255, 0.42)',
+  /** Le vert conserve son halo propre pour les gains qui viennent d'arriver. */
+  gainHalo: 'rgba(117, 255, 178, 0.48)',
+  /** Le blanc ne rayonne qu'au moment du palier. */
+  celebrateHalo: 'rgba(247, 252, 255, 0.72)',
 } as const;
 
 export const color = {
@@ -44,7 +52,7 @@ export const color = {
   textMuted: palette.fog,
   /** L'XP gagnée, et l'accent du produit. */
   accent: palette.ember,
-  /** Le niveau et les titres — ce qui se célèbre. */
+  /** Le niveau — la lumière blanche reste exceptionnelle. */
   celebrate: palette.gold,
   /**
    * La pièce — la bourse, le prix d'une carte d'objet, un mouvement du ledger. Jamais
@@ -99,9 +107,43 @@ export const space = {
 } as const;
 
 export const radius = {
-  sm: 8,
-  md: 14,
+  sm: 10,
+  md: 16,
   pill: 999,
+} as const;
+
+/**
+ * Les trois intensités de lumière autorisées.
+ *
+ * Les chaînes `boxShadow` restent ici — et non dans les composants — pour que la lumière
+ * demeure un vocabulaire fini. `spread` ne sert qu'au tracé SVG extérieur : sa géométrie,
+ * elle, reste calculée avec l'épaisseur nette de l'arc.
+ */
+export const glow = {
+  /** Allume un trait ou une porte sans lui donner le rôle d'un événement. */
+  soft: {
+    boxShadow: `0 0 12px 0 ${palette.cyanHalo}`,
+    textShadowColor: palette.cyanHalo,
+    textShadowRadius: 8,
+    spread: 4,
+    opacity: 0.52,
+  },
+  /** Signale qu'un gain ou un total vient de se produire. */
+  lit: {
+    boxShadow: `0 0 18px 1px ${palette.gainHalo}`,
+    textShadowColor: palette.gainHalo,
+    textShadowRadius: 12,
+    spread: 6,
+    opacity: 0.64,
+  },
+  /** Reste réservé au niveau : le reste de l'interface ne peut pas le banaliser. */
+  flare: {
+    boxShadow: `0 0 24px 2px ${palette.celebrateHalo}`,
+    textShadowColor: palette.celebrateHalo,
+    textShadowRadius: 16,
+    spread: 8,
+    opacity: 0.78,
+  },
 } as const;
 
 export const type = {

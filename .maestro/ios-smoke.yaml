@@ -111,17 +111,23 @@ tags:
 
 - tapOn:
     id: "tab-reglages"
+# Le compte est en tête : la déconnexion reste atteignable sans traverser les sections qui
+# grandissent, et surtout sans finir sous la barre d'onglets.
+- assertVisible: "Se déconnecter"
 # Le bloc Synchronisation (#82, #140) : sur le compte E2E, `isE2eBuild` court-circuite le réveil
 # HealthKit (`backgroundWakeup.ios.ts`), donc « Dernier réveil en arrière-plan » et
 # « Inscription au réveil » restent à `—` — c'est attendu, pas un défaut du flow. La ligne
 # « Dernière synchronisation », elle, porte le verdict de la synchronisation au lancement, avec
 # sa durée mesurée (`runDurationSeconds`, `runDiagnostics.ts`).
-- assertVisible: "Synchronisation"
+- scrollUntilVisible:
+    element:
+      text: "Synchronisation"
+    direction: DOWN
 - takeScreenshot: 05a-settings-sync
 - scrollUntilVisible:
     element:
       text: "Se déconnecter"
-    direction: DOWN
+    direction: UP
 - tapOn: "Se déconnecter"
 - extendedWaitUntil:
     visible: "Connexion"
@@ -181,6 +187,7 @@ tags:
 # L'entrée de l'accueil existe et porte son résumé — c'est tout ce qu'on lui demande ici.
 - assertVisible:
     id: "bag-row"
+- assertVisible: ".*Sac et bourse.*[1-9][0-9]* pièces.*"
 
 - tapOn:
     id: "tab-combat"

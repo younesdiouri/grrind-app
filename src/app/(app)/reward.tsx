@@ -1,7 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { queryClient } from '@/api/queryClient';
 import { color, space, type } from '@/design/tokens';
+import { refreshInventoryAfterReward } from '@/features/inventory/inventoryCache';
 import { getPending, markPlayed } from '@/features/reward/pending';
 import { FIXTURES, type FixtureName } from '@/features/reward/fixtures';
 import { SyncSummaryView } from '@/features/reward/SyncSummaryView';
@@ -48,7 +50,10 @@ function leave(): void {
  * Les fixtures, elles, n'effacent rien : ce sont des réponses capturées, pas la progression
  * de quelqu'un.
  */
-function leavePlayed(): void {
+function leavePlayed(summary: Parameters<typeof refreshInventoryAfterReward>[1]): void {
+  // Le solde du résumé est déjà le verdict serveur : l'écrire avant de revenir évite une
+  // image d'accueil périmée, puis l'invalidation relit aussi les éventuels objets tombés.
+  void refreshInventoryAfterReward(queryClient, summary);
   markPlayed();
   leave();
 }
@@ -79,7 +84,7 @@ export default function RewardScreen() {
     );
   }
 
-  return <SyncSummaryView summary={summary} onDismiss={leavePlayed} />;
+  return <SyncSummaryView summary={summary} onDismiss={() => leavePlayed(summary)} />;
 }
 
 const styles = StyleSheet.create({

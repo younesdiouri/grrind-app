@@ -28,6 +28,7 @@ import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { ToggleRow } from '@/components/ToggleRow';
 import { XpBar } from '@/components/XpBar';
+import { decorativeGlow } from '@/design/decorativeGlow';
 import {
   color,
   curve,
@@ -67,6 +68,7 @@ export type Preview = {
 };
 
 const DISCIPLINES = Object.keys(disciplineLabel) as components['schemas']['Discipline'][];
+const previewSoftGlow = decorativeGlow('soft', false);
 
 /** Un adversaire du catalogue, à trouer au cas par cas — voir les spécimens. */
 function enemy(overrides: Partial<components['schemas']['Enemy']>): components['schemas']['Enemy'] {
@@ -758,19 +760,19 @@ export const PREVIEWS: Preview[] = [
     element: (
       <>
         <Specimen label="Sur l'accueil">
-          <BagRow summary={{ coins: 240, itemCount: 6 }} onPress={() => undefined} />
+          <BagRow summary={{ coins: 240, itemCount: 6 }} onPress={() => undefined} glow={previewSoftGlow} />
         </Specimen>
         {/* Le singulier existe, et le sac vide aussi : un objet qui vient de tomber, ou aucun. */}
         <Specimen label="Un seul objet">
-          <BagRow summary={{ coins: 8, itemCount: 1 }} onPress={() => undefined} />
+          <BagRow summary={{ coins: 8, itemCount: 1 }} onPress={() => undefined} glow={previewSoftGlow} />
         </Specimen>
         {/* Ce qu'on ne sait pas ne s'écrit pas — mais la ligne reste, elle est le seul chemin
             vers le sac. */}
         <Specimen label="Avant que l'inventaire soit chargé">
-          <BagRow onPress={() => undefined} />
+          <BagRow onPress={() => undefined} glow={previewSoftGlow} />
         </Specimen>
         <Specimen label="Une bourse à quatre chiffres">
-          <BagRow summary={{ coins: 1999, itemCount: 24 }} onPress={() => undefined} />
+          <BagRow summary={{ coins: 1999, itemCount: 24 }} onPress={() => undefined} glow={previewSoftGlow} />
         </Specimen>
       </>
     ),

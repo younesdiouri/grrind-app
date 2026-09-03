@@ -1,4 +1,5 @@
-import { ring, type Attribute } from '@/design/tokens';
+import { glow, ring, type Attribute } from '@/design/tokens';
+import type { DecorativeGlow } from '@/design/decorativeGlow';
 
 /**
  * La répartition d'un cercle de vie — quatre arcs, un par caractéristique, dont la longueur
@@ -101,10 +102,13 @@ export type RingGeometry = {
  * recalculerait la formule à la main, et les deux copies divergeraient au premier ajustement
  * d'un token — c'est la même raison que celle qui sort `arcsOf` du composant.
  */
-export function ringGeometry(size: RingSize): RingGeometry {
+export function ringGeometry(size: RingSize, haloSpread = 0): RingGeometry {
   const radius = ring.radius[size];
   const strokeWidth = ring.strokeWidth[size];
-  const diameter = radius * 2 + strokeWidth;
+  // Le halo est un second trait, plus large, mais ne participe jamais au calcul de l'arc.
+  // Le viewport seul s'agrandit : le centre se décale de sa moitié afin que le cercle net
+  // garde exactement son rayon, son dash et son offset.
+  const diameter = radius * 2 + strokeWidth + haloSpread;
 
   return {
     radius,
@@ -115,6 +119,14 @@ export function ringGeometry(size: RingSize): RingGeometry {
   };
 }
 
+/**
+ * Un écran qui choisit un tier réserve son viewport avant de savoir si le halo sera visible.
+ * Réduire les animations masque ainsi la lumière, sans jamais déplacer le contenu.
+ */
+export function ringViewport(size: RingSize, decorativeGlow?: DecorativeGlow): RingGeometry {
+  return ringGeometry(size, decorativeGlow === undefined ? 0 : glow[decorativeGlow.tier].spread);
+}
+
 export type ArcStroke = {
   /** La circonférence du cercle porteur — nécessaire pour composer `strokeDasharray`. */
   circumference: number;
@@ -122,6 +134,13 @@ export type ArcStroke = {
   length: number;
   /** Le décalage à appliquer avec `length` dans `strokeDashoffset`. */
   offset: number;
+};
+
+export type ArcPresentation = {
+  strokeDasharray: string;
+  strokeDashoffset: number;
+  /** Un dash nul avec un cap rond dessine un point ; le cap plat reste réellement invisible. */
+  strokeLinecap: 'butt' | 'round';
 };
 
 /**
@@ -151,4 +170,19 @@ export function arcStroke(from: number, to: number, radius: number, strokeWidth:
   const offset = -(from * circumference + gap / 2 + strokeWidth / 2);
 
   return { circumference, length, offset };
+}
+
+/**
+ * Les deux calques d'un arc (net et halo) lisent cette présentation unique. Elle garantit
+ * qu'un arc encore absent — notamment au premier frame — n'émet aucun point sous un cap rond.
+ */
+export function arcPresentation(from: number, to: number, radius: number, strokeWidth: number): ArcPresentation {
+  'worklet';
+  const { circumference, length, offset } = arcStroke(from, to, radius, strokeWidth);
+
+  return {
+    strokeDasharray: `${length} ${circumference - length}`,
+    strokeDashoffset: offset,
+    strokeLinecap: length <= 0 ? 'butt' : 'round',
+  };
 }

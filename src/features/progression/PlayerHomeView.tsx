@@ -13,12 +13,15 @@ import Animated, {
 import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { arcStroke, arcsOf, ringGeometry, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ringViewport, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { SessionCard } from '@/components/SessionCard';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
+import { decorativeGlow } from '@/design/decorativeGlow';
+import type { DecorativeGlow } from '@/design/decorativeGlow';
 import { attributeColor, color, curve, duration, radius, space, type } from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
   formatDistance,
@@ -66,6 +69,7 @@ export function LevelCard({ progression }: { progression: Progression }) {
   const filled = total === 0 ? 1 : progression.xpIntoLevel / total;
 
   const progress = useSharedValue(0);
+  const glow = decorativeGlow('soft', useReducedMotion());
 
   const play = () => {
     progress.value = 0;
@@ -85,7 +89,7 @@ export function LevelCard({ progression }: { progression: Progression }) {
   });
 
   return (
-    <View style={styles.level} onLayout={play}>
+    <View style={[styles.level, glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }]} onLayout={play}>
       {/* Le niveau devant, le cumul à droite : c'est le niveau qu'on vient voir, et le
           total qui le justifie. Le titre porté se range sous le total parce qu'il se gagne
           par l'XP, pas par le palier. */}
@@ -186,10 +190,11 @@ export function AttributeCard({
   // Calculée une fois par montage, comme `arcsOf` : les bornes de chaque arc ne bougent pas
   // pendant la course, seule la valeur partagée fait avancer `to` de `from` jusqu'à elles.
   const staticArcs = arcsOf(arcs);
-  const geometry = ringGeometry('hero');
+  const progress = useSharedValue(0);
+  const glow = decorativeGlow('soft', useReducedMotion());
+  const geometry = ringViewport('hero', glow);
   const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
 
-  const progress = useSharedValue(0);
 
   const play = () => {
     progress.value = 0;
@@ -211,6 +216,7 @@ export function AttributeCard({
           attributes={arcs}
           vitality={vitality}
           size="hero"
+          glow={glow}
           center={
             <AnimatedTextInput
               style={[type.display, styles.vitalityText, { fontSize }]}
@@ -221,7 +227,7 @@ export function AttributeCard({
           }
         >
           {staticArcs.map((arc) => (
-            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} />
+            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} glow={glow} />
           ))}
         </AttributeRing>
 
@@ -282,29 +288,42 @@ function GrowingArc({
   arc,
   progress,
   geometry,
+  glow,
 }: {
   arc: AttributeArc;
   progress: SharedValue<number>;
   geometry: RingGeometry;
+  glow: DecorativeGlow;
 }) {
   const animatedProps = useAnimatedProps(() => {
     const to = interpolate(progress.value, [0, 1], [arc.from, arc.to], Extrapolation.CLAMP);
-    const { circumference, length, offset } = arcStroke(arc.from, to, geometry.radius, geometry.strokeWidth);
-
-    return { strokeDasharray: `${length} ${circumference - length}`, strokeDashoffset: offset };
+    return arcPresentation(arc.from, to, geometry.radius, geometry.strokeWidth);
   });
 
   return (
-    <AnimatedCircle
-      cx={geometry.origin}
-      cy={geometry.origin}
-      r={geometry.radius}
-      stroke={attributeColor[arc.attribute]}
-      strokeWidth={geometry.strokeWidth}
-      strokeLinecap="round"
-      fill="none"
-      animatedProps={animatedProps}
-    />
+    <>
+      {glow.effect === undefined ? null : (
+        <AnimatedCircle
+          cx={geometry.origin}
+          cy={geometry.origin}
+          r={geometry.radius}
+          stroke={attributeColor[arc.attribute]}
+          strokeWidth={geometry.strokeWidth + glow.effect.spread}
+          strokeOpacity={glow.effect.opacity}
+          animatedProps={animatedProps}
+          fill="none"
+        />
+      )}
+      <AnimatedCircle
+        cx={geometry.origin}
+        cy={geometry.origin}
+        r={geometry.radius}
+        stroke={attributeColor[arc.attribute]}
+        strokeWidth={geometry.strokeWidth}
+        animatedProps={animatedProps}
+        fill="none"
+      />
+    </>
   );
 }
 

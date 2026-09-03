@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Circle, G, Svg } from 'react-native-svg';
 
-import { arcStroke, arcsOf, ATTRIBUTE_ORDER, ringGeometry, type AttributeArc, type RingSize } from '@/components/attributeArcs';
+import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringViewport, type AttributeArc, type RingSize } from '@/components/attributeArcs';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { attributeColor, attributeLabel, color, opacity, radius, space, type } from '@/design/tokens';
+import type { DecorativeGlow } from '@/design/decorativeGlow';
 import type { Attribute } from '@/design/tokens';
 
 type AttributeRingProps = {
@@ -36,6 +37,8 @@ type AttributeRingProps = {
    * défaut quand personne ne le fournit.
    */
   center?: ReactNode;
+  /** La lumière est explicite : tier, viewport et effet ne peuvent pas diverger. */
+  glow?: DecorativeGlow;
 };
 
 /**
@@ -43,8 +46,8 @@ type AttributeRingProps = {
  * le total, Vitality en chiffre au centre — la seule disposition où le dessin démontre la
  * valeur qu'il affiche (#69).
  */
-export function AttributeRing({ attributes, vitality, size = 'inline', children, center }: AttributeRingProps) {
-  const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringGeometry(size);
+export function AttributeRing({ attributes, vitality, size = 'inline', children, center, glow }: AttributeRingProps) {
+  const { radius: ringRadius, strokeWidth, diameter, origin, innerDiameter } = ringViewport(size, glow);
   const typeScale = size === 'hero' ? type.display : type.title;
   const fontSize = vitalityFontSize(vitality, innerDiameter, typeScale.fontSize);
 
@@ -59,7 +62,14 @@ export function AttributeRing({ attributes, vitality, size = 'inline', children,
         <G transform={`rotate(-90 ${origin} ${origin})`}>
           {children ??
             arcsOf(attributes).map((arc) => (
-              <Arc key={arc.attribute} arc={arc} radius={ringRadius} origin={origin} strokeWidth={strokeWidth} />
+              <Arc
+                key={arc.attribute}
+                arc={arc}
+                radius={ringRadius}
+                origin={origin}
+                strokeWidth={strokeWidth}
+                glow={glow}
+              />
             ))}
         </G>
       </Svg>
@@ -74,33 +84,58 @@ export function AttributeRing({ attributes, vitality, size = 'inline', children,
   );
 }
 
-type ArcProps = { arc: AttributeArc; radius: number; origin: number; strokeWidth: number };
+type ArcProps = {
+  arc: AttributeArc;
+  radius: number;
+  origin: number;
+  strokeWidth: number;
+  glow?: DecorativeGlow;
+};
 
 /** Un arc statique — la géométrie du trait vient d'`arcStroke`, partagée avec l'anneau animé. */
-function Arc({ arc, radius: arcRadius, origin, strokeWidth }: ArcProps) {
-  const { circumference, length, offset } = arcStroke(arc.from, arc.to, arcRadius, strokeWidth);
+function Arc({ arc, radius: arcRadius, origin, strokeWidth, glow }: ArcProps) {
+  const presentation = arcPresentation(arc.from, arc.to, arcRadius, strokeWidth);
+  const effect = glow?.effect;
 
   // Une part réelle (voir `arcsOf`, qui a déjà écarté les parts nulles) peut être trop fine
   // pour survivre à la compensation des bouts ronds : rien à dessiner n'est pas la même chose
   // qu'un trait de longueur nulle, qui se dessinerait quand même — un bout rond couvre un
   // point même à `strokeDasharray="0 …"`. Un point dessinerait une part invisible plus grosse
   // qu'elle ne l'est ; l'anneau se tait, la légende, elle, garde le chiffre exact.
-  if (length <= 0) {
+  if (presentation.strokeLinecap === 'butt') {
     return null;
   }
 
   return (
-    <Circle
-      cx={origin}
-      cy={origin}
-      r={arcRadius}
-      stroke={attributeColor[arc.attribute]}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      fill="none"
-      strokeDasharray={`${length} ${circumference - length}`}
-      strokeDashoffset={offset}
-    />
+    <>
+      {/* Les deux tracés lisent exactement la même géométrie nette : élargir la lueur ne
+          raccourcit ni ne décale l'arc qu'elle entoure. */}
+      {effect === undefined ? null : (
+        <Circle
+          cx={origin}
+          cy={origin}
+          r={arcRadius}
+          stroke={attributeColor[arc.attribute]}
+          strokeWidth={strokeWidth + effect.spread}
+          strokeOpacity={effect.opacity}
+          strokeLinecap={presentation.strokeLinecap}
+          fill="none"
+          strokeDasharray={presentation.strokeDasharray}
+          strokeDashoffset={presentation.strokeDashoffset}
+        />
+      )}
+      <Circle
+        cx={origin}
+        cy={origin}
+        r={arcRadius}
+        stroke={attributeColor[arc.attribute]}
+        strokeWidth={strokeWidth}
+        strokeLinecap={presentation.strokeLinecap}
+        fill="none"
+        strokeDasharray={presentation.strokeDasharray}
+        strokeDashoffset={presentation.strokeDashoffset}
+      />
+    </>
   );
 }
 

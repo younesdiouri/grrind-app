@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   taken: { color: color.hpPlayer },
   absorbed: { ...type.label, color: color.textMuted, padding: 0, textAlign: 'center' },
   word: { ...type.title, color: color.text },
-  extra: { color: color.celebrate },
+  extra: { color: color.gain },
 
   recap: { alignItems: 'center', gap: space.sm, paddingHorizontal: space.md },
   verdict: { ...type.display, textAlign: 'center' },

@@ -8,7 +8,9 @@ import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { CoinAmount } from '@/components/CoinAmount';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
+import { decorativeGlow } from '@/design/decorativeGlow';
 import { color, equipmentSlotLabel, opacity, radius, space, type, type EquipmentSlot } from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import {
   equipItem,
@@ -64,6 +66,7 @@ export default function InventoryScreen() {
   const [refusal, setRefusal] = useState<Failure | null>(null);
   const [selection, setSelection] = useState<EquipmentSlot | null>(null);
   const [openedChest, setOpenedChest] = useState<ChestOpenOutcome | null>(null);
+  const purseGlow = decorativeGlow('soft', useReducedMotion());
 
   const apply = async (slot: EquipmentSlot, mutate: () => Promise<EquipmentOutcome>) => {
     // Une fois le geste explicite, cette zone devient la sélection de l'utilisateur. Sans ça,
@@ -146,7 +149,11 @@ export default function InventoryScreen() {
               #129 — c'est de là que le ledger de pièces s'ouvre, la seule porte vers son
               histoire. */}
           <Pressable
-            style={({ pressed }) => [styles.purse, pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.purse,
+              purseGlow.effect === undefined ? undefined : { boxShadow: purseGlow.effect.boxShadow },
+              pressed && styles.pressed,
+            ]}
             onPress={() => router.push('/bourse')}
             accessibilityRole="button"
             accessibilityLabel="Bourse"

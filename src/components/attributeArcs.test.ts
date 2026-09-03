@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { arcStroke, arcsOf, ringGeometry } from './attributeArcs.ts';
+import { glow } from '@/design/tokens';
+import { decorativeGlow } from '@/design/decorativeGlow';
+
+import { arcPresentation, arcStroke, arcsOf, ringGeometry, ringViewport } from './attributeArcs.ts';
 
 describe('la répartition d’un cercle de vie', () => {
   it('donne quatre arcs égaux quand les quatre parts le sont', () => {
@@ -64,6 +67,31 @@ describe('la géométrie d’un cercle de vie', () => {
       innerDiameter: 36,
     });
   });
+
+  it('élargit le viewport inline et hero pour contenir le halo sans épaissir le tracé net', () => {
+    for (const size of ['inline', 'hero'] as const) {
+      const geometry = ringGeometry(size, glow.lit.spread);
+      const outerEdge = geometry.radius + (geometry.strokeWidth + glow.lit.spread) / 2;
+
+      assert.equal(geometry.origin, outerEdge);
+      assert.equal(geometry.diameter, outerEdge * 2);
+      assert.equal(geometry.innerDiameter, geometry.radius * 2 - geometry.strokeWidth * 2);
+    }
+  });
+
+  it('garde le viewport d’un écran opt-in fixe quand le halo devient visible, inconnu ou réduit', () => {
+    const visible = decorativeGlow('lit', false);
+    const unknown = decorativeGlow('lit', null);
+    const reduced = decorativeGlow('lit', true);
+    const optInViewport = ringViewport('hero', visible);
+
+    assert.equal(visible.effect, glow.lit);
+    assert.equal(unknown.effect, undefined);
+    assert.equal(reduced.effect, undefined);
+    assert.deepEqual(ringViewport('hero', unknown), optInViewport);
+    assert.deepEqual(ringViewport('hero', reduced), optInViewport);
+    assert.notDeepEqual(ringViewport('hero'), optInViewport);
+  });
 });
 
 describe('le trait d’un arc', () => {
@@ -98,5 +126,18 @@ describe('le trait d’un arc', () => {
 
     assert.ok(partial.length < full.length);
     assert.equal(partial.offset, full.offset);
+  });
+
+  it('ne donne aucun cap rond à une longueur nulle, même pour un arc absent', () => {
+    const absent = arcPresentation(0, 0, radius, strokeWidth);
+    const tooThin = arcPresentation(0, 0.001, radius, strokeWidth);
+
+    assert.equal(absent.strokeLinecap, 'butt');
+    assert.equal(tooThin.strokeLinecap, 'butt');
+    assert.equal(absent.strokeDasharray, `${0} ${circumference}`);
+  });
+
+  it('garde des bouts ronds pour un arc visible', () => {
+    assert.equal(arcPresentation(0, 0.25, radius, strokeWidth).strokeLinecap, 'round');
   });
 });

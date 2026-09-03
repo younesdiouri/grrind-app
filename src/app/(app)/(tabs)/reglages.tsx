@@ -82,16 +82,15 @@ import { formatAgo } from '@/features/progression/format';
  *   Apple, une app ne doit pas pouvoir déduire qu'on lui cache quelque chose. Voir le docblock
  *   de `useHealthAccess.ts`, qui est écrit pour cette ambiguïté.
  *
- * ————— Le compte, en dernier (#84) —————————————————————————————————————————————————————
+ * ————— Le compte, dès l'entrée (#84, #151) ————————————————————————————————————————————
  *
  * « Se déconnecter » vivait dans le banc de session de l'accueil, qui est parti avec les
  * outils de développement. Ce n'en était pas un : c'est un réglage, et sa place est ici.
  *
- * Il est **seul dans sa section**, sous tout le reste, en `DangerRow` — c'est la règle du
- * composant, et elle vaut : personne ne doit se déconnecter en visant un interrupteur de
- * notification. Il ne dépend pas de la requête de profil, qui peut échouer : l'identité
- * affichée vient de la session déjà en mémoire, et partir doit rester possible même quand le
- * serveur ne répond plus.
+ * Il est **seul dans sa section**, en tête, en `DangerRow` : partir reste possible sans devoir
+ * traverser des réglages qui peuvent grandir ni viser une ligne passée sous la barre d'onglets.
+ * Il ne dépend pas de la requête de profil, qui peut échouer : l'identité affichée vient de la
+ * session déjà en mémoire, et partir doit rester possible même quand le serveur ne répond plus.
  */
 export default function ReglagesScreen() {
   const { permission, refresh } = useNotificationPermission();
@@ -121,6 +120,16 @@ export default function ReglagesScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
+      {auth.status === 'signedIn' ? (
+        <View style={styles.account}>
+          <Text style={styles.cardTitle}>{auth.user.displayName}</Text>
+          <Text style={styles.body}>
+            {auth.user.email} · {auth.user.timezone}
+          </Text>
+          <DangerRow label="Se déconnecter" onPress={() => void signOut()} />
+        </View>
+      ) : null}
+
       <Authorizations permission={permission} onAsked={refresh} />
 
       <Synchronisation />
@@ -141,15 +150,6 @@ export default function ReglagesScreen() {
 
       {state.step === 'ready' ? <Preferences profile={state.profile} onProfile={(profile) => setState({ step: 'ready', profile })} /> : null}
 
-      {auth.status === 'signedIn' ? (
-        <View style={styles.account}>
-          <Text style={styles.cardTitle}>{auth.user.displayName}</Text>
-          <Text style={styles.body}>
-            {auth.user.email} · {auth.user.timezone}
-          </Text>
-          <DangerRow label="Se déconnecter" onPress={() => void signOut()} />
-        </View>
-      ) : null}
     </ScrollView>
   );
 }
