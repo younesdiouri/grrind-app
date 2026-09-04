@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
@@ -12,16 +13,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Circle } from 'react-native-svg';
 
-import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
+import { attributeLegendDot, AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { arcPresentation, arcsOf, ringViewport, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
+import { OrbitCrown, SweepSector } from '@/components/RingDial';
 import { SessionCard } from '@/components/SessionCard';
 import { SystemFrame } from '@/components/SystemFrame';
+import { Beacon, Convey, FlowLayers, ScanLine, Seam, TickRail } from '@/components/SystemMotion';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import { decorativeGlow } from '@/design/decorativeGlow';
 import type { DecorativeGlow } from '@/design/decorativeGlow';
-import { attributeColor, color, curve, duration, space, type, typography } from '@/design/tokens';
+import { decorativeMotion } from '@/design/decorativeMotion';
+import { staggerOffset } from '@/design/motionPhase';
+import { attributeColor, color, curve, duration, motion, space, type, typography } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
@@ -58,8 +63,27 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
  * Une seule valeur animée, comme là-bas, et le compteur passe par `useAnimatedProps` : le
  * texte d'un `Animated.Text` ne s'anime pas, et un `setState` par frame est interdit ici
  * comme ailleurs.
+ *
+ * ————— Elle porte cinq des six mouvements (#159) ————————————————————————————————————————
+ *
+ * `seam` sur ses segments, `tick` le long de son bord, `scan` quand elle vient d'être lue,
+ * `flow` dans sa jauge et `convey` sur son intitulé. C'est le panneau le plus haut de la
+ * hiérarchie, et le mouvement suit la hiérarchie : les cartes de séance, juste en dessous,
+ * n'en portent **aucun**. C'est ce contraste qui la fait paraître alimentée — si l'historique
+ * bougeait aussi, l'écran entier redeviendrait un fond animé.
+ *
+ * `scanToken` vient de l'écran : le balayage est l'accusé de réception d'un geste, et l'écran
+ * est le seul à savoir qu'un rafraîchissement vient d'aboutir. Au montage, `useEffect` le joue
+ * une première fois sans que personne n'ait à le demander.
  */
-export function LevelCard({ progression }: { progression: Progression }) {
+export function LevelCard({
+  progression,
+  scanToken = 0,
+}: {
+  progression: Progression;
+  /** Change à chaque rafraîchissement réussi ; le balayage se rejoue alors. */
+  scanToken?: number;
+}) {
   // `xpToNextLevel` est `null` au niveau maximum. La barre est alors pleine — il n'y a plus
   // de palier à remplir, et une barre vide dirait le contraire de ce qui s'est passé.
   const total =
@@ -70,7 +94,13 @@ export function LevelCard({ progression }: { progression: Progression }) {
   const filled = total === 0 ? 1 : progression.xpIntoLevel / total;
 
   const progress = useSharedValue(0);
-  const glow = decorativeGlow('soft', useReducedMotion());
+  const reducedMotion = useReducedMotion();
+  const glow = decorativeGlow('soft', reducedMotion);
+  const moving = decorativeMotion('seam', reducedMotion).effect !== undefined;
+  // La piste, pas le remplissage : celui-ci est animé sur le thread UI et n'a aucune largeur
+  // connue du côté React. Les couches de `flow` se dimensionnent donc sur la piste entière, et
+  // le masque du remplissage se charge de n'en montrer que sa part.
+  const [trackWidth, setTrackWidth] = useState(0);
 
   const play = () => {
     progress.value = 0;
@@ -95,6 +125,17 @@ export function LevelCard({ progression }: { progression: Progression }) {
       accent="celebrate"
       style={glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }}
       contentStyle={styles.level}
+      segments={
+        moving ? <Seam tier="hero" accent="celebrate" offset={motion.seam.phase.level} /> : undefined
+      }
+      overlay={
+        moving ? (
+          <>
+            <TickRail />
+            <ScanLine token={scanToken} />
+          </>
+        ) : undefined
+      }
     >
       <View style={styles.levelBody} onLayout={play}>
       {/* Le niveau devant, le cumul à droite : c'est le niveau qu'on vient voir, et le
@@ -102,7 +143,10 @@ export function LevelCard({ progression }: { progression: Progression }) {
           par l'XP, pas par le palier. */}
       <View style={styles.levelHead}>
         <View style={styles.levelIdentity}>
-          <Text style={styles.overline}>NIVEAU</Text>
+          <View style={styles.overlineRow}>
+            <Text style={styles.overline}>NIVEAU</Text>
+            {moving ? <Convey /> : null}
+          </View>
           <Text style={styles.levelNumber}>{progression.level}</Text>
         </View>
 
@@ -120,9 +164,13 @@ export function LevelCard({ progression }: { progression: Progression }) {
       </View>
 
       <View style={styles.levelProgress}>
-        <XpBar size="hero">
-          <Animated.View style={[xpBarFill, barStyle]} />
-        </XpBar>
+        <View onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}>
+          <XpBar size="hero">
+            <Animated.View style={[xpBarFill, barStyle]}>
+              {moving ? <FlowLayers width={trackWidth} /> : null}
+            </Animated.View>
+          </XpBar>
+        </View>
 
         <View style={styles.levelScale}>
           <Text style={styles.levelFoot}>
@@ -177,6 +225,19 @@ export function LevelCard({ progression }: { progression: Progression }) {
  * chaque image ferait sauter la police pendant que le compteur grandit, ce qui serait plus
  * laid que l'inverse : un nombre à un chiffre rendu un peu petit pour sa taille, le temps de
  * grandir jusqu'au nombre final de chiffres.
+ *
+ * ————— Elle devient un cadran (#159) ————————————————————————————————————————————————————
+ *
+ * Une couronne pointillée à l'extérieur des arcs, un secteur de balayage derrière eux, et les
+ * deux tournent **en sens opposés** : c'est ce qui fait lire un mécanisme plutôt qu'une image
+ * qui tourne. Aucun des deux ne touche à la géométrie des arcs — la couronne passe par le
+ * débord de `ringGeometry`, exactement comme le halo, et `attributeArcs.test.ts` reste vert
+ * sans modification, ce qui est la preuve que le rayon net n'a pas bougé.
+ *
+ * Le cadre est `standard` et porte pourtant `seam` : la règle est « pas les cadres de
+ * l'historique », pas « pas les cadres `standard` ». Son déphasage propre le sépare de la
+ * carte de niveau juste au-dessus — sans lui, les deux panneaux respireraient ensemble et ce
+ * serait la page qui pulse.
  */
 export function AttributeCard({
   attributes,
@@ -199,8 +260,13 @@ export function AttributeCard({
   // pendant la course, seule la valeur partagée fait avancer `to` de `from` jusqu'à elles.
   const staticArcs = arcsOf(arcs);
   const progress = useSharedValue(0);
-  const glow = decorativeGlow('soft', useReducedMotion());
-  const geometry = ringViewport('hero', glow);
+  const reducedMotion = useReducedMotion();
+  const glow = decorativeGlow('soft', reducedMotion);
+  // Le nom d'`orbit` est donné même quand l'effet est coupé : c'est lui qui réserve le viewport,
+  // et un anneau qui rétrécirait sous « Réduire les animations » déplacerait toute la carte.
+  const orbit = decorativeMotion('orbit', reducedMotion);
+  const beacon = decorativeMotion('beacon', reducedMotion);
+  const geometry = ringViewport('hero', glow, orbit);
   const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
 
 
@@ -218,7 +284,10 @@ export function AttributeCard({
   });
 
   return (
-    <SystemFrame contentStyle={styles.attributesCard}>
+    <SystemFrame
+      contentStyle={styles.attributesCard}
+      segments={orbit.effect === undefined ? undefined : <Seam offset={motion.seam.phase.ring} />}
+    >
       <View style={styles.attributesBody} onLayout={play}>
       <View style={styles.attributesRow}>
         <AttributeRing
@@ -226,6 +295,16 @@ export function AttributeCard({
           vitality={vitality}
           size="hero"
           glow={glow}
+          orbit={orbit}
+          underlay={
+            orbit.effect === undefined ? undefined : (
+              <>
+                {/* Le secteur d'abord : il passe sous la couronne comme sous les arcs. */}
+                <SweepSector geometry={geometry} />
+                <OrbitCrown geometry={geometry} />
+              </>
+            )
+          }
           center={
             <AnimatedTextInput
               style={[type.display, styles.vitalityText, { fontSize }]}
@@ -245,7 +324,19 @@ export function AttributeCard({
             parent dont la largeur dépend de son contenu se réduit à un caractère — les
             libellés se replient alors verticalement, lettre par lettre. */}
         <View style={styles.legendWrap}>
-          <AttributeLegend attributes={arcs} />
+          <AttributeLegend
+            attributes={arcs}
+            dot={
+              beacon.effect === undefined
+                ? undefined
+                : (attribute, index) => (
+                  <Beacon
+                    style={[attributeLegendDot, { backgroundColor: attributeColor[attribute] }]}
+                    offset={staggerOffset(index, motion.convey.stagger)}
+                  />
+                )
+            }
+          />
         </View>
       </View>
 
@@ -374,6 +465,7 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   levelIdentity: { gap: space.xs },
+  overlineRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   levelTally: { alignItems: 'flex-end', gap: space.xs },
   overline: { ...type.label, color: color.textMuted },
   levelNumber: { ...type.display, fontFamily: typography.display.bold, color: color.celebrate },
