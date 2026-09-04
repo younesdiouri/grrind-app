@@ -44,7 +44,17 @@ const styles = StyleSheet.create({
   },
   inline: { height: space.sm },
   hero: { height: space.md },
-  fill: { height: '100%', backgroundColor: color.accent, borderRadius: radius.pill },
+  fill: {
+    height: '100%',
+    backgroundColor: color.accent,
+    borderRadius: radius.pill,
+    // Le remplissage est un **masque**, pas seulement un aplat (#159). `flow` y fait circuler
+    // une hachure et un reflet plus larges que lui, et son arête se pose sur son bord droit :
+    // sans ce masque, les trois déborderaient sur la piste vide. C'est aussi ce qui fait que
+    // l'arête ne clignote pas sur du vide quand la barre repart de zéro — un remplissage de
+    // largeur nulle n'a rien à montrer.
+    overflow: 'hidden',
+  },
 });
 
 /** Le fond de la barre, pour qui l'anime lui-même. Voir `children`. */

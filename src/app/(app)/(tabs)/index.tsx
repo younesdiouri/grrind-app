@@ -10,11 +10,14 @@ import {
   View,
 } from 'react-native';
 
-import { BagRow } from '@/components/BagRow';
+import { bagRowChevron, BagRow } from '@/components/BagRow';
 import { Button } from '@/components/Button';
 import { AmbientBackdrop } from '@/components/AmbientBackdrop';
+import { SystemFrame } from '@/components/SystemFrame';
+import { Convey, ScanLine, Seam, SparkRail } from '@/components/SystemMotion';
 import { decorativeGlow } from '@/design/decorativeGlow';
-import { ambient, color, radius, space, type } from '@/design/tokens';
+import { decorativeMotion } from '@/design/decorativeMotion';
+import { ambient, color, motion, radius, space, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
@@ -73,6 +76,11 @@ export default function Home() {
   const { home, reload, refresh, refreshFailure } = usePlayerHome();
   const { refresh: syncNow } = useSyncStatus();
   const [refreshing, setRefreshing] = useState(false);
+  // L'accusé de réception visuel du geste (#159). Il était porté par le seul `RefreshControl`
+  // natif et une impulsion haptique — donc par rien du tout une fois le doigt relevé, et par
+  // rien d'audible pour qui a coupé les retours. Un balayage sur la carte de niveau dit « c'est
+  // relu », et il le dit **là où les chiffres viennent de changer**.
+  const [scanToken, setScanToken] = useState(0);
 
   /**
    * Tirer, c'est demander « qu'est-ce qui est neuf ? » — et dans GRRIND, le neuf ne vient pas
@@ -96,6 +104,7 @@ export default function Home() {
       // Puis la relecture, attendue : retirer le témoin à la fin de la synchronisation, avant
       // que les chiffres n'aient bougé, donnerait l'impression que le geste n'a rien fait.
       await refresh();
+      setScanToken((token) => token + 1);
     } finally {
       setRefreshing(false);
     }
@@ -118,7 +127,12 @@ export default function Home() {
         }
       >
         {auth.status === 'signedIn' ? (
-          <PlayerHome home={home} reload={reload} refreshFailure={refreshFailure} />
+          <PlayerHome
+            home={home}
+            reload={reload}
+            refreshFailure={refreshFailure}
+            scanToken={scanToken}
+          />
         ) : null}
       </ScrollView>
     </View>
@@ -140,14 +154,17 @@ function PlayerHome({
   home,
   reload,
   refreshFailure,
+  scanToken,
 }: {
   home: HomeState;
   reload: () => void;
   refreshFailure: Failure | null;
+  scanToken: number;
 }) {
   // Une seule lecture de l'horloge pour toute la liste : deux séances de la même journée
   // ne doivent pas tomber de part et d'autre de minuit parce que le rendu a pris du temps.
   const now = new Date();
+  const beacon = decorativeMotion('beacon', useReducedMotion());
 
   return (
     <>
@@ -159,10 +176,25 @@ function PlayerHome({
         <Text style={styles.staleNotice}>{messageFor(refreshFailure)}</Text>
       )}
 
+      {/* Le témoin de chargement est le cadre lui-même (#159) : un balayage sur le panneau vide
+          dit « ça arrive » dans le vocabulaire de l'écran, et il dit en plus **où** — un rond
+          centré ne désignait rien. Sous « Réduire les animations », le témoin circulaire reprend
+          sa place : un écran sans mouvement doit rester complet, et une attente muette n'est pas
+          une attente lisible. */}
       {home.step === 'loading' ? (
-        <View style={styles.loading}>
-          <ActivityIndicator color={color.accent} />
-        </View>
+        beacon.effect === undefined ? (
+          <View style={styles.loading}>
+            <ActivityIndicator color={color.accent} />
+          </View>
+        ) : (
+          <SystemFrame
+            tier="hero"
+            accent="celebrate"
+            contentStyle={styles.loading}
+            segments={<Seam tier="hero" accent="celebrate" offset={motion.seam.phase.level} />}
+            overlay={<ScanLine loop />}
+          />
+        )
       ) : null}
 
       {home.step === 'failed' ? (
@@ -173,7 +205,9 @@ function PlayerHome({
         </View>
       ) : null}
 
-      {home.step === 'ready' ? <LevelCard progression={home.progression} /> : null}
+      {home.step === 'ready' ? (
+        <LevelCard progression={home.progression} scanToken={scanToken} />
+      ) : null}
       {home.step === 'ready' ? (
         <AttributeCard
           attributes={home.progression.attributes}
@@ -198,10 +232,24 @@ function PlayerHome({
 
       {home.step === 'ready' && home.workouts.length > 0 ? (
         <>
-          <Text style={styles.section}>
-            {home.workouts.length} séance{home.workouts.length > 1 ? 's' : ''}
-            {home.hasMore ? ' (les plus récentes)' : ''}
-          </Text>
+          {/* L'intitulé, puis le filet qui prend la place qui reste — et un point qui le
+              parcourt. C'est la dernière chose vivante avant l'archive : dessous, plus rien ne
+              bouge, et c'est ce contraste qui fait paraître le haut de l'écran alimenté. */}
+          <View style={styles.sectionRow}>
+            <Text style={styles.section}>
+              {home.workouts.length} séance{home.workouts.length > 1 ? 's' : ''}
+              {home.hasMore ? ' (les plus récentes)' : ''}
+            </Text>
+            {beacon.effect === undefined ? (
+              <View style={styles.sectionRule} />
+            ) : (
+              <SparkRail
+                style={styles.sectionRule}
+                sparkColor={color.accent}
+                offset={motion.beacon.phase.section}
+              />
+            )}
+          </View>
           {home.workouts.map((workout) => (
             <WorkoutRow key={workout.id} workout={workout} now={now} />
           ))}
@@ -220,7 +268,9 @@ function PlayerHome({
  */
 function BagEntry() {
   const inventory = useInventory();
-  const glow = decorativeGlow('soft', useReducedMotion());
+  const reducedMotion = useReducedMotion();
+  const glow = decorativeGlow('soft', reducedMotion);
+  const seam = decorativeMotion('seam', reducedMotion);
 
   return (
     <BagRow
@@ -231,6 +281,11 @@ function BagEntry() {
       }
       onPress={() => router.push('/inventaire')}
       glow={glow}
+      // Deux mouvements et pas cinq : c'est une action, pas un résumé, et la hiérarchie du
+      // mouvement suit celle de l'écran. Le chevron défile parce qu'il **désigne une porte** ;
+      // la carte de séance juste en dessous n'en a aucun et n'en aura pas.
+      segments={seam.effect === undefined ? undefined : <Seam tier="hero" offset={seam.effect.phase.bag} />}
+      chevron={seam.effect === undefined ? undefined : <Convey count={1} style={bagRowChevron} />}
     />
   );
 }
@@ -239,7 +294,15 @@ const styles = StyleSheet.create({
   shell: { flex: 1, overflow: 'hidden' },
   contentLayer: { zIndex: ambient.contentLayer },
   screen: { padding: space.lg, gap: space.md },
-  section: { ...type.label, color: color.textMuted, marginTop: space.md },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    marginTop: space.md,
+  },
+  section: { ...type.label, color: color.textMuted },
+  /** Le filet prend la largeur qui reste après l'intitulé, et rien de plus. */
+  sectionRule: { flex: 1, height: ambient.gridLine, backgroundColor: color.border },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   card: {
     backgroundColor: color.surface,

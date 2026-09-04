@@ -1,5 +1,7 @@
-import { glow, ring, type Attribute } from '@/design/tokens';
+import { glow, motion, ring, type Attribute } from '@/design/tokens';
 import type { DecorativeGlow } from '@/design/decorativeGlow';
+import type { DecorativeMotion } from '@/design/decorativeMotion';
+import { orbitSpread } from '@/components/ringMotion';
 
 /**
  * La répartition d'un cercle de vie — quatre arcs, un par caractéristique, dont la longueur
@@ -102,13 +104,17 @@ export type RingGeometry = {
  * recalculerait la formule à la main, et les deux copies divergeraient au premier ajustement
  * d'un token — c'est la même raison que celle qui sort `arcsOf` du composant.
  */
-export function ringGeometry(size: RingSize, haloSpread = 0): RingGeometry {
+export function ringGeometry(size: RingSize, haloSpread = 0, orbitInset = 0): RingGeometry {
   const radius = ring.radius[size];
   const strokeWidth = ring.strokeWidth[size];
   // Le halo est un second trait, plus large, mais ne participe jamais au calcul de l'arc.
   // Le viewport seul s'agrandit : le centre se décale de sa moitié afin que le cercle net
   // garde exactement son rayon, son dash et son offset.
-  const diameter = radius * 2 + strokeWidth + haloSpread;
+  //
+  // La couronne d'`orbit` (#159) passe par **le même mécanisme**, avec son propre débord : c'est
+  // la seule façon de la poser à l'extérieur des arcs sans les déplacer d'un point. Le viewport
+  // prend le plus large des deux débords — ils partent du même bord et ne s'additionnent pas.
+  const diameter = radius * 2 + strokeWidth + Math.max(haloSpread, orbitSpread(strokeWidth, orbitInset));
 
   return {
     radius,
@@ -123,8 +129,19 @@ export function ringGeometry(size: RingSize, haloSpread = 0): RingGeometry {
  * Un écran qui choisit un tier réserve son viewport avant de savoir si le halo sera visible.
  * Réduire les animations masque ainsi la lumière, sans jamais déplacer le contenu.
  */
-export function ringViewport(size: RingSize, decorativeGlow?: DecorativeGlow): RingGeometry {
-  return ringGeometry(size, decorativeGlow === undefined ? 0 : glow[decorativeGlow.tier].spread);
+export function ringViewport(
+  size: RingSize,
+  decorativeGlow?: DecorativeGlow,
+  decorativeOrbit?: DecorativeMotion<'orbit'>,
+): RingGeometry {
+  return ringGeometry(
+    size,
+    decorativeGlow === undefined ? 0 : glow[decorativeGlow.tier].spread,
+    // Le **nom**, jamais l'effet : sous « Réduire les animations » la couronne disparaît, mais
+    // le viewport garde sa taille et le contenu de la carte ne se déplace pas d'un point. Même
+    // règle que `tier` juste au-dessus, et c'est pour elle que `decorativeMotion` existe.
+    decorativeOrbit === undefined ? 0 : motion[decorativeOrbit.name].inset,
+  );
 }
 
 export type ArcStroke = {

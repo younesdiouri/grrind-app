@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CoinAmount } from '@/components/CoinAmount';
@@ -18,6 +19,16 @@ type BagRowProps = {
   onPress: () => void;
   /** Déjà résolu par l'écran ; la ligne reste pure, y compris dans la preview SSR. */
   glow: DecorativeGlow;
+  /**
+   * Les deux segments animés du cadre, et le chevron qui défile (#159) — la même porte que
+   * `glow` juste au-dessus, résolue par l'écran pour la même raison : la ligne reste pure, donc
+   * rendable dans Node, et Reanimated ne franchit pas la frontière du design system.
+   *
+   * Absents, la ligne pose ses segments fixes et son chevron immobile. C'est l'état sous
+   * « Réduire les animations », et il ne perd aucune information.
+   */
+  segments?: ReactNode;
+  chevron?: ReactNode;
 };
 
 /**
@@ -31,7 +42,7 @@ type BagRowProps = {
  * Elle porte la bourse autant que le sac : les deux vivent dans la même réponse et sur le même
  * écran, et un solde qu'on ne voit qu'en ouvrant est un solde qu'on oublie.
  */
-export function BagRow({ summary, onPress, glow }: BagRowProps) {
+export function BagRow({ summary, onPress, glow, segments, chevron }: BagRowProps) {
   const accessibilityLabel =
     summary === undefined
       ? 'Sac et bourse'
@@ -49,6 +60,7 @@ export function BagRow({ summary, onPress, glow }: BagRowProps) {
         tier="hero"
         style={glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }}
         contentStyle={styles.row}
+        segments={segments}
       >
         <View style={styles.identity}>
           <Text style={styles.label}>Sac</Text>
@@ -60,7 +72,7 @@ export function BagRow({ summary, onPress, glow }: BagRowProps) {
         </View>
 
         {summary === undefined ? null : <CoinAmount amount={summary.coins} />}
-        <Text style={styles.chevron}>›</Text>
+        {chevron ?? <Text style={styles.chevron}>›</Text>}
       </SystemFrame>
     </Pressable>
   );
@@ -82,3 +94,6 @@ const styles = StyleSheet.create({
   detail: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   chevron: { ...type.body, color: color.textMuted },
 });
+
+/** Le chevron, pour qui le fait défiler lui-même. Voir `chevron`, et `xpBarFill` son modèle. */
+export const bagRowChevron = styles.chevron;

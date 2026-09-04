@@ -58,13 +58,33 @@ export function AmbientBackdropProvider({ children }: PropsWithChildren) {
   return <BackdropClockContext.Provider value={clock}>{children}</BackdropClockContext.Provider>;
 }
 
-/** Les traits d'une scène, posés sous son contenu et pilotés par l'horloge partagée. */
-export function AmbientBackdrop() {
+/**
+ * L'horloge partagée, pour tout ce qui bouge en continu (#159).
+ *
+ * Elle était privée tant que le décor était son seul lecteur. Elle ne l'est plus : `seam`,
+ * `tick`, `orbit`, `sweep`, `flow`, `beacon`, `convey` et `caret` s'y branchent tous par une
+ * phase et un modulo (`motionPhase.ts`) plutôt que d'ouvrir chacun son `withRepeat`. Le coût de
+ * dix animations devient celui d'une seule, et elles restent en phase entre elles pour toujours
+ * — ce que dix horloges indépendantes ne garantissent pas, puisqu'elles ne démarrent pas au
+ * même frame.
+ *
+ * Elle vaut 0 et ne bouge plus sous « Réduire les animations » ou hors du premier plan : c'est
+ * `decorativeMotion` qui décide de *jouer* ou non, pas l'horloge, et un lecteur qui ignorerait
+ * la préférence resterait simplement figé au lieu de scintiller.
+ */
+export function useBackdropClock(): SharedValue<number> {
   const clock = useContext(BackdropClockContext);
 
   if (clock === null) {
-    throw new Error('AmbientBackdrop doit être monté sous AmbientBackdropProvider');
+    throw new Error('useBackdropClock doit être appelé sous AmbientBackdropProvider');
   }
+
+  return clock;
+}
+
+/** Les traits d'une scène, posés sous son contenu et pilotés par l'horloge partagée. */
+export function AmbientBackdrop() {
+  const clock = useBackdropClock();
 
   return (
     <>
