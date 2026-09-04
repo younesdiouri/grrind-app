@@ -15,12 +15,13 @@ import { Circle } from 'react-native-svg';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { arcPresentation, arcsOf, ringViewport, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { SessionCard } from '@/components/SessionCard';
+import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import { decorativeGlow } from '@/design/decorativeGlow';
 import type { DecorativeGlow } from '@/design/decorativeGlow';
-import { attributeColor, color, curve, duration, radius, space, type } from '@/design/tokens';
+import { attributeColor, color, curve, duration, space, type, typography } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
@@ -89,7 +90,13 @@ export function LevelCard({ progression }: { progression: Progression }) {
   });
 
   return (
-    <View style={[styles.level, glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }]} onLayout={play}>
+    <SystemFrame
+      tier="hero"
+      accent="celebrate"
+      style={glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }}
+      contentStyle={styles.level}
+    >
+      <View style={styles.levelBody} onLayout={play}>
       {/* Le niveau devant, le cumul à droite : c'est le niveau qu'on vient voir, et le
           total qui le justifie. Le titre porté se range sous le total parce qu'il se gagne
           par l'XP, pas par le palier. */}
@@ -141,7 +148,8 @@ export function LevelCard({ progression }: { progression: Progression }) {
           {progression.skillPoints.available > 1 ? 's' : ''} de compétence
         </Text>
       ) : null}
-    </View>
+      </View>
+    </SystemFrame>
   );
 }
 
@@ -210,7 +218,8 @@ export function AttributeCard({
   });
 
   return (
-    <View style={styles.attributesCard} onLayout={play}>
+    <SystemFrame contentStyle={styles.attributesCard}>
+      <View style={styles.attributesBody} onLayout={play}>
       <View style={styles.attributesRow}>
         <AttributeRing
           attributes={arcs}
@@ -245,7 +254,8 @@ export function AttributeCard({
       ) : null}
 
       <VitalityNote breakdown={vitalityBreakdown} />
-    </View>
+      </View>
+    </SystemFrame>
   );
 }
 
@@ -354,11 +364,9 @@ export function WorkoutRow({ workout, now }: { workout: Workout; now: Date }) {
 
 const styles = StyleSheet.create({
   level: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
-    gap: space.sm,
   },
+  levelBody: { gap: space.sm },
   levelHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -368,8 +376,14 @@ const styles = StyleSheet.create({
   levelIdentity: { gap: space.xs },
   levelTally: { alignItems: 'flex-end', gap: space.xs },
   overline: { ...type.label, color: color.textMuted },
-  levelNumber: { ...type.display, color: color.celebrate },
-  levelTotal: { ...type.title, color: color.accent, padding: 0, textAlign: 'right' },
+  levelNumber: { ...type.display, fontFamily: typography.display.bold, color: color.celebrate },
+  levelTotal: {
+    ...type.title,
+    fontFamily: typography.display.semibold,
+    color: color.accent,
+    padding: 0,
+    textAlign: 'right',
+  },
   levelProgress: { gap: space.sm },
   levelScale: {
     flexDirection: 'row',
@@ -380,11 +394,9 @@ const styles = StyleSheet.create({
   levelFoot: { ...type.label, color: color.textMuted },
   levelRemaining: { ...type.label, color: color.text },
   attributesCard: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
-    gap: space.sm,
   },
+  attributesBody: { gap: space.sm },
   attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   vitalityNote: { gap: space.xs },
   /** Le bonus se célèbre discrètement : c'est un gain, mais il ne vient pas d'une séance. */

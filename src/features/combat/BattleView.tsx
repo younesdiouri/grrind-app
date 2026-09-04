@@ -16,9 +16,21 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { CoinAmount } from '@/components/CoinAmount';
+import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { hpBarFill, HpBar } from '@/components/HpBar';
 import { ItemCard } from '@/components/ItemCard';
-import { battleResultLabel, color, scale, space, type } from '@/design/tokens';
+import { SystemFrame } from '@/components/SystemFrame';
+import {
+  ambient,
+  battleResultLabel,
+  color,
+  duration,
+  scale,
+  space,
+  type,
+  typography,
+} from '@/design/tokens';
+import { useReducedMotion } from '@/design/useReducedMotion';
 import { formatTurns } from './format.ts';
 import { hasBattleReward } from './reward.ts';
 import {
@@ -85,6 +97,7 @@ export function BattleView({
 }) {
   const timeline = useMemo(() => buildBattleTimeline(battle), [battle]);
   const clock = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
 
   /**
    * La séquence est-elle arrivée au bout.
@@ -166,50 +179,74 @@ export function BattleView({
     ),
   }));
 
+  // L'entrée du cadre emprunte l'horloge métier déjà présente. Elle n'allonge ni ne décale
+  // aucun battement; avec Réduire les animations — indéterminé compris — le panneau est posé.
+  const frameEntryStyle = useAnimatedStyle(() => {
+    if (reducedMotion !== false) {
+      return { opacity: 1, transform: [{ scale: 1 }] };
+    }
+
+    const entered = interpolate(
+      clock.value,
+      [0, duration.enter],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
+    return {
+      opacity: entered,
+      transform: [{ scale: scale.from + entered * (1 - scale.from) }],
+    };
+  });
+
   return (
     // `onLayout` et non un effet : la séquence part quand l'écran a ses dimensions, pas avant.
     // C'est l'idiome de `SyncSummaryView`, et il évite une première frame jouée dans le vide.
     <Pressable style={styles.screen} onPress={touch} onLayout={play} accessibilityRole="button">
-      <Fighter clock={clock} side="enemy" name={battle.enemy.name} ramps={timeline.enemy} stats={battle.enemy} />
+      <AmbientBackdrop />
+      <Animated.View style={[styles.eventFrame, frameEntryStyle]}>
+        <SystemFrame tier="event" style={styles.eventSurface} contentStyle={styles.eventContent}>
+          <Fighter clock={clock} side="enemy" name={battle.enemy.name} ramps={timeline.enemy} stats={battle.enemy} />
 
-      <View style={styles.stage}>
-        <Animated.View style={[styles.layer, actionsStyle]}>
-          <Call clock={clock} flash={timeline.enemy.damageFlash}>
-            <Blow
-              clock={clock}
-              who={battle.enemy.name}
-              ramps={timeline.enemy}
-              tone={styles.dealt}
-            />
-          </Call>
+          <View style={styles.stage}>
+            <Animated.View style={[styles.layer, actionsStyle]}>
+              <Call clock={clock} flash={timeline.enemy.damageFlash}>
+                <Blow
+                  clock={clock}
+                  who={battle.enemy.name}
+                  ramps={timeline.enemy}
+                  tone={styles.dealt}
+                />
+              </Call>
 
-          <Call clock={clock} flash={timeline.player.damageFlash}>
-            <Blow clock={clock} who="Toi" ramps={timeline.player} tone={styles.taken} />
-          </Call>
+              <Call clock={clock} flash={timeline.player.damageFlash}>
+                <Blow clock={clock} who="Toi" ramps={timeline.player} tone={styles.taken} />
+              </Call>
 
-          <Call clock={clock} flash={timeline.enemy.dodgeFlash}>
-            <Announce who={battle.enemy.name} word="esquive" />
-          </Call>
+              <Call clock={clock} flash={timeline.enemy.dodgeFlash}>
+                <Announce who={battle.enemy.name} word="esquive" />
+              </Call>
 
-          <Call clock={clock} flash={timeline.player.dodgeFlash}>
-            <Announce who="Toi" word="esquives" />
-          </Call>
+              <Call clock={clock} flash={timeline.player.dodgeFlash}>
+                <Announce who="Toi" word="esquives" />
+              </Call>
 
-          <Call clock={clock} flash={timeline.enemy.extraFlash}>
-            <Announce who={battle.enemy.name} word="rejoue" tone={styles.extra} />
-          </Call>
+              <Call clock={clock} flash={timeline.enemy.extraFlash}>
+                <Announce who={battle.enemy.name} word="rejoue" tone={styles.extra} />
+              </Call>
 
-          <Call clock={clock} flash={timeline.player.extraFlash}>
-            <Announce who="Toi" word="rejoues" tone={styles.extra} />
-          </Call>
-        </Animated.View>
+              <Call clock={clock} flash={timeline.player.extraFlash}>
+                <Announce who="Toi" word="rejoues" tone={styles.extra} />
+              </Call>
+            </Animated.View>
 
-        <Animated.View style={[styles.layer, recapStyle]} pointerEvents="none">
-          <Recap battle={battle} tally={timeline.tally} done={done} />
-        </Animated.View>
-      </View>
+            <Animated.View style={[styles.layer, recapStyle]} pointerEvents="none">
+              <Recap battle={battle} tally={timeline.tally} done={done} />
+            </Animated.View>
+          </View>
 
-      <Fighter clock={clock} side="player" name="Toi" ramps={timeline.player} stats={battle.player} />
+          <Fighter clock={clock} side="player" name="Toi" ramps={timeline.player} stats={battle.player} />
+        </SystemFrame>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -484,7 +521,13 @@ function Fighter({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.background,
+    padding: space.sm,
+    overflow: 'hidden',
+  },
+  eventFrame: { flex: 1, zIndex: ambient.contentLayer },
+  eventSurface: { flex: 1 },
+  eventContent: {
+    flex: 1,
     padding: space.lg,
     paddingTop: space.xl,
     paddingBottom: space.xl,
@@ -496,7 +539,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.sm,
   },
-  name: { ...type.title, color: color.text },
+  name: {
+    ...type.title,
+    color: color.text,
+    fontFamily: typography.display.semibold,
+    fontWeight: typography.display.weight.semibold,
+  },
   hp: { flexDirection: 'row', alignItems: 'baseline', gap: space.xs },
   /**
    * La largeur est **la** correction du premier essai sur appareil.
@@ -529,16 +577,32 @@ const styles = StyleSheet.create({
   },
   call: { alignItems: 'center', gap: space.xs },
   who: { ...type.label, color: color.textMuted },
-  hit: { ...type.display, padding: 0, textAlign: 'center' },
+  hit: {
+    ...type.display,
+    padding: 0,
+    textAlign: 'center',
+    fontFamily: typography.display.bold,
+    fontWeight: typography.display.weight.bold,
+  },
   /** Ce que le joueur inflige — la couleur de l'adversaire, puisque c'est lui qui l'encaisse. */
   dealt: { color: color.hpEnemy },
   taken: { color: color.hpPlayer },
   absorbed: { ...type.label, color: color.textMuted, padding: 0, textAlign: 'center' },
-  word: { ...type.title, color: color.text },
+  word: {
+    ...type.title,
+    color: color.text,
+    fontFamily: typography.display.semibold,
+    fontWeight: typography.display.weight.semibold,
+  },
   extra: { color: color.gain },
 
   recap: { alignItems: 'center', gap: space.sm, paddingHorizontal: space.md },
-  verdict: { ...type.display, textAlign: 'center' },
+  verdict: {
+    ...type.display,
+    textAlign: 'center',
+    fontFamily: typography.display.bold,
+    fontWeight: typography.display.weight.bold,
+  },
   verdictWon: { color: color.victory },
   verdictLost: { color: color.defeat },
   against: { ...type.body, color: color.text, textAlign: 'center' },

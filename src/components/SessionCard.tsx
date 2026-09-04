@@ -2,7 +2,8 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
 import { DisciplineChip } from '@/components/DisciplineChip';
-import { color, radius, space, type } from '@/design/tokens';
+import { SystemFrame } from '@/components/SystemFrame';
+import { color, space, type, typography } from '@/design/tokens';
 
 type SessionCardProps = {
   discipline: components['schemas']['Discipline'];
@@ -37,7 +38,7 @@ type SessionCardProps = {
  */
 export function SessionCard({ discipline, duration, when, measures }: SessionCardProps) {
   return (
-    <View style={styles.card}>
+    <SystemFrame contentStyle={styles.card}>
       <View style={styles.head}>
         <DisciplineChip discipline={discipline} />
         <Text style={styles.duration}>{duration}</Text>
@@ -48,14 +49,12 @@ export function SessionCard({ discipline, duration, when, measures }: SessionCar
       {measures === undefined || measures.length === 0 ? null : (
         <Text style={styles.meta}>{measures.join(' · ')}</Text>
       )}
-    </View>
+    </SystemFrame>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
     gap: space.xs,
   },
@@ -65,6 +64,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.sm,
   },
-  duration: { ...type.body, color: color.text },
+  duration: { ...type.body, fontFamily: typography.display.semibold, color: color.text },
   meta: { ...type.label, color: color.textMuted, letterSpacing: 0 },
 });

@@ -3,6 +3,7 @@ import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 import { ItemIllustration } from '@/components/ItemIllustration';
 import { ItemPlaceholder } from '@/components/ItemPlaceholder';
+import { SystemFrame } from '@/components/SystemFrame';
 import {
   color,
   equipmentSlotLabel,
@@ -40,7 +41,7 @@ const placement: Record<EquipmentSlot, ViewStyle> = {
  */
 export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoardProps) {
   return (
-    <View style={styles.board}>
+    <SystemFrame tier="hero" style={styles.frame} contentStyle={styles.board}>
       <View style={styles.silhouette}>
         <Svg width="100%" height="100%" viewBox="0 0 180 350">
           <Circle cx="90" cy="29" r="21" fill={color.surfaceRaised} stroke={color.border} strokeWidth="2" />
@@ -99,17 +100,15 @@ export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoard
           </Pressable>
         );
       })}
-    </View>
+    </SystemFrame>
   );
 }
 
 const styles = StyleSheet.create({
+  frame: { height: 430 },
   board: {
-    height: 430,
+    flex: 1,
     position: 'relative',
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
-    overflow: 'hidden',
   },
   silhouette: {
     position: 'absolute',

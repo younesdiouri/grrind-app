@@ -4,7 +4,17 @@ import type { components } from '@/api/schema';
 import { CoinAmount } from '@/components/CoinAmount';
 import { ItemIllustration } from '@/components/ItemIllustration';
 import { formatModifier } from '@/features/inventory/format';
-import { color, equipmentSlotLabel, radius, rarityColor, rarityLabel, space, type } from '@/design/tokens';
+import {
+  color,
+  equipmentSlotLabel,
+  frame,
+  radius,
+  rarityColor,
+  rarityLabel,
+  space,
+  type,
+  typography,
+} from '@/design/tokens';
 
 type ItemCardProps = {
   /**
@@ -108,7 +118,7 @@ const styles = StyleSheet.create({
   card: {
     alignSelf: 'stretch',
     backgroundColor: color.surface,
-    borderRadius: radius.md,
+    borderRadius: frame.standard.radius,
     borderWidth: StyleSheet.hairlineWidth,
     padding: space.md,
   },
@@ -124,7 +134,13 @@ const styles = StyleSheet.create({
   rarity: { ...type.label },
   // Un nom légendaire peut être long ; c'est lui qui cède, jamais la quantité, qui est ce
   // qu'on cherche du regard dans un sac.
-  name: { ...type.body, color: color.text, flexShrink: 1 },
+  name: {
+    ...type.body,
+    color: color.text,
+    flexShrink: 1,
+    fontFamily: typography.display.semibold,
+    fontWeight: typography.display.weight.semibold,
+  },
   quantity: { ...type.body, color: color.textMuted },
   slot: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   modifiers: { gap: space.xs },

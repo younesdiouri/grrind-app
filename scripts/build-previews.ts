@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -31,7 +31,7 @@ const [
   { AppRegistry },
   { renderToStaticMarkup },
   { PAGE_WIDTH, Page, PREVIEWS },
-  { color },
+  { color, typography },
   react,
 ] = await Promise.all([
   import('react-native-web'),
@@ -39,6 +39,11 @@ const [
   import('@/design/previews'),
   import('@/design/tokens'),
   import('react'),
+]);
+
+const [semiBoldFont, boldFont] = await Promise.all([
+  readFile(new URL('../assets/fonts/Oxanium-SemiBold.ttf', import.meta.url), 'base64'),
+  readFile(new URL('../assets/fonts/Oxanium-Bold.ttf', import.meta.url), 'base64'),
 ]);
 
 const rendered = PREVIEWS.map((preview) => {
@@ -68,7 +73,11 @@ function page(name: string, group: string, markup: string): string {
     <title>GRRIND — ${name}</title>
     <!-- Généré par \`npm run previews\` depuis les composants React Native. Ne pas éditer. -->
     ${stylesheet}
-    <style>html,body{background-color:${color.background};}</style>
+    <style>
+      @font-face{font-family:'${typography.display.semibold}';src:url(data:font/ttf;base64,${semiBoldFont}) format('truetype');font-weight:${typography.display.weight.semibold};}
+      @font-face{font-family:'${typography.display.bold}';src:url(data:font/ttf;base64,${boldFont}) format('truetype');font-weight:${typography.display.weight.bold};}
+      html,body{background-color:${color.background};}
+    </style>
   </head>
   <body>${markup}</body>
 </html>

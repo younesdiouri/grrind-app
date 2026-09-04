@@ -1,11 +1,12 @@
 import { QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useSyncExternalStore } from 'react';
 
 import { queryClient } from '@/api/queryClient';
-import { color } from '@/design/tokens';
+import { color, typography } from '@/design/tokens';
 import { restore } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
 // Importé pour son seul effet de bord — voir son docblock : `setNotificationHandler` doit
@@ -26,6 +27,13 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const auth = useAuth();
+  // Chargement runtime volontaire : aucune configuration native, et l'erreur d'une fonte ne
+  // retient jamais le splash. Source : https://docs.expo.dev/versions/v57.0.0/sdk/font/#usage
+  const [fontsLoaded, fontError] = useFonts({
+    [typography.display.semibold]: require('../../assets/fonts/Oxanium-SemiBold.ttf'),
+    [typography.display.bold]: require('../../assets/fonts/Oxanium-Bold.ttf'),
+  });
+  const fontsSettled = fontsLoaded || fontError !== null;
 
   useEffect(() => {
     // En développement, React monte deux fois : le coordinateur de rafraîchissement partage
@@ -55,12 +63,12 @@ export default function RootLayout() {
   }, [auth.status]);
 
   useEffect(() => {
-    if (settled) {
+    if (settled && fontsSettled) {
       void SplashScreen.hideAsync();
     }
-  }, [settled]);
+  }, [fontsSettled, settled]);
 
-  if (auth.status === 'restoring') {
+  if (auth.status === 'restoring' || !fontsSettled) {
     return null;
   }
 

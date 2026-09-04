@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
-import { color, opacity, radius, space, type } from '@/design/tokens';
+import { SystemFrame } from '@/components/SystemFrame';
+import { color, opacity, space, type, typography } from '@/design/tokens';
 
 type PlayerFighterCardProps = {
   /**
@@ -36,7 +37,7 @@ type PlayerFighterCardProps = {
  */
 export function PlayerFighterCard({ player, onOpenBag }: PlayerFighterCardProps) {
   return (
-    <View style={styles.card}>
+    <SystemFrame tier="hero" contentStyle={styles.card}>
       <Text style={styles.name}>Toi</Text>
 
       <View style={styles.stats}>
@@ -57,7 +58,7 @@ export function PlayerFighterCard({ player, onOpenBag }: PlayerFighterCardProps)
           <Text style={styles.bagLabel}>Équipement ›</Text>
         </Pressable>
       )}
-    </View>
+    </SystemFrame>
   );
 }
 
@@ -74,12 +75,10 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: color.surfaceRaised,
-    borderRadius: radius.md,
     padding: space.md,
     gap: space.sm,
   },
-  name: { ...type.body, color: color.text },
+  name: { ...type.body, fontFamily: typography.display.bold, color: color.text },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   stat: { gap: space.xs },
   bag: { alignSelf: 'flex-start' },

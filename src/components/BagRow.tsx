@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CoinAmount } from '@/components/CoinAmount';
+import { SystemFrame } from '@/components/SystemFrame';
 import type { DecorativeGlow } from '@/design/decorativeGlow';
-import { color, opacity, radius, space, type } from '@/design/tokens';
+import { color, opacity, space, type, typography } from '@/design/tokens';
 
 type BagRowProps = {
   /**
@@ -38,45 +39,46 @@ export function BagRow({ summary, onPress, glow }: BagRowProps) {
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.row,
-        glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow },
-        pressed && styles.pressed,
-      ]}
+      style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       testID="bag-row"
     >
-      <View style={styles.identity}>
-        <Text style={styles.label}>Sac</Text>
-        {summary === undefined ? null : (
-          <Text style={styles.detail}>
-            {summary.itemCount} objet{summary.itemCount > 1 ? 's' : ''}
-          </Text>
-        )}
-      </View>
+      <SystemFrame
+        tier="hero"
+        style={glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }}
+        contentStyle={styles.row}
+      >
+        <View style={styles.identity}>
+          <Text style={styles.label}>Sac</Text>
+          {summary === undefined ? null : (
+            <Text style={styles.detail}>
+              {summary.itemCount} objet{summary.itemCount > 1 ? 's' : ''}
+            </Text>
+          )}
+        </View>
 
-      {summary === undefined ? null : <CoinAmount amount={summary.coins} />}
-      <Text style={styles.chevron}>›</Text>
+        {summary === undefined ? null : <CoinAmount amount={summary.coins} />}
+        <Text style={styles.chevron}>›</Text>
+      </SystemFrame>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  pressable: { alignSelf: 'stretch' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
   },
   // Même retour d'appui que `DangerRow` et `Button` : la ligne s'éteint sous le doigt, rien
   // ne se déplace.
   pressed: { opacity: opacity.pressed },
   identity: { flex: 1, gap: space.xs },
-  label: { ...type.body, color: color.text },
+  label: { ...type.body, fontFamily: typography.display.semibold, color: color.text },
   detail: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   chevron: { ...type.body, color: color.textMuted },
 });
