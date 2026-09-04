@@ -8,6 +8,7 @@ import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { CoinAmount } from '@/components/CoinAmount';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
+import { SystemFrame } from '@/components/SystemFrame';
 import { decorativeGlow } from '@/design/decorativeGlow';
 import { color, equipmentSlotLabel, opacity, radius, space, type, type EquipmentSlot } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
@@ -191,113 +192,121 @@ export default function InventoryScreen() {
             <Text style={styles.hint}>Choisis une zone</Text>
           </View>
 
-          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
+          <SystemFrame tier="hero">
+            <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
+          </SystemFrame>
 
-          <View style={styles.drawer}>
-            <View style={styles.drawerHead}>
-              <View style={styles.sectionCopy}>
-                <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
-                <Text style={styles.drawerTitle}>
-                  {equippedLine === null ? 'Emplacement libre' : 'Objet équipé'}
-                </Text>
-              </View>
-              <Text style={styles.count}>
-                {compatibleItems.length} compatible{compatibleItems.length === 1 ? '' : 's'}
-              </Text>
-            </View>
-
-            {equippedLine === null ? null : (
-              <View style={styles.current}>
-                <ItemCard item={equippedLine} quantity={equippedLine.quantity} equipped />
-                <Button
-                  label="Retirer"
-                  variant="quiet"
-                  busy={pending === activeSlot}
-                  disabled={pendingChest !== null || (pending !== null && pending !== activeSlot)}
-                  onPress={() => void apply(activeSlot, () => unequipSlot(activeSlot))}
-                />
-              </View>
-            )}
-
-            {availableItems.length > 0 ? <Text style={styles.label}>DANS TON SAC</Text> : null}
-
-            {availableItems.map((line) => (
-              <Pressable
-                key={line.key}
-                accessibilityRole="button"
-                accessibilityLabel={`Équiper — ${line.name}`}
-                accessibilityHint={`Remplace l’objet porté sur ${equipmentSlotLabel[line.slot].toLowerCase()}`}
-                disabled={pending !== null || pendingChest !== null}
-                onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
-                style={({ pressed }) => [
-                  styles.itemChoice,
-                  pressed && styles.pressed,
-                  (pending !== null || pendingChest !== null) && styles.inert,
-                ]}
-              >
-                <ItemCard item={line} quantity={line.quantity} />
-                <View style={styles.equipHint}>
-                  <Text style={styles.equipHintText}>
-                    {pending === line.slot ? 'Équipement…' : 'Toucher pour équiper'}
-                  </Text>
-                  <Text style={styles.chevron}>›</Text>
-                </View>
-              </Pressable>
-            ))}
-
-            {availableItems.length === 0 ? (
-              <View style={styles.emptyChoice}>
-                <Text style={styles.detail}>
-                  {equippedLine === null
-                    ? 'Aucun objet compatible dans ton sac.'
-                    : 'Aucune autre option pour cet emplacement.'}
-                </Text>
-                <Text style={styles.emptyHint}>Tes prochains drops apparaîtront ici.</Text>
-              </View>
-            ) : null}
-          </View>
-
-          {data.items.filter((line) => line.kind === 'CHEST').length > 0 ? (
+          <SystemFrame tier="standard">
             <View style={styles.drawer}>
               <View style={styles.drawerHead}>
                 <View style={styles.sectionCopy}>
-                  <Text style={styles.label}>COFFRES</Text>
-                  <Text style={styles.drawerTitle}>À ouvrir</Text>
+                  <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
+                  <Text style={styles.drawerTitle}>
+                    {equippedLine === null ? 'Emplacement libre' : 'Objet équipé'}
+                  </Text>
                 </View>
+                <Text style={styles.count}>
+                  {compatibleItems.length} compatible{compatibleItems.length === 1 ? '' : 's'}
+                </Text>
               </View>
-              {data.items
-                .filter((line) => line.kind === 'CHEST')
-                .map((line) => (
-                  <View key={line.key} style={styles.current}>
-                    <ItemCard item={line} quantity={line.quantity} />
-                    <Button
-                      label="Ouvrir"
-                      busy={pendingChest === line.key}
-                      disabled={pending !== null || (pendingChest !== null && pendingChest !== line.key)}
-                      onPress={() => void revealChest(line.key)}
-                    />
+
+              {equippedLine === null ? null : (
+                <View style={styles.current}>
+                  <ItemCard item={equippedLine} quantity={equippedLine.quantity} equipped />
+                  <Button
+                    label="Retirer"
+                    variant="quiet"
+                    busy={pending === activeSlot}
+                    disabled={pendingChest !== null || (pending !== null && pending !== activeSlot)}
+                    onPress={() => void apply(activeSlot, () => unequipSlot(activeSlot))}
+                  />
+                </View>
+              )}
+
+              {availableItems.length > 0 ? <Text style={styles.label}>DANS TON SAC</Text> : null}
+
+              {availableItems.map((line) => (
+                <Pressable
+                  key={line.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Équiper — ${line.name}`}
+                  accessibilityHint={`Remplace l’objet porté sur ${equipmentSlotLabel[line.slot].toLowerCase()}`}
+                  disabled={pending !== null || pendingChest !== null}
+                  onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
+                  style={({ pressed }) => [
+                    styles.itemChoice,
+                    pressed && styles.pressed,
+                    (pending !== null || pendingChest !== null) && styles.inert,
+                  ]}
+                >
+                  <ItemCard item={line} quantity={line.quantity} />
+                  <View style={styles.equipHint}>
+                    <Text style={styles.equipHintText}>
+                      {pending === line.slot ? 'Équipement…' : 'Toucher pour équiper'}
+                    </Text>
+                    <Text style={styles.chevron}>›</Text>
                   </View>
-                ))}
+                </Pressable>
+              ))}
+
+              {availableItems.length === 0 ? (
+                <View style={styles.emptyChoice}>
+                  <Text style={styles.detail}>
+                    {equippedLine === null
+                      ? 'Aucun objet compatible dans ton sac.'
+                      : 'Aucune autre option pour cet emplacement.'}
+                  </Text>
+                  <Text style={styles.emptyHint}>Tes prochains drops apparaîtront ici.</Text>
+                </View>
+              ) : null}
             </View>
+          </SystemFrame>
+
+          {data.items.filter((line) => line.kind === 'CHEST').length > 0 ? (
+            <SystemFrame tier="standard">
+              <View style={styles.drawer}>
+                <View style={styles.drawerHead}>
+                  <View style={styles.sectionCopy}>
+                    <Text style={styles.label}>COFFRES</Text>
+                    <Text style={styles.drawerTitle}>À ouvrir</Text>
+                  </View>
+                </View>
+                {data.items
+                  .filter((line) => line.kind === 'CHEST')
+                  .map((line) => (
+                    <View key={line.key} style={styles.current}>
+                      <ItemCard item={line} quantity={line.quantity} />
+                      <Button
+                        label="Ouvrir"
+                        busy={pendingChest === line.key}
+                        disabled={pending !== null || (pendingChest !== null && pendingChest !== line.key)}
+                        onPress={() => void revealChest(line.key)}
+                      />
+                    </View>
+                  ))}
+              </View>
+            </SystemFrame>
           ) : null}
 
           {openedChest?.kind === 'opened' ? (
-            <View style={styles.drawer} accessibilityLiveRegion="polite">
-              <Text style={styles.label}>CONTENU DU COFFRE</Text>
-              {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0 ? (
-                <Text style={styles.detail}>Le coffre était vide.</Text>
-              ) : (
-                <>
-                  {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
-                  <Text style={styles.detail}>Pièces trouvées</Text>
-                  <CoinAmount amount={openedChest.chest.coins} />
-                </>
-              )}
-              <AnimatedCoinBalance
-                before={openedChest.chest.coinsBefore}
-                after={openedChest.chest.coinsAfter}
-              />
-            </View>
+            <SystemFrame tier="event" accent="gain">
+              <View style={styles.drawer} accessibilityLiveRegion="polite">
+                <Text style={styles.label}>CONTENU DU COFFRE</Text>
+                {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0 ? (
+                  <Text style={styles.detail}>Le coffre était vide.</Text>
+                ) : (
+                  <>
+                    {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
+                    <Text style={styles.detail}>Pièces trouvées</Text>
+                    <CoinAmount amount={openedChest.chest.coins} />
+                  </>
+                )}
+                <AnimatedCoinBalance
+                  before={openedChest.chest.coinsBefore}
+                  after={openedChest.chest.coinsAfter}
+                />
+              </View>
+            </SystemFrame>
           ) : null}
         </>
       )}
@@ -339,8 +348,6 @@ const styles = StyleSheet.create({
   section: { ...type.label, color: color.accent },
   hint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   drawer: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
     gap: space.md,
   },

@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
-import { StyleSheet, type ColorValue } from 'react-native';
+import { StyleSheet, View, type ColorValue } from 'react-native';
 
-import { color, space } from '@/design/tokens';
+import { color, fontFamily, radius, space, stroke } from '@/design/tokens';
 
 /**
  * La barre d'onglets.
@@ -55,6 +55,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: color.textMuted,
         tabBarStyle: styles.bar,
         sceneStyle: styles.scene,
+        tabBarLabelStyle: styles.label,
       }}
     >
       <Tabs.Screen
@@ -63,7 +64,9 @@ export default function TabsLayout() {
           tabBarButtonTestID: 'tab-accueil',
           title: 'GRRIND',
           tabBarLabel: 'Accueil',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="house" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => (
+            <TabIcon name="house" color={tint} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -71,8 +74,8 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-sante',
           title: 'Santé',
-          tabBarIcon: ({ color: tint }) => (
-            <TabIcon name="heart.text.square" color={tint} />
+          tabBarIcon: ({ color: tint, focused }) => (
+            <TabIcon name="heart.text.square" color={tint} focused={focused} />
           ),
         }}
       />
@@ -81,7 +84,9 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-combat',
           title: 'Combat',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="bolt.shield" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => (
+            <TabIcon name="bolt.shield" color={tint} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -89,7 +94,9 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-guilde',
           title: 'Guilde',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="person.2" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => (
+            <TabIcon name="person.2" color={tint} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -97,7 +104,9 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-reglages',
           title: 'Réglages',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="gearshape" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => (
+            <TabIcon name="gearshape" color={tint} focused={focused} />
+          ),
         }}
       />
     </Tabs>
@@ -105,18 +114,49 @@ export default function TabsLayout() {
 }
 
 /**
- * Une icône SF Symbols, avec repli.
- *
- * `SymbolView` ne rend rien sur Android et sur le web quand `name` est une chaîne simple —
- * ce module cible SF Symbols, pas Material Symbols. Android n'est pas la cible de ce ticket
- * (#15), mais l'absence de repli plante silencieusement l'icône plutôt que la barre : le
- * `fallback` garde l'écran debout en attendant la table de correspondance qu'ouvrira #15.
+ * Une icône SF Symbols avec indicateur actif angulaire et repli.
  */
-function TabIcon({ name, color: tint }: { name: SFSymbol; color: ColorValue }) {
-  return <SymbolView name={name} size={space.lg} tintColor={tint} fallback={null} />;
+function TabIcon({
+  name,
+  color: tint,
+  focused,
+}: {
+  name: SFSymbol;
+  color: ColorValue;
+  focused: boolean;
+}) {
+  return (
+    <View style={styles.iconContainer}>
+      {focused ? <View style={styles.activeIndicator} /> : null}
+      <SymbolView name={name} size={space.lg} tintColor={tint} fallback={null} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  bar: { backgroundColor: color.surface, borderTopColor: color.border },
+  bar: {
+    backgroundColor: color.surface,
+    borderTopWidth: stroke.medium,
+    borderTopColor: 'rgba(53, 228, 255, 0.35)',
+  },
   scene: { backgroundColor: color.background },
+  label: {
+    fontFamily: fontFamily.displayBold,
+    fontSize: 11,
+    letterSpacing: 0.5,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    paddingTop: 2,
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: -6,
+    width: 18,
+    height: stroke.medium,
+    backgroundColor: color.accent,
+    borderRadius: radius.xs,
+  },
 });

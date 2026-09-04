@@ -15,12 +15,13 @@ import { Circle } from 'react-native-svg';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { arcPresentation, arcsOf, ringViewport, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { SessionCard } from '@/components/SessionCard';
+import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import { decorativeGlow } from '@/design/decorativeGlow';
 import type { DecorativeGlow } from '@/design/decorativeGlow';
-import { attributeColor, color, curve, duration, radius, space, type } from '@/design/tokens';
+import { attributeColor, color, curve, duration, space, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
@@ -89,28 +90,29 @@ export function LevelCard({ progression }: { progression: Progression }) {
   });
 
   return (
-    <View style={[styles.level, glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }]} onLayout={play}>
-      {/* Le niveau devant, le cumul à droite : c'est le niveau qu'on vient voir, et le
-          total qui le justifie. Le titre porté se range sous le total parce qu'il se gagne
-          par l'XP, pas par le palier. */}
-      <View style={styles.levelHead}>
-        <View style={styles.levelIdentity}>
-          <Text style={styles.overline}>NIVEAU</Text>
-          <Text style={styles.levelNumber}>{progression.level}</Text>
-        </View>
+    <SystemFrame
+      tier="hero"
+      style={glow.effect === undefined ? undefined : { boxShadow: glow.effect.boxShadow }}
+    >
+      <View style={styles.level} onLayout={play}>
+        <View style={styles.levelHead}>
+          <View style={styles.levelIdentity}>
+            <Text style={styles.overline}>NIVEAU</Text>
+            <Text style={styles.levelNumber}>{progression.level}</Text>
+          </View>
 
-        <View style={styles.levelTally}>
-          <AnimatedTextInput
-            style={styles.levelTotal}
-            editable={false}
-            animatedProps={totalProps}
-            defaultValue="0 XP"
-          />
-          {progression.activeTitle === null ? null : (
-            <TitleBadge name={progression.activeTitle.name} />
-          )}
+          <View style={styles.levelTally}>
+            <AnimatedTextInput
+              style={styles.levelTotal}
+              editable={false}
+              animatedProps={totalProps}
+              defaultValue="0 XP"
+            />
+            {progression.activeTitle === null ? null : (
+              <TitleBadge name={progression.activeTitle.name} />
+            )}
+          </View>
         </View>
-      </View>
 
       <View style={styles.levelProgress}>
         <XpBar size="hero">
@@ -141,7 +143,8 @@ export function LevelCard({ progression }: { progression: Progression }) {
           {progression.skillPoints.available > 1 ? 's' : ''} de compétence
         </Text>
       ) : null}
-    </View>
+      </View>
+    </SystemFrame>
   );
 }
 
@@ -210,42 +213,44 @@ export function AttributeCard({
   });
 
   return (
-    <View style={styles.attributesCard} onLayout={play}>
-      <View style={styles.attributesRow}>
-        <AttributeRing
-          attributes={arcs}
-          vitality={vitality}
-          size="hero"
-          glow={glow}
-          center={
-            <AnimatedTextInput
-              style={[type.display, styles.vitalityText, { fontSize }]}
-              editable={false}
-              animatedProps={vitalityProps}
-              defaultValue="0"
-            />
-          }
-        >
-          {staticArcs.map((arc) => (
-            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} glow={glow} />
-          ))}
-        </AttributeRing>
+    <SystemFrame tier="standard">
+      <View style={styles.attributesCard} onLayout={play}>
+        <View style={styles.attributesRow}>
+          <AttributeRing
+            attributes={arcs}
+            vitality={vitality}
+            size="hero"
+            glow={glow}
+            center={
+              <AnimatedTextInput
+                style={[type.display, styles.vitalityText, { fontSize }]}
+                editable={false}
+                animatedProps={vitalityProps}
+                defaultValue="0"
+              />
+            }
+          >
+            {staticArcs.map((arc) => (
+              <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} glow={glow} />
+            ))}
+          </AttributeRing>
 
-        {/* La légende prend la largeur qui reste, comme `barWrap` le fait pour `XpBar` dans
-            `GuildMemberRow` : son `legendLabel` est en `flex: 1`, et un enfant flexible dans un
-            parent dont la largeur dépend de son contenu se réduit à un caractère — les
-            libellés se replient alors verticalement, lettre par lettre. */}
-        <View style={styles.legendWrap}>
-          <AttributeLegend attributes={arcs} />
+          {/* La légende prend la largeur qui reste, comme `barWrap` le fait pour `XpBar` dans
+              `GuildMemberRow` : son `legendLabel` est en `flex: 1`, et un enfant flexible dans un
+              parent dont la largeur dépend de son contenu se réduit à un caractère — les
+              libellés se replient alors verticalement, lettre par lettre. */}
+          <View style={styles.legendWrap}>
+            <AttributeLegend attributes={arcs} />
+          </View>
         </View>
+
+        {empty ? (
+          <Text style={styles.levelFoot}>Rien à répartir pour l&apos;instant : ta prochaine séance colorera ce cercle.</Text>
+        ) : null}
+
+        <VitalityNote breakdown={vitalityBreakdown} />
       </View>
-
-      {empty ? (
-        <Text style={styles.levelFoot}>Rien à répartir pour l&apos;instant : ta prochaine séance colorera ce cercle.</Text>
-      ) : null}
-
-      <VitalityNote breakdown={vitalityBreakdown} />
-    </View>
+    </SystemFrame>
   );
 }
 
@@ -354,8 +359,6 @@ export function WorkoutRow({ workout, now }: { workout: Workout; now: Date }) {
 
 const styles = StyleSheet.create({
   level: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
     gap: space.sm,
   },
@@ -380,8 +383,6 @@ const styles = StyleSheet.create({
   levelFoot: { ...type.label, color: color.textMuted },
   levelRemaining: { ...type.label, color: color.text },
   attributesCard: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
     gap: space.sm,
   },

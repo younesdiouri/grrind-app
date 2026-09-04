@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -26,6 +27,11 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const auth = useAuth();
+  const [fontsLoaded] = useFonts({
+    'Oxanium-SemiBold': require('../../assets/fonts/Oxanium-SemiBold.ttf'),
+    'Oxanium-Bold': require('../../assets/fonts/Oxanium-Bold.ttf'),
+    'Oxanium-Regular': require('../../assets/fonts/Oxanium-Regular.ttf'),
+  });
 
   useEffect(() => {
     // En développement, React monte deux fois : le coordinateur de rafraîchissement partage
@@ -55,12 +61,12 @@ export default function RootLayout() {
   }, [auth.status]);
 
   useEffect(() => {
-    if (settled) {
+    if (settled && fontsLoaded) {
       void SplashScreen.hideAsync();
     }
-  }, [settled]);
+  }, [settled, fontsLoaded]);
 
-  if (auth.status === 'restoring') {
+  if (auth.status === 'restoring' || !fontsLoaded) {
     return null;
   }
 

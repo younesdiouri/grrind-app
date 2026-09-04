@@ -1,6 +1,8 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { View } from 'react-native';
 
+import { AmbientBackdrop } from '@/components/AmbientBackdrop';
+import { TacticalBackButton } from '@/components/TacticalBackButton';
 import { color } from '@/design/tokens';
 import { useSyncTriggers } from '@/features/health/useSync';
 import { useDeviceRegistration } from '@/features/notifications/useDeviceRegistration';
@@ -37,18 +39,21 @@ export default function AppLayout() {
 
   return (
     <View style={{ flex: 1 }} onTouchStart={markInteracted}>
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: color.background },
-        headerTintColor: color.text,
-        contentStyle: { backgroundColor: color.background },
-        // Le chevron seul, jamais le titre de l'écran précédent : celui des onglets n'en a
-        // pas, et iOS repliait alors sur le **nom de la route** — un bouton « ‹ (tabs) » en
-        // haut de chaque écran poussé, découvert sur une capture du sac (#30). Les trois
-        // écrans poussés le portaient déjà.
-        headerBackButtonDisplayMode: 'minimal',
-      }}
-    >
+      <AmbientBackdrop />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: color.background },
+          headerTintColor: color.text,
+          contentStyle: { backgroundColor: color.background },
+          headerLeft: ({ canGoBack }) =>
+            canGoBack ? <TacticalBackButton onPress={() => router.back()} /> : null,
+          // Le chevron seul, jamais le titre de l'écran précédent : celui des onglets n'en a
+          // pas, et iOS repliait alors sur le **nom de la route** — un bouton « ‹ (tabs) » en
+          // haut de chaque écran poussé, découvert sur une capture du sac (#30). Les trois
+          // écrans poussés le portaient déjà.
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      >
       {/* La barre d'onglets porte désormais ses propres en-têtes (#41) : sans
           `headerShown: false` ici, celui de la pile se superposerait à celui des onglets. */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
