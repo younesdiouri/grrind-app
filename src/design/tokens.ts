@@ -169,7 +169,16 @@ export const frame = {
     glow: true,
   },
   segmentThickness: 2,
-  segmentOffset: -1,
+  /**
+   * Les segments se posent **au ras** du trait, pas dessus.
+   *
+   * Ils valaient `-1` et se lisaient à 1 px au lieu de 2 : `SystemFrame` pose `overflow: 'hidden'`
+   * pour que le halo et les calques décoratifs restent dans le cadre, et un enfant absolu est
+   * clippé à l'intérieur du trait — la moitié qui débordait n'a jamais été rendue. Personne ne
+   * l'avait vu parce qu'un segment fin reste un segment ; `seam` (#159) fait respirer exactement
+   * ces deux vues, et faire respirer un demi-segment aurait figé le défaut pour de bon.
+   */
+  segmentOffset: 0,
 } as const;
 
 /**
@@ -190,6 +199,126 @@ export const ambient = {
     { top: '82%', left: '98%', distance: -680, phase: 0.34 },
     { top: '-12%', left: '4%', distance: 620, phase: 0.68 },
   ],
+} as const;
+
+/**
+ * ————— Le mouvement de fond des panneaux ——————————————————————————————————————————————
+ *
+ * Le vocabulaire fini de ce qui bouge **sans qu'on y touche** (#159). Ce n'est pas la même
+ * famille que `duration` : celle-là dit combien de temps une transition met à se jouer,
+ * celle-ci dit à quel rythme un panneau a l'air d'être alimenté. Un HUD est crédible parce
+ * qu'il mesure quelque chose en continu, pas parce qu'il est bien dessiné.
+ *
+ * **Tout ce qui est continu ici se lit sur l'horloge d'`AmbientBackdropProvider`** par une
+ * phase et un modulo — voir `motionPhase.ts`. Les cycles sont donc des **diviseurs de
+ * `ambient.cycle`**, sans quoi le mouvement saute à chaque tour de l'horloge partagée ;
+ * `tokens.test.ts` le prouve, et c'est ce test qui empêche le saut de revenir en douce.
+ * Ils s'écartent pour ça de la référence de design, dont les cycles étaient libres.
+ *
+ * Seul `scan` échappe à la règle : c'est un **événement** — au montage, au rafraîchissement —
+ * et il garde sa propre valeur partagée. Il n'a donc pas de `cycle` du tout, seulement la
+ * durée de sa course.
+ *
+ * **Ces durées sont à mesurer sur un iPhone physique** avant d'être considérées comme justes,
+ * exactement comme celles de `duration` : elles sortent d'une référence jouée sur un écran de
+ * Mac, et un balayage juste là-bas est probablement trop rapide sur l'appareil.
+ */
+export const motion = {
+  /** Un cadre qu'on vient de lire : un trait qui le traverse une fois, puis se tait. */
+  scan: { active: 1_400, thickness: 1, opacity: 0.85 },
+  /**
+   * Un panneau alimenté : les deux segments respirent en **opposition de phase**.
+   *
+   * Amplitude minuscule, cycle long — on ne le regarde pas, on le sent. Chaque panneau prend
+   * son propre décalage pour que les trois ne clignotent pas ensemble ; c'est le décalage qui
+   * fait lire trois instruments plutôt qu'une seule pulsation d'écran.
+   */
+  seam: {
+    cycle: 3_000,
+    from: 0.45,
+    to: 1,
+    /** Le segment bas est à un demi-cycle du haut : c'est ça, l'opposition de phase. */
+    opposite: 1_500,
+    phase: { level: 0, ring: -800, bag: -2_100 },
+  },
+  /** La texture du bord intérieur gauche : un ruban de graduations qui dérive vers le haut. */
+  tick: { cycle: 2_400, pitch: 9, dash: 3, width: 2, opacity: 0.45, inset: 12, margin: 14 },
+  /**
+   * La couronne du cadran : un cercle pointillé posé **à l'extérieur** des arcs, qui tourne
+   * lentement dans le sens anti-horaire.
+   *
+   * `inset` est son écart au rayon net. Il agrandit le viewport SVG exactement comme le débord
+   * d'un halo, et par le même mécanisme (`ringGeometry`) : le centre se décale de la moitié du
+   * débord pour que les arcs gardent leur rayon, leur dash et leur offset.
+   *
+   * **`cycle` est le temps qu'un tiret met à prendre la place du suivant**, et non celui d'un
+   * tour. C'est la seule période réellement visible d'un pointillé qui dérive : rien ne
+   * distingue le tiret n° 1 du n° 51, et un tour complet — 24 s environ à ce rayon, ce que la
+   * référence demande — n'est donc pas une période au sens de l'horloge partagée. Le prendre
+   * pour tel imposerait un cycle de 24 000 ms, qui *multiplie* `ambient.cycle` au lieu de le
+   * diviser : la couronne sauterait d'un demi-tour toutes les douze secondes.
+   */
+  orbit: { cycle: 480, inset: 16, width: 1, dash: 2, gap: 8, opacity: 0.55 },
+  /**
+   * Le secteur du cadran : il tourne **plus vite et dans l'autre sens** que la couronne, sous
+   * les arcs. Les deux sens opposés sont l'essentiel de l'effet — c'est ce qui fait lire un
+   * mécanisme plutôt qu'une image qui tourne.
+   *
+   * `steps` est le nombre de sous-secteurs d'opacité décroissante qui approchent le dégradé
+   * conique du bord d'attaque : ni React Native ni SVG n'en ont un.
+   */
+  sweep: { cycle: 6_000, wedge: 84, diameter: 132, opacity: 0.3, steps: 6 },
+  /**
+   * L'énergie dans la jauge : une hachure sombre et un reflet clair **en parallaxe**, plus une
+   * arête au front d'onde. Les deux couches parcourent leur propre pas en un cycle — le reflet
+   * va donc dix fois plus vite que la hachure, et c'est ce décalage qui fait le conduit.
+   *
+   * L'arête se pose **au bord du remplissage**, à l'intérieur du masque : jamais dans la piste,
+   * sinon elle clignoterait sur du vide quand la barre repart de zéro.
+   */
+  flow: {
+    cycle: 1_000,
+    sheen: 70,
+    /** Le reflet est un dégradé, que React Native n'a pas : `sheenSteps` bandes l'approchent. */
+    sheenSteps: 4,
+    sheenOpacity: 0.5,
+    hatch: 7,
+    hatchWidth: 2,
+    hatchOpacity: 0.24,
+    /** L'inclinaison des deux couches, en degrés d'écart à la verticale. */
+    slant: -10,
+    crest: 2,
+    crestCycle: 1_500,
+    crestFrom: 0.4,
+    crestTo: 1,
+  },
+  /** Les chevrons qui défilent en cascade sur un intitulé : le texte a l'air écrit par la machine. */
+  convey: { cycle: 1_500, travel: 5, stagger: 250, count: 2 },
+  /** Le curseur de l'en-tête, clignotement franc : il est allumé, puis il ne l'est plus. */
+  caret: { cycle: 1_000, width: 5, height: 13 },
+  /**
+   * La ponctuation qu'on voit sur **tous** les écrans : le losange de l'onglet actif qui bat, et
+   * le segment lumineux qui parcourt un filet. Un battement lent y suffit à dire que l'app
+   * tourne, même sur un écran vide.
+   *
+   * `cycle` est celui du battement, `travel` celui de la course sur le filet, `spark` la
+   * longueur du segment qui court.
+   */
+  beacon: {
+    cycle: 2_000,
+    travel: 6_000,
+    spark: 26,
+    from: 0.55,
+    to: 1,
+    scaleFrom: 0.8,
+    scaleTo: 1.2,
+    /**
+     * Les trois filets de l'app sont visibles ensemble sur l'accueil. Sans déphasage, trois
+     * points partiraient au même instant et l'écran clignoterait d'un bloc au lieu de mesurer
+     * en trois endroits.
+     */
+    phase: { header: 0, section: -2_000, tabs: -4_000 },
+  },
 } as const;
 
 /**
