@@ -1,6 +1,6 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { color, opacity, radius, space, type } from '@/design/tokens';
+import { color, control, opacity, space, type, typography } from '@/design/tokens';
 
 type ButtonProps = {
   label: string;
@@ -33,8 +33,28 @@ export function Button({
         inert && styles.inert,
       ]}
     >
+      <View
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={[
+          styles.accent,
+          styles.accentTop,
+          variant === 'solid' ? styles.accentSolid : styles.accentQuiet,
+        ]}
+      />
+      <View
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={[
+          styles.accent,
+          styles.accentBottom,
+          variant === 'solid' ? styles.accentSolid : styles.accentQuiet,
+        ]}
+      />
       {busy ? (
-        <ActivityIndicator color={variant === 'solid' ? color.background : color.text} />
+        <ActivityIndicator color={variant === 'solid' ? color.accent : color.textMuted} />
       ) : (
         <Text style={[styles.label, variant === 'solid' ? styles.labelSolid : styles.labelQuiet]}>
           {label}
@@ -46,20 +66,37 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: radius.sm,
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: control.radius,
+    borderWidth: control.borderWidth,
     paddingVertical: space.md,
     paddingHorizontal: space.lg,
     alignItems: 'center',
     justifyContent: 'center',
     // Le témoin d'activité est plus court qu'une ligne de texte : sans hauteur minimale, le
     // bouton se rétracte au moment de l'appui, et l'écran sursaute.
-    minHeight: space.xl + space.md,
+    minHeight: control.minHeight,
   },
-  solid: { backgroundColor: color.accent },
-  quiet: { backgroundColor: 'transparent' },
+  solid: { backgroundColor: color.surfaceRaised, borderColor: color.accent },
+  quiet: { backgroundColor: 'transparent', borderColor: color.border },
   pressed: { opacity: opacity.pressed },
   inert: { opacity: opacity.inert },
-  label: { ...type.body },
-  labelSolid: { color: color.background },
+  label: {
+    ...type.body,
+    fontFamily: typography.display.semibold,
+    letterSpacing: type.label.letterSpacing,
+    textTransform: 'uppercase',
+  },
+  labelSolid: { color: color.accent },
   labelQuiet: { color: color.textMuted },
+  accent: {
+    position: 'absolute',
+    width: control.accentWidth,
+    height: control.accentHeight,
+  },
+  accentTop: { top: 0, left: 0 },
+  accentBottom: { right: 0, bottom: 0 },
+  accentSolid: { backgroundColor: color.accent },
+  accentQuiet: { backgroundColor: color.textMuted },
 });

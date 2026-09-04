@@ -25,6 +25,7 @@ import { PlayerFighterCard } from '@/components/PlayerFighterCard';
 import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
+import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { ToggleRow } from '@/components/ToggleRow';
 import { XpBar } from '@/components/XpBar';
@@ -38,6 +39,7 @@ import {
   radius,
   space,
   type,
+  typography,
 } from '@/design/tokens';
 
 /**
@@ -185,6 +187,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
   metaText: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   typeSample: { color: color.text },
+  displaySemiBold: { ...type.title, color: color.text, fontFamily: typography.display.semibold },
+  displayBold: { ...type.title, color: color.text, fontFamily: typography.display.bold },
+  frameContent: { padding: space.md, gap: space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   swatch: { gap: space.xs },
@@ -238,6 +243,13 @@ export const PREVIEWS: Preview[] = [
           </View>
         </Specimen>
 
+        <Specimen label="Typographie display">
+          <View style={styles.stack}>
+            <Text style={styles.displaySemiBold}>SYNCHRONISATION PRÊTE</Text>
+            <Text style={styles.displayBold}>NIVEAU 27 · DÉGÂTS +18</Text>
+          </View>
+        </Specimen>
+
         <Specimen label="Espacements">
           <View style={styles.rulers}>
             {Object.entries(space).map(([name, value]) => (
@@ -284,6 +296,39 @@ export const PREVIEWS: Preview[] = [
               </View>
             ))}
           </View>
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'cadre-systeme',
+    name: 'Cadre système',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Standard">
+          <SystemFrame>
+            <View style={styles.frameContent}>
+              <Text style={styles.displaySemiBold}>MODULE QUOTIDIEN</Text>
+              <Text style={styles.metaText}>Lecture secondaire et stable.</Text>
+            </View>
+          </SystemFrame>
+        </Specimen>
+        <Specimen label="Héroïque">
+          <SystemFrame tier="hero" accent="celebrate">
+            <View style={styles.frameContent}>
+              <Text style={styles.displayBold}>NIVEAU 27</Text>
+              <Text style={styles.metaText}>Double contour pour l’état principal.</Text>
+            </View>
+          </SystemFrame>
+        </Specimen>
+        <Specimen label="Événementiel">
+          <SystemFrame tier="event" accent="gain">
+            <View style={styles.frameContent}>
+              <Text style={styles.displayBold}>VICTOIRE</Text>
+              <Text style={styles.metaText}>Accent renforcé pour le moment joué.</Text>
+            </View>
+          </SystemFrame>
         </Specimen>
       </>
     ),

@@ -113,6 +113,86 @@ export const radius = {
 } as const;
 
 /**
+ * Les formes techniques n'écrasent pas les rayons fonctionnels : elles donnent un vocabulaire
+ * propre aux commandes et panneaux système, tandis que cercles, jauges et pastilles gardent
+ * `radius.pill`.
+ */
+export const control = {
+  radius: 2,
+  minHeight: 56,
+  borderWidth: 1,
+  accentWidth: 32,
+  accentHeight: 2,
+  backSize: 44,
+} as const;
+
+export const navigation = {
+  iconSize: 24,
+  markerSize: 6,
+  markerOffset: -8,
+  markerRotation: '45deg',
+  headerHeight: 56,
+} as const;
+
+export const typography = {
+  display: {
+    semibold: 'Oxanium-SemiBold',
+    bold: 'Oxanium-Bold',
+    weight: { semibold: 600, bold: 700 },
+  },
+} as const;
+
+/** Les trois degrés de hiérarchie d'un panneau, du module quotidien à l'événement. */
+export const frame = {
+  standard: {
+    radius: 4,
+    borderWidth: 1,
+    inset: 0,
+    accentLength: 28,
+    double: false,
+    glow: false,
+  },
+  hero: {
+    radius: 4,
+    borderWidth: 1,
+    inset: 6,
+    accentLength: 44,
+    double: true,
+    glow: false,
+  },
+  event: {
+    radius: 2,
+    borderWidth: 2,
+    inset: 7,
+    accentLength: 72,
+    double: true,
+    glow: true,
+  },
+  segmentThickness: 2,
+  segmentOffset: -1,
+} as const;
+
+/**
+ * Le champ de télémétrie : trois rails seulement, tous issus de la même horloge. Les
+ * positions et amplitudes sont des données afin que le composant ne choisisse aucune géométrie.
+ */
+export const ambient = {
+  layer: -1,
+  contentLayer: 1,
+  cycle: 12_000,
+  railWidth: 1,
+  railHeight: 96,
+  railOpacity: 0.34,
+  gridGap: 48,
+  gridLine: 1,
+  rails: [
+    { top: '-18%', left: '2%', distance: 700, phase: 0 },
+    { top: '82%', left: '98%', distance: -680, phase: 0.34 },
+    { top: '-12%', left: '4%', distance: 620, phase: 0.68 },
+  ],
+} as const;
+
+/**
  * Les trois intensités de lumière autorisées.
  *
  * Les chaînes `boxShadow` restent ici — et non dans les composants — pour que la lumière
