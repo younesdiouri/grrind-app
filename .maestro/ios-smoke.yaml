@@ -78,8 +78,10 @@ tags:
 - takeScreenshot: 03-combat-catalog
 
 - tapOn: "Combattre"
+# Le nom traduit du catalogue est administrable. Les statistiques livrées pour `SAND_JACKAL`
+# prouvent qu'on a ouvert le bon combat sans figer ce contenu éditorial dans le harnais.
 - extendedWaitUntil:
-    visible: ".*Chacal des sables.*"
+    visible: ".*12 dég.*5 % arm.*3 % esq.*"
     timeout: 15000
 
 # Le combat, joué : ce sont les deux combattants qui paraissent avec leurs valeurs, avant même

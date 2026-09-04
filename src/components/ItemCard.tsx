@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
 import { CoinAmount } from '@/components/CoinAmount';
-import { ItemPlaceholder } from '@/components/ItemPlaceholder';
+import { ItemIllustration } from '@/components/ItemIllustration';
 import { formatModifier } from '@/features/inventory/format';
 import { color, equipmentSlotLabel, radius, rarityColor, rarityLabel, space, type } from '@/design/tokens';
 
@@ -55,7 +55,11 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
   return (
     <View style={[styles.card, { borderColor: rarityColor[item.rarity] }]}>
       <View style={styles.layout}>
-        <ItemPlaceholder kind={item.kind} slot={item.slot} tint={rarityColor[item.rarity]} />
+        <ItemIllustration
+          item={item}
+          tint={rarityColor[item.rarity]}
+          accessibilityLabel={`Illustration de ${item.name}`}
+        />
 
         <View style={styles.content}>
           <View style={styles.head}>

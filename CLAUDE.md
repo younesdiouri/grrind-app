@@ -203,7 +203,10 @@ remarque nulle part ailleurs.
 Et une sixième, qui ne se lance que quand un écran ou un enchaînement d'écrans a bougé : le smoke
 test iOS sur Simulator (#122). Pendant l'implémentation, `npm run e2e:ios:dev` prépare une fois le
 development build et Metro, puis `npm run e2e:ios:flow` rejoue le parcours sans rebuild natif.
-`npm run e2e:ios:full` reste la validation propre finale. La procédure complète vit dans
+Ce flow Metro et ses captures constituent la barrière mobile normale, y compris avant un push ou
+une PR. `npm run e2e:ios:full` ne se lance jamais de manière autonome : seul l'utilisateur peut
+demander explicitement cette validation Release. Un ticket important, un changement natif ou une
+demande de terminer ne l'autorisent pas implicitement. La procédure complète vit dans
 `docs/ai/mobile-qa.md`, la règle dans `AGENTS.md`. Un écran qu'on n'a pas vu tourner n'a pas été
 vérifié, et les captures d'`artifacts/e2e/` sont là pour être lues, pas seulement produites.
 

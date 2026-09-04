@@ -46,11 +46,15 @@ import { fileURLToPath } from 'node:url';
  *    Node (« is a CommonJS module, which may not support all module.exports as named
  *    exports ») : on le recharge donc par `require()`, qui n'a pas ce problème, et on
  *    réexpose ses clés en ESM à la main.
+ * 8. `expo-image` ne publie que ses sources TypeScript, que Node refuse de dépouiller sous
+ *    `node_modules`. Le rendu statique passe donc par un adaptateur RN Web local qui conserve
+ *    la source distante et `contentFit` — les deux propriétés visibles dans nos previews.
  */
 
 const src = new URL('../src/', import.meta.url);
 const assets = new URL('../assets/', import.meta.url);
 const require = createRequire(import.meta.url);
+const expoImagePreview = new URL('./expo-image-preview.tsx', import.meta.url);
 
 /** L'ordre est celui de Metro : le fichier exact, puis les extensions, puis l'index. */
 const CANDIDATES = ['', '.ts', '.tsx', '/index.ts', '/index.tsx'];
@@ -78,6 +82,10 @@ function hasExtension(specifier: string): boolean {
 }
 
 export const resolve: ResolveHook = async (specifier, context, next) => {
+  if (specifier === 'expo-image') {
+    return { url: expoImagePreview.href, shortCircuit: true };
+  }
+
   if (specifier === 'react-native') {
     return next('react-native-web', context);
   }

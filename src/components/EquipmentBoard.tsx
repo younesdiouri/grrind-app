@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
+import { ItemIllustration } from '@/components/ItemIllustration';
 import { ItemPlaceholder } from '@/components/ItemPlaceholder';
 import {
   color,
@@ -81,7 +82,11 @@ export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoard
               pressed && styles.pressed,
             ]}
           >
-            <ItemPlaceholder kind="EQUIPMENT" slot={slot} size={40} tint={tint} />
+            {line === null ? (
+              <ItemPlaceholder kind="EQUIPMENT" slot={slot} size={40} tint={tint} />
+            ) : (
+              <ItemIllustration item={line} size={40} tint={tint} />
+            )}
             <Text
               style={[styles.slotLabel, active && styles.slotLabelActive]}
               numberOfLines={1}
