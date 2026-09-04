@@ -16,6 +16,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { Circle } from 'react-native-svg';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
+import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { arcPresentation, arcsOf, ATTRIBUTE_ORDER, ringViewport, type RingGeometry } from '@/components/attributeArcs';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { CoinAmount } from '@/components/CoinAmount';
@@ -23,11 +24,13 @@ import { CoinIcon } from '@/components/CoinIcon';
 import { ItemCard } from '@/components/ItemCard';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { SessionCard } from '@/components/SessionCard';
+import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import { decorativeGlow, type DecorativeGlow } from '@/design/decorativeGlow';
 import {
+  ambient,
   attributeColor,
   color,
   curve,
@@ -38,6 +41,7 @@ import {
   space,
   travel,
   type,
+  typography,
   xpNoCreditReasonLabel,
   type Attribute,
 } from '@/design/tokens';
@@ -243,8 +247,30 @@ export function SyncSummaryView({
     return { transform: [{ scale: 1 + crest * (scale.glint - 1) }] };
   });
 
+  // Le panneau événementiel apparaît avec l'horloge existante, sans ajouter un battement au
+  // récit. Une préférence indéterminée reste conservatrice : le cadre est immédiatement posé.
+  const frameEntryStyle = useAnimatedStyle(() => {
+    if (reducedMotion !== false) {
+      return { opacity: 1, transform: [{ scale: 1 }] };
+    }
+
+    const entered = interpolate(
+      clock.value,
+      [0, duration.enter],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
+    return {
+      opacity: entered,
+      transform: [{ scale: scale.from + entered * (1 - scale.from) }],
+    };
+  });
+
   return (
     <Pressable style={styles.screen} onPress={touch} onLayout={play}>
+      <AmbientBackdrop />
+      <Animated.View style={[styles.eventFrame, frameEntryStyle]}>
+        <SystemFrame tier="event" style={styles.eventSurface} contentStyle={styles.eventContent}>
       {/* La tête de l'écran : une seule course d'XP pour tout le lot. Elle ne se remet jamais
           à zéro entre deux séances — c'est ce qui fait de la synchronisation un moment, et
           non trois animations à la suite. */}
@@ -384,7 +410,9 @@ export function SyncSummaryView({
         <Text style={styles.exit}>Toucher pour continuer</Text>
       ) : null}
 
-      <Text style={styles.ruleset}>{summary.rulesetVersion}</Text>
+          <Text style={styles.ruleset}>{summary.rulesetVersion}</Text>
+        </SystemFrame>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -1237,8 +1265,17 @@ function LineEntry({ clock, at, until, children }: BeatProps & { children: React
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.background, padding: space.lg, gap: space.md },
-  counter: { ...type.display, color: color.accent, padding: 0 },
+  screen: { flex: 1, padding: space.sm, overflow: 'hidden' },
+  eventFrame: { flex: 1, zIndex: ambient.contentLayer },
+  eventSurface: { flex: 1 },
+  eventContent: { flex: 1, padding: space.lg, gap: space.md },
+  counter: {
+    ...type.display,
+    color: color.accent,
+    padding: 0,
+    fontFamily: typography.display.bold,
+    fontWeight: typography.display.weight.bold,
+  },
   /** Rien n'a été gagné : `accent` voudrait dire le contraire. */
   counterQuiet: { color: color.textMuted },
   crest: {
@@ -1279,7 +1316,14 @@ const styles = StyleSheet.create({
   // chiffre du palier qui disparaîtrait. On lui donne toute la largeur, et on centre le texte.
   flip: { alignSelf: 'stretch', gap: space.xs },
   flipLabel: { ...type.label, color: color.textMuted, textAlign: 'center' },
-  flipValue: { ...type.display, color: color.celebrate, padding: 0, textAlign: 'center' },
+  flipValue: {
+    ...type.display,
+    color: color.celebrate,
+    padding: 0,
+    textAlign: 'center',
+    fontFamily: typography.display.bold,
+    fontWeight: typography.display.weight.bold,
+  },
   grant: { ...type.label, color: color.textMuted, textAlign: 'center' },
   /** Le titre tombe **dans** la couche du palier, et prend sa largeur. */
   grown: { alignSelf: 'stretch' },

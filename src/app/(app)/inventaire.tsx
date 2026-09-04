@@ -5,11 +5,23 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { Button } from '@/components/Button';
 import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
+import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { CoinAmount } from '@/components/CoinAmount';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
+import { SystemFrame } from '@/components/SystemFrame';
 import { decorativeGlow } from '@/design/decorativeGlow';
-import { color, equipmentSlotLabel, opacity, radius, space, type, type EquipmentSlot } from '@/design/tokens';
+import {
+  ambient,
+  color,
+  equipmentSlotLabel,
+  frame,
+  opacity,
+  space,
+  type,
+  typography,
+  type EquipmentSlot,
+} from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import {
@@ -126,8 +138,10 @@ export default function InventoryScreen() {
   const availableItems = compatibleItems.filter((line) => line.key !== equippedLine?.key);
 
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
-      <Stack.Screen options={{ title: 'Sac' }} />
+    <View style={styles.shell}>
+      <AmbientBackdrop />
+      <ScrollView style={styles.contentLayer} contentContainerStyle={styles.screen}>
+        <Stack.Screen options={{ title: 'Sac' }} />
 
       {inventory.isPending ? (
         <View style={styles.loading}>
@@ -149,34 +163,38 @@ export default function InventoryScreen() {
               #129 — c'est de là que le ledger de pièces s'ouvre, la seule porte vers son
               histoire. */}
           <Pressable
-            style={({ pressed }) => [
-              styles.purse,
-              purseGlow.effect === undefined ? undefined : { boxShadow: purseGlow.effect.boxShadow },
-              pressed && styles.pressed,
-            ]}
+            style={({ pressed }) => [pressed && styles.pressed]}
             onPress={() => router.push('/bourse')}
             accessibilityRole="button"
             accessibilityLabel="Bourse"
           >
-            <Text style={styles.label}>BOURSE</Text>
-            <View style={styles.purseAmount}>
-              <CoinAmount amount={data.coins} />
-              <Text style={styles.chevron}>›</Text>
-            </View>
+            <SystemFrame
+              tier="hero"
+              style={purseGlow.effect === undefined ? undefined : { boxShadow: purseGlow.effect.boxShadow }}
+              contentStyle={styles.purse}
+            >
+              <Text style={styles.label}>BOURSE</Text>
+              <View style={styles.purseAmount}>
+                <CoinAmount amount={data.coins} />
+                <Text style={styles.chevron}>›</Text>
+              </View>
+            </SystemFrame>
           </Pressable>
 
           <Pressable
-            style={({ pressed }) => [styles.shopEntry, pressed && styles.pressed]}
+            style={({ pressed }) => [pressed && styles.pressed]}
             onPress={() => router.push('/boutique')}
             accessibilityRole="button"
             accessibilityLabel="Boutique"
             testID="shop-entry"
           >
-            <View>
-              <Text style={styles.label}>BOUTIQUE</Text>
-              <Text style={styles.detail}>Dépenser tes pièces</Text>
-            </View>
-            <Text style={styles.chevron}>›</Text>
+            <SystemFrame contentStyle={styles.shopEntry}>
+              <View>
+                <Text style={styles.label}>BOUTIQUE</Text>
+                <Text style={styles.detail}>Dépenser tes pièces</Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </SystemFrame>
           </Pressable>
 
           {/* Un refus — objet non possédé, emplacement incompatible — au-dessus d'un sac qui
@@ -193,7 +211,7 @@ export default function InventoryScreen() {
 
           <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
 
-          <View style={styles.drawer}>
+          <SystemFrame contentStyle={styles.drawer}>
             <View style={styles.drawerHead}>
               <View style={styles.sectionCopy}>
                 <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
@@ -255,10 +273,10 @@ export default function InventoryScreen() {
                 <Text style={styles.emptyHint}>Tes prochains drops apparaîtront ici.</Text>
               </View>
             ) : null}
-          </View>
+          </SystemFrame>
 
           {data.items.filter((line) => line.kind === 'CHEST').length > 0 ? (
-            <View style={styles.drawer}>
+            <SystemFrame contentStyle={styles.drawer}>
               <View style={styles.drawerHead}>
                 <View style={styles.sectionCopy}>
                   <Text style={styles.label}>COFFRES</Text>
@@ -278,50 +296,51 @@ export default function InventoryScreen() {
                     />
                   </View>
                 ))}
-            </View>
+            </SystemFrame>
           ) : null}
 
           {openedChest?.kind === 'opened' ? (
-            <View style={styles.drawer} accessibilityLiveRegion="polite">
-              <Text style={styles.label}>CONTENU DU COFFRE</Text>
-              {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0 ? (
-                <Text style={styles.detail}>Le coffre était vide.</Text>
-              ) : (
-                <>
-                  {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
-                  <Text style={styles.detail}>Pièces trouvées</Text>
-                  <CoinAmount amount={openedChest.chest.coins} />
-                </>
-              )}
-              <AnimatedCoinBalance
-                before={openedChest.chest.coinsBefore}
-                after={openedChest.chest.coinsAfter}
-              />
+            <View accessibilityLiveRegion="polite">
+              <SystemFrame contentStyle={styles.drawer}>
+                <Text style={styles.label}>CONTENU DU COFFRE</Text>
+                {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0 ? (
+                  <Text style={styles.detail}>Le coffre était vide.</Text>
+                ) : (
+                  <>
+                    {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
+                    <Text style={styles.detail}>Pièces trouvées</Text>
+                    <CoinAmount amount={openedChest.chest.coins} />
+                  </>
+                )}
+                <AnimatedCoinBalance
+                  before={openedChest.chest.coinsBefore}
+                  after={openedChest.chest.coinsAfter}
+                />
+              </SystemFrame>
             </View>
           ) : null}
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  shell: { flex: 1, overflow: 'hidden' },
+  contentLayer: { zIndex: ambient.contentLayer },
   screen: { padding: space.lg, gap: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   purse: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
   },
   shopEntry: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
   },
   // Même retour d'appui que `BagRow` : la ligne s'éteint sous le doigt, rien ne se déplace.
@@ -339,8 +358,6 @@ const styles = StyleSheet.create({
   section: { ...type.label, color: color.accent },
   hint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   drawer: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
     gap: space.md,
   },
@@ -350,7 +367,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: space.sm,
   },
-  drawerTitle: { ...type.title, color: color.text },
+  drawerTitle: {
+    ...type.title,
+    color: color.text,
+    fontFamily: typography.display.semibold,
+    fontWeight: typography.display.weight.semibold,
+  },
   count: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   current: { gap: space.sm },
   itemChoice: { gap: space.sm },
@@ -366,18 +388,23 @@ const styles = StyleSheet.create({
   emptyChoice: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: color.border,
-    borderRadius: radius.md,
+    borderRadius: frame.standard.radius,
     padding: space.md,
     gap: space.xs,
   },
   emptyHint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   card: {
     backgroundColor: color.surface,
-    borderRadius: radius.md,
+    borderRadius: frame.standard.radius,
     padding: space.md,
     gap: space.sm,
   },
-  name: { ...type.title, color: color.text },
+  name: {
+    ...type.title,
+    color: color.text,
+    fontFamily: typography.display.semibold,
+    fontWeight: typography.display.weight.semibold,
+  },
   detail: { ...type.body, color: color.textMuted },
   label: { ...type.label, color: color.textMuted },
   /** Un geste refusé, au-dessus d'un sac dont les chiffres restent valables. */

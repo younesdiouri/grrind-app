@@ -12,8 +12,9 @@ import {
 
 import { BagRow } from '@/components/BagRow';
 import { Button } from '@/components/Button';
+import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { decorativeGlow } from '@/design/decorativeGlow';
-import { color, radius, space, type } from '@/design/tokens';
+import { ambient, color, radius, space, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
@@ -101,22 +102,26 @@ export default function Home() {
   }, [syncNow, refresh]);
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.screen}
-      refreshControl={
-        auth.status === 'signedIn' ? (
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => void onRefresh()}
-            tintColor={color.accent}
-          />
-        ) : undefined
-      }
-    >
-      {auth.status === 'signedIn' ? (
-        <PlayerHome home={home} reload={reload} refreshFailure={refreshFailure} />
-      ) : null}
-    </ScrollView>
+    <View style={styles.shell}>
+      <AmbientBackdrop />
+      <ScrollView
+        style={styles.contentLayer}
+        contentContainerStyle={styles.screen}
+        refreshControl={
+          auth.status === 'signedIn' ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void onRefresh()}
+              tintColor={color.accent}
+            />
+          ) : undefined
+        }
+      >
+        {auth.status === 'signedIn' ? (
+          <PlayerHome home={home} reload={reload} refreshFailure={refreshFailure} />
+        ) : null}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -231,6 +236,8 @@ function BagEntry() {
 }
 
 const styles = StyleSheet.create({
+  shell: { flex: 1, overflow: 'hidden' },
+  contentLayer: { zIndex: ambient.contentLayer },
   screen: { padding: space.lg, gap: space.md },
   section: { ...type.label, color: color.textMuted, marginTop: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },

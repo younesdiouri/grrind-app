@@ -75,8 +75,9 @@ export default function CombatScreen() {
   const now = useMemo(() => new Date(), []);
 
   return (
-    <FlatList
-      data={history.step === 'ready' ? history.history.battles : []}
+    <View style={styles.shell}>
+      <FlatList
+        data={history.step === 'ready' ? history.history.battles : []}
       // `id`, jamais l'instant : deux combats livrés à la même seconde sont un cas normal —
       // c'est même le cas que le départage par identifiant existe pour couvrir côté serveur.
       keyExtractor={(battle) => battle.id}
@@ -173,14 +174,17 @@ export default function CombatScreen() {
           <ActivityIndicator color={color.accent} style={styles.footer} />
         ) : null
       }
-      style={styles.screen}
-    />
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { backgroundColor: color.background },
-  content: { padding: space.lg, gap: space.sm },
+  shell: { flex: 1, overflow: 'hidden' },
+  // La marge basse laisse une ligne entière remonter au-dessus de la barre d'onglets. Le
+  // nouveau cadre augmente la hauteur du catalogue; sans cette réserve, XCTest voyait la
+  // dernière ligne mais la jugeait partiellement occultée par le chrome.
+  content: { padding: space.lg, paddingBottom: space.xl, gap: space.sm },
   header: { gap: space.md, paddingBottom: space.sm },
   sectionTitle: { ...type.label, color: color.textMuted },
   catalog: { gap: space.sm },

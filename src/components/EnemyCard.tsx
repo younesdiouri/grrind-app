@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
-import { color, opacity, radius, space, type } from '@/design/tokens';
+import { SystemFrame } from '@/components/SystemFrame';
+import { color, opacity, radius, space, type, typography } from '@/design/tokens';
 
 type EnemyCardProps = {
   /**
@@ -50,7 +51,7 @@ type EnemyCardProps = {
  */
 export function EnemyCard({ enemy, locked = false, action }: EnemyCardProps) {
   return (
-    <View style={[styles.card, locked && styles.locked]}>
+    <SystemFrame style={locked && styles.locked} contentStyle={styles.card}>
       <View style={styles.head}>
         <Text style={styles.name}>{enemy.name}</Text>
         <View style={styles.levelChip}>
@@ -67,7 +68,7 @@ export function EnemyCard({ enemy, locked = false, action }: EnemyCardProps) {
       </View>
 
       {action}
-    </View>
+    </SystemFrame>
   );
 }
 
@@ -89,8 +90,6 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
     padding: space.md,
     gap: space.sm,
   },
@@ -103,7 +102,7 @@ const styles = StyleSheet.create({
   },
   // `flexShrink` : un nom traduit peut être long — « Souverain des cendres » — et c'est le nom
   // qui cède, jamais la pastille de niveau, qui est le seul repère de progression de la carte.
-  name: { ...type.body, color: color.text, flexShrink: 1 },
+  name: { ...type.body, fontFamily: typography.display.semibold, color: color.text, flexShrink: 1 },
   levelChip: {
     backgroundColor: color.surfaceRaised,
     borderRadius: radius.pill,

@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
-import { StyleSheet, type ColorValue } from 'react-native';
+import { StyleSheet, View, type ColorValue } from 'react-native';
 
-import { color, space } from '@/design/tokens';
+import { color, frame, navigation, typography } from '@/design/tokens';
 
 /**
  * La barre d'onglets.
@@ -55,6 +55,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: color.textMuted,
         tabBarStyle: styles.bar,
         sceneStyle: styles.scene,
+        tabBarLabelStyle: styles.label,
       }}
     >
       <Tabs.Screen
@@ -63,7 +64,7 @@ export default function TabsLayout() {
           tabBarButtonTestID: 'tab-accueil',
           title: 'GRRIND',
           tabBarLabel: 'Accueil',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="house" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => <TabIcon name="house" color={tint} focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -71,8 +72,8 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-sante',
           title: 'Santé',
-          tabBarIcon: ({ color: tint }) => (
-            <TabIcon name="heart.text.square" color={tint} />
+          tabBarIcon: ({ color: tint, focused }) => (
+            <TabIcon name="heart.text.square" color={tint} focused={focused} />
           ),
         }}
       />
@@ -81,7 +82,7 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-combat',
           title: 'Combat',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="bolt.shield" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => <TabIcon name="bolt.shield" color={tint} focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -89,7 +90,7 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-guilde',
           title: 'Guilde',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="person.2" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => <TabIcon name="person.2" color={tint} focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -97,7 +98,7 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: 'tab-reglages',
           title: 'Réglages',
-          tabBarIcon: ({ color: tint }) => <TabIcon name="gearshape" color={tint} />,
+          tabBarIcon: ({ color: tint, focused }) => <TabIcon name="gearshape" color={tint} focused={focused} />,
         }}
       />
     </Tabs>
@@ -112,11 +113,31 @@ export default function TabsLayout() {
  * (#15), mais l'absence de repli plante silencieusement l'icône plutôt que la barre : le
  * `fallback` garde l'écran debout en attendant la table de correspondance qu'ouvrira #15.
  */
-function TabIcon({ name, color: tint }: { name: SFSymbol; color: ColorValue }) {
-  return <SymbolView name={name} size={space.lg} tintColor={tint} fallback={null} />;
+function TabIcon({ name, color: tint, focused }: { name: SFSymbol; color: ColorValue; focused: boolean }) {
+  return (
+    <View style={styles.icon}>
+      {focused ? <View style={styles.marker} /> : null}
+      <SymbolView name={name} size={navigation.iconSize} tintColor={tint} fallback={null} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  bar: { backgroundColor: color.surface, borderTopColor: color.border },
-  scene: { backgroundColor: color.background },
+  bar: {
+    backgroundColor: color.surface,
+    borderTopColor: color.accent,
+    borderTopWidth: frame.segmentThickness,
+  },
+  scene: { backgroundColor: 'transparent' },
+  label: { fontFamily: typography.display.semibold },
+  icon: { position: 'relative' },
+  marker: {
+    position: 'absolute',
+    top: navigation.markerOffset,
+    alignSelf: 'center',
+    width: navigation.markerSize,
+    height: navigation.markerSize,
+    backgroundColor: color.accent,
+    transform: [{ rotate: navigation.markerRotation }],
+  },
 });

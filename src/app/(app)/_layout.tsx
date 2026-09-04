@@ -1,12 +1,29 @@
-import { Stack } from 'expo-router';
-import { View } from 'react-native';
+import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 
-import { color } from '@/design/tokens';
+import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
+import { SystemHeader } from '@/components/SystemHeader';
+import { ambient, color } from '@/design/tokens';
 import { useSyncTriggers } from '@/features/health/useSync';
 import { useDeviceRegistration } from '@/features/notifications/useDeviceRegistration';
 import { usePendingPushRoute } from '@/features/notifications/usePendingPushRoute';
 import { markInteracted } from '@/features/reward/launchGate';
 import { usePendingReward } from '@/features/reward/usePendingReward';
+
+// Expo Router 57 exporte directement le thème de navigation. Son fond transparent laisse le
+// champ fixe du shell traverser Tabs et Stack sans poser un calque au-dessus de l'accessibilité.
+const connectedTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: color.accent,
+    background: 'transparent',
+    card: color.background,
+    text: color.text,
+    border: color.border,
+    notification: color.danger,
+  },
+};
 
 /**
  * La coquille de l'app, et l'endroit où la synchronisation vit désormais.
@@ -36,19 +53,25 @@ export default function AppLayout() {
   usePendingReward();
 
   return (
-    <View style={{ flex: 1 }} onTouchStart={markInteracted}>
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: color.background },
-        headerTintColor: color.text,
-        contentStyle: { backgroundColor: color.background },
+    <ThemeProvider value={connectedTheme}>
+      <AmbientBackdropProvider>
+        <View style={styles.shell} onTouchStart={markInteracted}>
+          <View style={styles.navigation}>
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: color.background },
+              headerTintColor: color.text,
+              contentStyle: styles.transparent,
+              headerBackVisible: false,
         // Le chevron seul, jamais le titre de l'écran précédent : celui des onglets n'en a
         // pas, et iOS repliait alors sur le **nom de la route** — un bouton « ‹ (tabs) » en
         // haut de chaque écran poussé, découvert sur une capture du sac (#30). Les trois
         // écrans poussés le portaient déjà.
-        headerBackButtonDisplayMode: 'minimal',
-      }}
-    >
+        header: ({ back, options, route }) => (
+          <SystemHeader title={options.title ?? route.name} canGoBack={back !== undefined} />
+        ),
+            }}
+          >
       {/* La barre d'onglets porte désormais ses propres en-têtes (#41) : sans
           `headerShown: false` ici, celui de la pile se superposerait à celui des onglets. */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -60,7 +83,24 @@ export default function AppLayout() {
           barre d'état sans qu'aucun écran de ce dépôt ait à connaître les marges sûres — sans
           elle, le nom de l'adversaire passait derrière l'encoche. */}
       <Stack.Screen name="battle" options={{ headerShown: false, presentation: 'modal' }} />
-    </Stack>
-    </View>
+          </Stack>
+          </View>
+        </View>
+      </AmbientBackdropProvider>
+    </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  shell: {
+    flex: 1,
+    backgroundColor: color.background,
+    overflow: 'hidden',
+    borderLeftColor: color.border,
+    borderRightColor: color.border,
+    borderLeftWidth: ambient.gridLine,
+    borderRightWidth: ambient.gridLine,
+  },
+  navigation: { flex: 1, zIndex: 1 },
+  transparent: { backgroundColor: 'transparent' },
+});
