@@ -18,6 +18,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { CoinAmount } from '@/components/CoinAmount';
 import { hpBarFill, HpBar } from '@/components/HpBar';
 import { ItemCard } from '@/components/ItemCard';
+import { SystemFrame } from '@/components/SystemFrame';
 import { battleResultLabel, color, scale, space, type } from '@/design/tokens';
 import { formatTurns } from './format.ts';
 import { hasBattleReward } from './reward.ts';
@@ -340,66 +341,68 @@ function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; do
   const purseChanged = reward.coins.after > reward.coins.before;
 
   return (
-    <View style={styles.recap}>
-      <Text style={[styles.verdict, won ? styles.verdictWon : styles.verdictLost]}>
-        {battleResultLabel[battle.result]}
-      </Text>
-
-      <Text style={styles.against} numberOfLines={2}>
-        {won ? 'Tu as vaincu' : 'Tu es tombé face à'} {battle.enemy.name}
-      </Text>
-
-      {tally.lastBlow !== null && (
-        <Text style={styles.lastBlow}>
-          Coup fatal : {tally.lastBlow.damage} de dégâts
-          {tally.lastBlow.by === 'PLAYER' ? ' — le tien' : ' — le sien'}
+    <SystemFrame tier="event" accent={won ? 'celebrate' : 'danger'}>
+      <View style={styles.recap}>
+        <Text style={[styles.verdict, won ? styles.verdictWon : styles.verdictLost]}>
+          {battleResultLabel[battle.result]}
         </Text>
-      )}
 
-      <View style={styles.tally}>
-        <Score label="Tours" value={formatTurns(tally.turns).split(' ')[0]} />
-        <Score label="Coups portés" value={String(tally.blowsLanded)} />
-        <Score label="Dégâts infligés" value={String(tally.damageDealt)} />
-        <Score label="Dégâts subis" value={String(tally.damageTaken)} />
-        {/* Les trois lignes suivantes ne paraissent que si elles ont eu lieu : un « 0 esquive »
-            occupe la place d'une information sans en être une. */}
-        {tally.damageAbsorbed > 0 && (
-          <Score label="Absorbés par ton armure" value={String(tally.damageAbsorbed)} />
+        <Text style={styles.against} numberOfLines={2}>
+          {won ? 'Tu as vaincu' : 'Tu es tombé face à'} {battle.enemy.name}
+        </Text>
+
+        {tally.lastBlow !== null && (
+          <Text style={styles.lastBlow}>
+            Coup fatal : {tally.lastBlow.damage} de dégâts
+            {tally.lastBlow.by === 'PLAYER' ? ' — le tien' : ' — le sien'}
+          </Text>
         )}
-        {tally.dodges > 0 && <Score label="Tes esquives" value={String(tally.dodges)} />}
-        {tally.extraTurns > 0 && <Score label="Tes relances" value={String(tally.extraTurns)} />}
-        {won && <Score label="Vie restante" value={String(tally.hpLeft)} />}
-      </View>
 
-      {/* Le butin — objets puis bourse, dans l'ordre du contrat. Rien ne paraît sur une
-          défaite ou un combat sans rapport : voir le docblock de `hasBattleReward`. */}
-      {hasBattleReward(reward) && (
-        <View style={styles.loot}>
-          {reward.loot.map((item, position) => (
-            <ItemCard key={`${item.key}-${position}`} item={item} />
-          ))}
-
-          <Score
-            label="Bourse"
-            value={
-              purseChanged ? (
-                <>
-                  <CoinAmount amount={reward.coins.before} />
-                  <Text style={styles.scoreValue}>→</Text>
-                  <CoinAmount amount={reward.coins.after} />
-                </>
-              ) : (
-                <CoinAmount amount={reward.coins.after} />
-              )
-            }
-          />
+        <View style={styles.tally}>
+          <Score label="Tours" value={formatTurns(tally.turns).split(' ')[0]} />
+          <Score label="Coups portés" value={String(tally.blowsLanded)} />
+          <Score label="Dégâts infligés" value={String(tally.damageDealt)} />
+          <Score label="Dégâts subis" value={String(tally.damageTaken)} />
+          {/* Les trois lignes suivantes ne paraissent que si elles ont eu lieu : un « 0 esquive »
+              occupe la place d'une information sans en être une. */}
+          {tally.damageAbsorbed > 0 && (
+            <Score label="Absorbés par ton armure" value={String(tally.damageAbsorbed)} />
+          )}
+          {tally.dodges > 0 && <Score label="Tes esquives" value={String(tally.dodges)} />}
+          {tally.extraTurns > 0 && <Score label="Tes relances" value={String(tally.extraTurns)} />}
+          {won && <Score label="Vie restante" value={String(tally.hpLeft)} />}
         </View>
-      )}
 
-      {/* L'affordance de sortie ne paraît qu'à la fin : avant, le seul geste est le saut, et
-          l'annoncer pendant la séquence inviterait à la manquer. */}
-      {done && <Text style={styles.exit}>Touche pour revenir</Text>}
-    </View>
+        {/* Le butin — objets puis bourse, dans l'ordre du contrat. Rien ne paraît sur une
+            défaite ou un combat sans rapport : voir le docblock de `hasBattleReward`. */}
+        {hasBattleReward(reward) && (
+          <View style={styles.loot}>
+            {reward.loot.map((item, position) => (
+              <ItemCard key={`${item.key}-${position}`} item={item} />
+            ))}
+
+            <Score
+              label="Bourse"
+              value={
+                purseChanged ? (
+                  <>
+                    <CoinAmount amount={reward.coins.before} />
+                    <Text style={styles.scoreValue}>→</Text>
+                    <CoinAmount amount={reward.coins.after} />
+                  </>
+                ) : (
+                  <CoinAmount amount={reward.coins.after} />
+                )
+              }
+            />
+          </View>
+        )}
+
+        {/* L'affordance de sortie ne paraît qu'à la fin : avant, le seul geste est le saut, et
+            l'annoncer pendant la séquence inviterait à la manquer. */}
+        {done && <Text style={styles.exit}>Touche pour revenir</Text>}
+      </View>
+    </SystemFrame>
   );
 }
 

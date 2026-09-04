@@ -1,27 +1,39 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { color, opacity, radius, space, type } from '@/design/tokens';
+import { color, fontFamily, opacity, radius, stroke } from '@/design/tokens';
 
-type ButtonProps = {
+export type ButtonProps = {
   label: string;
   onPress: () => void;
-  /** Une action en cours : le libellé cède la place au témoin, et l'appui ne passe plus. */
   busy?: boolean;
   disabled?: boolean;
   variant?: 'solid' | 'quiet';
+  testID?: string;
 };
 
+/**
+ * Bouton de commande biométrique tactique.
+ *
+ * Présente une silhouette presque rectangulaire encadrée d'un trait technique,
+ * un libellé typé en Oxanium display et un retour d'appui réactif, tout en préservant
+ * la cible tactile minimale accessible de 44pt.
+ *
+ * @param props - Propriétés du bouton: label, callback onPress, états busy/disabled et variante.
+ * @returns Le contrôle d'action tactile.
+ */
 export function Button({
   label,
   onPress,
   busy = false,
   disabled = false,
   variant = 'solid',
+  testID,
 }: ButtonProps) {
   const inert = busy || disabled;
 
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={inert}
       accessibilityRole="button"
@@ -29,14 +41,19 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         variant === 'solid' ? styles.solid : styles.quiet,
-        pressed && styles.pressed,
+        pressed && (variant === 'solid' ? styles.pressedSolid : styles.pressedQuiet),
         inert && styles.inert,
       ]}
     >
       {busy ? (
         <ActivityIndicator color={variant === 'solid' ? color.background : color.text} />
       ) : (
-        <Text style={[styles.label, variant === 'solid' ? styles.labelSolid : styles.labelQuiet]}>
+        <Text
+          style={[
+            styles.label,
+            variant === 'solid' ? styles.labelSolid : styles.labelQuiet,
+          ]}
+        >
           {label}
         </Text>
       )}
@@ -46,20 +63,44 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: radius.sm,
-    paddingVertical: space.md,
-    paddingHorizontal: space.lg,
+    minHeight: 48,
+    minWidth: 44,
+    borderRadius: radius.technical,
+    borderWidth: stroke.thin,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    // Le témoin d'activité est plus court qu'une ligne de texte : sans hauteur minimale, le
-    // bouton se rétracte au moment de l'appui, et l'écran sursaute.
-    minHeight: space.xl + space.md,
   },
-  solid: { backgroundColor: color.accent },
-  quiet: { backgroundColor: 'transparent' },
-  pressed: { opacity: opacity.pressed },
-  inert: { opacity: opacity.inert },
-  label: { ...type.body },
-  labelSolid: { color: color.background },
-  labelQuiet: { color: color.textMuted },
+  solid: {
+    backgroundColor: color.accent,
+    borderColor: color.accent,
+  },
+  quiet: {
+    backgroundColor: 'rgba(22, 33, 61, 0.45)',
+    borderColor: color.border,
+  },
+  pressedSolid: {
+    opacity: opacity.pressed,
+  },
+  pressedQuiet: {
+    opacity: opacity.pressed,
+    borderColor: color.accent,
+  },
+  inert: {
+    opacity: opacity.inert,
+  },
+  label: {
+    fontFamily: fontFamily.displayBold,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+  },
+  labelSolid: {
+    color: color.background,
+  },
+  labelQuiet: {
+    color: color.text,
+  },
 });

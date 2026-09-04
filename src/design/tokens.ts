@@ -107,9 +107,59 @@ export const space = {
 } as const;
 
 export const radius = {
+  xs: 2,
   sm: 10,
   md: 16,
   pill: 999,
+  technical: 4,
+} as const;
+
+export const stroke = {
+  hairline: 1,
+  thin: 1,
+  medium: 2,
+  thick: 3,
+} as const;
+
+export const fontFamily = {
+  display: 'Oxanium-SemiBold',
+  displayBold: 'Oxanium-Bold',
+  displayRegular: 'Oxanium-Regular',
+} as const;
+
+export type FrameTier = 'standard' | 'hero' | 'event';
+export type FrameAccent = 'accent' | 'celebrate' | 'gain' | 'loss' | 'danger' | 'coin';
+
+export const frame = {
+  tier: {
+    standard: {
+      borderWidth: stroke.thin,
+      borderColor: color.border,
+      innerBorderWidth: stroke.hairline,
+      innerBorderColor: 'rgba(22, 33, 61, 0.4)',
+      accentWidth: stroke.medium,
+    },
+    hero: {
+      borderWidth: 1.5,
+      borderColor: 'rgba(53, 228, 255, 0.35)',
+      innerBorderWidth: stroke.hairline,
+      innerBorderColor: 'rgba(53, 228, 255, 0.15)',
+      accentWidth: stroke.thick,
+    },
+    event: {
+      borderWidth: 1.5,
+      borderColor: 'rgba(53, 228, 255, 0.55)',
+      innerBorderWidth: stroke.hairline,
+      innerBorderColor: 'rgba(53, 228, 255, 0.25)',
+      accentWidth: 4,
+    },
+  },
+} as const;
+
+export const ambientMotion = {
+  cycleDuration: 12000,
+  railMinOpacity: 0.12,
+  railMaxOpacity: 0.38,
 } as const;
 
 /**
@@ -147,10 +197,12 @@ export const glow = {
 } as const;
 
 export const type = {
-  display: { fontSize: 56, fontWeight: '800' },
-  title: { fontSize: 28, fontWeight: '700' },
-  body: { fontSize: 16, fontWeight: '500' },
-  label: { fontSize: 13, fontWeight: '600', letterSpacing: 0.6 },
+  display: { fontSize: 56, fontWeight: '800' as const, fontFamily: fontFamily.displayBold },
+  title: { fontSize: 28, fontWeight: '700' as const, fontFamily: fontFamily.displayBold },
+  headline: { fontSize: 20, fontWeight: '700' as const, fontFamily: fontFamily.display },
+  body: { fontSize: 16, fontWeight: '500' as const },
+  label: { fontSize: 13, fontWeight: '600' as const, letterSpacing: 0.6 },
+  button: { fontSize: 15, fontWeight: '700' as const, fontFamily: fontFamily.displayBold, letterSpacing: 1 },
   /**
    * Un code d'invitation : huit caractères qui se dictent à voix haute et se recopient
    * depuis une capture d'écran. `letterSpacing` est volontairement large — c'est lui qui
@@ -158,7 +210,7 @@ export const type = {
    * (`Menlo` / `monospace`) reste au composant : elle dépend de la plateforme, et ce fichier
    * se lit aussi depuis Node, où `react-native` n'existe pas.
    */
-  code: { fontSize: 28, fontWeight: '700', letterSpacing: 6 },
+  code: { fontSize: 28, fontWeight: '700' as const, letterSpacing: 6 },
 } as const;
 
 /**

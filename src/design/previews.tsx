@@ -25,6 +25,8 @@ import { PlayerFighterCard } from '@/components/PlayerFighterCard';
 import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
+import { SystemFrame } from '@/components/SystemFrame';
+import { TacticalBackButton } from '@/components/TacticalBackButton';
 import { TitleBadge } from '@/components/TitleBadge';
 import { ToggleRow } from '@/components/ToggleRow';
 import { XpBar } from '@/components/XpBar';
@@ -941,6 +943,62 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="Un prix à quatre chiffres">
           <ItemCard item={droppedItem({ rarity: 'EPIC', priceCoins: 1999 })} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'cadre-tactique',
+    name: 'Console & Cadre tactique',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Niveau standard">
+          <SystemFrame tier="standard">
+            <View style={{ padding: space.md, gap: space.xs }}>
+              <Text style={{ ...type.label, color: color.accent }}>CONSOLE STANDARD</Text>
+              <Text style={{ ...type.body, color: color.text }}>Télémétrie et module de diagnostic</Text>
+            </View>
+          </SystemFrame>
+        </Specimen>
+        <Specimen label="Niveau héroïque">
+          <SystemFrame tier="hero">
+            <View style={{ padding: space.md, gap: space.xs }}>
+              <Text style={{ ...type.label, color: color.celebrate }}>PANNEAU MAÎTRE HÉROÏQUE</Text>
+              <Text style={{ ...type.title, color: color.text }}>Progression & Biométrie</Text>
+            </View>
+          </SystemFrame>
+        </Specimen>
+        <Specimen label="Événement célébration / victoire">
+          <SystemFrame tier="event" accent="celebrate">
+            <View style={{ padding: space.md, gap: space.xs }}>
+              <Text style={{ ...type.label, color: color.celebrate }}>BILAN DE COMBAT</Text>
+              <Text style={{ ...type.title, color: color.victory }}>VICTOIRE ÉCLATANTE</Text>
+            </View>
+          </SystemFrame>
+        </Specimen>
+        <Specimen label="Événement alerte / critique">
+          <SystemFrame tier="event" accent="danger">
+            <View style={{ padding: space.md, gap: space.xs }}>
+              <Text style={{ ...type.label, color: color.danger }}>SEUIL CRITIQUE</Text>
+              <Text style={{ ...type.title, color: color.defeat }}>DÉFAITE TACTIQUE</Text>
+            </View>
+          </SystemFrame>
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'bouton-retour-tactique',
+    name: 'Bouton retour tactique',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Bouton retour d'en-tête (44pt accessible)">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
+            <TacticalBackButton onPress={() => {}} />
+            <Text style={{ ...type.label, color: color.textMuted }}>Navigation tactique</Text>
+          </View>
         </Specimen>
       </>
     ),
