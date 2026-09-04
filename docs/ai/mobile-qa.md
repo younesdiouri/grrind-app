@@ -22,7 +22,8 @@ ne joue aucune migration, et ne touche pas au dépôt du back.
 
 Le harnais sépare explicitement l'itération JS/TS de la validation native. La première s'appuie
 sur un **development build E2E** contenant les mêmes modules natifs que l'app et charge le code
-depuis Metro. La seconde conserve le build Release propre historique.
+depuis Metro. La seconde conserve le build Release propre historique, mais elle est réservée à
+une demande explicite de l'utilisateur.
 
 ### Boucle de développement rapide
 
@@ -65,7 +66,7 @@ E2E_API_URL=http://… E2E_METRO_PORT=8083 npm run e2e:ios:dev
 E2E_API_URL=http://… E2E_METRO_PORT=8083 npm run e2e:ios:flow
 ```
 
-### Validation complète
+### Validation complète, uniquement sur demande explicite
 
 ```bash
 npm run e2e:ios:full
@@ -76,8 +77,11 @@ outils et le back, crée les comptes, crée ou retrouve le Simulator, l'arrête 
 exécute `expo prebuild --clean`, construit la variante E2E en Release, l'installe, remet l'état à
 zéro, puis joue le smoke test.
 
-Ce mode est la validation de référence : une fois avant de terminer un ticket mobile important,
-après un changement natif/configuration, ou dès que l'environnement rapide paraît obsolète.
+Un agent ne lance jamais ce mode de manière autonome. Il l'exécute seulement lorsque
+l'utilisateur demande explicitement `e2e:ios:full` ou la validation iOS Release complète. Un
+ticket mobile important, un changement natif/configuration, un environnement rapide obsolète ou
+une demande de terminer, pousser ou ouvrir une PR ne valent pas autorisation. Sans cette demande,
+la validation mobile de référence reste `e2e:ios:dev` puis `e2e:ios:flow`, captures inspectées.
 Comme le build Release et le development build partagent l'identifiant E2E, le full remplace le
 development build ; le prochain `e2e:ios:dev` le reconstruira une seule fois.
 
@@ -237,10 +241,12 @@ et le JDK.
 ## Avant de considérer un ticket mobile terminé
 
 - `npm run typecheck`, `npm run lint`, `npm test`, `npm run previews:check` ;
-- `npm run e2e:ios:full` au vert ;
+- `npm run e2e:ios:dev` puis le flow pertinent avec `npm run e2e:ios:flow` au vert ;
 - les captures d'`artifacts/e2e/` ouvertes et lues, pas seulement produites ;
 - un flow ou une assertion ajoutés si le ticket a ouvert un écran que le smoke test ne traverse
-  pas.
+  pas ;
+- `npm run e2e:ios:full` au vert uniquement si l'utilisateur a explicitement demandé cette
+  validation complète.
 
 ## Ce qui ne tourne pas en CI
 
