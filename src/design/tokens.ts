@@ -20,6 +20,15 @@ export const combatMotion = {
   previewHeight: 320,
   spriteBottom: '24%' as const,
   callsTop: '72%' as const,
+  arrivalDuration: 850,
+  arrivalTravel: 64,
+  arrivalScale: 0.9,
+  dialogueTop: 28,
+  combatBottom: 24,
+  dialogueReveal: -0.3,
+  bubbleTailSize: 12,
+  bubbleTailLeft: '42%' as const,
+  bubbleTailRotation: '45deg' as const,
 } as const;
 
 /**

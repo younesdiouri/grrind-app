@@ -1,5 +1,5 @@
-import { Redirect, Stack, router } from 'expo-router';
-import { useState } from 'react';
+import { Redirect, Stack, router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { Button } from '@/components/Button';
@@ -10,14 +10,36 @@ import { AL_KASAL, EnemySprite } from '@/features/combat/EnemySprite';
 import type { EnemyPose } from '@/features/combat/enemyMotion';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { useAuth } from '@/features/auth/useAuth';
+import { isE2eBuild } from '@/features/health/e2e';
+import type { Battle } from '@/features/combat/timeline';
 
 const POSES: { value: EnemyPose; label: string }[] = [
   { value: 'idle', label: 'Repos' }, { value: 'attack', label: 'Attaque' }, { value: 'hit', label: 'Coup reçu' },
 ];
 
 export default function CombatDemoScreen() {
+  const { network } = useLocalSearchParams<{ network?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
+  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={network} scenario={network} /></AmbientBackdropProvider>;
   return <AmbientBackdropProvider><CombatDemo /></AmbientBackdropProvider>;
+}
+
+/** Banc réseau isolé : scripts/combat-presentation-server.mjs, jamais une mutation du catalogue. */
+function NetworkDemo({ scenario }: { scenario: string }) {
+  const [battle, setBattle] = useState<Battle | null>(null);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(`http://127.0.0.1:8099/battle/${encodeURIComponent(scenario)}`, { signal: controller.signal })
+      .then((response) => { if (!response.ok) throw new Error('fixture'); return response.json(); })
+      .then(setBattle).catch(() => { if (!controller.signal.aborted) setError(true); });
+    return () => controller.abort();
+  }, [scenario]);
+  return <View style={styles.screen}>
+    <Text style={styles.notice}>DÉMONSTRATION RÉSEAU · AUCUN GAIN RÉEL</Text>
+    {battle ? <BattleView battle={battle} demo onDismiss={() => router.replace('/combat-demo')} />
+      : <Text style={styles.subtitle}>{error ? 'Serveur de test indisponible' : 'Chargement du scénario…'}</Text>}
+  </View>;
 }
 
 function CombatDemo() {

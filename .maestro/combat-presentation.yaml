@@ -1,0 +1,47 @@
+appId: app.grrind.e2e
+tags:
+  - combat
+  - ios
+---
+# Serveur HTTP synthétique local, pas le catalogue réel : voir scripts/combat-presentation-server.mjs.
+- launchApp
+- runFlow:
+    file: combat-presentation-dialogue.yaml
+    env:
+      SCENARIO: complete
+- runFlow:
+    file: combat-presentation-dialogue.yaml
+    env:
+      SCENARIO: dialogue
+- runFlow:
+    file: combat-presentation-dialogue.yaml
+    env:
+      SCENARIO: missing
+- runFlow:
+    file: combat-presentation-dialogue.yaml
+    env:
+      SCENARIO: slow
+- openLink: grrindapp-e2e://combat-demo?network=silent
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- assertNotVisible: ".*Toucher pour combattre.*"
+- takeScreenshot: presentation-silent
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- tapOn:
+    point: "50%,70%"
+- openLink: grrindapp-e2e://combat-demo?network=legacy
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- assertNotVisible: ".*Toucher pour combattre.*"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- tapOn:
+    point: "50%,70%"
+- assertVisible: "Repos"

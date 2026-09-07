@@ -1,0 +1,28 @@
+appId: app.grrind.e2e
+tags:
+  - combat
+  - ios
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${EMPTY_EMAIL}
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 30000
+- runFlow: combat-real-flow.yaml

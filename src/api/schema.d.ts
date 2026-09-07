@@ -1772,6 +1772,15 @@ export interface components {
              */
             dodgePercent: number;
         };
+        /** @description Pack publié complet ou null. URLs absolues publiques, HTTPS en production. hit est la pose de coup reçu ; une esquive utilise idle. La présentation courante est aussi utilisée au rejeu. */
+        EnemyImageUrls: {
+            /** Format: uri */
+            idle: string;
+            /** Format: uri */
+            attack: string;
+            /** Format: uri */
+            hit: string;
+        } | null;
         /**
          * @description L'adversaire : les mêmes champs qu'un `BattleFighter`, plus son identité.
          *
@@ -1797,6 +1806,9 @@ export interface components {
             extraTurnPercent: number;
             /** @example 3 */
             dodgePercent: number;
+            imageUrls?: components["schemas"]["EnemyImageUrls"];
+            /** @description Texte brut localisé selon Accept-Language (repli EN puis FR), indépendant des images. Toujours présent, null si absent ; facultatif pour les anciennes réponses. */
+            introduction?: string | null;
         };
         /**
          * @description Un instant de la timeline. **Seul l'ordre des éléments de la liste compte** — voir
@@ -1989,6 +2001,9 @@ export interface components {
             extraTurnPercent: number;
             /** @example 9 */
             dodgePercent: number;
+            imageUrls?: components["schemas"]["EnemyImageUrls"];
+            /** @description Texte brut localisé selon Accept-Language (repli EN puis FR), indépendant des images. Toujours présent, null si absent ; facultatif pour les anciennes réponses. */
+            introduction?: string | null;
         };
         /**
          * @description Le catalogue entier rendu par `GET /api/enemies` — niché sous `enemies`, jamais un

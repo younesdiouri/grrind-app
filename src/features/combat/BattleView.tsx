@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   type SharedValue,
@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withRepeat,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
@@ -25,9 +26,11 @@ import {
   battleResultLabel,
   color,
   combatMotion,
+  control,
   duration,
   scale,
   space,
+  radius,
   type,
   typography,
 } from '@/design/tokens';
@@ -35,6 +38,8 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { formatTurns } from './format.ts';
 import { hasBattleReward } from './reward.ts';
 import { EnemySprite, type EnemyArtwork } from './EnemySprite';
+import { enemyArtworkOf } from './enemyPresentation';
+import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
 import {
   buildBattleTimeline,
   type Battle,
@@ -86,14 +91,43 @@ import {
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export function BattleView({
+export function BattleView({ battle, enemyArt, ...props }: {
+  battle: Battle;
+  enemyArt?: EnemyArtwork;
+  demo?: boolean;
+  onDismiss?: () => void;
+}) {
+  const artwork = useMemo(() => enemyArt ?? enemyArtworkOf(battle.enemy), [enemyArt, battle.enemy]);
+  return <PresentedBattle key={battle.id} {...props} battle={battle} artwork={artwork}
+    introduction={enemyArt?.introduction ?? battle.enemy.introduction ?? undefined} />;
+}
+
+function PresentedBattle({ artwork, ...props }: {
+  battle: Battle;
+  artwork?: EnemyArtwork;
+  introduction?: string;
+  demo?: boolean;
+  onDismiss?: () => void;
+}) {
+  const [failed, setFailed] = useState(false);
+  const fail = useCallback(() => setFailed(true), []);
+  // L'échec arrive avant le démarrage : remonter une scène sans sprite remet l'horloge à zéro.
+  return <BattleScene key={failed ? 'fallback' : 'initial'} {...props}
+    enemyArt={failed ? undefined : artwork} onArtworkError={fail} />;
+}
+
+function BattleScene({
   battle,
   onDismiss,
   enemyArt,
+  introduction,
+  onArtworkError,
   demo = false,
 }: {
   battle: Battle;
   enemyArt?: EnemyArtwork;
+  introduction?: string;
+  onArtworkError: () => void;
   demo?: boolean;
   /**
    * Sortir. Le composant dit **quand** le joueur veut partir, la route décide de ce que ça
@@ -103,6 +137,10 @@ export function BattleView({
 }) {
   const timeline = useMemo(() => buildBattleTimeline(battle, { illustrated: !!enemyArt }), [battle, enemyArt]);
   const enemyName = enemyArt?.name ?? battle.enemy.name;
+  const hasIntroduction = !!introduction?.trim();
+  const hasEntrance = !!enemyArt || hasIntroduction;
+  const [entrance, setEntrance] = useState<EntrancePhase>(hasEntrance ? 'loading' : 'combat');
+  const started = useRef(false);
   const clock = useSharedValue(0);
   const skipping = useSharedValue(false);
   const reducedMotion = useReducedMotion();
@@ -110,19 +148,35 @@ export function BattleView({
   /**
    * La séquence est-elle arrivée au bout.
    *
-   * C'est le **seul** `setState` de tout l'écran, et il tombe une fois, à la fin. La règle du
-   * fichier interdit la boucle, pas l'événement terminal : rendre l'affordance de sortie
-   * demande un rendu React, et il n'y en a qu'un.
+   * Les changements React sont réservés aux étapes de l'entrée et à la fin. Aucune frame
+   * d'animation ne passe par `setState`.
    */
   const [done, setDone] = useState(false);
 
   const verdict = timeline.beats[timeline.beats.length - 1];
 
+  // La respiration peut durer jusqu'au toucher ; quitter l'atelier l'arrête aussi.
+  useEffect(() => () => cancelAnimation(clock), [clock]);
+
+  const speak = () => {
+    if (!hasIntroduction) {
+      setEntrance('combat');
+      play();
+      return;
+    }
+    setEntrance('dialogue');
+    clock.set(0);
+    if (reducedMotion === false) {
+      clock.set(withRepeat(withTiming(1, { duration: combatMotion.breathPeriod, easing: Easing.linear }), -1));
+    }
+  };
+
   const play = () => {
     if (skipping.get()) return;
+    cancelAnimation(clock);
     setDone(false);
-    clock.value = 0;
-    clock.value = withTiming(
+    clock.set(0);
+    clock.set(withTiming(
       timeline.duration,
       { duration: timeline.duration, easing: Easing.linear },
       (finished) => {
@@ -133,7 +187,23 @@ export function BattleView({
           scheduleOnRN(setDone, true);
         }
       },
-    );
+    ));
+  };
+
+  const ready = () => {
+    if (started.current) return;
+    started.current = true;
+    if (!hasEntrance) {
+      play();
+    } else if (!enemyArt || reducedMotion !== false) {
+      speak();
+    } else {
+      setEntrance('entering');
+      clock.set(-1);
+      clock.set(withTiming(0, { duration: combatMotion.arrivalDuration, easing: Easing.out(Easing.cubic) }, (finished) => {
+        if (finished) scheduleOnRN(speak);
+      }));
+    }
   };
 
   /**
@@ -145,7 +215,7 @@ export function BattleView({
   const skip = () => {
     skipping.set(true);
     cancelAnimation(clock);
-    clock.value = timeline.duration;
+    clock.set(timeline.duration);
     setDone(true);
   };
 
@@ -156,6 +226,12 @@ export function BattleView({
    * partir. Le même geste que l'écran de récompense, pour la même raison.
    */
   const touch = () => {
+    if (entrance === 'loading' || entrance === 'entering') return;
+    if (entrance === 'dialogue') {
+      setEntrance('combat');
+      play();
+      return;
+    }
     if (done) {
       onDismiss?.();
       return;
@@ -192,7 +268,7 @@ export function BattleView({
   // L'entrée du cadre emprunte l'horloge métier déjà présente. Elle n'allonge ni ne décale
   // aucun battement; avec Réduire les animations — indéterminé compris — le panneau est posé.
   const frameEntryStyle = useAnimatedStyle(() => {
-    if (reducedMotion !== false) {
+    if (hasEntrance || reducedMotion !== false) {
       return { opacity: 1, transform: [{ scale: 1 }] };
     }
 
@@ -208,10 +284,22 @@ export function BattleView({
     };
   });
 
+  const spriteEntranceStyle = useAnimatedStyle(() => {
+    if (!hasEntrance) return {};
+    const motion = entranceMotionAt(entrance, clock.get(), reducedMotion !== false);
+    return { top: `${motion.top}%`, bottom: `${motion.bottom}%`,
+      opacity: entrance === 'combat' && clock.get() >= verdict.at ? 0 : motion.opacity,
+      transform: [{ translateY: motion.y }, { scale: motion.scale }] };
+  });
+  const dialogueStyle = useAnimatedStyle(() => ({
+    opacity: entranceMotionAt(entrance, clock.get(), reducedMotion !== false).dialogueOpacity,
+  }));
+
   return (
     // Sans illustration, le layout lance la séquence. Avec un sprite, on attend aussi le
     // chargement des trois poses pour ne jamais jouer un coup avant son image.
-    <Pressable style={styles.screen} onPress={touch} onLayout={enemyArt ? undefined : play} accessibilityRole="button">
+    <Pressable style={styles.screen} onPress={touch} onLayout={enemyArt ? undefined : ready}
+      testID={`battle-${entrance}`} accessibilityRole="button">
       <AmbientBackdrop />
       <Animated.View style={[styles.eventFrame, frameEntryStyle]}>
         <SystemFrame tier="event" style={styles.eventSurface} contentStyle={styles.eventContent}>
@@ -219,10 +307,21 @@ export function BattleView({
 
           <View style={styles.stage}>
             {enemyArt && (
-              <Animated.View style={[styles.spriteStage, actionsStyle]}>
-                <EnemySprite artwork={enemyArt} clock={clock} beats={timeline.beats} onReady={play} />
+              <Animated.View style={[styles.spriteStage, actionsStyle, spriteEntranceStyle]}>
+                <EnemySprite artwork={enemyArt} clock={clock} beats={timeline.beats}
+                  pose={entrance === 'combat' ? undefined : 'idle'} onReady={ready} onError={onArtworkError} />
               </Animated.View>
             )}
+            {hasIntroduction && entrance !== 'combat' && (
+              <Animated.View style={[styles.dialogue, dialogueStyle]}
+                accessibilityElementsHidden={entrance !== 'dialogue'}>
+                <Text style={styles.speaker}>{enemyName.toUpperCase()}</Text>
+                <Text style={styles.dialogueText}>{introduction}</Text>
+                {entrance === 'dialogue' && <Text style={styles.dialogueHint}>Toucher pour combattre</Text>}
+                <View style={styles.dialogueTail} />
+              </Animated.View>
+            )}
+            {entrance === 'loading' && <Text style={styles.dialogueHint}>Préparation du combat…</Text>}
             <Animated.View style={[styles.layer, enemyArt && styles.spriteCalls, actionsStyle]}>
               <Call clock={clock} flash={timeline.enemy.damageFlash}>
                 <Blow
@@ -585,6 +684,16 @@ const styles = StyleSheet.create({
   stage: { flex: 1, justifyContent: 'center' },
   spriteStage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: combatMotion.spriteBottom },
   spriteCalls: { top: combatMotion.callsTop },
+  dialogue: { position: 'absolute', top: space.sm, left: 0, right: 0, padding: space.md,
+    gap: space.sm, backgroundColor: color.surfaceRaised, borderRadius: radius.md,
+    borderWidth: control.borderWidth, borderColor: color.accent },
+  speaker: { ...type.label, color: color.accent },
+  dialogueText: { ...type.body, color: color.text },
+  dialogueHint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
+  dialogueTail: { position: 'absolute', width: combatMotion.bubbleTailSize, height: combatMotion.bubbleTailSize,
+    bottom: -combatMotion.bubbleTailSize / 2, left: combatMotion.bubbleTailLeft,
+    transform: [{ rotate: combatMotion.bubbleTailRotation }], backgroundColor: color.surfaceRaised,
+    borderBottomWidth: control.borderWidth, borderRightWidth: control.borderWidth, borderColor: color.accent },
   layer: {
     position: 'absolute',
     top: 0,

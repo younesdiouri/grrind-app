@@ -1,15 +1,17 @@
 import { Image, type ImageSource } from 'expo-image';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle, useDerivedValue } from 'react-native-reanimated';
 import { color, combatMotion, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { enemyMotionAt, type EnemyPose } from './enemyMotion';
 import type { BattleBeat } from './timeline';
+import { ENEMY_IMAGE_TIMEOUT_MS, type EnemyArtwork } from './enemyPresentation';
 
-export type EnemyArtwork = { name: string; poses: Record<EnemyPose, ImageSource> };
+export type { EnemyArtwork } from './enemyPresentation';
 export const AL_KASAL: EnemyArtwork = {
   name: 'Al-Kasal',
+  introduction: "je suis la paresse, laissez tomber, ce jeu n'est pas fait pour vous.",
   poses: {
     idle: require('../../../assets/images/enemies/al-kasal/idle.png'),
     attack: require('../../../assets/images/enemies/al-kasal/attack.png'),
@@ -20,15 +22,34 @@ export const AL_KASAL: EnemyArtwork = {
 const poses: EnemyPose[] = ['idle', 'attack', 'hit'];
 
 /** Les trois images se chargent ensemble ; aucune source ne change au milieu d'un coup. */
-export function EnemySprite({ artwork, clock, beats, pose, onReady }: {
+export function EnemySprite({ artwork, clock, beats, pose, onReady, onError }: {
   artwork: EnemyArtwork;
   clock: SharedValue<number>;
   beats: BattleBeat[];
   pose?: EnemyPose;
   onReady?: () => void;
+  onError?: () => void;
 }) {
   const loaded = useRef(new Set<EnemyPose>());
+  const settled = useRef(false);
+  const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    timeout.current = setTimeout(() => {
+      if (settled.current) return;
+      settled.current = true;
+      setFailed(true);
+      onError?.();
+    }, ENEMY_IMAGE_TIMEOUT_MS);
+    return () => clearTimeout(timeout.current);
+  }, [onError]);
+  const fail = () => {
+    if (settled.current) return;
+    settled.current = true;
+    clearTimeout(timeout.current);
+    setFailed(true);
+    onError?.();
+  };
   const reduced = useReducedMotion();
   const motion = useDerivedValue(() => enemyMotionAt(beats, clock.get(), reduced !== false));
   const transform = useAnimatedStyle(() => ({
@@ -43,11 +64,15 @@ export function EnemySprite({ artwork, clock, beats, pose, onReady }: {
       <Animated.View style={[styles.body, transform]}>
         {poses.map((candidate) => (
           <PoseLayer key={candidate} source={artwork.poses[candidate]} candidate={candidate}
-            selected={pose} motion={motion} onError={() => setFailed(true)}
+            selected={pose} motion={motion} onError={fail}
             onLoad={() => {
-              const wasReady = loaded.current.size === poses.length;
+              if (settled.current) return;
               loaded.current.add(candidate);
-              if (!wasReady && loaded.current.size === poses.length) onReady?.();
+              if (loaded.current.size === poses.length) {
+                settled.current = true;
+                clearTimeout(timeout.current);
+                onReady?.();
+              }
             }} />
         ))}
         <Animated.View style={[styles.flash, flash]} />
@@ -69,7 +94,7 @@ function PoseLayer({ source, candidate, selected, motion, onLoad, onError }: {
   return (
     <Animated.View style={[StyleSheet.absoluteFill, style]}>
       <Image source={source} style={StyleSheet.absoluteFill} contentFit="contain"
-        transition={0} cachePolicy="memory" onLoad={onLoad} onError={onError} accessible={false} />
+        transition={0} cachePolicy="memory-disk" onLoad={onLoad} onError={onError} accessible={false} />
     </Animated.View>
   );
 }

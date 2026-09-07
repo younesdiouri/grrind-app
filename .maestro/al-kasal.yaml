@@ -24,6 +24,14 @@ tags:
 - takeScreenshot: al-kasal-hit
 - tapOn: "Jouer une victoire"
 - extendedWaitUntil:
+    visible: ".*Toucher pour combattre.*"
+    timeout: 10000
+- assertVisible: ".*je suis la paresse, laissez tomber, ce jeu n'est pas fait pour vous.*"
+- takeScreenshot: al-kasal-dialogue
+- tapOn:
+    point: "50%,50%"
+- assertNotVisible: ".*Toucher pour combattre.*"
+- extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - assertVisible: ".*Victoire.*"
@@ -33,6 +41,11 @@ tags:
 - assertVisible: "Repos"
 - tapOn: "Jouer une défaite"
 - extendedWaitUntil:
+    visible: ".*Toucher pour combattre.*"
+    timeout: 10000
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - assertVisible: ".*Défaite.*"
@@ -41,6 +54,11 @@ tags:
     point: "50%,70%"
 - assertVisible: "Repos"
 - tapOn: "Jouer une victoire"
+- extendedWaitUntil:
+    visible: ".*Toucher pour combattre.*"
+    timeout: 10000
+- tapOn:
+    point: "50%,50%"
 - tapOn:
     point: "50%,70%"
 - assertVisible: ".*Victoire.*"
