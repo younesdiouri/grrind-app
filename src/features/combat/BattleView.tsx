@@ -24,6 +24,7 @@ import {
   ambient,
   battleResultLabel,
   color,
+  combatMotion,
   duration,
   scale,
   space,
@@ -33,6 +34,7 @@ import {
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { formatTurns } from './format.ts';
 import { hasBattleReward } from './reward.ts';
+import { EnemySprite, type EnemyArtwork } from './EnemySprite';
 import {
   buildBattleTimeline,
   type Battle,
@@ -87,16 +89,22 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 export function BattleView({
   battle,
   onDismiss,
+  enemyArt,
+  demo = false,
 }: {
   battle: Battle;
+  enemyArt?: EnemyArtwork;
+  demo?: boolean;
   /**
    * Sortir. Le composant dit **quand** le joueur veut partir, la route décide de ce que ça
    * veut dire — une animation ne connaît pas la pile de navigation.
    */
   onDismiss?: () => void;
 }) {
-  const timeline = useMemo(() => buildBattleTimeline(battle), [battle]);
+  const timeline = useMemo(() => buildBattleTimeline(battle, { illustrated: !!enemyArt }), [battle, enemyArt]);
+  const enemyName = enemyArt?.name ?? battle.enemy.name;
   const clock = useSharedValue(0);
+  const skipping = useSharedValue(false);
   const reducedMotion = useReducedMotion();
 
   /**
@@ -111,6 +119,7 @@ export function BattleView({
   const verdict = timeline.beats[timeline.beats.length - 1];
 
   const play = () => {
+    if (skipping.get()) return;
     setDone(false);
     clock.value = 0;
     clock.value = withTiming(
@@ -134,6 +143,7 @@ export function BattleView({
    * dernière valeur, et ces dernières valeurs sont celles que le serveur a écrites.
    */
   const skip = () => {
+    skipping.set(true);
     cancelAnimation(clock);
     clock.value = timeline.duration;
     setDone(true);
@@ -159,7 +169,7 @@ export function BattleView({
   useAnimatedReaction(
     () => timeline.blows.filter((at) => clock.value >= at).length,
     (landed, previous) => {
-      if (previous !== null && landed > previous) {
+      if (previous !== null && landed > previous && !skipping.get() && reducedMotion === false) {
         scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Medium);
       }
     },
@@ -199,20 +209,25 @@ export function BattleView({
   });
 
   return (
-    // `onLayout` et non un effet : la séquence part quand l'écran a ses dimensions, pas avant.
-    // C'est l'idiome de `SyncSummaryView`, et il évite une première frame jouée dans le vide.
-    <Pressable style={styles.screen} onPress={touch} onLayout={play} accessibilityRole="button">
+    // Sans illustration, le layout lance la séquence. Avec un sprite, on attend aussi le
+    // chargement des trois poses pour ne jamais jouer un coup avant son image.
+    <Pressable style={styles.screen} onPress={touch} onLayout={enemyArt ? undefined : play} accessibilityRole="button">
       <AmbientBackdrop />
       <Animated.View style={[styles.eventFrame, frameEntryStyle]}>
         <SystemFrame tier="event" style={styles.eventSurface} contentStyle={styles.eventContent}>
-          <Fighter clock={clock} side="enemy" name={battle.enemy.name} ramps={timeline.enemy} stats={battle.enemy} />
+          <Fighter clock={clock} side="enemy" name={enemyName} ramps={timeline.enemy} stats={battle.enemy} />
 
           <View style={styles.stage}>
-            <Animated.View style={[styles.layer, actionsStyle]}>
+            {enemyArt && (
+              <Animated.View style={[styles.spriteStage, actionsStyle]}>
+                <EnemySprite artwork={enemyArt} clock={clock} beats={timeline.beats} onReady={play} />
+              </Animated.View>
+            )}
+            <Animated.View style={[styles.layer, enemyArt && styles.spriteCalls, actionsStyle]}>
               <Call clock={clock} flash={timeline.enemy.damageFlash}>
                 <Blow
                   clock={clock}
-                  who={battle.enemy.name}
+                  who={enemyName}
                   ramps={timeline.enemy}
                   tone={styles.dealt}
                 />
@@ -223,7 +238,7 @@ export function BattleView({
               </Call>
 
               <Call clock={clock} flash={timeline.enemy.dodgeFlash}>
-                <Announce who={battle.enemy.name} word="esquive" />
+                <Announce who={enemyName} word="esquive" />
               </Call>
 
               <Call clock={clock} flash={timeline.player.dodgeFlash}>
@@ -231,7 +246,7 @@ export function BattleView({
               </Call>
 
               <Call clock={clock} flash={timeline.enemy.extraFlash}>
-                <Announce who={battle.enemy.name} word="rejoue" tone={styles.extra} />
+                <Announce who={enemyName} word="rejoue" tone={styles.extra} />
               </Call>
 
               <Call clock={clock} flash={timeline.player.extraFlash}>
@@ -240,7 +255,7 @@ export function BattleView({
             </Animated.View>
 
             <Animated.View style={[styles.layer, recapStyle]} pointerEvents="none">
-              <Recap battle={battle} tally={timeline.tally} done={done} />
+              <Recap battle={battle} tally={timeline.tally} done={done} enemyName={enemyName} demo={demo} />
             </Animated.View>
           </View>
 
@@ -368,7 +383,9 @@ function Announce({ who, word, tone }: { who: string; word: string; tone?: { col
  * tranchée par `max_turns` sans KO, ne rapporte rien, et le back a refusé de dessiner une
  * consolation pour ce cas — ni bourse vide, ni « rien trouvé ».
  */
-function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; done: boolean }) {
+function Recap({ battle, tally, done, enemyName, demo }: {
+  battle: Battle; tally: BattleTally; done: boolean; enemyName: string; demo: boolean;
+}) {
   const won = battle.result === 'VICTORY';
   const reward = battle.rewards;
   // « avant → après » seulement si la bourse a bougé : sur un lot qui n'a fait tomber que du
@@ -383,7 +400,7 @@ function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; do
       </Text>
 
       <Text style={styles.against} numberOfLines={2}>
-        {won ? 'Tu as vaincu' : 'Tu es tombé face à'} {battle.enemy.name}
+        {won ? 'Tu as vaincu' : 'Tu es tombé face à'} {enemyName}
       </Text>
 
       {tally.lastBlow !== null && (
@@ -410,7 +427,7 @@ function Recap({ battle, tally, done }: { battle: Battle; tally: BattleTally; do
 
       {/* Le butin — objets puis bourse, dans l'ordre du contrat. Rien ne paraît sur une
           défaite ou un combat sans rapport : voir le docblock de `hasBattleReward`. */}
-      {hasBattleReward(reward) && (
+      {!demo && hasBattleReward(reward) && (
         <View style={styles.loot}>
           {reward.loot.map((item, position) => (
             <ItemCard key={`${item.key}-${position}`} item={item} />
@@ -566,6 +583,8 @@ const styles = StyleSheet.create({
 
   /** Le centre : tout ce qui arrive s'y annonce, et le bilan l'occupe à la fin. */
   stage: { flex: 1, justifyContent: 'center' },
+  spriteStage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: combatMotion.spriteBottom },
+  spriteCalls: { top: combatMotion.callsTop },
   layer: {
     position: 'absolute',
     top: 0,

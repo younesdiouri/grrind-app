@@ -106,6 +106,7 @@ export default function CombatScreen() {
       )}
       ListHeaderComponent={
         <View style={styles.header}>
+          {__DEV__ && <Button label="Essayer Al-Kasal" variant="quiet" onPress={() => router.push('/combat-demo')} />}
           {/* Le combattant du joueur, en tête — avant même le titre de la section, puisqu'il
               n'est pas un adversaire (#227). Requis au contrat : rien ne le montre tant que le
               catalogue n'est pas prêt, pas d'état « en attente ». */}

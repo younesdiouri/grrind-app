@@ -1,5 +1,6 @@
 import type { components } from '@/api/schema';
-import { duration } from '@/design/tokens';
+import { combatMotion, duration } from '@/design/tokens';
+import { contactAt } from './enemyMotion.ts';
 
 export type Battle = components['schemas']['Battle'];
 export type BattleEvent = components['schemas']['BattleEvent'];
@@ -313,7 +314,7 @@ function sideRamps(maxHp: number): SideRamps {
   };
 }
 
-export function buildBattleTimeline(battle: Battle): BattleTimeline {
+export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}): BattleTimeline {
   const events = battle.events;
 
   // Les échanges sont tout ce qui se joue entre l'ouverture et le verdict. `BATTLE_STARTED` et
@@ -383,13 +384,15 @@ export function buildBattleTimeline(battle: Battle): BattleTimeline {
       // l'air de marcher.
       const target = sideOf(opponentOf(attacker));
 
-      slideTo(target.hp, at, until, remaining);
-      stepTo(target.damage, at, damage);
-      stepTo(target.mitigated, at, mitigated);
-      pulse(target.damageFlash, at, until);
+      const contact = illustrated ? contactAt({ at, until }) : at;
+      const hpUntil = illustrated ? contact + Math.round(span * combatMotion.hpSettle) : until;
+      slideTo(target.hp, contact, hpUntil, remaining);
+      stepTo(target.damage, contact, damage);
+      stepTo(target.mitigated, contact, mitigated);
+      pulse(target.damageFlash, contact, until);
 
       if (mitigated > 0) {
-        pulse(target.mitigatedFlash, at, until);
+        pulse(target.mitigatedFlash, contact, until);
       }
 
       if (attacker === 'PLAYER') {
@@ -405,7 +408,7 @@ export function buildBattleTimeline(battle: Battle): BattleTimeline {
 
       tally.lastBlow = { by: attacker, damage };
 
-      blows.push(until);
+      blows.push(illustrated ? contact : until);
       beats.push({ kind: 'attack', at, until, index, attacker, damage, mitigated });
     } else if (event.type === 'DODGE') {
       const attacker = event.attacker ?? 'PLAYER';

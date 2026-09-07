@@ -1,0 +1,49 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - combat
+---
+# Démonstration locale : aucune connexion, création de compte ou mutation API.
+- launchApp
+- openLink: grrindapp-e2e://combat-demo
+- repeat:
+    times: 2
+    commands:
+      - runFlow:
+          when:
+            visible: "Ouvrir dans.*"
+          commands:
+            - tapOn: "Ouvrir"
+- extendedWaitUntil:
+    visible: "Repos"
+    timeout: 30000
+- takeScreenshot: al-kasal-idle
+- tapOn: "Attaque"
+- takeScreenshot: al-kasal-attack
+- tapOn: "Coup reçu"
+- takeScreenshot: al-kasal-hit
+- tapOn: "Jouer une victoire"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Victoire.*"
+- takeScreenshot: al-kasal-victory
+- tapOn:
+    point: "50%,70%"
+- assertVisible: "Repos"
+- tapOn: "Jouer une défaite"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Défaite.*"
+- takeScreenshot: al-kasal-defeat
+- tapOn:
+    point: "50%,70%"
+- assertVisible: "Repos"
+- tapOn: "Jouer une victoire"
+- tapOn:
+    point: "50%,70%"
+- assertVisible: ".*Victoire.*"
+- tapOn:
+    point: "50%,70%"
+- assertVisible: "Repos"

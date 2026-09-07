@@ -59,6 +59,15 @@ On peut viser un autre flow sans modifier le script :
 npm run e2e:ios:flow -- .maestro/mon-flow.yaml
 ```
 
+Pour une démonstration autonome sans API, comme l’atelier Al-Kasal :
+
+```sh
+E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/al-kasal.yaml
+```
+
+Ce mode explicite conserve le contrôle de Metro et du Simulator, mais ne vérifie pas le backend,
+ne crée aucun compte et ne réinitialise pas la session. Il ne remplace pas le smoke authentifié.
+
 Pour viser un autre back ou un autre port Metro, passer les mêmes valeurs aux deux commandes :
 
 ```bash

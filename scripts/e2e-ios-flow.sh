@@ -16,7 +16,11 @@ STARTED_AT="$(date +%s)"
 EXPECTED_SETTINGS="port=${METRO_PORT};api=${E2E_API_URL_VALUE}"
 
 e2e_require_tools
-e2e_require_backend
+# Les ateliers de présentation peuvent tourner sans compte ni serveur. Ce mode est explicite
+# pour ne jamais faire passer le smoke authentifié avec un backend manquant.
+if [ "${E2E_OFFLINE:-0}" != "1" ]; then
+  e2e_require_backend
+fi
 e2e_find_or_create_simulator
 e2e_boot_simulator
 e2e_require_installed_app
@@ -38,8 +42,13 @@ fi
 
 METRO_HOST="$(sed -n '1p' "$METRO_HOST_FILE")"
 
-e2e_register_accounts
-e2e_reset_state
+if [ "${E2E_OFFLINE:-0}" = "1" ]; then
+  E2E_EMPTY_EMAIL=""
+  E2E_MULTIPLE_EMAIL=""
+else
+  e2e_register_accounts
+  e2e_reset_state
+fi
 
 DEV_CLIENT_URL="exp+grrind-app://expo-development-client/?url=http%3A%2F%2F${METRO_HOST}%3A${METRO_PORT}"
 xcrun simctl openurl "$E2E_SIMULATOR_UDID" "$DEV_CLIENT_URL"
