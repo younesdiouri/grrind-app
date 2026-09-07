@@ -58,7 +58,7 @@ export default function BattleScreen() {
     return <Empty>Aucun combat à jouer.</Empty>;
   }
 
-  return <RealBattle id={id} />;
+  return <RealBattle key={id} id={id} />;
 }
 
 /**

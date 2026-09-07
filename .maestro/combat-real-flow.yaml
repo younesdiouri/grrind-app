@@ -1,0 +1,78 @@
+appId: app.grrind.e2e
+---
+# ————— Combat (#227) — le combattant du joueur, un combat gagné, son butin ————————————————
+#
+# `SAND_JACKAL` est le seul adversaire accessible à un compte neuf, et le socle livré le bat
+# toujours — `CombatCoverageTest::testTheShippedFighterSocleWinsTheLevelOneEncounter` le
+# garantit côté back. La victoire est donc déterministe ; le butin exact (`loot.yaml`, table
+# `SAND_JACKAL`) ne l'est pas, sauf la bourse, dont la borne basse n'est jamais nulle — c'est
+# elle qu'on vérifie, jamais un objet précis qui pourrait ne pas tomber.
+
+- tapOn:
+    id: "tab-combat"
+- extendedWaitUntil:
+    visible: "Adversaires"
+    timeout: 15000
+- assertVisible: "Toi"
+- takeScreenshot: 03-combat-catalog
+
+- tapOn: "Combattre"
+# Le nom traduit du catalogue est administrable. Les statistiques livrées pour `SAND_JACKAL`
+# prouvent qu'on a ouvert le bon combat sans figer ce contenu éditorial dans le harnais.
+- extendedWaitUntil:
+    visible: ".*12 dég.*5 % arm.*3 % esq.*"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 15000
+- runFlow:
+    when:
+      visible: ".*Toucher pour combattre.*"
+    commands:
+      - tapOn:
+          point: "50%,50%"
+
+# Attendre le verdict naturel : la recherche conditionnelle du dialogue peut déjà avoir
+# consommé la fin d'un combat sans réplique. Un tap tardif sortirait alors du bilan.
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Victoire.*"
+- assertVisible: ".*Bourse.*"
+- takeScreenshot: 04-battle-recap-loot
+
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible: "Adversaires"
+    timeout: 15000
+
+# La ligne d'historique porte les pièces, jamais les objets (#227) — voir le docblock de
+# `coinsGained` sur `BattleRow`. Elle est sous le catalogue, hors cadre sans défiler.
+- scrollUntilVisible:
+    element:
+      id: "battle-history-row"
+    direction: DOWN
+    timeout: 60000
+- takeScreenshot: 05-combat-history-coins
+- tapOn:
+    id: "battle-history-row"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 15000
+- runFlow:
+    when:
+      visible: ".*Toucher pour combattre.*"
+    commands:
+      - tapOn:
+          point: "50%,50%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Victoire.*"
+- takeScreenshot: 05a-battle-replay
+- tapOn:
+    point: "50%,50%"

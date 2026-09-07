@@ -1,5 +1,36 @@
 import type { components } from '@/api/schema';
 
+/** Mise en scène du prototype Al-Kasal : fractions d'un échange, puis amplitudes en points. */
+export const combatMotion = {
+  contact: 0.38,
+  recover: 0.82,
+  hpSettle: 0.2,
+  breathPeriod: 2600,
+  breath: 2,
+  lunge: 18,
+  recoil: 12,
+  dodge: 28,
+  tilt: 5,
+  attackScale: 0.055,
+  recoilScale: 0.025,
+  spriteInset: 14,
+  flashOpacity: 0.22,
+  flashDuration: 90,
+  impactSize: 64,
+  previewHeight: 320,
+  spriteBottom: '24%' as const,
+  callsTop: '72%' as const,
+  arrivalDuration: 850,
+  arrivalTravel: 64,
+  arrivalScale: 0.9,
+  dialogueTop: 28,
+  combatBottom: 24,
+  dialogueReveal: -0.3,
+  bubbleTailSize: 12,
+  bubbleTailLeft: '42%' as const,
+  bubbleTailRotation: '45deg' as const,
+} as const;
+
 /**
  * Les tokens du design system.
  *

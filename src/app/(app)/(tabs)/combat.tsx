@@ -93,7 +93,7 @@ export default function CombatScreen() {
         // une liste qui reste légère à chaque chargement (younesdiouri/grrind-back#220).
         <Link href={{ pathname: '/battle', params: { id: item.id } }} asChild>
           {/* `asChild` clone l'enfant avec `onPress` : même idiome que le roster de guilde. */}
-          <Pressable>
+          <Pressable testID="battle-history-row">
             <BattleRow
               result={item.result}
               enemyName={item.enemy.name}
