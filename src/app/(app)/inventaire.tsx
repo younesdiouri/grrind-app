@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
@@ -23,16 +23,21 @@ import {
   type EquipmentSlot,
 } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
-import { messageFor, type Failure } from '@/features/auth/problems';
+import { messageFor, OFFLINE, type Failure } from '@/features/auth/problems';
 import {
   equipItem,
   unequipSlot,
   type EquipmentOutcome,
 } from '@/features/inventory/equipmentActions';
 import { noteEquipmentChanged } from '@/features/inventory/equipmentRevision';
-import { isEquippable, isEquipped, type Inventory } from '@/features/inventory/inventory';
+import { isEquippable, isEquipped, type Inventory, type InventoryLine } from '@/features/inventory/inventory';
 import { INVENTORY_QUERY_KEY, useInventory } from '@/features/inventory/useInventory';
 import { openChest, type ChestOpenOutcome } from '@/features/shop/actions';
+import { useAuth } from '@/features/auth/useAuth';
+import { salesFor } from '@/features/inventory/sales';
+import type { PendingSale, Sale, SaleInput } from '@/features/inventory/saleRunner';
+import { inventoryAfterSale } from '@/features/inventory/saleInventory';
+import { SHOP_QUERY_KEY } from '@/features/shop/useShop';
 
 /**
  * Le sac, la doublure et la bourse — #30, poussé depuis l'accueil et depuis l'onglet Combat.
@@ -40,8 +45,7 @@ import { openChest, type ChestOpenOutcome } from '@/features/shop/actions';
  * ————— Un seul aller-retour, et un seul état ————————————————————————————————————————————
  *
  * `GET /api/inventory` porte tout, et `PUT`/`DELETE` rendent la **même** forme complète après
- * une mutation. L'écran n'a donc jamais à recharger après un geste, ni à rapiécer ce qu'il
- * avait : il remplace l'entrée du cache par la réponse. L'échange — l'ancien occupant qui
+ * un équipement. Pour ces gestes, l'écran remplace l'entrée du cache par la réponse. L'échange — l'ancien occupant qui
  * retourne au sac — est décidé côté serveur, dans la transaction ; le rejouer ici serait le
  * décider une seconde fois.
  *
@@ -55,11 +59,8 @@ import { openChest, type ChestOpenOutcome } from '@/features/shop/actions';
  * recouper contre `equipment` : c'est la même ligne vue sous un autre angle. On ne filtre donc
  * rien, on marque — voir `isEquipped`.
  *
- * ————— Le prix s'affiche, et rien ne s'achète ————————————————————————————————————————————
- *
- * La boutique est au lot 6b côté back, pas encore fusionnée. Un prix sans bouton n'est pas un
- * manque : c'est l'échelle qui donne un sens aux pièces qu'on ramasse, et c'est exactement
- * pourquoi le back l'a écrit avant la boutique.
+ * Une vente conserve son intention jusqu’au verdict. Son solde et sa quantité viennent du
+ * serveur; une relecture remet ensuite le sac et la boutique en cohérence avec le catalogue.
  */
 export default function InventoryScreen() {
   const inventory = useInventory();
@@ -79,8 +80,76 @@ export default function InventoryScreen() {
   const [selection, setSelection] = useState<EquipmentSlot | null>(null);
   const [openedChest, setOpenedChest] = useState<ChestOpenOutcome | null>(null);
   const purseGlow = decorativeGlow('soft', useReducedMotion());
+  const auth = useAuth();
+  const userId = auth.status === 'signedIn' ? auth.user.id : null;
+  const saleActions = userId === null ? null : salesFor(userId);
+  const mutationInFlight = useRef(false);
+  const saleDialogOpen = useRef(false);
+  const [saleReady, setSaleReady] = useState(false);
+  const [unresolvedSale, setUnresolvedSale] = useState<PendingSale | null>(null);
+  const [saleBusy, setSaleBusy] = useState(false);
+  const [sold, setSold] = useState<Sale | null>(null);
+  const blocked = pending !== null || pendingChest !== null || saleBusy || !saleReady || unresolvedSale !== null;
+
+  useEffect(() => {
+    let alive = true;
+    if (saleActions === null) return;
+    void saleActions.pending().then((held) => {
+      if (alive) {
+        setUnresolvedSale(held);
+        setSaleReady(true);
+      }
+    }).catch(() => { if (alive) setRefusal(OFFLINE); });
+    return () => { alive = false; };
+  }, [saleActions]);
+
+  const sell = async (body: SaleInput) => {
+    if (mutationInFlight.current || saleActions === null) return;
+    mutationInFlight.current = true;
+    setSaleBusy(true);
+    setRefusal(null);
+    setSold(null);
+    try {
+      const outcome = await saleActions.sell(body);
+      setUnresolvedSale(await saleActions.pending());
+      if (outcome.kind === 'refused') {
+        setRefusal(outcome.failure);
+      } else {
+        setSold(outcome.sale);
+        queryClient.setQueryData<Inventory>(INVENTORY_QUERY_KEY, (previous) =>
+          previous === undefined ? previous : inventoryAfterSale(previous, outcome.sale));
+        noteEquipmentChanged();
+      }
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: SHOP_QUERY_KEY }),
+      ]);
+    } catch {
+      setRefusal(OFFLINE);
+      setSaleReady(false);
+    } finally {
+      mutationInFlight.current = false;
+      setSaleBusy(false);
+    }
+  };
+
+  const confirmSale = (line: InventoryLine) => {
+    if (blocked || mutationInFlight.current || saleDialogOpen.current) return;
+    saleDialogOpen.current = true;
+    Alert.alert('Vendre un exemplaire ?',
+      `${line.name}\n1 exemplaire · ${line.sellPriceCoins} pièces${line.sellPriceCoins === 0 ? '\nTu ne recevras aucune pièce.' : ''}`,
+      [
+        { text: 'Annuler', style: 'cancel', onPress: () => { saleDialogOpen.current = false; } },
+        { text: 'Confirmer la vente', onPress: () => {
+          saleDialogOpen.current = false;
+          void sell({ itemKey: line.key, expectedSellPriceCoins: line.sellPriceCoins });
+        } },
+      ], { onDismiss: () => { saleDialogOpen.current = false; } });
+  };
 
   const apply = async (slot: EquipmentSlot, mutate: () => Promise<EquipmentOutcome>) => {
+    if (blocked || mutationInFlight.current) return;
+    mutationInFlight.current = true;
     // Une fois le geste explicite, cette zone devient la sélection de l'utilisateur. Sans ça,
     // le fallback automatique sautait vers le prochain objet non équipé dès la réponse reçue :
     // l'équipement avait réussi, mais son badge disparaissait aussitôt du tiroir affiché.
@@ -89,6 +158,7 @@ export default function InventoryScreen() {
     setRefusal(null);
 
     const outcome = await mutate();
+    mutationInFlight.current = false;
     setPending(null);
 
     if (!outcome.ok) {
@@ -107,12 +177,15 @@ export default function InventoryScreen() {
   };
 
   const revealChest = async (itemKey: string) => {
+    if (blocked || mutationInFlight.current) return;
+    mutationInFlight.current = true;
     setPendingChest(itemKey);
     setRefusal(null);
     // Un ancien résultat n'est jamais le contenu du coffre qu'on va toucher maintenant.
     setOpenedChest(null);
 
-    const outcome = await openChest(itemKey);
+    const outcome = await openChest(itemKey).catch(() => ({ kind: 'refused', failure: OFFLINE }) as const);
+    mutationInFlight.current = false;
     setPendingChest(null);
 
     if (outcome.kind === 'refused') {
@@ -183,6 +256,7 @@ export default function InventoryScreen() {
 
           <Pressable
             style={({ pressed }) => [pressed && styles.pressed]}
+            disabled={blocked}
             onPress={() => router.push('/boutique')}
             accessibilityRole="button"
             accessibilityLabel="Boutique"
@@ -197,10 +271,6 @@ export default function InventoryScreen() {
             </SystemFrame>
           </Pressable>
 
-          {/* Un refus — objet non possédé, emplacement incompatible — au-dessus d'un sac qui
-              reste juste : le geste a échoué, pas la lecture. */}
-          {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
-
           <View style={styles.sectionHead}>
             <View style={styles.sectionCopy}>
               <Text style={styles.section}>ÉQUIPEMENT</Text>
@@ -212,6 +282,33 @@ export default function InventoryScreen() {
           <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
 
           <SystemFrame contentStyle={styles.drawer}>
+            {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
+            {saleReady ? null : (
+              <Button label="Réessayer" variant="quiet" onPress={() => {
+                if (saleActions === null) return;
+                void saleActions.pending().then((held) => {
+                  setUnresolvedSale(held);
+                  setSaleReady(true);
+                  setRefusal(null);
+                }).catch(() => setRefusal(OFFLINE));
+              }} />
+            )}
+            {unresolvedSale === null ? null : (
+              <View style={styles.current}>
+                <Text style={styles.name}>Vente à vérifier</Text>
+                <Text style={styles.detail}>
+                  {data.items.find((line) => line.key === unresolvedSale.body.itemKey)?.name ?? 'Objet de la vente en attente'}
+                  {' · 1 exemplaire · '}{unresolvedSale.body.expectedSellPriceCoins} pièces
+                </Text>
+                <Text style={styles.detail}>Réessaie pour vérifier le résultat de cette vente avant de modifier ton sac.</Text>
+                <Button label="Réessayer la vente" busy={saleBusy} onPress={() => void sell(unresolvedSale.body)} />
+              </View>
+            )}
+            {sold === null ? null : (
+              <Text style={styles.detail} accessibilityLiveRegion="polite">
+                Exemplaire vendu · {sold.coins} pièces reçues
+              </Text>
+            )}
             <View style={styles.drawerHead}>
               <View style={styles.sectionCopy}>
                 <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
@@ -231,36 +328,45 @@ export default function InventoryScreen() {
                   label="Retirer"
                   variant="quiet"
                   busy={pending === activeSlot}
-                  disabled={pendingChest !== null || (pending !== null && pending !== activeSlot)}
+                  disabled={blocked}
                   onPress={() => void apply(activeSlot, () => unequipSlot(activeSlot))}
                 />
+                {equippedLine.quantity > 1 ? (
+                  <Button label={`Vendre · ${equippedLine.sellPriceCoins} pièces`}
+                    accessibilityLabel={`Vendre — ${equippedLine.name}`}
+                    variant="quiet" disabled={blocked} onPress={() => confirmSale(equippedLine)} />
+                ) : <Text style={styles.detail}>Retire cet objet avant de vendre son dernier exemplaire.</Text>}
               </View>
             )}
 
             {availableItems.length > 0 ? <Text style={styles.label}>DANS TON SAC</Text> : null}
 
             {availableItems.map((line) => (
-              <Pressable
-                key={line.key}
-                accessibilityRole="button"
-                accessibilityLabel={`Équiper — ${line.name}`}
-                accessibilityHint={`Remplace l’objet porté sur ${equipmentSlotLabel[line.slot].toLowerCase()}`}
-                disabled={pending !== null || pendingChest !== null}
-                onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
-                style={({ pressed }) => [
-                  styles.itemChoice,
-                  pressed && styles.pressed,
-                  (pending !== null || pendingChest !== null) && styles.inert,
-                ]}
-              >
-                <ItemCard item={line} quantity={line.quantity} />
-                <View style={styles.equipHint}>
-                  <Text style={styles.equipHintText}>
-                    {pending === line.slot ? 'Équipement…' : 'Toucher pour équiper'}
-                  </Text>
-                  <Text style={styles.chevron}>›</Text>
-                </View>
-              </Pressable>
+              <View key={line.key} style={styles.current}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Équiper — ${line.name}`}
+                  accessibilityHint={`Remplace l’objet porté sur ${equipmentSlotLabel[line.slot].toLowerCase()}`}
+                  disabled={blocked}
+                  onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
+                  style={({ pressed }) => [
+                    styles.itemChoice,
+                    pressed && styles.pressed,
+                    blocked && styles.inert,
+                  ]}
+                >
+                  <ItemCard item={line} quantity={line.quantity} />
+                  <View style={styles.equipHint}>
+                    <Text style={styles.equipHintText}>
+                      {pending === line.slot ? 'Équipement…' : 'Toucher pour équiper'}
+                    </Text>
+                    <Text style={styles.chevron}>›</Text>
+                  </View>
+                </Pressable>
+                <Button label={`Vendre · ${line.sellPriceCoins} pièces`}
+                  accessibilityLabel={`Vendre — ${line.name}`}
+                  variant="quiet" disabled={blocked} onPress={() => confirmSale(line)} />
+              </View>
             ))}
 
             {availableItems.length === 0 ? (
@@ -291,7 +397,7 @@ export default function InventoryScreen() {
                     <Button
                       label="Ouvrir"
                       busy={pendingChest === line.key}
-                      disabled={pending !== null || (pendingChest !== null && pendingChest !== line.key)}
+                      disabled={blocked}
                       onPress={() => void revealChest(line.key)}
                     />
                   </View>

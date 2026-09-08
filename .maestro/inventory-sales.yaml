@@ -1,0 +1,68 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - inventory
+---
+# Compte dédié préchargé côté backend : chaussures ×2 équipées, gantelets ×1, coffre ×1.
+# MAESTRO_SALE_EMAIL choisit ce compte; le harness garde son reset ciblé habituel.
+- launchApp
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - tapOn: "Close"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${MAESTRO_SALE_EMAIL}
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 30000
+- tapOn:
+    id: "bag-row"
+- extendedWaitUntil:
+    visible: "BOURSE"
+    timeout: 15000
+- takeScreenshot: sale-inventory-before
+- scrollUntilVisible:
+    element:
+      text: "Vendre — Gantelets de fer"
+    direction: DOWN
+- tapOn: "Vendre — Gantelets de fer"
+- assertVisible: "Vendre un exemplaire ?"
+- assertVisible: ".*Gantelets de fer.*15 pièces.*"
+- takeScreenshot: sale-confirmation
+- tapOn: "Annuler"
+- assertVisible: "Vendre — Gantelets de fer"
+- tapOn: "Vendre — Gantelets de fer"
+- tapOn: "Confirmer la vente"
+- extendedWaitUntil:
+    visible: ".*Exemplaire vendu.*15 pièces.*"
+    timeout: 15000
+- assertNotVisible: "Vendre — Gantelets de fer"
+- takeScreenshot: sale-last-unit
+- scrollUntilVisible:
+    element:
+      text: ".*Pieds.*"
+    direction: UP
+- tapOn: ".*Pieds.*"
+- scrollUntilVisible:
+    element:
+      text: "Vendre — Baskets usées"
+    direction: DOWN
+- tapOn: "Vendre — Baskets usées"
+- tapOn: "Confirmer la vente"
+- extendedWaitUntil:
+    visible: "Retire cet objet avant de vendre son dernier exemplaire."
+    timeout: 15000
+- assertVisible: "ÉQUIPÉ"
+- takeScreenshot: sale-equipped-duplicate
+- assertNotVisible: "Vendre — Baskets usées"
+- scrollUntilVisible:
+    element:
+      text: "Ouvrir"
+    direction: DOWN
+- assertNotVisible: "Vendre — Coffre en bois"
+- takeScreenshot: sale-chest-excluded
+- runFlow: inventory-sale-ledger.yaml

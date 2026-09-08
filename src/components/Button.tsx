@@ -9,6 +9,7 @@ type ButtonProps = {
   busy?: boolean;
   disabled?: boolean;
   variant?: 'solid' | 'quiet';
+  accessibilityLabel?: string;
 };
 
 export function Button({
@@ -17,6 +18,7 @@ export function Button({
   busy = false,
   disabled = false,
   variant = 'solid',
+  accessibilityLabel,
 }: ButtonProps) {
   const inert = busy || disabled;
 
@@ -25,6 +27,7 @@ export function Button({
       onPress={onPress}
       disabled={inert}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: inert, busy }}
       style={({ pressed }) => [
         styles.button,

@@ -1360,8 +1360,8 @@ export interface components {
             imageUrl: string;
         };
         /**
-         * @description Un objet possédé (#30) — la même forme que `DroppedItem`, une seule clé de plus :
-         *     `quantity`. Ce n'est pas une troisième forme d'objet, c'est la même, augmentée d'un
+         * @description Un objet possédé (#30, #271) — `DroppedItem` complété par `quantity` et
+         *     `sellPriceCoins`. Ce n'est pas une troisième forme d'objet, c'est la même, augmentée d'un
          *     fait qu'un tirage n'a jamais eu à porter — un objet qui tombe en crée ou en
          *     incrémente une, il n'en a jamais une à afficher lui-même.
          */
@@ -1479,12 +1479,12 @@ export interface components {
             id: string;
             /**
              * Format: uuid
-             * @description Ce qui a produit l'écriture — l'identifiant du workout, du combat, ou de la ligne d'inventaire achetée pour un `PURCHASE`.
+             * @description Ce qui a produit l'écriture — l'identifiant du workout, du combat, de la ligne d’inventaire achetée pour un `PURCHASE`, ou un UUID propre à chaque `SALE`.
              */
             sourceId: string;
             /** @enum {string} */
             reason: "WORKOUT_DROP" | "BATTLE_DROP" | "PURCHASE" | "CHEST" | "SALE";
-            /** @description Signé — négatif pour `PURCHASE` (#229), positif pour les deux autres raisons. Un solde ne passe jamais sous zéro, quel que soit le signe de l'écriture qui le tenterait. */
+            /** @description Signé — négatif pour `PURCHASE` (#229), positif pour les autres raisons. Un solde ne passe jamais sous zéro, quel que soit le signe de l'écriture qui le tenterait. */
             amount: number;
             /**
              * Format: date-time
