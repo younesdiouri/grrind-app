@@ -79,5 +79,6 @@ puis un TextInput numérique qui interceptait le toucher : la couche présentati
 désormais tout toucher atteindre le Pressable racine. Aucun échec masqué. Aucun rebuild natif
 ou full Release, aucune modification de dépôt backend, migration ou réinitialisation de base.
 
-Capture finale critique et toucher : vert, 26 s, texte « TU ENCAISSES » vérifié.
-`artifacts/e2e/2026-09-08_135621/critical-v2/takeScreenshot/v2-critical-final.png`.
+Contrôle ciblé critique et toucher : vert, 22 s. La capture Maestro immédiate montrait encore
+le splash natif malgré les assertions ; la capture directe après sa disparition confirme
+« TU ENCAISSES » et le VFX : `artifacts/e2e/critical-direct.png` (inspectée).
