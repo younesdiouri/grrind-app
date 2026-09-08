@@ -10,9 +10,9 @@ type BattleRowProps = {
   /** Déjà traduit par le serveur, depuis la clé du **snapshot** du combat — jamais depuis le
    *  catalogue courant : un combat joué est un fait écrit, et `combat.yaml` continue de bouger. */
   enemyName: string;
-  /** Déjà en phrase — `formatTurns`. La ligne n'accorde pas les pluriels, comme `SessionCard`
+  /** Déjà en phrase — `formatBattleCounts`. La ligne n'accorde pas les pluriels, comme `SessionCard`
    *  ne formate pas sa durée. */
-  turns: string;
+  counts: string;
   /** Déjà en phrase — `formatFoughtAt`. La ligne n'a pas d'horloge. */
   when: string;
   /**
@@ -33,7 +33,7 @@ type BattleRowProps = {
  * mènera au rejeu n'est pas ici non plus — c'est un geste de navigation, il vivra à l'endroit
  * qui compose la ligne, comme `GuildMemberRow` dans son roster.
  */
-export function BattleRow({ result, enemyName, turns, when, coinsGained }: BattleRowProps) {
+export function BattleRow({ result, enemyName, counts, when, coinsGained }: BattleRowProps) {
   return (
     <View style={styles.row}>
       <BattleResultBadge result={result} />
@@ -43,7 +43,7 @@ export function BattleRow({ result, enemyName, turns, when, coinsGained }: Battl
           {enemyName}
         </Text>
         <Text style={styles.meta}>
-          {turns} · {when}
+          {counts} · {when}
         </Text>
       </View>
 

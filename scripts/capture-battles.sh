@@ -3,7 +3,7 @@
 # Capture des fixtures `Battle` réelles depuis le back local.
 #
 # Même règle que `capture-fixtures.sh`, et pour la même raison : ces fichiers sont des réponses
-# HTTP du vrai serveur, sous le vrai équilibrage `config/game/v1/`. Une timeline écrite à la
+# HTTP du vrai serveur, sous le vrai équilibrage publié. Une timeline écrite à la
 # main prouverait que l'animation marche sur des coups qu'on a choisis pour qu'elle marche.
 #
 # ————— Ce qu'un combat a de particulier : il est tiré au sort ————————————————————————
@@ -24,7 +24,7 @@
 # des séances. Vingt-neuf jours de course longue amènent au niveau 19, ce qui ouvre
 # `IRON_JACKAL` et `DUNE_SOVEREIGN`.
 #
-# Prérequis : le back tourne (`cd ../grrind && make up && make migrate`).
+# Prérequis : le back tourne (`API HTTP déjà disponible, aucune migration nécessaire`).
 # Usage      : ./scripts/capture-battles.sh
 
 set -euo pipefail
@@ -97,7 +97,7 @@ fight() {
 
     if printf '%s' "$reply" | jq -e "$predicate" > /dev/null; then
       printf '%s' "$reply" | jq . > "$OUT/$out"
-      echo "  $out — $(printf '%s' "$reply" | jq -r '"\(.result), \(.turns) tours, \(.events|length) événements"') (essai $attempt)"
+      echo "  $out — $(printf '%s' "$reply" | jq -r '"\(.result), \(.attackCount) tentatives, \(.events|length) événements"') (essai $attempt)"
       return 0
     fi
   done
@@ -139,6 +139,6 @@ fight "$monte" DUNE_SOVEREIGN \
 # l'équilibrage actuel produise — voir le commentaire de `fixtures.ts` sur ce que cette
 # fixture ne prouve *pas*.
 echo "→ combat-long"
-fight "$monte" IRON_JACKAL '.turns >= 25' combat-long.json
+fight "$monte" IRON_JACKAL '.attackCount >= 25' combat-long.json
 
 echo "✓ fixtures de combat écrites dans $OUT"

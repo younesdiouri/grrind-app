@@ -11,21 +11,21 @@ import type { EnemyPose } from '@/features/combat/enemyMotion';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { useAuth } from '@/features/auth/useAuth';
 import { isE2eBuild } from '@/features/health/e2e';
-import type { Battle } from '@/features/combat/timeline';
+import { buildBattleTimeline, type Battle } from '@/features/combat/timeline';
 
 const POSES: { value: EnemyPose; label: string }[] = [
   { value: 'idle', label: 'Repos' }, { value: 'attack', label: 'Attaque' }, { value: 'hit', label: 'Coup reçu' },
 ];
 
 export default function CombatDemoScreen() {
-  const { network } = useLocalSearchParams<{ network?: string }>();
+  const { network, frame } = useLocalSearchParams<{ network?: string; frame?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
-  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={network} scenario={network} /></AmbientBackdropProvider>;
+  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}`} scenario={network} frame={frame} /></AmbientBackdropProvider>;
   return <AmbientBackdropProvider><CombatDemo /></AmbientBackdropProvider>;
 }
 
 /** Banc réseau isolé : scripts/combat-presentation-server.mjs, jamais une mutation du catalogue. */
-function NetworkDemo({ scenario }: { scenario: string }) {
+function NetworkDemo({ scenario, frame }: { scenario: string; frame?: string }) {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
@@ -35,9 +35,18 @@ function NetworkDemo({ scenario }: { scenario: string }) {
       .then(setBattle).catch(() => { if (!controller.signal.aborted) setError(true); });
     return () => controller.abort();
   }, [scenario]);
+  let demoTime: number | undefined;
+  if (battle && frame) {
+    const timeline = buildBattleTimeline(battle, { illustrated: true });
+    const [effect, actor] = frame.split('-');
+    const side = actor === 'player' ? timeline.player : timeline.enemy;
+    const ramp = effect === 'dodge' ? side.dodgeFlash : effect === 'combo' ? side.comboFlash
+      : effect === 'replay' ? side.replayFlash : effect === 'damage' ? side.damageFlash : side.criticalFlash;
+    demoTime = ramp.input[effect === 'damage' ? ramp.output.lastIndexOf(1) : ramp.output.indexOf(1)];
+  }
   return <View style={styles.screen}>
     <Text style={styles.notice}>DÉMONSTRATION RÉSEAU · AUCUN GAIN RÉEL</Text>
-    {battle ? <BattleView battle={battle} demo onDismiss={() => router.replace('/combat-demo')} />
+    {battle ? <BattleView battle={battle} demo demoTime={demoTime} onDismiss={() => router.replace('/combat-demo')} />
       : <Text style={styles.subtitle}>{error ? 'Serveur de test indisponible' : 'Chargement du scénario…'}</Text>}
   </View>;
 }

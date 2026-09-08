@@ -1283,7 +1283,7 @@ export interface components {
         /** @description Un effet porté par un objet tombé — même vocabulaire que `ModifierType`, jamais un mécanisme parallèle. */
         DroppedItemModifier: {
             /** @enum {string} */
-            type: "XP_MULTIPLIER" | "LOOT_LUCK" | "STREAK_SHIELD" | "UNLOCK_SESSION_TYPE" | "STRENGTH_BONUS" | "ENDURANCE_BONUS" | "MOBILITY_BONUS" | "DEXTERITY_BONUS" | "HP_BONUS" | "DAMAGE_BONUS" | "MITIGATION_BONUS" | "EXTRA_TURN_BONUS" | "DODGE_BONUS";
+            type: "XP_MULTIPLIER" | "LOOT_LUCK" | "STREAK_SHIELD" | "UNLOCK_SESSION_TYPE" | "STRENGTH_BONUS" | "ENDURANCE_BONUS" | "MOBILITY_BONUS" | "DEXTERITY_BONUS" | "HP_BONUS" | "DAMAGE_BONUS" | "MITIGATION_BONUS" | "COMBO_BONUS" | "DODGE_BONUS" | "MAINTENANCE_BONUS" | "CRITICAL_CHANCE_BONUS" | "GUARD_BONUS" | "CRITICAL_RESISTANCE_BONUS" | "COOLDOWN_REDUCTION_BONUS" | "PRECISION_BONUS";
             /**
              * @description Un entier dont l'unité dépend de `type` — un pourcentage pour `XP_MULTIPLIER`, des points d'XP répartis pour un bonus de caractéristique. Jamais un flottant sur une valeur de jeu.
              * @example 5
@@ -1746,10 +1746,12 @@ export interface components {
             nextCursor: string | null;
         };
         /**
-         * @description Un combattant tel qu'affiché. **`mitigationPercent`, `extraTurnPercent` et
+         * @description Un combattant tel qu'affiché. **`mitigationPercent`, `comboPercent` et
          *     `dodgePercent` sont résolus côté serveur**, jamais des taux que le client
          *     recomposerait — même règle que `bonusPercent` sur une Risāla. Le domaine porte des
          *     millièmes ; ce sont des pourcentages entiers, tronqués.
+         *     Précision 20 % contre esquive 30 % donne esquive effective 24 %, pas 10 %.
+         *     La résistance critique applique la même réduction relative à la chance de critique.
          */
         BattleFighter: {
             /** @example 240 */
@@ -1765,12 +1767,24 @@ export interface components {
              * @description Chance de rejouer un tour immédiatement.
              * @example 12
              */
-            extraTurnPercent: number;
+            comboPercent: number;
             /**
              * @description Chance d'esquiver entièrement un coup.
              * @example 8
              */
             dodgePercent: number;
+            /** @description Résistance à la fatigue, jamais un bonus de puissance. Pourcentage entier tronqué depuis les millièmes serveur. */
+            maintenancePercent: number;
+            /** @description Chance de critique avant résistance critique adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            criticalChancePercent: number;
+            /** @description Chance indépendante de diviser par deux les dégâts après mitigation. Pourcentage entier tronqué depuis les millièmes serveur. */
+            guardPercent: number;
+            /** @description Réduction relative de la chance de critique adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            criticalResistancePercent: number;
+            /** @description Réduction du délai entre actions régulières. Pourcentage entier tronqué depuis les millièmes serveur. */
+            cooldownReductionPercent: number;
+            /** @description Réduction relative de la chance d’esquive adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            precisionPercent: number;
         };
         /** @description Pack publié complet ou null. URLs absolues publiques, HTTPS en production. hit est la pose de coup reçu ; une esquive utilise idle. La présentation courante est aussi utilisée au rejeu. */
         EnemyImageUrls: {
@@ -1803,32 +1817,40 @@ export interface components {
             /** @example 10 */
             mitigationPercent: number;
             /** @example 5 */
-            extraTurnPercent: number;
+            comboPercent: number;
             /** @example 3 */
             dodgePercent: number;
+            /** @description Résistance à la fatigue, jamais un bonus de puissance. Pourcentage entier tronqué depuis les millièmes serveur. */
+            maintenancePercent: number;
+            /** @description Chance de critique avant résistance critique adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            criticalChancePercent: number;
+            /** @description Chance indépendante de diviser par deux les dégâts après mitigation. Pourcentage entier tronqué depuis les millièmes serveur. */
+            guardPercent: number;
+            /** @description Réduction relative de la chance de critique adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            criticalResistancePercent: number;
+            /** @description Réduction du délai entre actions régulières. Pourcentage entier tronqué depuis les millièmes serveur. */
+            cooldownReductionPercent: number;
+            /** @description Réduction relative de la chance d’esquive adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            precisionPercent: number;
             imageUrls?: components["schemas"]["EnemyImageUrls"];
             /** @description Texte brut localisé selon Accept-Language (repli EN puis FR), indépendant des images. Toujours présent, null si absent ; facultatif pour les anciennes réponses. */
             introduction?: string | null;
         };
         /**
-         * @description Un instant de la timeline. **Seul l'ordre des éléments de la liste compte** — voir
-         *     la description de `Battle.events` — un événement isolé n'a pas de position propre.
-         *
-         *     Cinq formes, distinguées par `type` ; seuls les champs de la forme concernée
-         *     sont présents, les autres sont **absents**, jamais `null` :
-         *       - `BATTLE_STARTED` : `playerHp`, `enemyHp` — l'état de départ, avant le premier coup.
-         *       - `ATTACK` : `attacker`, `damage`, `mitigated`, `targetHpRemaining` — un coup porté,
-         *         la part absorbée par la mitigation, et ce qu'il reste à la cible.
-         *       - `DODGE` : `attacker` — la cible de l'attaquant a esquivé, aucun dégât n'est
-         *         appliqué. Remplace l'`ATTACK` que ce tour aurait produit, ne s'ajoute jamais à
-         *         côté.
-         *       - `EXTRA_TURN` : `actor` — qui rejoue un tour immédiatement, que le tour qui l'a
-         *         déclenché ait porté ou été esquivé.
-         *       - `BATTLE_FINISHED` : `result` — toujours le dernier événement de la timeline.
+         * @description Timeline autoritaire v2. Chaque tentative produit ATTACK ou DODGE.
+         *     atTick est le temps virtuel ; actionIndex et attackIndex sont globaux, à partir de 1.
+         *     COMBO annonce le prochain coup effectivement joué, avec ses indices et sa date.
+         *     Une chaîne entière est jouée au même tick. BATTLE_STARTED porte les PV initiaux.
+         *     BATTLE_FINISHED porte résultat, raison, compteurs et date finale.
+         *     ATTACK expose fatigue → critique → mitigation → guard → minimum.
+         *     Chaque étape est tronquée avant la suivante. criticalDamage est la puissance après
+         *     critique, mitigated et guardReduction les retraits aux étapes correspondantes.
+         *     minimumDamageAdded explique le plancher final ; targetHpRemaining inclut le KO à zéro.
+         *     DODGE consomme une tentative et de la fatigue, sans dégâts ni jets critique/guard.
          */
         BattleEvent: {
             /** @enum {string} */
-            type: "BATTLE_STARTED" | "ATTACK" | "DODGE" | "EXTRA_TURN" | "BATTLE_FINISHED";
+            type: "BATTLE_STARTED" | "ATTACK" | "DODGE" | "COMBO" | "BATTLE_FINISHED";
             /** @description `BATTLE_STARTED` seulement. */
             playerHp?: number;
             /** @description `BATTLE_STARTED` seulement. */
@@ -1845,10 +1867,26 @@ export interface components {
             /** @description `ATTACK` seulement. */
             targetHpRemaining?: number;
             /**
-             * @description `EXTRA_TURN` seulement.
+             * @description `COMBO` seulement.
              * @enum {string}
              */
             actor?: "PLAYER" | "ENEMY";
+            atTick?: number;
+            actionIndex?: number;
+            attackIndex?: number;
+            critical?: boolean;
+            guarded?: boolean;
+            /** @description Puissance appliquée après fatigue, en millièmes, pour ATTACK ou DODGE. */
+            powerPermille?: number;
+            baseDamage?: number;
+            fatiguedDamage?: number;
+            criticalDamage?: number;
+            guardReduction?: number;
+            minimumDamageAdded?: number;
+            /** @enum {string} */
+            endReason?: "KO" | "ATTACK_LIMIT";
+            actionCount?: number;
+            attackCount?: number;
             /**
              * @description `BATTLE_FINISHED` seulement.
              * @enum {string}
@@ -1861,7 +1899,7 @@ export interface components {
          *     vieux tirage sous les tables courantes rendrait un butin différent de celui que
          *     le joueur a vu tomber.
          *
-         *     **Vide pour une défaite, ou une victoire tranchée par `max_turns` sans KO** —
+         *     **Vide pour une défaite, ou une victoire tranchée par `max_attacks` sans KO** —
          *     `loot: []` et `coins` à gain nul, jamais des clés absentes : une récompense de
          *     consolation ferait du combat perdu la stratégie optimale, puisqu'il est plus
          *     rapide à jouer qu'à gagner.
@@ -1900,8 +1938,25 @@ export interface components {
              * @enum {string}
              */
             result: "VICTORY" | "DEFEAT";
-            /** @example 7 */
-            turns: number;
+            /**
+             * @description Toutes les tentatives, esquives et combos compris.
+             * @example 7
+             */
+            attackCount: number;
+            /**
+             * @description Actions régulières ; une chaîne Combo appartient à une seule action.
+             * @example 5
+             */
+            actionCount: number;
+            /**
+             * @description Date virtuelle de la dernière tentative. Aucune durée réelle.
+             * @example 2000
+             */
+            elapsedTicks: number;
+            /** @enum {string} */
+            endReason: "KO" | "ATTACK_LIMIT";
+            /** @enum {string} */
+            algorithmVersion: "v2";
             /**
              * Format: date-time
              * @description L'instant de la requête : contrairement à un workout, un combat n'a aucune antériorité au serveur.
@@ -1915,12 +1970,12 @@ export interface components {
         };
         /**
          * @description Une ligne de `GET /api/battles` (#220) — **jamais la timeline**. `Battle` peut
-         *     compter deux cents événements (`max_turns`) ; vingt résumés par page restent
+         *     compter deux cents événements (`max_attacks`) ; vingt résumés par page restent
          *     légers, et le client va chercher `GET /api/battles/{id}` au moment où il choisit
          *     un combat précis à rejouer.
          *
          *     `result` est **toujours** `VICTORY` ou `DEFEAT`, y compris pour un combat conclu
-         *     par `max_turns` sans KO — voir la description de `Battle.result`. C'est ce qui
+         *     par `max_attacks` sans KO — voir la description de `Battle.result`. C'est ce qui
          *     permet à la liste d'être colorée ligne par ligne sans aucun troisième état à
          *     dessiner.
          *
@@ -1944,8 +1999,25 @@ export interface components {
                 /** @example Chacal des sables */
                 name: string;
             };
-            /** @example 7 */
-            turns: number;
+            /**
+             * @description Toutes les tentatives, esquives et combos compris.
+             * @example 7
+             */
+            attackCount: number;
+            /**
+             * @description Actions régulières ; une chaîne Combo appartient à une seule action.
+             * @example 5
+             */
+            actionCount: number;
+            /**
+             * @description Date virtuelle de la dernière tentative. Aucune durée réelle.
+             * @example 2000
+             */
+            elapsedTicks: number;
+            /** @enum {string} */
+            endReason: "KO" | "ATTACK_LIMIT";
+            /** @enum {string} */
+            algorithmVersion: "v2";
             /** Format: date-time */
             foughtAt: string;
             rewards: components["schemas"]["BattleReward"];
@@ -1998,9 +2070,21 @@ export interface components {
             /** @example 20 */
             mitigationPercent: number;
             /** @example 12 */
-            extraTurnPercent: number;
+            comboPercent: number;
             /** @example 9 */
             dodgePercent: number;
+            /** @description Résistance à la fatigue, jamais un bonus de puissance. Pourcentage entier tronqué depuis les millièmes serveur. */
+            maintenancePercent: number;
+            /** @description Chance de critique avant résistance critique adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            criticalChancePercent: number;
+            /** @description Chance indépendante de diviser par deux les dégâts après mitigation. Pourcentage entier tronqué depuis les millièmes serveur. */
+            guardPercent: number;
+            /** @description Réduction relative de la chance de critique adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            criticalResistancePercent: number;
+            /** @description Réduction du délai entre actions régulières. Pourcentage entier tronqué depuis les millièmes serveur. */
+            cooldownReductionPercent: number;
+            /** @description Réduction relative de la chance d’esquive adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
+            precisionPercent: number;
             imageUrls?: components["schemas"]["EnemyImageUrls"];
             /** @description Texte brut localisé selon Accept-Language (repli EN puis FR), indépendant des images. Toujours présent, null si absent ; facultatif pour les anciennes réponses. */
             introduction?: string | null;

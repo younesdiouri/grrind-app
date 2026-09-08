@@ -1,5 +1,6 @@
 import { combatMotion } from '@/design/tokens';
 import type { BattleBeat } from './timeline.ts';
+import { beatAt } from './sampling.ts';
 
 export type EnemyPose = 'idle' | 'attack' | 'hit';
 
@@ -12,7 +13,7 @@ export function contactAt(beat: Pick<BattleBeat, 'at' | 'until'>): number {
 export function enemyMotionAt(beats: BattleBeat[], time: number, reduced = false) {
   'worklet';
   const state = { pose: 'idle' as EnemyPose, x: 0, y: 0, scale: 1, rotate: 0, flash: 0 };
-  const beat = beats.find((b) => time >= b.at && time < b.until);
+  const beat = beatAt(beats, time);
   if (!beat || beat.kind === 'verdict') return state;
   if (!reduced) state.y = Math.sin(time / combatMotion.breathPeriod * Math.PI * 2) * combatMotion.breath;
   if (beat.kind !== 'attack' && beat.kind !== 'dodge') return state;

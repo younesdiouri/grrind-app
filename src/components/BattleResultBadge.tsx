@@ -16,7 +16,7 @@ type BattleResultBadgeProps = {
  *
  * **Il n'y a que deux états, et il n'y en aura pas un troisième par accident.** `BattleResult`
  * est fermé à `VICTORY` / `DEFEAT` côté serveur et la colonne est `NOT NULL` : même un combat
- * interrompu par `max_turns` est tranché au meilleur ratio de points de vie, parce qu'un match
+ * interrompu par `max_attacks` est tranché au meilleur ratio de points de vie, parce qu'un match
  * nul n'a pas de mise en scène. C'est ce qui permet de colorer une ligne d'historique sans
  * aucun repli — et le `Record` de `battleResultLabel` casse la compilation si un cas s'ajoute,
  * plutôt que de laisser paraître une pastille muette.

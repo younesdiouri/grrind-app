@@ -44,8 +44,14 @@ export function PlayerFighterCard({ player, onOpenBag }: PlayerFighterCardProps)
         <Stat label="Vie" value={String(player.hp)} />
         <Stat label="Dégâts" value={String(player.damage)} />
         <Stat label="Armure" value={`${player.mitigationPercent} %`} />
-        <Stat label="Relance" value={`${player.extraTurnPercent} %`} />
+        <Stat label="Combo" value={`${player.comboPercent} %`} />
         <Stat label="Esquive" value={`${player.dodgePercent} %`} />
+        <Stat label="Maintien" value={`${player.maintenancePercent} %`} />
+        <Stat label="Critique" value={`${player.criticalChancePercent} %`} />
+        <Stat label="Garde" value={`${player.guardPercent} %`} />
+        <Stat label="Résist. critique" value={`${player.criticalResistancePercent} %`} />
+        <Stat label="Célérité" value={`${player.cooldownReductionPercent} %`} />
+        <Stat label="Précision" value={`${player.precisionPercent} %`} />
       </View>
 
       {onOpenBag === undefined ? null : (

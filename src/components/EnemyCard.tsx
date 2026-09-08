@@ -63,8 +63,14 @@ export function EnemyCard({ enemy, locked = false, action }: EnemyCardProps) {
         <Stat label="Vie" value={String(enemy.hp)} />
         <Stat label="Dégâts" value={String(enemy.damage)} />
         <Stat label="Armure" value={`${enemy.mitigationPercent} %`} />
-        <Stat label="Relance" value={`${enemy.extraTurnPercent} %`} />
+        <Stat label="Combo" value={`${enemy.comboPercent} %`} />
         <Stat label="Esquive" value={`${enemy.dodgePercent} %`} />
+        <Stat label="Maintien" value={`${enemy.maintenancePercent} %`} />
+        <Stat label="Critique" value={`${enemy.criticalChancePercent} %`} />
+        <Stat label="Garde" value={`${enemy.guardPercent} %`} />
+        <Stat label="Résist. critique" value={`${enemy.criticalResistancePercent} %`} />
+        <Stat label="Célérité" value={`${enemy.cooldownReductionPercent} %`} />
+        <Stat label="Précision" value={`${enemy.precisionPercent} %`} />
       </View>
 
       {action}

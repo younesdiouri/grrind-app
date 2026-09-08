@@ -81,7 +81,7 @@ function enemy(overrides: Partial<components['schemas']['Enemy']>): components['
     hp: 120,
     damage: 12,
     mitigationPercent: 5,
-    extraTurnPercent: 4,
+    comboPercent: 4, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0,
     dodgePercent: 3,
     ...overrides,
   };
@@ -115,7 +115,7 @@ function playerFighter(
     hp: 140,
     damage: 16,
     mitigationPercent: 0,
-    extraTurnPercent: 0,
+    comboPercent: 0, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0,
     dodgePercent: 0,
     ...overrides,
   };
@@ -757,7 +757,7 @@ export const PREVIEWS: Preview[] = [
             niveau 1 indiscernable d'un catalogue vide. */}
         <Specimen label="Hors de portée">
           <EnemyCard
-            enemy={enemy({ key: 'STORM_HYENA', name: 'Hyène des tempêtes', minimumLevel: 20, hp: 640, damage: 40, mitigationPercent: 18, extraTurnPercent: 13, dodgePercent: 10 })}
+            enemy={enemy({ key: 'STORM_HYENA', name: 'Hyène des tempêtes', minimumLevel: 20, hp: 640, damage: 40, mitigationPercent: 18, comboPercent: 13, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 10 })}
             locked
           />
         </Specimen>
@@ -766,7 +766,7 @@ export const PREVIEWS: Preview[] = [
             qu'on le voie, pas pour montrer une variante — il n'y en a pas. */}
         <Specimen label="Un boss : même carte, plus gros chiffres">
           <EnemyCard
-            enemy={enemy({ key: 'CINDER_SOVEREIGN', name: 'Souverain des cendres', minimumLevel: 50, hp: 3600, damage: 190, mitigationPercent: 44, extraTurnPercent: 33, dodgePercent: 25 })}
+            enemy={enemy({ key: 'CINDER_SOVEREIGN', name: 'Souverain des cendres', minimumLevel: 50, hp: 3600, damage: 190, mitigationPercent: 44, comboPercent: 33, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 25 })}
             locked
           />
         </Specimen>
@@ -788,7 +788,7 @@ export const PREVIEWS: Preview[] = [
             arrivent déjà résolus par le serveur. */}
         <Specimen label="Équipé">
           <PlayerFighterCard
-            player={playerFighter({ hp: 210, damage: 22, mitigationPercent: 12, extraTurnPercent: 6, dodgePercent: 4 })}
+            player={playerFighter({ hp: 210, damage: 22, mitigationPercent: 12, comboPercent: 6, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 4 })}
           />
         </Specimen>
         {/* Avec l'accès au sac (#30) : c'est ici qu'on change d'équipement, juste avant de
@@ -847,23 +847,23 @@ export const PREVIEWS: Preview[] = [
     element: (
       <>
         <Specimen label="Victoire">
-          <BattleRow result="VICTORY" enemyName="Chacal des sables" turns="16 tours" when="Aujourd’hui, 15:25" coinsGained={0} />
+          <BattleRow result="VICTORY" enemyName="Chacal des sables" counts="15 actions · 16 tentatives · KO" when="Aujourd’hui, 15:25" coinsGained={0} />
         </Specimen>
         {/* Le gain (#227) : les pièces seulement, jamais une carte d'objet — voir le docblock
             de `coinsGained`. */}
         <Specimen label="Victoire, avec un gain">
-          <BattleRow result="VICTORY" enemyName="Chacal des sables" turns="16 tours" when="Aujourd’hui, 15:25" coinsGained={4} />
+          <BattleRow result="VICTORY" enemyName="Chacal des sables" counts="15 actions · 16 tentatives · KO" when="Aujourd’hui, 15:25" coinsGained={4} />
         </Specimen>
         <Specimen label="Défaite, contre un boss">
-          <BattleRow result="DEFEAT" enemyName="Souverain des dunes" turns="21 tours" when="Hier, 09:05" coinsGained={0} />
+          <BattleRow result="DEFEAT" enemyName="Souverain des dunes" counts="18 actions · 21 tentatives · KO" when="Hier, 09:05" coinsGained={0} />
         </Specimen>
         {/* Le singulier existe : un combat peut se conclure en un tour. */}
         <Specimen label="Un seul tour">
-          <BattleRow result="VICTORY" enemyName="Chacal de fer" turns="1 tour" when="20 août" coinsGained={0} />
+          <BattleRow result="VICTORY" enemyName="Chacal de fer" counts="1 action · 1 tentative · KO" when="20 août" coinsGained={0} />
         </Specimen>
         {/* Le nom cède avant la pastille : c'est l'issue qui doit rester lisible en défilant. */}
         <Specimen label="Nom qui déborde">
-          <BattleRow result="DEFEAT" enemyName="Matriarche des tempêtes obsidiennes" turns="33 tours" when="12 août" coinsGained={0} />
+          <BattleRow result="DEFEAT" enemyName="Matriarche des tempêtes obsidiennes" counts="30 actions · 33 tentatives · Limite atteinte" when="12 août" coinsGained={0} />
         </Specimen>
       </>
     ),

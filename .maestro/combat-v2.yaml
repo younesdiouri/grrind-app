@@ -1,0 +1,150 @@
+appId: app.grrind.e2e
+tags:
+  - combat
+  - ios
+---
+# Serveur synthétique local ; frames figées uniquement dans la démo E2E.
+- launchApp
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=dodge-player"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-dodge-player
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=dodge-enemy"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-dodge-enemy
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=critical-player"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-critical-player
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=critical-enemy"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-critical-enemy
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=combo-player"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-combo-player
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=combo-enemy"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-combo-enemy
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=replay-player"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-replay-player
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=replay-enemy"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: v2-replay-enemy
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 5000
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=effects"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- takeScreenshot: v2-effects-recap
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=limit"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Limite atteinte.*"
+- assertNotVisible: ".*Coup fatal.*"
+- takeScreenshot: v2-limit-recap
+- tapOn:
+    point: "50%,70%"
+- openLink: "grrindapp-e2e://combat-demo?network=long"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- tapOn:
+    point: "50%,70%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Limite atteinte.*"
+- assertNotVisible: ".*Coup fatal.*"
+- takeScreenshot: v2-long-recap
+- tapOn:
+    point: "50%,70%"

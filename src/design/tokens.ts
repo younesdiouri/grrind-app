@@ -1,6 +1,11 @@
 import type { components } from '@/api/schema';
 
 /** Mise en scène du prototype Al-Kasal : fractions d'un échange, puis amplitudes en points. */
+export const combatEffects = {
+  width: 250, height: 110, labelSize: 27, rise: 12,
+  dodge: '#58E9FF', critical: '#FFD36D', combo: '#D899FF', replay: '#68FFD1',
+} as const;
+
 export const combatMotion = {
   contact: 0.38,
   recover: 0.82,
@@ -676,7 +681,7 @@ export const notificationCategoryLabel: Partial<
  *
  * Même garde-fou que `xpSourceLabel` et les autres : la clé sort de l'union du schéma généré,
  * jamais d'une union recopiée. `BattleResult` est fermé à **deux** cas côté serveur et la
- * colonne est `NOT NULL` — un combat interrompu par `max_turns` est tranché au meilleur ratio
+ * colonne est `NOT NULL` — un combat interrompu par `max_attacks` est tranché au meilleur ratio
  * de points de vie, parce qu'un match nul n'a pas de mise en scène
  * (younesdiouri/grrind-back#209). Il n'y a donc pas de troisième état à dessiner, et le jour
  * où il y en aurait un, ce `Record` casserait la compilation avant que l'écran ne l'invente.
@@ -762,7 +767,13 @@ export const modifierLabel: Record<ModifierType, string> = {
   HP_BONUS: 'Points de vie',
   DAMAGE_BONUS: 'Dégâts',
   MITIGATION_BONUS: 'Mitigation',
-  EXTRA_TURN_BONUS: 'Tour supplémentaire',
+  COMBO_BONUS: 'Combo',
+  MAINTENANCE_BONUS: 'Maintien',
+  CRITICAL_CHANCE_BONUS: 'Critique',
+  GUARD_BONUS: 'Garde',
+  CRITICAL_RESISTANCE_BONUS: 'Résistance critique',
+  COOLDOWN_REDUCTION_BONUS: 'Célérité',
+  PRECISION_BONUS: 'Précision',
   DODGE_BONUS: 'Esquive',
 };
 
