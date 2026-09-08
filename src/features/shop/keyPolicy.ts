@@ -18,6 +18,9 @@ const PROVES_NOTHING_WRITTEN: ReadonlySet<ProblemType> = new Set<ProblemType>([
   'https://grrind.app/problems/shop-level-too-low',
   'https://grrind.app/problems/item-not-owned',
   'https://grrind.app/problems/item-not-a-chest',
+  'https://grrind.app/problems/item-not-sellable',
+  'https://grrind.app/problems/item-equipped',
+  'https://grrind.app/problems/sale-price-changed',
 ]);
 
 /** Garde la clé sur tout doute : un nouveau UUID pourrait rejouer une action déjà écrite. */

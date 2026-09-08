@@ -790,4 +790,6 @@ export const coinReasonLabel: Record<components['schemas']['CoinTransaction']['r
   WORKOUT_DROP: 'Séance créditée',
   BATTLE_DROP: 'Combat gagné',
   PURCHASE: 'Achat',
+  CHEST: 'Coffre ouvert',
+  SALE: 'Vente',
 };
