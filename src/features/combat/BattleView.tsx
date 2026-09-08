@@ -431,6 +431,9 @@ function Blow({
     opacity: sampleRamp(ramps.mitigatedFlash, clock.value),
   }));
 
+  const damageStyle = useAnimatedStyle(() => ({
+    color: sampleRamp(ramps.criticalFlash, clock.value) > 0 ? combatEffects.critical : tone.color,
+  }));
   const criticalStyle = useAnimatedStyle(() => ({ opacity: sampleRamp(ramps.criticalFlash, clock.value) }));
   const guardProps = useAnimatedProps(() => {
     const text = sampleRamp(ramps.guardFlash, clock.value) > 0
@@ -442,7 +445,7 @@ function Blow({
       <Animated.View style={[styles.criticalEffect, criticalStyle]}><Effect effect="critical" /></Animated.View>
       <AnimatedTextInput
         editable={false}
-        style={[styles.hit, tone]}
+        style={[styles.hit, damageStyle]}
         animatedProps={damageProps}
         defaultValue="0"
       />

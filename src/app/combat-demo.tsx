@@ -41,8 +41,8 @@ function NetworkDemo({ scenario, frame }: { scenario: string; frame?: string }) 
     const [effect, actor] = frame.split('-');
     const side = actor === 'player' ? timeline.player : timeline.enemy;
     const ramp = effect === 'dodge' ? side.dodgeFlash : effect === 'combo' ? side.comboFlash
-      : effect === 'replay' ? side.replayFlash : side.criticalFlash;
-    demoTime = ramp.input[ramp.output.indexOf(1)];
+      : effect === 'replay' ? side.replayFlash : effect === 'damage' ? side.damageFlash : side.criticalFlash;
+    demoTime = ramp.input[effect === 'damage' ? ramp.output.lastIndexOf(1) : ramp.output.indexOf(1)];
   }
   return <View style={styles.screen}>
     <Text style={styles.notice}>DÉMONSTRATION RÉSEAU · AUCUN GAIN RÉEL</Text>
