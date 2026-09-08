@@ -33,7 +33,7 @@ export function formatOccurredAt(occurredAt: string, now: Date): string {
  *   répartis** — l'unité du ledger, celle des jauges du cercle de vie. « +1000 » s'y lit à
  *   l'échelle de ce qu'une séance rapporte, jamais comme un score abstrait.
  * - `HP_BONUS`, `DAMAGE_BONUS` sont des points, déjà l'effet final — rien à convertir.
- * - `MITIGATION_BONUS`, `EXTRA_TURN_BONUS`, `DODGE_BONUS` sont des **millièmes**, et c'est
+ * - `MITIGATION_BONUS`, `COMBO_BONUS`, `DODGE_BONUS` sont des **millièmes**, et c'est
  *   une décision d'affichage de ce ticket de les rendre en pourcentage avec une décimale :
  *   un joueur ne lit pas « +180 ‰ », et le seul taux qu'on lui montre déjà — celui d'un
  *   combattant, sur `EnemyCard` — est un pourcentage. La conversion s'arrête à l'écran ; le
@@ -85,7 +85,13 @@ function formatMagnitude(type: DroppedItemModifier['type'], value: number): stri
       return `${signPrefix(value)}${value}`;
 
     case 'MITIGATION_BONUS':
-    case 'EXTRA_TURN_BONUS':
+    case 'COMBO_BONUS':
+    case 'MAINTENANCE_BONUS':
+    case 'CRITICAL_CHANCE_BONUS':
+    case 'GUARD_BONUS':
+    case 'CRITICAL_RESISTANCE_BONUS':
+    case 'COOLDOWN_REDUCTION_BONUS':
+    case 'PRECISION_BONUS':
     case 'DODGE_BONUS':
       return `${signPrefix(value)}${(value / 10).toFixed(1).replace('.', ',')} %`;
 

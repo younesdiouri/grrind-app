@@ -1,3 +1,4 @@
+import type { components } from '@/api/schema';
 import { formatWhen } from '@/features/progression/format';
 
 /**
@@ -17,13 +18,6 @@ export function formatFoughtAt(foughtAt: string, now: Date): string {
   return formatWhen(foughtAt, now);
 }
 
-/**
- * « 16 tours », « 1 tour ».
- *
- * Le nombre de tours est le seul indicateur de l'allure d'un combat que la liste porte : un
- * combat de trois tours et un de trente-trois ne se sont pas joués de la même façon, et c'est
- * ce qui donne envie d'en rouvrir un plutôt qu'un autre.
- */
-export function formatTurns(turns: number): string {
-  return turns > 1 ? `${turns} tours` : `${turns} tour`;
+export function formatBattleCounts(battle: Pick<components['schemas']['BattleSummary'], 'attackCount' | 'actionCount' | 'endReason'>): string {
+  return `${battle.actionCount} action${battle.actionCount > 1 ? 's' : ''} · ${battle.attackCount} tentative${battle.attackCount > 1 ? 's' : ''} · ${battle.endReason === 'KO' ? 'KO' : 'Limite atteinte'}`;
 }

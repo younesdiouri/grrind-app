@@ -1,21 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { formatFoughtAt, formatTurns } from './format.ts';
+import { formatFoughtAt, formatBattleCounts } from './format.ts';
 
-describe('le nombre de tours, en phrase', () => {
-  it('accorde le pluriel', () => {
-    assert.equal(formatTurns(16), '16 tours');
+describe('les compteurs et la fin v2', () => {
+  it('distingue les actions et toutes les tentatives', () => {
+    assert.equal(formatBattleCounts({ actionCount: 3, attackCount: 6, endReason: 'KO' }), '3 actions · 6 tentatives · KO');
   });
-
-  it('garde le singulier à un tour — un combat expédié en un coup existe', () => {
-    assert.equal(formatTurns(1), '1 tour');
-  });
-
-  it('n’accorde pas zéro au singulier', () => {
-    // Le serveur n'en produit pas : un combat compte au moins un tour. La règle de langue
-    // reste juste quand même, plutôt que de rendre « 0 tour » par accident d'écriture.
-    assert.equal(formatTurns(0), '0 tour');
+  it('nomme la limite même quand le serveur déclare une victoire', () => {
+    assert.equal(formatBattleCounts({ actionCount: 1, attackCount: 1, endReason: 'ATTACK_LIMIT' }), '1 action · 1 tentative · Limite atteinte');
   });
 });
 

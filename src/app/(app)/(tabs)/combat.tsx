@@ -9,7 +9,7 @@ import { PlayerFighterCard } from '@/components/PlayerFighterCard';
 import { color, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { fight } from '@/features/combat/fight';
-import { formatFoughtAt, formatTurns } from '@/features/combat/format';
+import { formatFoughtAt, formatBattleCounts } from '@/features/combat/format';
 import { useBattleHistory } from '@/features/combat/useBattleHistory';
 import { useCatalog } from '@/features/combat/useCatalog';
 
@@ -97,7 +97,7 @@ export default function CombatScreen() {
             <BattleRow
               result={item.result}
               enemyName={item.enemy.name}
-              turns={formatTurns(item.turns)}
+              counts={formatBattleCounts(item)}
               when={formatFoughtAt(item.foughtAt, now)}
               coinsGained={item.rewards.coins.gained}
             />

@@ -25,7 +25,7 @@ export type BattleResult = Battle['result'];
  * ————— L'ordre est le contrat, et on ne fait rien pour le tenir ————————————————————————
  *
  * « L'ordre des éléments de la liste est le seul qui compte », dit le contrat, et un
- * `EXTRA_TURN` est émis **après** le coup qui l'a déclenché et **avant** celui qu'il accorde :
+ * `COMBO` est émis **après** le coup qui l'a déclenché et **avant** celui qu'il accorde :
  * la cause puis l'effet. Il n'y a donc ni tri, ni regroupement, ni réordonnancement à faire —
  * seulement à ne pas en faire. C'est le genre de règle qu'on casse en voulant « ranger ».
  */
@@ -88,7 +88,9 @@ export const BUDGET = 14_000;
 export const TEMPO_FLOOR = duration.pop;
 export const TEMPO_CEILING = duration.settle;
 
-export type BattleBeat =
+type EventPosition = Pick<BattleEvent, 'atTick' | 'actionIndex' | 'attackIndex'>;
+
+export type BattleBeat = EventPosition & (
   /** Les deux combattants se posent. */
   | { kind: 'opening'; at: number; until: number }
   | {
@@ -109,9 +111,9 @@ export type BattleBeat =
    * toutes lettres, et se tromper de camp ici produit une animation qui a l'air de marcher.
    */
   | { kind: 'dodge'; at: number; until: number; index: number; attacker: Actor; dodger: Actor }
-  | { kind: 'extraTurn'; at: number; until: number; index: number; actor: Actor }
+  | { kind: 'combo'; at: number; until: number; index: number; actor: Actor }
   /** Le verdict — **le seul battement qui ne se referme pas**. Il court jusqu'à `duration`. */
-  | { kind: 'verdict'; at: number; until: number; result: BattleResult };
+  | { kind: 'verdict'; at: number; until: number; result: BattleResult });
 
 /** Une rampe d'interpolation : `input` sont des instants, `output` la valeur à cet instant. */
 export type Ramp = { input: number[]; output: number[] };
@@ -153,8 +155,13 @@ export type SideRamps = {
   mitigatedFlash: Ramp;
   /** L'éclat d'une esquive **de ce camp** — celui qui esquive, pas celui qui frappait. */
   dodgeFlash: Ramp;
-  /** L'éclat d'un tour supplémentaire **de ce camp**. */
-  extraFlash: Ramp;
+  /** L'éclat d'un combo **de ce camp**. */
+  comboFlash: Ramp;
+  replayFlash: Ramp;
+  criticalFlash: Ramp;
+  guardFlash: Ramp;
+  guardReduction: Ramp;
+  power: Ramp;
 };
 
 /**
@@ -179,7 +186,10 @@ export type SideRamps = {
  */
 export type BattleTally = {
   /** Du serveur, jamais recompté : un tour n'est pas un événement. */
-  turns: number;
+  attackCount: number;
+  actionCount: number;
+  elapsedTicks: number;
+  endReason: Battle['endReason'];
   /** Les coups qui ont porté, de chaque côté. Les esquives n'en sont pas. */
   blowsLanded: number;
   blowsTaken: number;
@@ -190,8 +200,8 @@ export type BattleTally = {
   damageAbsorbed: number;
   dodges: number;
   dodgesConceded: number;
-  extraTurns: number;
-  extraTurnsConceded: number;
+  combos: number;
+  combosConceded: number;
   /** Ce qu'il restait au joueur à la fin. Zéro sur une défaite, par construction. */
   hpLeft: number;
   /** Le dernier coup porté, quel qu'en soit l'auteur — celui qui a conclu. */
@@ -262,7 +272,7 @@ function holdUntil(ramp: Ramp, t: number): void {
  * Ajoute un palier à une rampe : la valeur tient jusqu'à `from`, puis glisse jusqu'à `to`.
  *
  * Le palier est ce qui empêche une barre de dériver pendant les battements qui ne la touchent
- * pas — une esquive, un tour supplémentaire. Sans lui, `interpolate` tracerait une droite du
+ * pas — une esquive, un combo. Sans lui, `interpolate` tracerait une droite du
  * dernier coup jusqu'au suivant et les points de vie descendraient **pendant** l'esquive,
  * c'est-à-dire exactement là où le contrat garantit qu'ils ne bougent pas.
  */
@@ -310,7 +320,12 @@ function sideRamps(maxHp: number): SideRamps {
     damageFlash: { input: [0], output: [0] },
     mitigatedFlash: { input: [0], output: [0] },
     dodgeFlash: { input: [0], output: [0] },
-    extraFlash: { input: [0], output: [0] },
+    comboFlash: { input: [0], output: [0] },
+    replayFlash: { input: [0], output: [0] },
+    criticalFlash: { input: [0], output: [0] },
+    guardFlash: { input: [0], output: [0] },
+    guardReduction: { input: [0], output: [0] },
+    power: { input: [0], output: [1000] },
   };
 }
 
@@ -320,7 +335,7 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
   // Les échanges sont tout ce qui se joue entre l'ouverture et le verdict. `BATTLE_STARTED` et
   // `BATTLE_FINISHED` ont leur propre temps et ne se comptent donc pas dans le tempo.
   const exchanges = events.filter(
-    (event) => event.type === 'ATTACK' || event.type === 'DODGE' || event.type === 'EXTRA_TURN',
+    (event) => event.type === 'ATTACK' || event.type === 'DODGE' || event.type === 'COMBO',
   ).length;
 
   const tempo = tempoFor(exchanges);
@@ -329,7 +344,10 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
   const blows: number[] = [];
 
   const tally: BattleTally = {
-    turns: battle.turns,
+    attackCount: battle.attackCount,
+    actionCount: battle.actionCount,
+    elapsedTicks: battle.elapsedTicks,
+    endReason: battle.endReason,
     blowsLanded: 0,
     blowsTaken: 0,
     damageDealt: 0,
@@ -337,8 +355,8 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
     damageAbsorbed: 0,
     dodges: 0,
     dodgesConceded: 0,
-    extraTurns: 0,
-    extraTurnsConceded: 0,
+    combos: 0,
+    combosConceded: 0,
     hpLeft: 0,
     lastBlow: null,
   };
@@ -350,6 +368,7 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
   let at = 0;
   let seen = 0;
   let index = 0;
+  let comboActor: Actor | undefined;
 
   for (const event of events) {
     if (event.type === 'BATTLE_STARTED') {
@@ -370,8 +389,16 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
 
     seen += 1;
     // Le dernier échange garde son temps plein, quel que soit le tempo.
-    const span = seen === exchanges ? Math.max(tempo, BEATS.finalBlow) : tempo;
+    const span = seen === exchanges && battle.endReason === 'KO' ? Math.max(tempo, BEATS.finalBlow) : tempo;
     const until = at + span;
+
+    const position = { atTick: event.atTick, actionIndex: event.actionIndex, attackIndex: event.attackIndex };
+    if (event.type === 'ATTACK' || event.type === 'DODGE') {
+      const actor = event.attacker ?? 'PLAYER';
+      if (event.powerPermille !== undefined) stepTo(sideOf(actor).power, at, event.powerPermille);
+      if (comboActor === actor) pulse(sideOf(actor).replayFlash, at, illustrated ? contactAt({ at, until }) : at + span / 3);
+      comboActor = undefined;
+    }
 
     if (event.type === 'ATTACK') {
       const attacker = event.attacker ?? 'PLAYER';
@@ -389,6 +416,9 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
       slideTo(target.hp, contact, hpUntil, remaining);
       stepTo(target.damage, contact, damage);
       stepTo(target.mitigated, contact, mitigated);
+      stepTo(target.guardReduction, contact, event.guardReduction ?? 0);
+      if (event.critical) pulse(target.criticalFlash, contact, until);
+      if (event.guarded) pulse(target.guardFlash, contact, until);
       pulse(target.damageFlash, contact, until);
 
       if (mitigated > 0) {
@@ -406,10 +436,10 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
         tally.damageAbsorbed += mitigated;
       }
 
-      tally.lastBlow = { by: attacker, damage };
+      if (battle.endReason === 'KO' && remaining === 0) tally.lastBlow = { by: attacker, damage };
 
       blows.push(illustrated ? contact : until);
-      beats.push({ kind: 'attack', at, until, index, attacker, damage, mitigated });
+      beats.push({ ...position, kind: 'attack', at, until, index, attacker, damage, mitigated });
     } else if (event.type === 'DODGE') {
       const attacker = event.attacker ?? 'PLAYER';
       const dodger = opponentOf(attacker);
@@ -424,19 +454,20 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
         tally.dodgesConceded += 1;
       }
 
-      beats.push({ kind: 'dodge', at, until, index, attacker, dodger });
-    } else {
+      beats.push({ ...position, kind: 'dodge', at, until, index, attacker, dodger });
+    } else if (event.type === 'COMBO') {
       const actor = event.actor ?? 'PLAYER';
 
-      pulse(sideOf(actor).extraFlash, at, until);
+      comboActor = actor;
+      pulse(sideOf(actor).comboFlash, at, until);
 
       if (actor === 'PLAYER') {
-        tally.extraTurns += 1;
+        tally.combos += 1;
       } else {
-        tally.extraTurnsConceded += 1;
+        tally.combosConceded += 1;
       }
 
-      beats.push({ kind: 'extraTurn', at, until, index, actor });
+      beats.push({ ...position, kind: 'combo', at, until, index, actor });
     }
 
     index += 1;
@@ -450,7 +481,8 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
     holdUntil(side.damageFlash, at);
     holdUntil(side.mitigatedFlash, at);
     holdUntil(side.dodgeFlash, at);
-    holdUntil(side.extraFlash, at);
+    holdUntil(side.comboFlash, at);
+    for (const ramp of [side.replayFlash, side.criticalFlash, side.guardFlash, side.guardReduction, side.power]) holdUntil(ramp, at);
   }
 
   // Les points de vie qui restent au joueur : la dernière valeur de sa rampe, celle que le
@@ -459,3 +491,5 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
 
   return { beats, duration: at, player, enemy, blows, tempo, tally };
 }
+
+export { sampleRamp, beatAt, countBlowsAt } from './sampling.ts';

@@ -53,10 +53,10 @@ describe('formatModifier — les millièmes, convertis en pourcentage à une dé
     assert.equal(formatModifier(modifier({ type: 'MITIGATION_BONUS', value: 180 })), 'Mitigation +18,0 %');
   });
 
-  it('convertit EXTRA_TURN_BONUS', () => {
+  it('convertit COMBO_BONUS', () => {
     assert.equal(
-      formatModifier(modifier({ type: 'EXTRA_TURN_BONUS', value: 45 })),
-      'Tour supplémentaire +4,5 %',
+      formatModifier(modifier({ type: 'COMBO_BONUS', value: 45 })),
+      'Combo +4,5 %',
     );
   });
 
@@ -145,4 +145,17 @@ describe('formatOccurredAt — la date d’un mouvement du ledger', () => {
   it('retombe sur la date seule au-delà — la date du fait, jamais celle de l’écriture', () => {
     assert.equal(formatOccurredAt(new Date(2026, 7, 20, 9, 5).toISOString(), now), '20 août');
   });
+});
+
+
+describe('les nouveaux bonus de combat v2', () => {
+  for (const [type, label] of [
+    ['MAINTENANCE_BONUS', 'Maintien'], ['CRITICAL_CHANCE_BONUS', 'Critique'],
+    ['GUARD_BONUS', 'Garde'], ['CRITICAL_RESISTANCE_BONUS', 'Résistance critique'],
+    ['COOLDOWN_REDUCTION_BONUS', 'Célérité'], ['PRECISION_BONUS', 'Précision'],
+  ] as const) {
+    it(`affiche ${type} en pourcentage signé sans recalculer un taux`, () => {
+      assert.equal(formatModifier(modifier({ type, value: -45 })), `${label} -4,5 %`);
+    });
+  }
 });

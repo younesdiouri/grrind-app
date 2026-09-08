@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -26,6 +27,7 @@ import {
   battleResultLabel,
   color,
   combatMotion,
+  combatEffects,
   control,
   duration,
   scale,
@@ -35,13 +37,15 @@ import {
   typography,
 } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
-import { formatTurns } from './format.ts';
+
 import { hasBattleReward } from './reward.ts';
 import { EnemySprite, type EnemyArtwork } from './EnemySprite';
 import { enemyArtworkOf } from './enemyPresentation';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
 import {
   buildBattleTimeline,
+  sampleRamp,
+  countBlowsAt,
   type Battle,
   type BattleTally,
   type Ramp,
@@ -95,6 +99,7 @@ export function BattleView({ battle, enemyArt, ...props }: {
   battle: Battle;
   enemyArt?: EnemyArtwork;
   demo?: boolean;
+  demoTime?: number;
   onDismiss?: () => void;
 }) {
   const artwork = useMemo(() => enemyArt ?? enemyArtworkOf(battle.enemy), [enemyArt, battle.enemy]);
@@ -107,6 +112,7 @@ function PresentedBattle({ artwork, ...props }: {
   artwork?: EnemyArtwork;
   introduction?: string;
   demo?: boolean;
+  demoTime?: number;
   onDismiss?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
@@ -123,12 +129,14 @@ function BattleScene({
   introduction,
   onArtworkError,
   demo = false,
+  demoTime,
 }: {
   battle: Battle;
   enemyArt?: EnemyArtwork;
   introduction?: string;
   onArtworkError: () => void;
   demo?: boolean;
+  demoTime?: number;
   /**
    * Sortir. Le composant dit **quand** le joueur veut partir, la route décide de ce que ça
    * veut dire — une animation ne connaît pas la pile de navigation.
@@ -176,6 +184,7 @@ function BattleScene({
     cancelAnimation(clock);
     setDone(false);
     clock.set(0);
+    if (__DEV__ && demo && demoTime !== undefined) { clock.set(demoTime); return; }
     clock.set(withTiming(
       timeline.duration,
       { duration: timeline.duration, easing: Easing.linear },
@@ -243,7 +252,7 @@ function BattleScene({
   // Le seul aller-retour vers JS de toute la séquence : un choc par coup **porté**. Les
   // esquives n'en déclenchent pas — rien n'a été encaissé, et vibrer dirait le contraire.
   useAnimatedReaction(
-    () => timeline.blows.filter((at) => clock.value >= at).length,
+    () => countBlowsAt(timeline.blows, clock.value),
     (landed, previous) => {
       if (previous !== null && landed > previous && !skipping.get() && reducedMotion === false) {
         scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Medium);
@@ -301,7 +310,7 @@ function BattleScene({
     <Pressable style={styles.screen} onPress={touch} onLayout={enemyArt ? undefined : ready}
       testID={`battle-${entrance}`} accessibilityRole="button">
       <AmbientBackdrop />
-      <Animated.View style={[styles.eventFrame, frameEntryStyle]}>
+      <Animated.View style={[styles.eventFrame, frameEntryStyle]} pointerEvents="none">
         <SystemFrame tier="event" style={styles.eventSurface} contentStyle={styles.eventContent}>
           <Fighter clock={clock} side="enemy" name={enemyName} ramps={timeline.enemy} stats={battle.enemy} />
 
@@ -337,20 +346,22 @@ function BattleScene({
               </Call>
 
               <Call clock={clock} flash={timeline.enemy.dodgeFlash}>
-                <Announce who={enemyName} word="esquive" />
+                <Effect who={enemyName} effect="dodge" />
               </Call>
 
               <Call clock={clock} flash={timeline.player.dodgeFlash}>
-                <Announce who="Toi" word="esquives" />
+                <Effect who="Toi" effect="dodge" />
               </Call>
 
-              <Call clock={clock} flash={timeline.enemy.extraFlash}>
-                <Announce who={enemyName} word="rejoue" tone={styles.extra} />
+              <Call clock={clock} flash={timeline.enemy.comboFlash}>
+                <Effect who={enemyName} effect="combo" />
               </Call>
 
-              <Call clock={clock} flash={timeline.player.extraFlash}>
-                <Announce who="Toi" word="rejoues" tone={styles.extra} />
+              <Call clock={clock} flash={timeline.player.comboFlash}>
+                <Effect who="Toi" effect="combo" />
               </Call>
+              <Call clock={clock} flash={timeline.enemy.replayFlash}><Effect who={enemyName} effect="replay" /></Call>
+              <Call clock={clock} flash={timeline.player.replayFlash}><Effect who="Toi" effect="replay" /></Call>
             </Animated.View>
 
             <Animated.View style={[styles.layer, recapStyle]} pointerEvents="none">
@@ -382,10 +393,11 @@ function Call({
   flash: Ramp;
   children: React.ReactNode;
 }) {
+  const reduced = useReducedMotion();
   const style = useAnimatedStyle(() => {
-    const lit = interpolate(clock.value, flash.input, flash.output, Extrapolation.CLAMP);
+    const lit = sampleRamp(flash, clock.value);
 
-    return { opacity: lit, transform: [{ scale: scale.from + lit * (1 - scale.from) }] };
+    return { opacity: lit, transform: [{ scale: reduced !== false ? 1 : scale.from + lit * (1 - scale.from) }] };
   });
 
   return <Animated.View style={[styles.layer, style]}>{children}</Animated.View>;
@@ -404,37 +416,38 @@ function Blow({
   tone: { color: string };
 }) {
   const damageProps = useAnimatedProps(() => {
-    const text = `-${Math.round(interpolate(clock.value, ramps.damage.input, ramps.damage.output, Extrapolation.CLAMP))}`;
+    const text = `-${Math.round(sampleRamp(ramps.damage, clock.value))}`;
     return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
   });
 
   const absorbedProps = useAnimatedProps(() => {
-    const text = `${Math.round(interpolate(clock.value, ramps.mitigated.input, ramps.mitigated.output, Extrapolation.CLAMP))} absorbés`;
+    const text = `${Math.round(sampleRamp(ramps.mitigated, clock.value))} absorbés`;
     return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
   });
 
   // Éteinte quand il n'y a rien à absorber : « 0 absorbés » dirait le contraire de ce qui se
   // passe chez un combattant sans armure. La décision est dans la rampe, pas ici.
   const absorbedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      clock.value,
-      ramps.mitigatedFlash.input,
-      ramps.mitigatedFlash.output,
-      Extrapolation.CLAMP,
-    ),
+    opacity: sampleRamp(ramps.mitigatedFlash, clock.value),
   }));
 
+  const criticalStyle = useAnimatedStyle(() => ({ opacity: sampleRamp(ramps.criticalFlash, clock.value) }));
+  const guardProps = useAnimatedProps(() => {
+    const text = sampleRamp(ramps.guardFlash, clock.value) > 0
+      ? `GARDE · −${Math.round(sampleRamp(ramps.guardReduction, clock.value))}` : '';
+    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
+  });
   return (
     <View style={styles.call}>
-      <Text style={styles.who} numberOfLines={1}>
-        {who.toUpperCase()}
-      </Text>
+      <Animated.View style={[styles.criticalEffect, criticalStyle]}><Effect effect="critical" /></Animated.View>
       <AnimatedTextInput
         editable={false}
         style={[styles.hit, tone]}
         animatedProps={damageProps}
         defaultValue="0"
       />
+      <Text style={styles.who} numberOfLines={1}>{who === 'Toi' ? 'TU ENCAISSES' : `${who.toUpperCase()} ENCAISSE`}</Text>
+      <AnimatedTextInput editable={false} style={styles.absorbed} animatedProps={guardProps} defaultValue="" />
       <Animated.View style={absorbedStyle}>
         <AnimatedTextInput
           editable={false}
@@ -447,16 +460,19 @@ function Blow({
   );
 }
 
-/** Une esquive, une relance : un mot, et de qui. */
-function Announce({ who, word, tone }: { who: string; word: string; tone?: { color: string } }) {
-  return (
-    <View style={styles.call}>
-      <Text style={styles.who} numberOfLines={1}>
-        {who.toUpperCase()}
-      </Text>
-      <Text style={[styles.word, tone]}>{word}</Text>
-    </View>
-  );
+const EFFECTS = {
+  dodge: { source: require('../../../assets/images/combat-effects/dodge.png'), label: 'ESQUIVE' },
+  critical: { source: require('../../../assets/images/combat-effects/critical.png'), label: 'CRITIQUE !' },
+  combo: { source: require('../../../assets/images/combat-effects/combo.png'), label: 'COMBO' },
+  replay: { source: require('../../../assets/images/combat-effects/replay.png'), label: 'REJOUE !' },
+} as const;
+
+function Effect({ effect, who }: { effect: keyof typeof EFFECTS; who?: string }) {
+  return <View style={styles.effect} pointerEvents="none">
+    <Image source={EFFECTS[effect].source} style={StyleSheet.absoluteFill} contentFit="contain" />
+    {who && <Text style={styles.who}>{who.toUpperCase()}</Text>}
+    <Text style={[styles.effectLabel, { color: combatEffects[effect] }]}>{EFFECTS[effect].label}</Text>
+  </View>;
 }
 
 /**
@@ -479,7 +495,7 @@ function Announce({ who, word, tone }: { who: string; word: string; tone?: { col
  * pour l'écran de récompense, se réutilisent tels quels ici.
  *
  * `hasBattleReward` tranche à elle seule ce qui paraît : une défaite, comme une victoire
- * tranchée par `max_turns` sans KO, ne rapporte rien, et le back a refusé de dessiner une
+ * tranchée par `max_attacks` sans KO, ne rapporte rien, et le back a refusé de dessiner une
  * consolation pour ce cas — ni bourse vide, ni « rien trouvé ».
  */
 function Recap({ battle, tally, done, enemyName, demo }: {
@@ -499,7 +515,7 @@ function Recap({ battle, tally, done, enemyName, demo }: {
       </Text>
 
       <Text style={styles.against} numberOfLines={2}>
-        {won ? 'Tu as vaincu' : 'Tu es tombé face à'} {enemyName}
+        {battle.endReason === 'ATTACK_LIMIT' ? 'Limite atteinte face à' : won ? 'Tu as vaincu' : 'Tu es tombé face à'} {enemyName}
       </Text>
 
       {tally.lastBlow !== null && (
@@ -510,7 +526,7 @@ function Recap({ battle, tally, done, enemyName, demo }: {
       )}
 
       <View style={styles.tally}>
-        <Score label="Tours" value={formatTurns(tally.turns).split(' ')[0]} />
+        <Score label="Actions / tentatives" value={`${tally.actionCount} / ${tally.attackCount}`} />
         <Score label="Coups portés" value={String(tally.blowsLanded)} />
         <Score label="Dégâts infligés" value={String(tally.damageDealt)} />
         <Score label="Dégâts subis" value={String(tally.damageTaken)} />
@@ -520,8 +536,8 @@ function Recap({ battle, tally, done, enemyName, demo }: {
           <Score label="Absorbés par ton armure" value={String(tally.damageAbsorbed)} />
         )}
         {tally.dodges > 0 && <Score label="Tes esquives" value={String(tally.dodges)} />}
-        {tally.extraTurns > 0 && <Score label="Tes relances" value={String(tally.extraTurns)} />}
-        {won && <Score label="Vie restante" value={String(tally.hpLeft)} />}
+        {tally.combos > 0 && <Score label="Tes combos" value={String(tally.combos)} />}
+        {tally.hpLeft > 0 && <Score label="Vie restante" value={String(tally.hpLeft)} />}
       </View>
 
       {/* Le butin — objets puis bourse, dans l'ordre du contrat. Rien ne paraît sur une
@@ -593,18 +609,23 @@ function Fighter({
   stats: { damage: number; mitigationPercent: number; dodgePercent: number };
 }) {
   const barStyle = useAnimatedStyle(() => ({
-    width: `${(interpolate(clock.value, ramps.hp.input, ramps.hp.output, Extrapolation.CLAMP) / ramps.maxHp) * 100}%`,
+    width: `${(sampleRamp(ramps.hp, clock.value) / ramps.maxHp) * 100}%`,
   }));
 
+  const powerProps = useAnimatedProps(() => {
+    const text = `Puissance ${Math.round(sampleRamp(ramps.power, clock.value)) / 10} %`;
+    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
+  });
   const hpProps = useAnimatedProps(() => {
     const text = String(
-      Math.round(interpolate(clock.value, ramps.hp.input, ramps.hp.output, Extrapolation.CLAMP)),
+      Math.round(sampleRamp(ramps.hp, clock.value)),
     );
     return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
   });
 
   return (
     <View style={styles.fighter}>
+      <AnimatedTextInput editable={false} style={styles.absorbed} animatedProps={powerProps} defaultValue="Puissance 100 %" />
       <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
         {name}
       </Text>
@@ -722,7 +743,9 @@ const styles = StyleSheet.create({
     fontFamily: typography.display.semibold,
     fontWeight: typography.display.weight.semibold,
   },
-  extra: { color: color.gain },
+  effect: { width: combatEffects.width, height: combatEffects.height, justifyContent: 'center', alignItems: 'center' },
+  effectLabel: { ...type.title, fontSize: combatEffects.labelSize, fontFamily: typography.display.bold, textShadowColor: color.background, textShadowRadius: space.xs, textShadowOffset: { width: 0, height: control.borderWidth } },
+  criticalEffect: { position: 'absolute', bottom: combatEffects.height - space.xl },
 
   recap: { alignItems: 'center', gap: space.sm, paddingHorizontal: space.md },
   verdict: {

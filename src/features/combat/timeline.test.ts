@@ -6,6 +6,9 @@ import {
   BEATS,
   BUDGET,
   buildBattleTimeline,
+  sampleRamp,
+  beatAt,
+  countBlowsAt,
   TEMPO_CEILING,
   TEMPO_FLOOR,
   tempoFor,
@@ -86,16 +89,16 @@ function fabricated(attacks: number): Battle {
   return {
     id: '00000000-0000-0000-0000-000000000000',
     result: 'VICTORY',
-    turns: attacks,
+    attackCount: attacks, actionCount: attacks, elapsedTicks: attacks, endReason: 'KO', algorithmVersion: 'v2',
     foughtAt: '2026-08-29T15:00:00+00:00',
-    player: { hp: 10_000, damage: 1, mitigationPercent: 0, extraTurnPercent: 0, dodgePercent: 0 },
+    player: { hp: 10_000, damage: 1, mitigationPercent: 0, comboPercent: 0, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 0 },
     enemy: {
       key: 'SAND_JACKAL',
       name: 'Chacal des sables',
       hp: 10_000,
       damage: 1,
       mitigationPercent: 0,
-      extraTurnPercent: 0,
+      comboPercent: 0, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0,
       dodgePercent: 0,
     },
     events,
@@ -124,7 +127,7 @@ describe('la timeline d’un combat, sur les fixtures capturées', () => {
             case 'DODGE':
               return 'dodge';
             default:
-              return 'extraTurn';
+              return 'combo';
           }
         });
 
@@ -167,7 +170,7 @@ describe('la timeline d’un combat, sur les fixtures capturées', () => {
           side.damageFlash,
           side.mitigatedFlash,
           side.dodgeFlash,
-          side.extraFlash,
+          side.comboFlash,
         ]);
 
         for (const ramp of ramps) {
@@ -266,7 +269,7 @@ describe('la timeline d’un combat, sur les fixtures capturées', () => {
 
       it('éteint tous les éclats au départ comme à l’arrivée', () => {
         for (const side of [timeline.player, timeline.enemy]) {
-          for (const flash of [side.damageFlash, side.mitigatedFlash, side.dodgeFlash, side.extraFlash]) {
+          for (const flash of [side.damageFlash, side.mitigatedFlash, side.dodgeFlash, side.comboFlash]) {
             assert.equal(valueAt(flash, 0), 0);
             assert.equal(valueAt(flash, timeline.duration), 0, 'un éclat reste allumé à la fin');
           }
@@ -295,9 +298,9 @@ describe('le bilan que l’écran de fin raconte', () => {
       const { tally } = buildBattleTimeline(battle);
 
       it('prend le nombre de tours du serveur, sans le recompter', () => {
-        // Un tour n'est pas un événement — un tour supplémentaire en produit deux — et le
+        // Un tour n'est pas un événement — un combo en produit deux — et le
         // recompter ici serait réimplémenter une règle du jeu.
-        assert.equal(tally.turns, battle.turns);
+        assert.equal(tally.attackCount, battle.attackCount);
       });
 
       it('compte chaque coup une fois et une seule, du bon côté', () => {
@@ -337,16 +340,16 @@ describe('le bilan que l’écran de fin raconte', () => {
 
       it('range les esquives et les relances du côté de qui en a bénéficié', () => {
         const dodges = battle.events.filter((event) => event.type === 'DODGE');
-        const extras = battle.events.filter((event) => event.type === 'EXTRA_TURN');
+        const extras = battle.events.filter((event) => event.type === 'COMBO');
 
         // Une esquive est portée par l'attaquant dans le contrat : l'esquiveur est l'autre.
         assert.equal(tally.dodges, dodges.filter((event) => event.attacker === 'ENEMY').length);
         assert.equal(tally.dodgesConceded, dodges.filter((event) => event.attacker === 'PLAYER').length);
 
-        assert.equal(tally.extraTurns, extras.filter((event) => event.actor === 'PLAYER').length);
-        assert.equal(tally.extraTurnsConceded, extras.filter((event) => event.actor === 'ENEMY').length);
+        assert.equal(tally.combos, extras.filter((event) => event.actor === 'PLAYER').length);
+        assert.equal(tally.combosConceded, extras.filter((event) => event.actor === 'ENEMY').length);
         assert.equal(tally.dodges + tally.dodgesConceded, dodges.length);
-        assert.equal(tally.extraTurns + tally.extraTurnsConceded, extras.length);
+        assert.equal(tally.combos + tally.combosConceded, extras.length);
       });
     });
   }
@@ -362,15 +365,15 @@ describe('le bilan que l’écran de fin raconte', () => {
   });
 });
 
-describe('l’ordre de cause à effet du tour supplémentaire', () => {
+describe('l’ordre de cause à effet du combo', () => {
   it('tombe entre le coup qui l’a déclenché et celui qu’il accorde', () => {
-    // Le serveur émet `EXTRA_TURN` **après** l'attaque qui l'a déclenché et **avant** celle
+    // Le serveur émet `COMBO` **après** l'attaque qui l'a déclenché et **avant** celle
     // qu'il accorde : le client anime la cause puis l'effet, et l'inverse ferait apparaître un
     // tour bonus venu de nulle part. `defaiteBoss` en porte trois.
     const timeline = buildBattleTimeline(defaiteBoss);
-    const extras = timeline.beats.filter((beat) => beat.kind === 'extraTurn');
+    const extras = timeline.beats.filter((beat) => beat.kind === 'combo');
 
-    assert.ok(extras.length > 0, 'la fixture doit porter au moins un tour supplémentaire');
+    assert.ok(extras.length > 0, 'la fixture doit porter au moins un combo');
 
     for (const extra of extras) {
       const position = timeline.beats.indexOf(extra);
@@ -379,9 +382,9 @@ describe('l’ordre de cause à effet du tour supplémentaire', () => {
 
       assert.ok(
         before.kind === 'attack' || before.kind === 'dodge',
-        'un tour supplémentaire suit toujours un tour joué',
+        'un combo suit toujours un tour joué',
       );
-      assert.ok(after !== undefined, 'un tour supplémentaire n’est jamais le dernier battement');
+      assert.ok(after !== undefined, 'un combo n’est jamais le dernier battement');
       assert.ok(extra.at >= before.until && after.at >= extra.until);
     }
   });
@@ -435,5 +438,63 @@ describe('le tempo', () => {
 
     assert.equal(opening.kind, 'opening');
     assert.equal(opening.until - opening.at, BEATS.opening);
+  });
+});
+
+
+describe('contrat v2 autoritaire', () => {
+  it('préserve indices, tick commun et relance après esquive sans dégâts en double', () => {
+    const battle = fabricated(0);
+    battle.events = [
+      { type: 'BATTLE_STARTED', playerHp: 10000, enemyHp: 10000 },
+      { type: 'DODGE', attacker: 'PLAYER', atTick: 900, actionIndex: 3, attackIndex: 4, powerPermille: 845 },
+      { type: 'COMBO', actor: 'PLAYER', atTick: 900, actionIndex: 3, attackIndex: 5 },
+      { type: 'ATTACK', attacker: 'PLAYER', atTick: 900, actionIndex: 3, attackIndex: 5,
+        critical: true, guarded: true, guardReduction: 13, powerPermille: 812,
+        damage: 17, mitigated: 9, targetHpRemaining: 777 },
+      { type: 'COMBO', actor: 'PLAYER', atTick: 900, actionIndex: 3, attackIndex: 6 },
+      { type: 'ATTACK', attacker: 'PLAYER', atTick: 900, actionIndex: 3, attackIndex: 6,
+        damage: 5, targetHpRemaining: 772, powerPermille: 799 },
+      { type: 'BATTLE_FINISHED', result: 'VICTORY', endReason: 'ATTACK_LIMIT' },
+    ];
+    Object.assign(battle, { endReason: 'ATTACK_LIMIT', attackCount: 6, actionCount: 3, elapsedTicks: 900 });
+    const timeline = buildBattleTimeline(battle, { illustrated: true });
+    assert.deepEqual(timeline.beats.slice(1, -1).map(b => [b.atTick, b.actionIndex, b.attackIndex]),
+      [[900,3,4], [900,3,5], [900,3,5], [900,3,6], [900,3,6]]);
+    assert.equal(timeline.tally.lastBlow, null);
+    assert.equal(timeline.tally.damageDealt, 22);
+    assert.equal(timeline.tally.attackCount, 6);
+    assert.equal(timeline.tally.actionCount, 3);
+    assert.equal(sampleRamp(timeline.enemy.hp, timeline.duration), 772);
+    assert.equal(sampleRamp(timeline.player.power, timeline.duration), 799);
+    const attack = timeline.beats[3];
+    const contact = timeline.blows[0];
+    assert.ok(sampleRamp(timeline.player.replayFlash, attack.at + 20) > 0);
+    assert.equal(sampleRamp(timeline.enemy.replayFlash, attack.at + 20), 0);
+    assert.ok(sampleRamp(timeline.enemy.criticalFlash, contact + 20) > 0);
+    assert.ok(sampleRamp(timeline.enemy.guardFlash, contact + 20) > 0);
+    assert.equal(sampleRamp(timeline.enemy.guardReduction, contact + 20), 13);
+    assert.equal(timeline.enemy.hp.output[0], sampleRamp(timeline.enemy.hp, timeline.beats[1].until));
+    for (const side of [timeline.player, timeline.enemy]) {
+      for (const ramp of [side.replayFlash, side.criticalFlash, side.guardFlash, side.comboFlash]) {
+        assert.equal(sampleRamp(ramp, timeline.duration), 0);
+      }
+    }
+  });
+
+  it('cherche les frames et les impacts sur 10 000 tentatives et retrouve le même état au rejeu', () => {
+    const battle = fabricated(10000);
+    battle.endReason = 'ATTACK_LIMIT';
+    const timeline = buildBattleTimeline(battle);
+    assert.equal(timeline.beats.length, 10002);
+    for (const index of [0, 1, 5000, 9999]) {
+      const beat = timeline.beats[index + 1];
+      assert.equal(beatAt(timeline.beats, beat.at), beat);
+      assert.equal(countBlowsAt(timeline.blows, beat.until), index + 1);
+    }
+    assert.equal(beatAt(timeline.beats, timeline.duration), undefined);
+    assert.equal(timeline.tally.lastBlow, null);
+    assert.equal(sampleRamp(timeline.player.hp, timeline.duration), 5000);
+    assert.deepEqual(buildBattleTimeline(battle), timeline);
   });
 });

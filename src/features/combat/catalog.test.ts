@@ -11,7 +11,7 @@ function enemy(overrides: Partial<Enemy>): Enemy {
     hp: 120,
     damage: 12,
     mitigationPercent: 5,
-    extraTurnPercent: 4,
+    comboPercent: 4, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0,
     dodgePercent: 3,
     ...overrides,
   };
