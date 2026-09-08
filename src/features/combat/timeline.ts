@@ -180,12 +180,11 @@ export type SideRamps = {
  * contrat » serait le mauvais réflexe : on demanderait au serveur de dire deux fois la même
  * chose pour éviter une addition.
  *
- * `turns` fait exception et vient du serveur : un tour n'est pas un événement — un tour
- * supplémentaire en produit deux — et le recompter ici serait, cette fois, réimplémenter une
- * règle.
+ * Les compteurs d’actions et de tentatives viennent du serveur : une chaîne Combo appartient
+ * à une seule action. La date virtuelle et la raison de fin viennent aussi du contrat.
  */
 export type BattleTally = {
-  /** Du serveur, jamais recompté : un tour n'est pas un événement. */
+  /** Compteurs autoritaires, jamais recomptés depuis les événements. */
   attackCount: number;
   actionCount: number;
   elapsedTicks: number;
@@ -202,9 +201,9 @@ export type BattleTally = {
   dodgesConceded: number;
   combos: number;
   combosConceded: number;
-  /** Ce qu'il restait au joueur à la fin. Zéro sur une défaite, par construction. */
+  /** Ce qu’il restait au joueur à la fin ; une défaite à la limite peut conserver des PV. */
   hpLeft: number;
-  /** Le dernier coup porté, quel qu'en soit l'auteur — celui qui a conclu. */
+  /** Le coup qui a effectivement mis la cible à zéro ; absent à la limite. */
   lastBlow: { by: Actor; damage: number } | null;
 };
 

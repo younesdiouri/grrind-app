@@ -61,3 +61,23 @@ v2 réelles, séparées de ce banc synthétique.
 
 Reste physique : qualité perceptive des haptics, lisibilité en mouvement, petit écran et grands
 réglages de texte. Le full Release n’est pas requis et n’est jamais lancé sans demande explicite.
+
+## Résultats du 8 septembre 2026
+
+- TypeScript strict, lint, 512 tests : verts.
+- `api:check` et `previews:check` : verts ; 28 previews dérivées des composants RN.
+- Atelier Al-Kasal : vert, 97 s.
+- Scénarios v2 : verts, 161 s après correction du saut ; huit effets/deux camps, chaîne
+  animée, limite et 10 000 tentatives. Captures inspectées dans
+  `artifacts/e2e/2026-09-08_134828/combat-v2/takeScreenshot/`.
+- Smoke HTTP authentifié : vert, 289 s ; catalogue, victoire/bourse, historique, rejeu,
+  synchronisation et inventaire. Captures inspectées dans
+  `artifacts/e2e/2026-09-08_135131/ios-smoke/takeScreenshot/`.
+
+L’itération visuelle a révélé un libellé de cible dans le halo critique, déplacé sous les dégâts,
+puis un TextInput numérique qui interceptait le toucher : la couche présentative laisse
+désormais tout toucher atteindre le Pressable racine. Aucun échec masqué. Aucun rebuild natif
+ou full Release, aucune modification de dépôt backend, migration ou réinitialisation de base.
+
+Capture finale critique et toucher : vert, 26 s, texte « TU ENCAISSES » vérifié.
+`artifacts/e2e/2026-09-08_135621/critical-v2/takeScreenshot/v2-critical-final.png`.
