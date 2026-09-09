@@ -22,6 +22,8 @@ import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { color, radius, space, type } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
+import { useAuth } from '@/features/auth/useAuth';
+import { GuildChat } from '@/features/community/GuildChat';
 import { formatCalendarDate } from '@/features/community/format';
 import { GuildMilestone } from '@/features/community/GuildMilestone';
 import {
@@ -133,7 +135,7 @@ export default function GuildeScreen() {
   });
 
   if (state.kind === 'roster') {
-    return <Roster guild={state.guild} onGone={forgetGuild} />;
+    return <Roster key={state.guild.id} guild={state.guild} onGone={forgetGuild} />;
   }
 
   if (state.kind === 'milestone') {
@@ -255,6 +257,8 @@ function isPlayerNotAMember(failure: Failure): boolean {
  * sans réinventer `forgetGuild`.
  */
 function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
+  const auth = useAuth();
+  const [chatting, setChatting] = useState(false);
   const queryClient = useQueryClient();
   const risalat = useRisalat();
   // Calculé au rendu, jamais entretenu : une échéance à quinze jours n'a besoin d'être connue
@@ -360,6 +364,10 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
     return <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />;
   }
 
+  if (chatting && auth.status === 'signedIn') {
+    return <GuildChat key={`${guild.id}:${auth.user.id}`} guild={guild} playerId={auth.user.id} onGone={onGone} onClose={() => setChatting(false)} />;
+  }
+
   return (
     <FlatList
       data={guild.members}
@@ -377,6 +385,7 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
       }
       ListHeaderComponent={
         <View style={styles.rosterHeader}>
+          <Button label="Chat de la guilde" onPress={() => setChatting(true)} />
           {/* En tête, avant même l'identité de la guilde : c'est le présent de la guilde, le
               roster en est l'archive (#105). Un push `GUILD_RISALAT` (#104) doit trouver la
               Risāla qu'il annonce sans qu'on défile. */}

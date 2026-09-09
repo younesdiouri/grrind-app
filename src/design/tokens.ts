@@ -1,5 +1,12 @@
 import type { components } from '@/api/schema';
 
+export const guildChat = {
+  photoHeight: 220,
+  previewHeight: 88,
+  composerMaxHeight: 120,
+  bubbleWidth: '92%' as const,
+} as const;
+
 /** Mise en scène du prototype Al-Kasal : fractions d'un échange, puis amplitudes en points. */
 export const combatEffects = {
   width: 250, height: 110, labelSize: 27, rise: 12,

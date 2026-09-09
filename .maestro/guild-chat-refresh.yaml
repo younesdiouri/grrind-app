@@ -1,0 +1,13 @@
+appId: app.grrind.e2e
+---
+- tapOn:
+    id: "tab-guilde"
+- tapOn: "Chat de la guilde"
+- tapOn:
+    id: "chat-input"
+- inputText: "Refresh natif iOS"
+- tapOn: "Envoyer"
+- extendedWaitUntil:
+    notVisible: "Réessayer"
+    timeout: 10000
+- takeScreenshot: chat-refresh

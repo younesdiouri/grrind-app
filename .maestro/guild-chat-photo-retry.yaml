@@ -1,0 +1,34 @@
+appId: app.grrind.e2e
+---
+- tapOn:
+    id: "tab-guilde"
+- tapOn: "Chat de la guilde"
+- tapOn: "Photo"
+- tapOn:
+    point: "50%,25%"
+- extendedWaitUntil:
+    visible: "Retirer la photo"
+    timeout: 30000
+- tapOn: "Retirer la photo"
+- assertNotVisible: "Retirer la photo"
+- tapOn: "Photo"
+- tapOn:
+    point: "50%,25%"
+- extendedWaitUntil:
+    visible: "Retirer la photo"
+    timeout: 30000
+- tapOn:
+    id: "chat-input"
+- inputText: "Photo et texte retry iOS"
+- tapOn: "Envoyer"
+- extendedWaitUntil:
+    visible: "Réessayer"
+    timeout: 30000
+- takeScreenshot: chat-12-photo-retry-ready
+- tapOn: "Réessayer"
+- extendedWaitUntil:
+    notVisible: "Retirer la photo"
+    timeout: 30000
+- assertVisible: "Photo et texte retry iOS"
+- assertVisible: "Photo partagée dans la guilde"
+- takeScreenshot: chat-13-photo-retry-sent

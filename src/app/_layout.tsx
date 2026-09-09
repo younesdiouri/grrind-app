@@ -9,6 +9,7 @@ import { queryClient } from '@/api/queryClient';
 import { color, typography } from '@/design/tokens';
 import { restore } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
+import { purgeChatPhotoCache } from '@/features/community/chatFiles';
 // Importé pour son seul effet de bord — voir son docblock : `setNotificationHandler` doit
 // être en place avant qu'une notification arrive, donc au chargement du module et pas dans
 // un effet.
@@ -36,6 +37,7 @@ export default function RootLayout() {
   const fontsSettled = fontsLoaded || fontError !== null;
 
   useEffect(() => {
+    purgeChatPhotoCache();
     // En développement, React monte deux fois : le coordinateur de rafraîchissement partage
     // sa promesse, donc il ne part quand même qu'un seul appel.
     void restore();
@@ -56,6 +58,8 @@ export default function RootLayout() {
     if (auth.status === 'restoring') {
       return;
     }
+
+    if (auth.status === 'signedOut') purgeChatPhotoCache();
 
     // La pile connectée est rendue sous l'écran de démarrage, donc la synchronisation de
     // lancement est déjà partie quand on arrive ici. `beginLaunch` est idempotent.

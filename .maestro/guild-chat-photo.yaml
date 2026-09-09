@@ -1,0 +1,21 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - guild-chat
+---
+- tapOn:
+    id: "tab-guilde"
+- tapOn: "Chat de la guilde"
+- tapOn: "Photo"
+- tapOn:
+    point: "50%,25%"
+- extendedWaitUntil:
+    visible: "Retirer la photo"
+    timeout: 30000
+- takeScreenshot: chat-04-photo-preview
+- tapOn: "Envoyer"
+- extendedWaitUntil:
+    notVisible: "Retirer la photo"
+    timeout: 30000
+- assertVisible: "Photo partagée dans la guilde"
+- takeScreenshot: chat-05-photo-sent

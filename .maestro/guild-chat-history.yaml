@@ -1,0 +1,24 @@
+appId: app.grrind.e2e
+---
+- runFlow:
+    when:
+      notVisible: "Infos et membres"
+    commands:
+      - tapOn:
+          id: "tab-guilde"
+      - tapOn: "Chat de la guilde"
+- scrollUntilVisible:
+    element: "Messages précédents"
+    direction: UP
+    timeout: 180000
+- swipe:
+    start: "50%,35%"
+    end: "50%,65%"
+    duration: 500
+- tapOn:
+    point: "50%,31%"
+- scrollUntilVisible:
+    element: "Historique 01"
+    direction: UP
+    timeout: 60000
+- takeScreenshot: chat-08-oldest
