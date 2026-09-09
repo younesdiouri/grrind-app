@@ -749,7 +749,7 @@ export interface components {
         /**
          * @description Un joueur **tel que les autres joueurs le voient** — la seule forme sous
          *     laquelle l'API expose quelqu'un d'autre que soi-même. Servie telle quelle par
-         *     `GET /api/players/{id}`, et étalée dans chaque membre d'une guilde.
+         *     `GET /api/players/{id}` dans PlayerDetail, et étalée dans chaque membre d'une guilde.
          *
          *     **Ce qui n'y figure pas est la moitié du contrat** : ni adresse, ni fuseau, ni
          *     rôle applicatif. Ce sont des données de compte, pas de profil public — et les
@@ -1374,6 +1374,75 @@ export interface components {
             /** @description Prix de revente publié, indépendant du prix d’achat. Les coffres ne se vendent pas. */
             sellPriceCoins: number;
         };
+        /** @description Objet possédé visible sur un profil autorisé, sans données monétaires. */
+        PublicInventoryLine: {
+            /**
+             * @description La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire.
+             * @example WORN_RUNNING_SHOES
+             */
+            key: string;
+            /**
+             * @description Ce que l'objet *est* — `EQUIPMENT` se porte, `CHEST` s'ouvre (#230). C'est sur ce champ que l'app décide « Équiper » ou « Ouvrir », jamais sur `slot === null`.
+             * @enum {string}
+             */
+            kind: "EQUIPMENT" | "CHEST";
+            /**
+             * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
+             * @example Chaussures de course usées
+             */
+            name: string;
+            /** @enum {string} */
+            rarity: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY";
+            /**
+             * @description `null` pour un coffre (#230) — il ne se porte pas, il s'ouvre.
+             * @enum {string|null}
+             */
+            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
+            /** @description Dans l'ordre du catalogue. */
+            modifiers: components["schemas"]["DroppedItemModifier"][];
+            /**
+             * Format: uri
+             * @description URL absolue de l'image livrée par le serveur.
+             * @example https://api.grrind.app/game-images/placeholder.png
+             */
+            imageUrl: string;
+            quantity: number;
+        };
+        PublicInventory: {
+            equipment: {
+                HEAD: components["schemas"]["PublicInventoryLine"] | null;
+                CHEST: components["schemas"]["PublicInventoryLine"] | null;
+                HANDS: components["schemas"]["PublicInventoryLine"] | null;
+                LEGS: components["schemas"]["PublicInventoryLine"] | null;
+                FEET: components["schemas"]["PublicInventoryLine"] | null;
+                ACCESSORY: components["schemas"]["PublicInventoryLine"] | null;
+                WEAPON: components["schemas"]["PublicInventoryLine"] | null;
+            };
+            items: components["schemas"]["PublicInventoryLine"][];
+        };
+        AttributeStatistic: {
+            /** @description Valeur de progression avant les modificateurs de combat; vitalité déjà bonifiée par l'énergie active. */
+            base: number;
+            /** @description Somme saturée des bonus des objets équipés; zéro pour la vitalité. Peut être négative. */
+            equipmentBonus: number;
+            /** @description Valeur résolue pour le combat après tous les modificateurs, saturation entière et plancher zéro. Ne pas recalculer depuis base et equipmentBonus : d'autres sources peuvent contribuer. */
+            effective: number;
+        };
+        PlayerStatistics: {
+            attributes: {
+                strength: components["schemas"]["AttributeStatistic"];
+                endurance: components["schemas"]["AttributeStatistic"];
+                mobility: components["schemas"]["AttributeStatistic"];
+                dexterity: components["schemas"]["AttributeStatistic"];
+                vitality: components["schemas"]["AttributeStatistic"];
+            };
+            fighter: components["schemas"]["BattleFighter"];
+        };
+        /** @description Profil autorisé complet. Les listes de guilde conservent Player pour éviter de charger tous les sacs. */
+        PlayerDetail: components["schemas"]["Player"] & {
+            inventory: components["schemas"]["PublicInventory"];
+            statistics: components["schemas"]["PlayerStatistics"];
+        };
         /**
          * @description `GET /api/inventory`, et ce que `PUT`/`DELETE /api/inventory/equipment/{slot}`
          *     rendent après une mutation, pour un seul aller-retour — le sac, la doublure
@@ -1388,6 +1457,7 @@ export interface components {
         Inventory: {
             /** @description Le solde de la bourse — cet écran lui appartient autant qu'au sac. */
             coins: number;
+            statistics: components["schemas"]["PlayerStatistics"];
             equipment: {
                 HEAD: components["schemas"]["InventoryLine"] | null;
                 CHEST: components["schemas"]["InventoryLine"] | null;
@@ -2862,13 +2932,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Le profil public. **Exactement le bloc servi dans la liste des membres** : mêmes ports, même ressource, donc un seul type à décoder côté client. */
+            /** @description Le profil public détaillé : identité et cercles de la liste des membres, inventaire public et statistiques résolues. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Player"];
+                    "application/json": components["schemas"]["PlayerDetail"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -3350,7 +3420,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Le sac, la doublure équipée par emplacement, et le solde de pièces. */
+            /** @description Le sac, la doublure équipée par emplacement, le solde de pièces et les statistiques résolues. */
             200: {
                 headers: {
                     [name: string]: unknown;

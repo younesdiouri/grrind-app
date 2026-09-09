@@ -628,7 +628,9 @@ function Fighter({
 
   return (
     <View style={styles.fighter}>
-      <AnimatedTextInput editable={false} style={styles.absorbed} animatedProps={powerProps} defaultValue="Puissance 100 %" />
+      {side === 'player' ? (
+        <AnimatedTextInput editable={false} style={styles.absorbed} animatedProps={powerProps} defaultValue="Puissance 100 %" />
+      ) : null}
       <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
         {name}
       </Text>
@@ -650,9 +652,11 @@ function Fighter({
           <Text style={styles.hpMax}>/ {ramps.maxHp}</Text>
         </View>
 
-        <Text style={styles.stats} numberOfLines={1}>
-          {stats.damage} dég. · {stats.mitigationPercent} % arm. · {stats.dodgePercent} % esq.
-        </Text>
+        {side === 'player' ? (
+          <Text style={styles.stats} numberOfLines={1}>
+            {stats.damage} dég. · {stats.mitigationPercent} % arm. · {stats.dodgePercent} % esq.
+          </Text>
+        ) : null}
       </View>
     </View>
   );

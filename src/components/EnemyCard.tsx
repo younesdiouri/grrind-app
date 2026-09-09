@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
+import { EnemyPortrait } from '@/components/EnemyPortrait';
 import { SystemFrame } from '@/components/SystemFrame';
 import { color, opacity, radius, space, type, typography } from '@/design/tokens';
 
@@ -59,38 +60,11 @@ export function EnemyCard({ enemy, locked = false, action }: EnemyCardProps) {
         </View>
       </View>
 
-      <View style={styles.stats}>
-        <Stat label="Vie" value={String(enemy.hp)} />
-        <Stat label="Dégâts" value={String(enemy.damage)} />
-        <Stat label="Armure" value={`${enemy.mitigationPercent} %`} />
-        <Stat label="Combo" value={`${enemy.comboPercent} %`} />
-        <Stat label="Esquive" value={`${enemy.dodgePercent} %`} />
-        <Stat label="Maintien" value={`${enemy.maintenancePercent} %`} />
-        <Stat label="Critique" value={`${enemy.criticalChancePercent} %`} />
-        <Stat label="Garde" value={`${enemy.guardPercent} %`} />
-        <Stat label="Résist. critique" value={`${enemy.criticalResistancePercent} %`} />
-        <Stat label="Célérité" value={`${enemy.cooldownReductionPercent} %`} />
-        <Stat label="Précision" value={`${enemy.precisionPercent} %`} />
-      </View>
+      <EnemyPortrait enemy={enemy} />
+      {locked ? <Text style={styles.levelLabel}>Disponible au niveau {enemy.minimumLevel}</Text> : null}
 
       {action}
     </SystemFrame>
-  );
-}
-
-/**
- * Une valeur de combat sous son nom.
- *
- * Les trois pourcentages sont **déjà résolus par le serveur** — jamais deux taux que le client
- * recomposerait, même règle que le `bonusPercent` des Risālāt. Il n'y a donc rien à calculer
- * ici, et rien à recalculer le jour où le back rééquilibre.
- */
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label.toUpperCase()}</Text>
-    </View>
   );
 }
 
@@ -116,8 +90,4 @@ const styles = StyleSheet.create({
     paddingVertical: space.xs,
   },
   levelLabel: { ...type.label, color: color.textMuted },
-  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
-  stat: { gap: space.xs },
-  statValue: { ...type.body, color: color.text },
-  statLabel: { ...type.label, color: color.textMuted },
 });

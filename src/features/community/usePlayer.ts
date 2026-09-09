@@ -5,12 +5,8 @@ import { queryOrFailure } from '@/api/queryOrFailure';
 import type { components } from '@/api/schema';
 import type { Failure } from '@/features/auth/problems';
 
-/**
- * `Player` — **exactement** le bloc étalé dans `GuildMember`. `GET /api/players/{id}` sert la
- * même ressource, décodée une seule fois : `GuildMemberRow` lit ses champs de progression
- * (`XpBar`, `TitleBadge`) via `guildProgress.ts`, et ce module ne réécrit rien à côté.
- */
-export type Player = components['schemas']['Player'];
+/** Le détail public enrichi, chargé seulement à l'ouverture du profil. */
+export type Player = components['schemas']['PlayerDetail'];
 
 export function playerQueryKey(id: string) {
   return ['players', id] as const;

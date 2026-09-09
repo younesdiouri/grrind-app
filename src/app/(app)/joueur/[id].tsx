@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
+import { CharacterInventory } from '@/components/CharacterInventory';
 import { Button } from '@/components/Button';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { TitleBadge } from '@/components/TitleBadge';
@@ -13,27 +14,7 @@ import { formatCalendarDate } from '@/features/community/format';
 import { usePlayer, type Player } from '@/features/community/usePlayer';
 import { VitalityNote } from '@/features/progression/PlayerHomeView';
 
-/**
- * Le profil d'un co-équipier — `GET /api/players/{id}`, poussé sur le Stack au-dessus des
- * onglets. Un détail, pas une destination : pas de présentation modale, pas d'en-tête à soi,
- * juste la pile qui s'ouvre d'une ligne de plus.
- *
- * ————— Ce qui n'y figure pas est la moitié du contrat ——————————————————————————————————
- *
- * `displayName`, `registeredAt`, `level`, `xpIntoLevel`, `xpToNextLevel`, `title`,
- * `attributes` — **rien d'autre**, et ce dernier champ est le seul à avoir bougé depuis
- * l'ouverture de ce fichier. Les cinq caractéristiques ont rejoint `Player` par décision de
- * produit (#176) : la répartition d'une pratique a été tranchée **sociale**, c'est une des
- * raisons d'avoir des guildes, donc elle ne fuit pas — elle s'affiche, comme sur son propre
- * profil (#70). Le reste n'a pas bougé : ni rôle dans la guilde (ce profil n'en connaît même
- * pas — c'est `GuildMember` qui l'étale, pas `Player`), ni séances, ni *prochain* titre
- * visé : ce dernier n'a de sens que sur son propre profil (`GET /api/me`), et personne n'a à
- * savoir ce qu'un co-équipier est en train de viser.
- *
- * `404 player-not-found` couvre indistinctement « inconnu » et « hors de la guilde » — et
- * jamais 403, les UUID v7 du contrat encodant leur instant de création. L'écran ne cherche
- * donc pas à distinguer les deux cas, il affiche le même refus dans les deux cas.
- */
+/** Profil public : cercles, équipement, sac et statistiques, protégé par le voter serveur. */
 export default function JoueurScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const player = usePlayer(id);
@@ -69,6 +50,7 @@ export default function JoueurScreen() {
           {player.data.title === null ? null : <TitleBadge name={player.data.title.name} />}
 
           <PlayerAttributes player={player.data} />
+          <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics} />
 
           <Text style={styles.body}>
             Membre GRRIND depuis le {formatCalendarDate(player.data.registeredAt)}.

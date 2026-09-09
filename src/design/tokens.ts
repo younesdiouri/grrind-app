@@ -593,6 +593,14 @@ export const attributeLabel: Record<AttributeState, string> = {
   vitality: 'Vitalité',
 };
 
+/** Inventaire : pictogrammes et rythme communs aux statistiques et au profil public. */
+export const characterSheet = {
+  iconSize: 24,
+  iconStroke: 1.8,
+  rowMinHeight: 58,
+  enemyPortraitHeight: 160,
+} as const;
+
 /**
  * Les couleurs des quatre caractéristiques qui reçoivent de l'XP — `Attribute`, jamais
  * `AttributeState` : Vitality n'a **pas** de couleur, et c'est délibéré (#69). Les quatre

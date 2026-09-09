@@ -65,7 +65,7 @@
     "e2e:ios:flow": "./scripts/e2e-ios-flow.sh",
     "e2e:ios:full": "./scripts/e2e-ios.sh",
     "test:e2e:ios": "./scripts/e2e-ios.sh",
-    "api:pull": "curl -sfL -o api/openapi.yaml https://raw.githubusercontent.com/younesdiouri/grrind-back/main/openapi.yaml",
+    "api:pull": "./scripts/api-pull.sh",
     "api:generate": "npx --yes openapi-typescript@7.13.0 api/openapi.yaml -o src/api/schema.d.ts",
     "api:check": "npm run api:pull && npm run api:generate && git diff --exit-code --stat api/openapi.yaml src/api/schema.d.ts"
   },

@@ -1,0 +1,33 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - combat
+---
+# Session du compte QA conservée après inventory-actions, contre le premier adversaire.
+- launchApp
+- tapOn:
+    id: "tab-combat"
+- scrollUntilVisible:
+    element:
+      text: "Combattre"
+    direction: UP
+- tapOn: "Combattre"
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 15000
+- takeScreenshot: final-enemy-presentation
+- runFlow:
+    when:
+      visible: ".*Toucher pour combattre.*"
+    commands:
+      - tapOn:
+          point: "50%,50%"
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Victoire.*"
+- takeScreenshot: final-enemy-battle-recap
+- tapOn:
+    point: "50%,50%"
+- assertVisible: "Adversaires"

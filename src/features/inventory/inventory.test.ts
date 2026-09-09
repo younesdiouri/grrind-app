@@ -31,6 +31,18 @@ function line(overrides: Partial<InventoryLine> = {}): InventoryLine {
 function inventory(overrides: Partial<Inventory> = {}): Inventory {
   return {
     coins: 0,
+    statistics: {
+      attributes: {
+        strength: { base: 0, equipmentBonus: 0, effective: 0 },
+        endurance: { base: 0, equipmentBonus: 0, effective: 0 },
+        mobility: { base: 0, equipmentBonus: 0, effective: 0 },
+        dexterity: { base: 0, equipmentBonus: 0, effective: 0 },
+        vitality: { base: 0, equipmentBonus: 0, effective: 0 },
+      },
+      fighter: { hp: 140, damage: 16, mitigationPercent: 0, comboPercent: 0, dodgePercent: 0,
+        maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0,
+        criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0 },
+    },
     equipment: {
       HEAD: null,
       CHEST: null,

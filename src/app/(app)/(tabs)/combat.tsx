@@ -5,7 +5,6 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { BattleRow } from '@/components/BattleRow';
 import { Button } from '@/components/Button';
 import { EnemyCard } from '@/components/EnemyCard';
-import { PlayerFighterCard } from '@/components/PlayerFighterCard';
 import { color, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { fight } from '@/features/combat/fight';
@@ -106,15 +105,11 @@ export default function CombatScreen() {
       )}
       ListHeaderComponent={
         <View style={styles.header}>
-          {/* Le combattant du joueur, en tête — avant même le titre de la section, puisqu'il
-              n'est pas un adversaire (#227). Requis au contrat : rien ne le montre tant que le
-              catalogue n'est pas prêt, pas d'état « en attente ». */}
-          {catalog.step === 'ready' && (
-            <PlayerFighterCard
-              player={catalog.player}
-              onOpenBag={() => router.push('/inventaire')}
-            />
-          )}
+          <Pressable testID="open-bag" accessibilityRole="button" style={styles.equipmentEntry}
+            accessibilityLabel="Ton équipement et tes statistiques"
+            onPress={() => router.navigate('/inventaire')}>
+            <Text style={styles.equipmentLink}>Ton équipement et tes statistiques ›</Text>
+          </Pressable>
 
           <Text style={styles.sectionTitle}>Adversaires</Text>
 
@@ -181,6 +176,8 @@ export default function CombatScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1, overflow: 'hidden' },
+  equipmentEntry: { paddingVertical: space.md },
+  equipmentLink: { ...type.label, color: color.accent },
   // La marge basse laisse une ligne entière remonter au-dessus de la barre d'onglets. Le
   // nouveau cadre augmente la hauteur du catalogue; sans cette réserve, XCTest voyait la
   // dernière ligne mais la jugeait partiellement occultée par le chrome.

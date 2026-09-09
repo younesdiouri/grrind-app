@@ -184,8 +184,8 @@ concerné.
 ## Ce que le smoke test traverse
 
 1. connexion avec le compte sans séance ;
-2. accueil vide, puis onglet Santé sur « Aucune activité trouvée » ;
-3. onglet Combat : le combattant du joueur en tête du catalogue, un combat gagné contre le
+2. accueil vide, puis Réglages › Santé sur « Aucune activité trouvée » ;
+3. onglet Combat : accès à l’équipement et portraits des adversaires, un combat gagné contre le
    seul adversaire accessible à un compte neuf (`SAND_JACKAL`, victoire garantie côté back),
    le bilan avec son butin, l'historique avec le gain ;
 4. onglet Réglages : le bloc Synchronisation (#82, #140), puis déconnexion ;
@@ -223,7 +223,7 @@ réponse. Quatre pièges connus, tous déjà payés :
 
 - **Le texte se compare en entier.** `"Accueil"` ne trouve pas l'onglet dont iOS a composé le
   libellé en « Accueil, tab, 1 of 5 ». Les onglets se visent donc par `id` (`tab-accueil`,
-  `tab-sante`, `tab-combat`, `tab-guilde`, `tab-reglages`), posés par `tabBarButtonTestID`.
+  `tab-inventaire`, `tab-combat`, `tab-guilde`, `tab-reglages`), posés par `tabBarButtonTestID`.
   Ailleurs, un `.*` explicite là où le libellé porte plus que ce qu'on cherche.
 - **L'écran de récompense, et l'écran de combat, sont chacun un seul élément d'accessibilité.**
   Les deux enveloppent tout leur contenu dans un `Pressable` racine, qui agrège ses enfants en
@@ -264,3 +264,18 @@ exécution-là qui fait foi. Le E2E iOS ne fait pas exception, et il aurait de t
 pires raisons d'y aller — il lui faut Xcode, un Simulator, et un `grrind-back` joignable, c'est-
 à-dire trois choses qu'un runner jetable devrait reconstruire à chaque fois pour rejouer, plus
 lentement, ce qu'on vient de lancer en local.
+
+## Inventaire et profils (#168)
+
+Le smoke ouvre le nouvel onglet Inventaire depuis Combat, traverse boutique et bourse,
+puis ses vues Équipement, Statistiques et Sac. Les captures `12-inventory-attributes`,
+`13-inventory-combat-stats` et `14-inventory-bag` montrent la fiche commune.
+Le parcours ciblé `.maestro/inventory-profile.yaml` vérifie un compte équipé déterministe
+et le profil d’un autre membre de guilde, avec cercles et lecture seule.
+Les comptes et preuves JSON restent uniquement dans `artifacts/e2e/`.
+
+Après `inventory-profile.yaml`, le scénario `.maestro/inventory-actions.yaml` confirme
+l’annulation puis la validation d’une vente et l’ouverture d’un coffre depuis la vue Sac :
+`E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/inventory-actions.yaml`.
+Ici le drapeau conserve seulement la session QA ; les mutations de l’app utilisent toujours
+le backend réel. Il ne remplace pas le smoke authentifié.

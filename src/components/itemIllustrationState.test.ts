@@ -6,6 +6,18 @@ import { itemIllustrationPresentation } from './itemIllustrationState.ts';
 describe('itemIllustrationPresentation', () => {
   const imageUrl = 'https://api.grrind.app/game-images/items/worn-running-shoes.png';
 
+  it('garde le pictogramme pour le placeholder générique explicite du serveur', () => {
+    const placeholder = 'https://api.grrind.app/game-images/placeholder.png';
+    assert.deepEqual(itemIllustrationPresentation({ imageUrl: placeholder, loadedImageUrl: placeholder, failedImageUrl: null }),
+      { source: null, imageVisible: false, placeholderVisible: true });
+  });
+
+  it('ne confond pas une vraie illustration nommée placeholder avec le chemin générique', () => {
+    const artwork = 'https://api.grrind.app/game-images/items/placeholder.png';
+    assert.deepEqual(itemIllustrationPresentation({ imageUrl: artwork, loadedImageUrl: artwork, failedImageUrl: null }),
+      { source: artwork, imageVisible: true, placeholderVisible: false });
+  });
+
   it('charge l’URL distante derrière le placeholder', () => {
     assert.deepEqual(
       itemIllustrationPresentation({ imageUrl, loadedImageUrl: null, failedImageUrl: null }),

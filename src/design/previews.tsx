@@ -21,7 +21,7 @@ import { InviteCodeBlock } from '@/components/InviteCodeBlock';
 import { ItemCard } from '@/components/ItemCard';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
-import { PlayerFighterCard } from '@/components/PlayerFighterCard';
+import { CharacterStatistics } from '@/components/CharacterStatistics';
 import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
@@ -775,28 +775,21 @@ export const PREVIEWS: Preview[] = [
   },
   {
     slug: 'carte-combattant-joueur',
-    name: 'Carte du combattant',
+    name: 'Statistiques du personnage',
     group: 'Composants',
     element: (
-      <>
-        {/* Même unité, même forme que `EnemyCard` (#227) : c'est ce qui rend la comparaison
-            possible d'un coup d'œil en tête du catalogue. */}
-        <Specimen label="En tête du catalogue">
-          <PlayerFighterCard player={playerFighter({})} />
-        </Specimen>
-        {/* Équipement porté : les trois taux montent, sans que rien ici ne les recompose — ils
-            arrivent déjà résolus par le serveur. */}
-        <Specimen label="Équipé">
-          <PlayerFighterCard
-            player={playerFighter({ hp: 210, damage: 22, mitigationPercent: 12, comboPercent: 6, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 4 })}
-          />
-        </Specimen>
-        {/* Avec l'accès au sac (#30) : c'est ici qu'on change d'équipement, juste avant de
-            s'engager, en regardant les chiffres qu'il va déplacer. */}
-        <Specimen label="Avec l'accès au sac">
-          <PlayerFighterCard player={playerFighter({})} onOpenBag={() => undefined} />
-        </Specimen>
-      </>
+      <Specimen label="Caractéristiques effectives et bonus d’équipement">
+        <CharacterStatistics statistics={{
+          attributes: {
+            strength: { base: 120, equipmentBonus: 15, effective: 135 },
+            endurance: { base: 90, equipmentBonus: 0, effective: 90 },
+            mobility: { base: 70, equipmentBonus: 8, effective: 78 },
+            dexterity: { base: 55, equipmentBonus: 4, effective: 59 },
+            vitality: { base: 160, equipmentBonus: 10, effective: 170 },
+          },
+          fighter: playerFighter({ hp: 210, damage: 22, mitigationPercent: 12, dodgePercent: 4 }),
+        }} />
+      </Specimen>
     ),
   },
   {
