@@ -114,7 +114,18 @@ export function createAuthMiddleware(deps: AuthMiddlewareDeps): Middleware {
       // Le rejeu part par `options.fetch`, **hors du middleware**. C'est ce qui borne la
       // boucle à une tentative par construction, plutôt que par un drapeau qu'on pourrait
       // oublier de poser : un 401 sur le rejeu n'a aucun chemin pour relancer un refresh.
-      return await options.fetch(attempt.replay);
+      const replayed: Pick<Response, 'status' | 'statusText' | 'headers' | 'arrayBuffer'> = await options.fetch(attempt.replay);
+      if (replayed instanceof Response) return replayed;
+
+      // SDK 57 utilise FetchResponse sans remplacer le constructeur Response de RN.
+      // openapi-fetch exige ce constructeur pour une réponse rendue par un middleware.
+      const bytes = attempt.replay.method === 'HEAD' || [204, 205, 304].includes(replayed.status)
+        ? null : await replayed.arrayBuffer();
+      const contentType = replayed.headers.get('Content-Type') ?? '';
+      // La Response de RN lit sinon les octets JSON comme du latin-1.
+      const body = bytes && /json|^text\//i.test(contentType) ? new TextDecoder().decode(bytes) : bytes;
+      return new Response(body, { status: replayed.status, statusText: replayed.statusText,
+        headers: replayed.headers });
     },
 
     onError({ id }) {

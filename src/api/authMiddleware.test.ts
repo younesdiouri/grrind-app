@@ -283,3 +283,38 @@ describe("le middleware d'authentification", () => {
     assert.equal(refreshed, 0);
   });
 });
+
+
+it('rend lisible le rejeu Expo dont la réponse native ne dérive pas de Response', async () => {
+  let calls = 0;
+  const client = createClient<paths>({ baseUrl: BASE_URL, fetch: async () => {
+    if (calls++ === 0) return new Response('{}', { status: 401 });
+    const native = new Response(JSON.stringify({ id: 'native-replay', displayName: 'Équipière' }), {
+      status: 200, headers: { 'Content-Type': 'application/json', 'X-Replayed': 'yes' },
+    });
+    // SDK 57 remplace fetch, mais conserve le constructeur Response de React Native.
+    return { status: native.status, statusText: native.statusText, headers: native.headers,
+      arrayBuffer: () => native.arrayBuffer() } as Response;
+  } });
+  client.use(createAuthMiddleware({ getAccessToken: () => 'stale', refresh: async () => 'fresh' }));
+  const result = await client.GET('/api/me');
+  assert.equal(calls, 2);
+  assert.equal(result.data?.id, 'native-replay');
+  assert.equal(result.data?.displayName, 'Équipière');
+  assert.equal(result.response.headers.get('X-Replayed'), 'yes');
+});
+
+
+it('conserve un rejeu natif sans contenu sans fabriquer de corps sur 204', async () => {
+  let calls = 0;
+  const client = createClient<paths>({ baseUrl: BASE_URL, fetch: async () => {
+    if (calls++ === 0) return new Response('{}', { status: 401 });
+    return { status: 204, statusText: 'No Content', headers: new Headers(),
+      arrayBuffer: () => { throw new Error('Le corps ne doit pas être lu'); } } as unknown as Response;
+  } });
+  client.use(createAuthMiddleware({ getAccessToken: () => 'stale', refresh: async () => 'fresh' }));
+  const result = await client.GET('/api/me');
+  assert.equal(result.response.status, 204);
+  assert.equal(result.data, undefined);
+  assert.equal(calls, 2);
+});
