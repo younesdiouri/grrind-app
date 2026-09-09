@@ -33,6 +33,10 @@ test('renouvelle avant expiration, ferme au repos et ignore un ancien abonnement
   realtime.dispose();
   await Promise.resolve();
   assert.equal(closes, 1);
+  const requestsAtDisposal = tokens;
+  realtime.setActive(true);
+  await Promise.resolve();
+  assert.equal(tokens, requestsAtDisposal);
 });
 
 test('Retry-After retarde aussi le retour actif sans bloquer le rattrapage HTTP', async () => {

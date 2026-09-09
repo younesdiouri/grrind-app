@@ -3,16 +3,12 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
 import type { PreparedPhoto } from '@/features/community/chatState';
+import { chatPhotoDirectory, removeChatPhoto } from '@/features/community/chatFiles';
+
+export { removeChatPhoto } from '@/features/community/chatFiles';
 
 const MAX_EDGE = 1600;
 const MAX_BYTES = 5 * 1024 * 1024;
-
-export function removeChatPhoto(photo: PreparedPhoto) {
-  try {
-    const file = new File(photo.uri);
-    if (file.exists) file.delete();
-  } catch { /* Le cache peut déjà avoir été évincé par le système. */ }
-}
 
 /** Le codec natif applique l'orientation et produit un JPEG unique, conservé pour le retry. */
 export async function pickChatPhoto(): Promise<PreparedPhoto | null> {
@@ -30,6 +26,9 @@ export async function pickChatPhoto(): Promise<PreparedPhoto | null> {
       output = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: 0.8 });
     } finally { rendered.release(); }
     if (new File(output.uri).size > MAX_BYTES) throw new Error('La photo reste trop volumineuse. Choisis une autre image.');
+    const prepared = new File(output.uri);
+    await prepared.move(chatPhotoDirectory());
+    output = { uri: prepared.uri };
     return output;
   } catch (error) {
     if (output) removeChatPhoto(output);

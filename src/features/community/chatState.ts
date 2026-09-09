@@ -10,6 +10,11 @@ export type ChatDraft = { clientId: string; text: string; photo: PreparedPhoto |
 export type ChatError = { failure: Failure; retryAt: number };
 export type ChatResult<T> = { ok: true; data: T } | { ok: false; error: ChatError };
 
+export function chatAuthorLabel(authorId: string, playerId: string, members: { id: string; displayName: string }[]): string {
+  if (authorId === playerId) return 'Vous';
+  return members.find((member) => member.id === authorId)?.displayName ?? 'Ancien membre';
+}
+
 export function mergeMessages(current: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
   const messages = new Map(current.map((message) => [message.id, message]));
   for (const message of incoming) messages.set(message.id, message);

@@ -17,6 +17,7 @@ type RealtimeDeps = {
 export function createChatRealtime(deps: RealtimeDeps) {
   let generation = 0;
   let active = false;
+  let disposed = false;
   let retryAt = 0;
   let disconnect = () => {};
   const close = () => { disconnect(); disconnect = () => {}; };
@@ -41,6 +42,7 @@ export function createChatRealtime(deps: RealtimeDeps) {
     if (!active || current !== generation) return;
     if (!response.ok) {
       deps.onError(response.error);
+      if (!active || current !== generation) return;
       retryAt = Math.max(response.error.retryAt, deps.now() + CHAT_POLL_MS);
       cancelRenew = deps.schedule(() => void open(), retryAt - deps.now());
       return;
@@ -62,12 +64,12 @@ export function createChatRealtime(deps: RealtimeDeps) {
   };
   return {
     setActive(next: boolean) {
-      if (active === next) return;
+      if (disposed || active === next) return;
       active = next;
       if (active) { void open(); void deps.catchUp(); poll(); }
       else { generation++; close(); cancelRenew(); cancelPoll(); deps.onStatus(false); }
     },
-    dispose() { active = false; generation++; close(); cancelRenew(); cancelPoll(); },
+    dispose() { disposed = true; active = false; generation++; close(); cancelRenew(); cancelPoll(); },
   };
 }
 

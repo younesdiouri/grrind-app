@@ -71,3 +71,56 @@ test('un refus de guilde purge le brouillon et ferme son périmètre', async () 
   assert.deepEqual(removed, ['private.jpg']);
   assert.equal(controller.getState().draft, null);
 });
+
+test('un nouvel envoi ne contourne pas Retry-After et remplace la photo précédente', async () => {
+  let now = 0;
+  let sends = 0;
+  const removed: string[] = [];
+  const controller = createChatController(deps({ now: () => now,
+    send: async () => { sends++; return { ok: false, error: { failure: { kind: 'offline' }, retryAt: 60_000 } }; },
+    removePhoto: (photo) => removed.push(photo.uri),
+  }));
+  controller.setDraft({ clientId: 'first', text: 'a', photo: { uri: 'first.jpg' } });
+  await controller.send();
+  controller.setDraft({ clientId: 'second', text: 'b', photo: null });
+  await controller.send();
+  assert.equal(sends, 1);
+  assert.deepEqual(removed, ['first.jpg']);
+  now = 60_000;
+  await controller.send();
+  assert.equal(sends, 2);
+});
+
+test('un envoi qui devance le rattrapage ne saute pas les messages intermédiaires', async () => {
+  const queries: unknown[] = [];
+  const controller = createChatController(deps({
+    history: async (query) => {
+      queries.push(query);
+      return ok({ messages: query.after ? [message('2'), message('3')] : [message('1')], nextCursor: null });
+    },
+    send: async () => ok(message('3')),
+  }));
+  await controller.load();
+  controller.setDraft({ clientId: '3', text: '3', photo: null });
+  await controller.send();
+  await controller.catchUp();
+  assert.deepEqual(controller.getState().messages.map((m) => m.id), ['1', '2', '3']);
+  assert.deepEqual(queries[1], { after: '1', limit: 50 });
+});
+
+test('une coupure au milieu du rattrapage reprend au dernier curseur validé', async () => {
+  let failed = false;
+  const queries: (string | null | undefined)[] = [];
+  const controller = createChatController(deps({ history: async (query) => {
+    queries.push(query.after);
+    if (!query.after) return ok({ messages: [message('1')] });
+    if (query.after === '1') return ok({ messages: [message('2')], nextCursor: '2' });
+    if (!failed) { failed = true; return { ok: false, error: { failure: { kind: 'offline' }, retryAt: 0 } }; }
+    return ok({ messages: [message('3')], nextCursor: null });
+  } }));
+  await controller.catchUp();
+  await controller.catchUp();
+  assert.deepEqual(queries, [undefined, '1', '2', '2']);
+  assert.deepEqual(controller.getState().messages.map((m) => m.id), ['1', '2', '3']);
+  assert.equal(controller.getState().error, null);
+});

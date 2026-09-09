@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { mergeMessages, retryAfterMs, type ChatMessage } from './chatState.ts';
+import { chatAuthorLabel, mergeMessages, retryAfterMs, type ChatMessage } from './chatState.ts';
 
 const message = (cursor: string): ChatMessage => ({
   id: cursor, cursor, clientId: cursor, authorId: 'author', text: cursor,
@@ -19,4 +19,11 @@ test('respecte Retry-After en secondes et en date, sans délai négatif', () => 
   assert.equal(retryAfterMs('Thu, 01 Jan 1970 00:01:00 GMT', 1000), 59_000);
   assert.equal(retryAfterMs('-1', 1000), 0);
   assert.equal(retryAfterMs(null, 1000), 0);
+});
+
+test('nomme soi, les membres actuels et les anciens sans charger de profil', () => {
+  const members = [{ id: 'member', displayName: 'Sam' }];
+  assert.equal(chatAuthorLabel('self', 'self', members), 'Vous');
+  assert.equal(chatAuthorLabel('member', 'self', members), 'Sam');
+  assert.equal(chatAuthorLabel('gone', 'self', members), 'Ancien membre');
 });

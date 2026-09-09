@@ -29,6 +29,7 @@ export function createChatController(deps: ChatDeps) {
   let state = empty();
   let disposed = false;
   let after = '0';
+  let sendRetryAt = 0;
   let catchUpPromise: Promise<void> | null = null;
   let catchUpAgain = false;
   const listeners = new Set<() => void>();
@@ -115,11 +116,11 @@ export function createChatController(deps: ChatDeps) {
         return;
       }
       if (state.draft?.photo && state.draft.photo !== draft?.photo) deps.removePhoto(state.draft.photo);
-      publish({ draft, sendError: null });
+      publish({ draft, sendError: sendRetryAt > deps.now() ? state.sendError : null });
     },
     async send() {
       const draft = state.draft;
-      if (disposed || !draft || state.sending || (state.sendError?.retryAt ?? 0) > deps.now()) return;
+      if (disposed || !draft || state.sending || sendRetryAt > deps.now()) return;
       publish({ sending: true, sendError: null });
       const result = await deps.send(draft);
       if (disposed) return;
@@ -128,7 +129,7 @@ export function createChatController(deps: ChatDeps) {
         if (draft.photo) deps.removePhoto(draft.photo);
         publish({ draft: null });
         void catchUp();
-      } else acceptError(result.error, true);
+      } else { sendRetryAt = result.error.retryAt; acceptError(result.error, true); }
       publish({ sending: false });
     },
     acceptError,
