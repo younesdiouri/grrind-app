@@ -1,0 +1,14 @@
+appId: app.grrind.e2e
+---
+# Continuation du parcours de vente, avec ses deux crédits de 15 pièces.
+- scrollUntilVisible:
+    element:
+      text: "BOURSE"
+    direction: UP
+- tapOn: "BOURSE"
+- extendedWaitUntil:
+    visible: "SOLDE"
+    timeout: 15000
+- assertVisible: ".*Vente.*"
+- assertVisible: ".*15 pièces.*"
+- takeScreenshot: sale-coin-ledger

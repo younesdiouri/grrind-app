@@ -470,6 +470,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/inventory/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_rewards_inventory_sale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/shop": {
         parameters: {
             query?: never;
@@ -611,7 +627,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/item-not-sellable" | "https://grrind.app/problems/item-equipped" | "https://grrind.app/problems/sale-price-changed" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -1344,17 +1360,19 @@ export interface components {
             imageUrl: string;
         };
         /**
-         * @description Un objet possédé (#30) — la même forme que `DroppedItem`, une seule clé de plus :
-         *     `quantity`. Ce n'est pas une troisième forme d'objet, c'est la même, augmentée d'un
+         * @description Un objet possédé (#30, #271) — `DroppedItem` complété par `quantity` et
+         *     `sellPriceCoins`. Ce n'est pas une troisième forme d'objet, c'est la même, augmentée d'un
          *     fait qu'un tirage n'a jamais eu à porter — un objet qui tombe en crée ou en
          *     incrémente une, il n'en a jamais une à afficher lui-même.
          */
         InventoryLine: components["schemas"]["DroppedItem"] & {
             /**
-             * @description Le nombre d'exemplaires possédés — pas de vente ni de rebut en v1, il ne redescend jamais.
+             * @description Le nombre d’exemplaires encore possédés.
              * @example 1
              */
             quantity: number;
+            /** @description Prix de revente publié, indépendant du prix d’achat. Les coffres ne se vendent pas. */
+            sellPriceCoins: number;
         };
         /**
          * @description `GET /api/inventory`, et ce que `PUT`/`DELETE /api/inventory/equipment/{slot}`
@@ -1384,7 +1402,7 @@ export interface components {
         /**
          * @description Un objet de l'étal (#229) — la même forme que `DroppedItem`, avec ce qu'un joueur
          *     précis en sait en plus. `owned` s'appuie sur la même règle que l'achat lui-même :
-         *     sans revente ni consommable, un objet déjà possédé ne redevient jamais achetable.
+         *     un équipement redevient achetable après la vente de son dernier exemplaire.
          */
         ShopListing: components["schemas"]["DroppedItem"] & {
             /** @description Le solde actuel du joueur couvre `priceCoins`. */
@@ -1410,6 +1428,15 @@ export interface components {
             /** @description Le solde de la bourse — cet écran lui appartient autant qu'au sac. */
             coins: number;
             items: components["schemas"]["ShopListing"][];
+        };
+        Sale: {
+            itemKey: string;
+            /** @description Quantité restante après la vente. */
+            quantity: number;
+            /** @description Prix effectivement crédité depuis le snapshot publié. */
+            coins: number;
+            coinsBefore: number;
+            coinsAfter: number;
         };
         /**
          * @description `POST /api/shop/purchases` : l'objet acheté, ce qu'il a coûté, et le solde de
@@ -1452,12 +1479,12 @@ export interface components {
             id: string;
             /**
              * Format: uuid
-             * @description Ce qui a produit l'écriture — l'identifiant du workout, du combat, ou de la ligne d'inventaire achetée pour un `PURCHASE`.
+             * @description Ce qui a produit l'écriture — l'identifiant du workout, du combat, de la ligne d’inventaire achetée pour un `PURCHASE`, ou un UUID propre à chaque `SALE`.
              */
             sourceId: string;
             /** @enum {string} */
-            reason: "WORKOUT_DROP" | "BATTLE_DROP" | "PURCHASE";
-            /** @description Signé — négatif pour `PURCHASE` (#229), positif pour les deux autres raisons. Un solde ne passe jamais sous zéro, quel que soit le signe de l'écriture qui le tenterait. */
+            reason: "WORKOUT_DROP" | "BATTLE_DROP" | "PURCHASE" | "CHEST" | "SALE";
+            /** @description Signé — négatif pour `PURCHASE` (#229), positif pour les autres raisons. Un solde ne passe jamais sous zéro, quel que soit le signe de l'écriture qui le tenterait. */
             amount: number;
             /**
              * Format: date-time
@@ -2218,6 +2245,10 @@ export interface components {
             cursor: string | null;
             /** @default 20 */
             limit: number;
+        };
+        SellItemRequest: {
+            itemKey: string;
+            expectedSellPriceCoins: number;
         };
         PurchaseItemRequest: {
             /** @default  */
@@ -3464,6 +3495,50 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    post_rewards_inventory_sale: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SellItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Un exemplaire vendu au prix publié, quantité restante et soldes sous verrou. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Sale"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+            /** @description Validation, item-not-owned, item-not-sellable, item-equipped ou sale-price-changed. Recharger l’inventaire et confirmer le nouveau prix après sale-price-changed. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
         };
     };
     get_rewards_shop_show: {

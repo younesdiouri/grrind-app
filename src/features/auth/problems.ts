@@ -304,6 +304,15 @@ function messageForProblem(problem: ProblemDetails): string {
     case 'https://grrind.app/problems/item-not-a-chest':
       return "Cet objet n'est pas un coffre à ouvrir.";
 
+    case 'https://grrind.app/problems/item-not-sellable':
+      return 'Cet objet ne peut pas être vendu.';
+
+    case 'https://grrind.app/problems/item-equipped':
+      return 'Retire cet objet avant de vendre son dernier exemplaire.';
+
+    case 'https://grrind.app/problems/sale-price-changed':
+      return 'Le prix de revente a changé. Vérifie le nouveau prix et confirme à nouveau.';
+
     default:
       return unnamedProblem(problem.type);
   }

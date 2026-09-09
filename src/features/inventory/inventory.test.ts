@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { inventoryAfterSale } from './saleInventory.ts';
 import { describe, it } from 'node:test';
 
 import {
@@ -20,6 +21,7 @@ function line(overrides: Partial<InventoryLine> = {}): InventoryLine {
     slot: 'FEET',
     modifiers: [],
     priceCoins: 30,
+    sellPriceCoins: 15,
     imageUrl: 'https://api.grrind.app/game-images/items/worn-running-shoes.png',
     quantity: 1,
     ...overrides,
@@ -97,5 +99,29 @@ describe("la doublure et le sac, tels que l'écran les lit (#30)", () => {
     // Trois paires de bottes sont trois objets dans un sac, pas une ligne.
     assert.equal(itemCount(bag), 5);
     assert.equal(itemCount(inventory()), 0);
+  });
+});
+
+
+describe('le verdict de vente dans le sac', () => {
+  it('retire la dernière unité et affiche le solde serveur', () => {
+    const shoes = line();
+    const after = inventoryAfterSale(inventory({ items: [shoes] }), {
+      itemKey: shoes.key, quantity: 0, coins: 15, coinsBefore: 0, coinsAfter: 215,
+    });
+    assert.deepEqual(after.items, []);
+    assert.equal(after.coins, 215);
+  });
+
+  it('conserve le doublon équipé avec sa quantité serveur', () => {
+    const shoes = line({ quantity: 3 });
+    const before = inventory({ items: [shoes], equipment: { ...inventory().equipment, FEET: shoes } });
+    const after = inventoryAfterSale(before, {
+      itemKey: shoes.key, quantity: 2, coins: 0, coinsBefore: 20, coinsAfter: 20,
+    });
+    assert.equal(after.items[0].quantity, 2);
+    assert.equal(after.equipment.FEET?.quantity, 2);
+    assert.equal(after.equipment.FEET?.key, shoes.key);
+    assert.equal(before.items[0].quantity, 3);
   });
 });
