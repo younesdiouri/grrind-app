@@ -1,0 +1,168 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - inventory
+---
+# Deux comptes jetables de la même guilde, équipés de gantelets, chaussures et jambes.
+# Les identifiants MAESTRO_INVENTORY_EMAIL/PASSWORD restent hors Git.
+- launchApp
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - tapOn: "Close"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${MAESTRO_INVENTORY_EMAIL}
+      PASSWORD: ${MAESTRO_INVENTORY_PASSWORD}
+- extendedWaitUntil:
+    visible: "NIVEAU|.*Toucher pour continuer.*"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: ".*Toucher pour continuer.*"
+    commands:
+      - tapOn:
+          point: "50%,50%"
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 15000
+- tapOn:
+    id: "tab-inventaire"
+- extendedWaitUntil:
+    visible:
+      id: "character-tab-statistics"
+    timeout: 15000
+- takeScreenshot: inventory-equipped-board
+- tapOn:
+    id: "character-tab-statistics"
+- assertVisible: '.*Force.*\+350 équipement.*'
+- takeScreenshot: inventory-equipped-statistics
+- tapOn:
+    id: "character-tab-equipment"
+- scrollUntilVisible:
+    element:
+      text: ".*Mains.*"
+    direction: DOWN
+- tapOn: ".*Mains.*"
+- scrollUntilVisible:
+    element:
+      text: "Retirer"
+    direction: DOWN
+- tapOn: "Retirer"
+- extendedWaitUntil:
+    visible: ".*Équiper — Gantelets de fer.*"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "character-tab-statistics"
+    direction: UP
+- tapOn:
+    id: "character-tab-statistics"
+- assertVisible: '.*Force.*\+0 équipement.*'
+- takeScreenshot: inventory-unequipped-statistics
+- tapOn:
+    id: "character-tab-equipment"
+- scrollUntilVisible:
+    element:
+      text: ".*Équiper — Gantelets de fer.*"
+    direction: DOWN
+- tapOn: ".*Équiper — Gantelets de fer.*"
+- extendedWaitUntil:
+    visible: "ÉQUIPÉ"
+    timeout: 15000
+- takeScreenshot: inventory-reequipped-item
+- scrollUntilVisible:
+    element:
+      id: "character-tab-statistics"
+    direction: UP
+- tapOn:
+    id: "character-tab-statistics"
+- assertVisible: '.*Force.*\+350 équipement.*'
+- takeScreenshot: inventory-reequipped-statistics
+- tapOn:
+    id: "tab-guilde"
+- scrollUntilVisible:
+    element:
+      text: ".*QA Equipements.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: ".*QA Equipements.*"
+- extendedWaitUntil:
+    visible: "QA Equipements"
+    timeout: 15000
+- takeScreenshot: player-circles
+- scrollUntilVisible:
+    element:
+      id: "character-tab-statistics"
+    direction: DOWN
+- tapOn:
+    id: "character-tab-statistics"
+- scrollUntilVisible:
+    element:
+      id: "attribute-dexterity"
+    direction: DOWN
+- takeScreenshot: player-statistics
+- assertNotVisible: "BOURSE"
+- scrollUntilVisible:
+    element:
+      id: "stat-dodgePercent"
+    direction: DOWN
+- takeScreenshot: player-combat-statistics
+- scrollUntilVisible:
+    element:
+      id: "stat-precisionPercent"
+    direction: DOWN
+- takeScreenshot: player-combat-statistics-end
+- scrollUntilVisible:
+    element:
+      id: "character-tab-equipment"
+    direction: UP
+- tapOn:
+    id: "character-tab-equipment"
+- scrollUntilVisible:
+    element:
+      text: "Gantelets de fer"
+    direction: DOWN
+- takeScreenshot: player-equipment-readonly
+- assertNotVisible: "Retirer"
+- assertNotVisible: "Vendre.*"
+- scrollUntilVisible:
+    element:
+      id: "character-tab-bag"
+    direction: UP
+- tapOn:
+    id: "character-tab-bag"
+- scrollUntilVisible:
+    element:
+      text: "Gantelets de fer"
+    direction: DOWN
+- takeScreenshot: player-bag-readonly
+- assertNotVisible: "Valeur"
+- assertNotVisible: "Vendre.*"
+- assertNotVisible: "Ouvrir"
+
+- swipe:
+    start: "2%, 55%"
+    end: "95%, 55%"
+- tapOn:
+    id: "tab-combat"
+- extendedWaitUntil:
+    visible: "Adversaires"
+    timeout: 15000
+- takeScreenshot: final-combat-catalog
+- tapOn:
+    id: "open-bag"
+- assertVisible:
+    id: "character-tab-equipment"
+- tapOn:
+    id: "tab-reglages"
+- assertVisible: "Autorisations Santé"
+- takeScreenshot: final-settings-health
+- tapOn: "Ouvrir Santé"
+- extendedWaitUntil:
+    visible: "Santé"
+    timeout: 15000
+- takeScreenshot: final-health

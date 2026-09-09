@@ -75,6 +75,7 @@ export default function AppLayout() {
       {/* La barre d'onglets porte désormais ses propres en-têtes (#41) : sans
           `headerShown: false` ici, celui de la pile se superposerait à celui des onglets. */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="sante" options={{ title: 'Santé' }} />
       <Stack.Screen name="reward" options={{ headerShown: false, presentation: 'modal' }} />
       {/* Exactement la récompense, et pour les mêmes deux raisons. L'en-tête d'abord : l'écran
           de combat est plein cadre, et un « battle » surmonté d'un bouton retour abîmerait la

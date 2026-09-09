@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -7,6 +7,7 @@ import { Button } from '@/components/Button';
 import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { CoinAmount } from '@/components/CoinAmount';
+import { CharacterInventory } from '@/components/CharacterInventory';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
 import { SystemFrame } from '@/components/SystemFrame';
@@ -214,7 +215,6 @@ export default function InventoryScreen() {
     <View style={styles.shell}>
       <AmbientBackdrop />
       <ScrollView style={styles.contentLayer} contentContainerStyle={styles.screen}>
-        <Stack.Screen options={{ title: 'Sac' }} />
 
       {inventory.isPending ? (
         <View style={styles.loading}>
@@ -271,17 +271,8 @@ export default function InventoryScreen() {
             </SystemFrame>
           </Pressable>
 
-          <View style={styles.sectionHead}>
-            <View style={styles.sectionCopy}>
-              <Text style={styles.section}>ÉQUIPEMENT</Text>
-              <Text style={styles.name}>Ta doublure</Text>
-            </View>
-            <Text style={styles.hint}>Choisis une zone</Text>
-          </View>
-
-          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
-
-          <SystemFrame contentStyle={styles.drawer}>
+          {refusal !== null || !saleReady || unresolvedSale !== null || sold !== null ? (
+            <SystemFrame contentStyle={styles.drawer}>
             {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
             {saleReady ? null : (
               <Button label="Réessayer" variant="quiet" onPress={() => {
@@ -309,6 +300,22 @@ export default function InventoryScreen() {
                 Exemplaire vendu · {sold.coins} pièces reçues
               </Text>
             )}
+            </SystemFrame>
+          ) : null}
+
+          <CharacterInventory inventory={data} statistics={data.statistics} equipment={
+            <>
+          <View style={styles.sectionHead}>
+            <View style={styles.sectionCopy}>
+              <Text style={styles.section}>ÉQUIPEMENT</Text>
+              <Text style={styles.name}>Ta doublure</Text>
+            </View>
+            <Text style={styles.hint}>Choisis une zone</Text>
+          </View>
+
+          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
+
+          <SystemFrame contentStyle={styles.drawer}>
             <View style={styles.drawerHead}>
               <View style={styles.sectionCopy}>
                 <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
@@ -381,6 +388,23 @@ export default function InventoryScreen() {
             ) : null}
           </SystemFrame>
 
+            </>
+          } bag={
+            <>
+              {data.items.length === 0 ? <Text style={styles.detail}>Le sac est vide.</Text> : null}
+              {data.items.filter(isEquippable).map((line) => (
+                <View key={line.key} style={styles.current}>
+                  <ItemCard item={line} quantity={line.quantity} equipped={isEquipped(data, line.key)} />
+                  {isEquipped(data, line.key) ? null : (
+                    <Button label={`Équiper — ${line.name}`} disabled={blocked}
+                      onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))} />
+                  )}
+                  {!isEquipped(data, line.key) || line.quantity > 1 ? (
+                    <Button label={`Vendre · ${line.sellPriceCoins} pièces`} variant="quiet" disabled={blocked}
+                      onPress={() => confirmSale(line)} />
+                  ) : null}
+                </View>
+              ))}
           {data.items.filter((line) => line.kind === 'CHEST').length > 0 ? (
             <SystemFrame contentStyle={styles.drawer}>
               <View style={styles.drawerHead}>
@@ -425,6 +449,8 @@ export default function InventoryScreen() {
               </SystemFrame>
             </View>
           ) : null}
+            </>
+          } />
         </>
       )}
       </ScrollView>

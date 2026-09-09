@@ -22,7 +22,7 @@ type ItemCardProps = {
    * `quantity`, portée par la prop du même nom plutôt que lue ici : une carte qui lirait
    * `item.quantity` ne pourrait plus afficher un drop, qui n'en a jamais eu.
    */
-  item: components['schemas']['DroppedItem'];
+  item: components['schemas']['DroppedItem'] | components['schemas']['PublicInventoryLine'];
   /**
    * Le nombre d'exemplaires — le sac, jamais un drop. Un objet qui tombe vient de naître, il
    * n'a pas encore de quantité à porter ; c'est l'inventaire qui en crée une ou l'incrémente.
@@ -98,10 +98,10 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
           <View style={styles.foot}>
             {/* Un prix nommé, jamais un nombre nu à côté d'une bourse : le pictogramme dit
                 désormais l'unité, « Valeur » continue de dire le rôle de ce montant. */}
-            <View style={styles.price}>
+            {'priceCoins' in item ? <View style={styles.price}>
               <Text style={styles.priceLabel}>Valeur</Text>
               <CoinAmount amount={item.priceCoins} />
-            </View>
+            </View> : null}
             {equipped === true ? (
               <View style={styles.equippedBadge}>
                 <Text style={styles.equippedLabel}>ÉQUIPÉ</Text>

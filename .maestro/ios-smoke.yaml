@@ -55,12 +55,16 @@ tags:
 - takeScreenshot: 01-empty-home
 
 - tapOn:
-    id: "tab-sante"
+    id: "tab-reglages"
+- tapOn: "Ouvrir Santé"
 - extendedWaitUntil:
     visible: "Aucune activité trouvée"
     timeout: 30000
 - takeScreenshot: 02-empty-health
 
+- swipe:
+    start: "2%, 55%"
+    end: "95%, 55%"
 - runFlow: combat-real-flow.yaml
 
 - tapOn:
@@ -146,7 +150,7 @@ tags:
 - tapOn:
     id: "tab-combat"
 - extendedWaitUntil:
-    visible: "Toi"
+    visible: "Ton équipement et tes statistiques.*"
     timeout: 15000
 - takeScreenshot: 08-fighter-before
 
@@ -159,8 +163,9 @@ tags:
 # Les sept emplacements sont toujours là, vides compris : c'est la moitié de ce que cet écran
 # montre, et le contrat les sert précisément pour qu'on n'ait pas à distinguer « pas chargé »
 # de « rien ici ».
+- assertVisible:
+    id: "character-tab-equipment"
 - assertVisible: ".*Tête.*"
-- assertVisible: ".*Arme.*"
 - takeScreenshot: 09-bag
 
 # La boutique reste dans le hub objets : on vérifie sa porte depuis le sac, sans acheter une
@@ -227,9 +232,8 @@ tags:
       # Le retour par le geste de bord, et non par `back` : depuis une vue défilante qu'on
       # vient de parcourir, le raccourci de Maestro n'a pas replié la pile — on restait sur le
       # sac, à chercher une barre d'onglets qu'il cachait.
-      - swipe:
-          start: "2%, 55%"
-          end: "95%, 55%"
+      - tapOn:
+          id: "tab-combat"
       - extendedWaitUntil:
           visible: "Adversaires"
           timeout: 15000
@@ -238,3 +242,29 @@ tags:
       # été démonté, c'est le compteur d'équipement qui lui a fait relire son catalogue. La
       # comparaison se fait avec `08-fighter-before`, même compte, même écran.
       - takeScreenshot: 11-fighter-after-equip
+
+- tapOn:
+    id: "tab-inventaire"
+- scrollUntilVisible:
+    element:
+      id: "character-tab-statistics"
+    direction: UP
+- tapOn:
+    id: "character-tab-statistics"
+- assertVisible:
+    id: "attribute-strength"
+- assertVisible:
+    id: "attribute-dexterity"
+- takeScreenshot: 12-inventory-attributes
+- scrollUntilVisible:
+    element:
+      id: "stat-dodgePercent"
+    direction: DOWN
+- takeScreenshot: 13-inventory-combat-stats
+- scrollUntilVisible:
+    element:
+      id: "character-tab-bag"
+    direction: UP
+- tapOn:
+    id: "character-tab-bag"
+- takeScreenshot: 14-inventory-bag

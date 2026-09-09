@@ -650,9 +650,11 @@ function Fighter({
           <Text style={styles.hpMax}>/ {ramps.maxHp}</Text>
         </View>
 
-        <Text style={styles.stats} numberOfLines={1}>
-          {stats.damage} dég. · {stats.mitigationPercent} % arm. · {stats.dodgePercent} % esq.
-        </Text>
+        {side === 'player' ? (
+          <Text style={styles.stats} numberOfLines={1}>
+            {stats.damage} dég. · {stats.mitigationPercent} % arm. · {stats.dodgePercent} % esq.
+          </Text>
+        ) : null}
       </View>
     </View>
   );

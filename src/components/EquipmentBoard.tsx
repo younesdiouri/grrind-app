@@ -14,12 +14,12 @@ import {
   type,
   type EquipmentSlot,
 } from '@/design/tokens';
-import type { Inventory } from '@/features/inventory/inventory';
+import type { components } from '@/api/schema';
 
 type EquipmentBoardProps = {
-  equipment: Inventory['equipment'];
-  selected: EquipmentSlot;
-  onSelect: (slot: EquipmentSlot) => void;
+  equipment: components['schemas']['PublicInventory']['equipment'];
+  selected?: EquipmentSlot;
+  onSelect?: (slot: EquipmentSlot) => void;
 };
 
 const placement: Record<EquipmentSlot, ViewStyle> = {
@@ -70,11 +70,12 @@ export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoard
         return (
           <Pressable
             key={slot}
-            accessibilityRole="button"
+            accessibilityRole={onSelect === undefined ? 'image' : 'button'}
             accessibilityLabel={`${equipmentSlotLabel[slot]}, ${line?.name ?? 'vide'}`}
-            accessibilityHint="Afficher les objets compatibles"
+            accessibilityHint={onSelect === undefined ? undefined : 'Afficher les objets compatibles'}
             accessibilityState={{ selected: active }}
-            onPress={() => onSelect(slot)}
+            onPress={onSelect === undefined ? undefined : () => onSelect(slot)}
+            disabled={onSelect === undefined}
             style={({ pressed }) => [
               styles.slot,
               placement[slot],

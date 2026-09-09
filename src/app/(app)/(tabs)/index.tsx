@@ -279,7 +279,7 @@ function BagEntry() {
           ? undefined
           : { coins: inventory.data.coins, itemCount: itemCount(inventory.data) }
       }
-      onPress={() => router.push('/inventaire')}
+      onPress={() => router.navigate('/inventaire')}
       glow={glow}
       // Deux mouvements et pas cinq : c'est une action, pas un résumé, et la hiérarchie du
       // mouvement suit celle de l'écran. Le chevron défile parce qu'il **désigne une porte** ;

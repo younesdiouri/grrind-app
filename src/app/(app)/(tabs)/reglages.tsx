@@ -23,7 +23,6 @@ import {
   // proches pour compiler par accident, et fausses.
   type NotificationPermission,
 } from '@/features/notifications/useNotificationPermission';
-import { useHealthAccess } from '@/features/health/useHealthAccess';
 import {
   getJournal,
   subscribeToJournal,
@@ -32,6 +31,7 @@ import {
 } from '@/features/diagnostics/journal';
 import { formatRunDuration, hasOrphanedRun, runDurationSeconds } from '@/features/health/runDiagnostics';
 import { useSyncStatus } from '@/features/health/useSync';
+import { useHealthAccess } from '@/features/health/useHealthAccess';
 import { formatAgo } from '@/features/progression/format';
 
 /**
@@ -94,6 +94,7 @@ import { formatAgo } from '@/features/progression/format';
  */
 export default function ReglagesScreen() {
   const { permission, refresh } = useNotificationPermission();
+  const { access } = useHealthAccess();
   const auth = useAuth();
 
   const [state, setState] = useState<
@@ -129,6 +130,18 @@ export default function ReglagesScreen() {
           <DangerRow label="Se déconnecter" onPress={() => void signOut()} />
         </View>
       ) : null}
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Santé</Text>
+        <Text style={styles.body}>Tes activités, les autorisations de lecture et la synchronisation avec Santé.</Text>
+        <Button label="Ouvrir Santé" onPress={() => router.push('/sante')} variant="quiet" />
+        {access.step === 'asked' ? (
+          <>
+            <Text style={styles.path}>Réglages › Confidentialité et sécurité › Santé › GRRIND</Text>
+            <Button label="Autorisations Santé" onPress={() => void Linking.openSettings()} variant="quiet" />
+          </>
+        ) : null}
+      </View>
 
       <Authorizations permission={permission} onAsked={refresh} />
 
@@ -270,7 +283,7 @@ function Synchronisation() {
         }
         detail={
           journal.registration === 'failed'
-            ? 'Elle échoue tant que Santé n’a rien accordé. Vérifie l’autorisation ci-dessus.'
+            ? 'Elle échoue tant que Santé n’a rien accordé. Ouvre la section Santé pour vérifier l’autorisation.'
             : null
         }
       />
@@ -465,7 +478,6 @@ function Authorizations({
   onAsked: () => void;
 }) {
   const [asking, setAsking] = useState(false);
-  const { access } = useHealthAccess();
 
   const ask = async () => {
     setAsking(true);
@@ -522,50 +534,6 @@ function Authorizations({
         <Text style={styles.body}>Les notifications sont autorisées.</Text>
       ) : null}
 
-      {/* ————— Santé ——————————————————————————————————————————————————————————————————
-          Jamais « refusé » : HealthKit ne le dit pas en lecture, et l'écrire serait inventer.
-          Deux cas observables, deux gestes. */}
-
-      {access.step === 'explain' ? (
-        <>
-          <Text style={styles.body}>
-            GRRIND n&apos;a pas encore demandé l&apos;accès à Santé, d&apos;où viennent tes
-            séances.
-          </Text>
-          {/* On n'ouvre **pas** la feuille système d'ici. Elle a une case par donnée et ne se
-              rejoue jamais : il faut avoir dit avant ce qu'on lit et pourquoi, et c'est tout
-              l'objet de l'onglet Santé. Ouvrir la feuille à froid depuis Réglages détruirait
-              cette explication pour de bon. */}
-          <Button
-            label="Voir ce que GRRIND lit"
-            onPress={() => router.navigate('/sante')}
-            variant="quiet"
-          />
-        </>
-      ) : null}
-
-      {access.step === 'asked' ? (
-        <>
-          <Text style={styles.body}>
-            L&apos;accès à Santé a été demandé. Si tes séances ne remontent pas, ses
-            interrupteurs vivent ici :
-          </Text>
-          <Text style={styles.path}>
-            Réglages › Confidentialité et sécurité › Santé › GRRIND
-          </Text>
-          <Button
-            label="Ouvrir Réglages"
-            onPress={() => void Linking.openSettings()}
-            variant="quiet"
-          />
-        </>
-      ) : null}
-
-      {access.step === 'unavailable' ? (
-        <Text style={styles.body}>
-          Cet appareil ne donne pas accès aux données de santé.
-        </Text>
-      ) : null}
     </View>
   );
 }
