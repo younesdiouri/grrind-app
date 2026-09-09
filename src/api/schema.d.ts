@@ -52,6 +52,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/guilds/{id}/chat/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_community_chat_subscription"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/{id}/chat/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_community_chat_history"];
+        put?: never;
+        post: operations["post_community_chat_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guilds/{id}/chat/messages/{messageId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_community_chat_image"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/guilds": {
         parameters: {
             query?: never;
@@ -606,6 +654,19 @@ export interface components {
             routeType: components["schemas"]["PushRouteType"];
             /** Format: uuid */
             routeId: string;
+        };
+        GuildMessage: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            clientId: string;
+            cursor: string;
+            /** Format: uuid */
+            authorId: string;
+            text: string;
+            /** Format: date-time */
+            createdAt: string;
+            imageUrl: string | null;
         };
         /**
          * @description Une erreur, RFC 9457. `type` est l'identifiant stable de la panne ; `title` et
@@ -2211,6 +2272,25 @@ export interface components {
             /** @default 20 */
             limit: number;
         };
+        SendChatMessageRequest: {
+            /** @default  */
+            clientId: string;
+            /** @default  */
+            text: string;
+            /**
+             * Format: binary
+             * @default null
+             */
+            image: string | null;
+        };
+        ChatHistoryRequest: {
+            /** @default 50 */
+            limit: number;
+            /** @default null */
+            before: string | null;
+            /** @default null */
+            after: string | null;
+        };
         FoundGuildRequest: {
             /** @default  */
             name: string;
@@ -2616,6 +2696,162 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+        };
+    };
+    post_community_chat_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Jeton de lecture du signal, valable 5 minutes. Aucun contenu privé dans Mercure. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uri */
+                        url: string;
+                        /** Format: uri */
+                        topic: string;
+                        token: string;
+                        /** Format: date-time */
+                        expiresAt: string;
+                    };
+                };
+            };
+            404: components["responses"]["NotFound"];
+            /** @description Trop de renouvellements de jeton. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_community_chat_history: {
+        parameters: {
+            query?: {
+                limit?: number;
+                before?: string | null;
+                after?: string | null;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Historique décroissant ; avec after, rattrapage croissant. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        messages?: components["schemas"]["GuildMessage"][];
+                        nextCursor?: string | null;
+                    };
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    post_community_chat_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    clientId: string;
+                    /** @description Texte brut, 4 000 caractères par défaut. */
+                    text: string;
+                };
+                "multipart/form-data": WithRequired<components["schemas"]["SendChatMessageRequest"], "clientId"> & {
+                    /** Format: uuid */
+                    clientId: string;
+                    text?: string;
+                    /**
+                     * Format: binary
+                     * @description Un JPEG, PNG ou WebP réel ; 5 Mio / 20 mégapixels par défaut. Texte ou image requis.
+                     */
+                    image?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Message enregistré ou rejoué. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuildMessage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description Identifiant client réutilisé pour un autre contenu. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Contenu invalide. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 30 tentatives par minute et par joueur, rejeux compris. Retry-After indique le délai. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_community_chat_image: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Image privée réencodée, sans cache. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
         };
     };
     post_community_guild_found: {
@@ -3787,3 +4023,6 @@ export interface operations {
         };
     };
 }
+type WithRequired<T, K extends keyof T> = T & {
+    [P in K]-?: T[P];
+};
