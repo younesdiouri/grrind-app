@@ -20,8 +20,16 @@ export function itemIllustrationPresentation({
   failedImageUrl,
 }: ItemIllustrationState): ItemIllustrationPresentation {
   const source = imageUrl.trim();
+  // Ce fichier générique est transparent : un chargement réussi ne constitue pas un dessin
+  // d'objet. Le chemin exact distingue ce sentinel des véritables illustrations publiées.
+  let genericPlaceholder = false;
+  try {
+    genericPlaceholder = new URL(source).pathname === '/game-images/placeholder.png';
+  } catch {
+    // L'image invalide garde le traitement habituel onError du composant.
+  }
 
-  if (source.length === 0 || failedImageUrl === source) {
+  if (source.length === 0 || genericPlaceholder || failedImageUrl === source) {
     return { source: null, imageVisible: false, placeholderVisible: true };
   }
 

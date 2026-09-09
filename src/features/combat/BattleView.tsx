@@ -628,7 +628,9 @@ function Fighter({
 
   return (
     <View style={styles.fighter}>
-      <AnimatedTextInput editable={false} style={styles.absorbed} animatedProps={powerProps} defaultValue="Puissance 100 %" />
+      {side === 'player' ? (
+        <AnimatedTextInput editable={false} style={styles.absorbed} animatedProps={powerProps} defaultValue="Puissance 100 %" />
+      ) : null}
       <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
         {name}
       </Text>

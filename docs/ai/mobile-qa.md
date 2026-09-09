@@ -273,3 +273,9 @@ puis ses vues Équipement, Statistiques et Sac. Les captures `12-inventory-attri
 Le parcours ciblé `.maestro/inventory-profile.yaml` vérifie un compte équipé déterministe
 et le profil d’un autre membre de guilde, avec cercles et lecture seule.
 Les comptes et preuves JSON restent uniquement dans `artifacts/e2e/`.
+
+Après `inventory-profile.yaml`, le scénario `.maestro/inventory-actions.yaml` confirme
+l’annulation puis la validation d’une vente et l’ouverture d’un coffre depuis la vue Sac :
+`E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/inventory-actions.yaml`.
+Ici le drapeau conserve seulement la session QA ; les mutations de l’app utilisent toujours
+le backend réel. Il ne remplace pas le smoke authentifié.

@@ -1,0 +1,58 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - inventory
+---
+# Suite du parcours inventory-profile : session QA conservée, gantelets en plusieurs
+# exemplaires et coffre disponibles. À lancer avec E2E_OFFLINE=1 pour garder la session.
+- launchApp
+- swipe:
+    start: "2%, 55%"
+    end: "95%, 55%"
+- tapOn:
+    id: "tab-inventaire"
+- scrollUntilVisible:
+    element:
+      id: "character-tab-bag"
+    direction: UP
+- tapOn:
+    id: "character-tab-bag"
+- scrollUntilVisible:
+    element:
+      text: "Vendre.*"
+    direction: DOWN
+- tapOn:
+    text: "Vendre.*"
+    index: 0
+- assertVisible: "Vendre un exemplaire ?"
+- takeScreenshot: bag-sale-confirmation
+- tapOn: "Annuler"
+- tapOn:
+    text: "Vendre.*"
+    index: 0
+- tapOn: "Confirmer la vente"
+- scrollUntilVisible:
+    element:
+      text: "Exemplaire vendu.*"
+    direction: UP
+- takeScreenshot: bag-sale-complete
+- scrollUntilVisible:
+    element:
+      text: "Ouvrir"
+    direction: DOWN
+    timeout: 60000
+- tapOn: "Ouvrir"
+- scrollUntilVisible:
+    element:
+      text: "CONTENU DU COFFRE"
+    direction: DOWN
+- takeScreenshot: bag-chest-opened
+- tapOn:
+    id: "tab-accueil"
+- tapOn:
+    id: "bag-row"
+- scrollUntilVisible:
+    element:
+      id: "character-tab-bag"
+    direction: UP
+- takeScreenshot: home-inventory-entry
