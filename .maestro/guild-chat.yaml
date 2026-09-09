@@ -1,0 +1,47 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - guild-chat
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "DEVELOPMENT SERVERS"
+    commands:
+      - tapOn: "http://.*808[23]"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - tapOn: "Close"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${MAESTRO_CHAT_EMAIL}
+      PASSWORD: ${MAESTRO_CHAT_PASSWORD}
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 90000
+- tapOn:
+    id: "tab-guilde"
+- extendedWaitUntil:
+    visible: "QA Chat privé"
+    timeout: 30000
+- takeScreenshot: chat-00-guild-baseline
+- tapOn: "Chat de la guilde"
+- extendedWaitUntil:
+    visible: "Historique 55"
+    timeout: 30000
+- assertVisible: "Ancien membre"
+- takeScreenshot: chat-01-history
+- tapOn:
+    id: "chat-input"
+- inputText: "Bonjour depuis iOS"
+- takeScreenshot: chat-02-keyboard
+- tapOn: "Envoyer"
+- extendedWaitUntil:
+    visible: "Bonjour depuis iOS"
+    timeout: 30000
+- assertVisible: "Vous"
+- takeScreenshot: chat-03-sent

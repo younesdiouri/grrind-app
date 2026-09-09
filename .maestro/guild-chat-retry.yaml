@@ -1,0 +1,22 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - guild-chat
+---
+- tapOn:
+    id: "tab-guilde"
+- tapOn: "Chat de la guilde"
+- tapOn:
+    id: "chat-input"
+- inputText: "Reprise iOS sans doublon"
+- tapOn: "Envoyer"
+- extendedWaitUntil:
+    visible: "Réessayer"
+    timeout: 30000
+- takeScreenshot: chat-06-send-failed
+- tapOn: "Réessayer"
+- extendedWaitUntil:
+    notVisible: "Réessayer"
+    timeout: 30000
+- assertVisible: "Reprise iOS sans doublon"
+- takeScreenshot: chat-07-retry-sent
