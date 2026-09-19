@@ -1,6 +1,7 @@
 appId: app.grrind.e2e
 ---
 - launchApp
+- runFlow: alam-session.yaml
 - openLink: grrindapp-e2e://alam/00000000-0000-7000-8000-000000000000
 - extendedWaitUntil:
     visible: Réessayer

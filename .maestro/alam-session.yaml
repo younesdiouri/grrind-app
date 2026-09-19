@@ -1,0 +1,40 @@
+appId: app.grrind.e2e
+---
+# Le préambule commun aux parcours ʿĀlam, et la raison pour laquelle il existe : un flow qui
+# saute ces trois sas échoue sur `tab-guilde` sans jamais dire pourquoi — c'est l'app qui est
+# encore derrière une feuille système, pas l'onglet qui a disparu.
+#
+# Les trois sont **conditionnels**, et ce n'est pas de la prudence : le development build les
+# affiche, le build Release non. Les attendre fermement casserait le parcours Release ; les
+# ignorer casse le parcours dev. Seul `when:` tient les deux.
+#
+# 1. La feuille iOS qui confirme l'ouverture de l'URL Metro, après une réinstallation.
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+
+# 2. L'onboarding natif, que `clearState` fait réapparaître à chaque exécution.
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+
+# 3. La session. Les identifiants viennent du scénario déterministe créé par le back
+#    (`app:alam:demo`) et transmis par `scripts/alam-qa-flow.mjs` — jamais de la ligne de
+#    commande Maestro, jamais du dépôt.
+- runFlow:
+    when:
+      visible: "Se connecter"
+    commands:
+      - runFlow:
+          file: login.yaml
+          env:
+            EMAIL: ${MAESTRO_ALAM_EMAIL}
+            PASSWORD: ${MAESTRO_ALAM_PASSWORD}

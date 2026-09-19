@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 // Composition originale synthétique : aucune banque audio ni mélodie empruntée.

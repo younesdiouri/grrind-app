@@ -1,11 +1,17 @@
 appId: app.grrind.e2e
 ---
 - launchApp
+- runFlow: alam-session.yaml
 - openLink: grrindapp-e2e://inventaire
 - extendedWaitUntil:
     visible:
       id: character-tab-equipment
     timeout: 30000
+# La silhouette n'affiche qu'un emplacement à la fois : chercher les gantelets sans avoir
+# choisi MAINS revient à les chercher dans le panneau du TORSE, et le flow échoue en disant
+# que l'objet n'existe pas alors qu'il est porté.
+- tapOn:
+    id: equipment-slot-HANDS
 - scrollUntilVisible:
     element: "Gantelets de fer"
     direction: DOWN

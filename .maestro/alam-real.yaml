@@ -1,26 +1,7 @@
 appId: app.grrind.e2e
 ---
 - launchApp
-- runFlow:
-    when:
-      visible: "Ouvrir dans.*"
-    commands:
-      - tapOn: Ouvrir
-- runFlow:
-    when:
-      visible: Continue
-    commands:
-      - tapOn: Continue
-      - tapOn: Close
-- runFlow:
-    when:
-      visible: Se connecter
-    commands:
-      - runFlow:
-          file: login.yaml
-          env:
-            EMAIL: ${MAESTRO_ALAM_EMAIL}
-            PASSWORD: ${MAESTRO_ALAM_PASSWORD}
+- runFlow: alam-session.yaml
 - extendedWaitUntil:
     visible: "NIVEAU|.*Toucher pour continuer.*"
     timeout: 90000
