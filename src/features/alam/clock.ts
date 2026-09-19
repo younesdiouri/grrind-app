@@ -13,3 +13,13 @@ export function eventIndexAt(events: readonly { offsetMs: number }[], time: numb
   }
   return index;
 }
+
+/**
+ * Une édition dont la fenêtre en direct est passée se relit depuis le début.
+ *
+ * La présentation dure une minute : passé ce délai l'écran s'ouvrait sur le résumé d'un combat
+ * que personne n'avait vu jouer, ce qui est le cas de tout joueur qui rouvre son histoire.
+ */
+export function opensAsReplay(startsAt: string, serverNow: string, receivedAt: number, now: number, duration: number): boolean {
+  return presentationOffset(startsAt, serverNow, receivedAt, now, duration) >= duration;
+}

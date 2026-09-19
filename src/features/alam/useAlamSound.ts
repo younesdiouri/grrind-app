@@ -18,7 +18,10 @@ export function useAlamSound(active: boolean) {
       if (state === 'active' && enabled && active) ambience.play();
       else { ambience.pause(); impact.pause(); drop.pause(); }
     });
-    return () => { subscription.remove(); ambience.pause(); };
+    // Aucun `pause()` au démontage : `useAudioPlayer` libère ses lecteurs dans un effet déclaré
+    // avant celui-ci, donc l'objet natif a déjà disparu quand ce nettoyage passe — et c'est la
+    // libération elle-même qui coupe le son.
+    return () => { subscription.remove(); };
   }, [active, enabled, ambience, impact, drop]);
   return {
     enabled, toggle: () => setEnabled((value) => !value),

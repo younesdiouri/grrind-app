@@ -16,8 +16,18 @@ appId: app.grrind.e2e
 - extendedWaitUntil:
     visible: Donne forme à tes efforts
     timeout: 30000
+# Le panneau de pénurie n'existe que sur un scénario **neuf** : chaque édition jouée accorde
+# de l'essence au compte de QA, et deux ou trois exécutions des autres parcours suffisent à
+# rendre toutes les recettes abordables. La condition ne protège pas d'un bug, elle empêche
+# une dépendance d'ordre de se faire passer pour une régression — le sujet de ce parcours est
+# l'édition introuvable, et elle, elle est vérifiée fermement.
 - scrollUntilVisible:
     element: Ressources insuffisantes.*
     direction: DOWN
     timeout: 20000
-- takeScreenshot: alam-insufficient-resources
+    optional: true
+- runFlow:
+    when:
+      visible: Ressources insuffisantes.*
+    commands:
+      - takeScreenshot: alam-insufficient-resources

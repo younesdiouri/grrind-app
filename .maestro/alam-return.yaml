@@ -1,0 +1,70 @@
+appId: app.grrind.e2e
+---
+# Quitter l'édition, la rouvrir, la quitter encore — le geste qu'aucun autre parcours ne fait,
+# et celui qui plantait sur un vrai iPhone : le nettoyage du son mettait en pause un lecteur
+# qu'`useAudioPlayer` venait de libérer, donc l'app tombait au retour.
+#
+# Les deux sorties sont volontairement différentes : la première depuis une présentation
+# terminée, la seconde depuis un replay en cours, avec l'audio actif.
+- launchApp
+- runFlow: alam-session.yaml
+- extendedWaitUntil:
+    visible: "NIVEAU|.*Toucher pour continuer.*"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: ".*Toucher pour continuer.*"
+    commands:
+      - tapOn:
+          point: "50%,65%"
+      - tapOn:
+          point: "50%,65%"
+- tapOn:
+    id: tab-guilde
+- extendedWaitUntil:
+    visible: "ʿĀlam al-Nafs · raid et histoires"
+    timeout: 30000
+- tapOn: "ʿĀlam al-Nafs · raid et histoires"
+- extendedWaitUntil:
+    visible: "PRÉPARATION.*|ÉDITION RÉSOLUE.*"
+    timeout: 60000
+
+- scrollUntilVisible:
+    element: Lancer maintenant
+    direction: DOWN
+    timeout: 20000
+- tapOn: Lancer maintenant
+
+# Le bandeau de tête, et non le résumé : celui-ci vit sous la doublure, et `visible` ne voit
+# que ce qui est à l'écran. Il passe à « HISTOIRE » quand la minute de présentation s'achève.
+- extendedWaitUntil:
+    visible: "HISTOIRE DE LA GUILDE"
+    timeout: 120000
+- takeScreenshot: alam-return-finished
+- tapOn: "Retour"
+
+# L'onglet garde sa position de défilement : ce qu'on cherche est au-dessus.
+- scrollUntilVisible:
+    element: "La semaine devient une épopée."
+    direction: UP
+    timeout: 30000
+
+# L'édition manuelle n'est pas l'édition courante — elle rejoint les histoires de la guilde.
+- scrollUntilVisible:
+    element: Lire et rejouer
+    direction: DOWN
+    timeout: 30000
+- tapOn: Lire et rejouer
+- extendedWaitUntil:
+    visible: REPLAY
+    timeout: 30000
+- assertVisible: Al-Kasal
+- takeScreenshot: alam-return-replay
+
+# La seconde sortie, celle qui coupe la scène en plein milieu.
+- tapOn: "Retour"
+- scrollUntilVisible:
+    element: "La semaine devient une épopée."
+    direction: UP
+    timeout: 30000
+- takeScreenshot: alam-return-back
