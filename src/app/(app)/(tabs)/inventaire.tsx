@@ -303,6 +303,8 @@ export default function InventoryScreen() {
             </SystemFrame>
           ) : null}
 
+          <Button label="Atelier · fabriquer un équipement" onPress={() => router.push('/atelier')} />
+
           <CharacterInventory inventory={data} statistics={data.statistics} equipment={
             <>
           <View style={styles.sectionHead}>
@@ -392,6 +394,11 @@ export default function InventoryScreen() {
           } bag={
             <>
               {data.items.length === 0 ? <Text style={styles.detail}>Le sac est vide.</Text> : null}
+              {data.items.some((line) => line.kind === 'RESOURCE') && <Text style={styles.section}>RESSOURCES</Text>}
+              {data.items.filter((line) => line.kind === 'RESOURCE').map((line) => (
+                <ItemCard key={line.key} item={line} quantity={line.quantity} />
+              ))}
+              {data.items.some(isEquippable) && <Text style={styles.section}>ÉQUIPEMENTS</Text>}
               {data.items.filter(isEquippable).map((line) => (
                 <View key={line.key} style={styles.current}>
                   <ItemCard item={line} quantity={line.quantity} equipped={isEquipped(data, line.key)} />

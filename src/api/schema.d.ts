@@ -52,6 +52,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/guild/alam": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_alam_current"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guild/alam/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_alam_history"];
+        put?: never;
+        post: operations["post_alam_manual"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guild/alam/runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_alam_show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/guilds/{id}/chat/subscription": {
         parameters: {
             query?: never;
@@ -454,6 +502,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/crafting/recipes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_rewards_crafting_recipes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/crafting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_rewards_crafting_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/inventory": {
         parameters: {
             query?: never;
@@ -655,6 +735,129 @@ export interface components {
             /** Format: uuid */
             routeId: string;
         };
+        AlamGauge: {
+            /** @enum {string} */
+            attribute: "strength" | "endurance" | "mobility" | "dexterity" | "vitality";
+            current: number;
+            target: number;
+            progressPermille: number;
+        };
+        AlamParticipant: {
+            /** Format: uuid */
+            playerId: string;
+            displayName: string;
+            avatarUrl: string | null;
+            contribution: number;
+            gauges: components["schemas"]["AlamGauge"][];
+            activitySummary?: {
+                discipline: string;
+                sessions: number;
+                durationSeconds: number;
+            }[];
+        };
+        AlamDrop: {
+            /** Format: uuid */
+            playerId: string;
+            itemKey: string;
+            name: string;
+            /** @enum {string} */
+            kind: "RESOURCE" | "EQUIPMENT";
+            /** @enum {string} */
+            rarity: "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY";
+            imageUrl: string | null;
+            quantity: number;
+        };
+        AlamEvent: {
+            id: string;
+            offsetMs: number;
+            encounterIndex: number;
+            /** @enum {string} */
+            action: "ARRIVAL" | "EFFORT" | "VICTORY" | "DEFEAT" | "DROP";
+            actorId: string | null;
+            targetId: string | null;
+            text: string;
+        };
+        AlamEncounter: {
+            index: number;
+            enemyKey: string;
+            enemyName: string;
+            thresholdPermille: number;
+            won: boolean;
+            probabilityMillionths: number;
+            progressPermille: number;
+            drops: components["schemas"]["AlamDrop"][];
+            narration: string;
+        };
+        AlamRun: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            guildId: string;
+            /** @enum {string} */
+            mode: "WEEKLY" | "MANUAL";
+            /** @enum {string} */
+            status: "COLLECTING" | "RESOLVED";
+            /** Format: date-time */
+            weekStartsAt: string;
+            /** Format: date-time */
+            collectionEndsAt: string;
+            /** Format: date-time */
+            revealedAt: string;
+            /** Format: date-time */
+            presentationStartsAt: string | null;
+            /** Format: date-time */
+            presentationEndsAt: string | null;
+            frozenTargetCount: number;
+            rulesetVersion: string;
+            gauges: components["schemas"]["AlamGauge"][];
+            participants: components["schemas"]["AlamParticipant"][];
+            encounters: components["schemas"]["AlamEncounter"][];
+            events: components["schemas"]["AlamEvent"][];
+            /** @enum {string} */
+            narrationSource: "LOCAL" | "OPENAI";
+            /** Format: date-time */
+            serverNow: string;
+        };
+        AlamCurrent: {
+            /** Format: date-time */
+            serverNow: string;
+            canLaunchManual: boolean;
+            pollAfterSeconds: number;
+            current: components["schemas"]["AlamRun"];
+        };
+        AlamPage: {
+            runs: components["schemas"]["AlamRun"][];
+            nextCursor: string | null;
+        };
+        CraftingCost: {
+            item: components["schemas"]["DroppedItem"];
+            quantity: number;
+            ownedQuantity: number;
+        };
+        CraftingResult: {
+            item: components["schemas"]["DroppedItem"];
+            quantity: number;
+        };
+        CraftingRecipe: {
+            key: string;
+            result: components["schemas"]["CraftingResult"];
+            costs: components["schemas"]["CraftingCost"][];
+            canCraft: boolean;
+        };
+        CraftingRecipes: {
+            recipes: components["schemas"]["CraftingRecipe"][];
+            rulesetVersion: string;
+        };
+        CraftingReceipt: {
+            /** Format: uuid */
+            id: string;
+            recipeKey: string;
+            result: components["schemas"]["CraftingCost"];
+            costs: components["schemas"]["CraftingCost"][];
+            rulesetVersion: string;
+            /** Format: date-time */
+            craftedAt: string;
+        };
         GuildMessage: {
             /** Format: uuid */
             id: string;
@@ -688,7 +891,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/item-not-sellable" | "https://grrind.app/problems/item-equipped" | "https://grrind.app/problems/sale-price-changed" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/recipe-unavailable" | "https://grrind.app/problems/insufficient-crafting-resources" | "https://grrind.app/problems/alam-manual-disabled" | "https://grrind.app/problems/alam-run-not-found" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/item-not-sellable" | "https://grrind.app/problems/item-equipped" | "https://grrind.app/problems/sale-price-changed" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -1393,7 +1596,7 @@ export interface components {
              * @description Ce que l'objet *est* — `EQUIPMENT` se porte, `CHEST` s'ouvre (#230). C'est sur ce champ que l'app décide « Équiper » ou « Ouvrir », jamais sur `slot === null`.
              * @enum {string}
              */
-            kind: "EQUIPMENT" | "CHEST";
+            kind: "EQUIPMENT" | "CHEST" | "RESOURCE";
             /**
              * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
              * @example Chaussures de course usées
@@ -1446,7 +1649,7 @@ export interface components {
              * @description Ce que l'objet *est* — `EQUIPMENT` se porte, `CHEST` s'ouvre (#230). C'est sur ce champ que l'app décide « Équiper » ou « Ouvrir », jamais sur `slot === null`.
              * @enum {string}
              */
-            kind: "EQUIPMENT" | "CHEST";
+            kind: "EQUIPMENT" | "CHEST" | "RESOURCE";
             /**
              * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
              * @example Chaussures de course usées
@@ -1695,7 +1898,7 @@ export interface components {
                  *     Vitality, jamais l'XP.
                  * @enum {string|null}
                  */
-                reason: "NO_XP_FEEDS_VITALITY" | null;
+                reason: "NO_XP_FEEDS_VITALITY" | "ALAM_WINDOW" | null;
             };
             /**
              * @description Les cinq caractéristiques du personnage, chacune avec son avant et son
@@ -2272,6 +2475,12 @@ export interface components {
             /** @default 20 */
             limit: number;
         };
+        AlamHistoryQuery: {
+            /** @default 20 */
+            limit: number;
+            /** @default null */
+            cursor: string | null;
+        };
         SendChatMessageRequest: {
             /** @default  */
             clientId: string;
@@ -2385,6 +2594,10 @@ export interface components {
         SelectTitleRequest: {
             /** @default null */
             titleId: string | null;
+        };
+        CraftItemRequest: {
+            /** @default  */
+            recipeKey: string;
         };
         EquipItemRequest: {
             /** @default  */
@@ -2696,6 +2909,109 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+        };
+    };
+    get_alam_current: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Semaine collective et capacité de lancement manuel. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlamCurrent"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    get_alam_history: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Historique des éditions de la guilde. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlamPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    post_alam_manual: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Édition manuelle distincte, résultats et récompenses figés. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlamRun"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    get_alam_show: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Journal durable live/replay ; lecture réservée aux participants et membres actuels. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlamRun"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     post_community_chat_subscription: {
@@ -3645,6 +3961,71 @@ export interface operations {
                 };
             };
             422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    get_rewards_crafting_recipes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recettes publiées, coûts et quantités possédées. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CraftingRecipes"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    post_rewards_crafting_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CraftItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Fabrication atomique, quantités possédées après échange. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CraftingReceipt"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+            /** @description recipe-unavailable, insufficient-crafting-resources ou validation. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
         };
     };
     get_rewards_inventory_show: {

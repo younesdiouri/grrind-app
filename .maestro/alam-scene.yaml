@@ -1,0 +1,16 @@
+appId: app.grrind.e2e
+---
+- launchApp
+- openLink: grrindapp-e2e://alam-demo
+- extendedWaitUntil:
+    visible: "DÉMONSTRATION · AUCUN GAIN RÉEL"
+    timeout: 30000
+- takeScreenshot: alam-scene-collective
+- assertVisible: Younes
+- assertVisible: Amine
+- assertVisible: Aimane
+- tapOn: Couper le son
+- assertVisible: Activer le son
+- takeScreenshot: alam-scene-muted
+- tapOn: Rejouer la scène
+- takeScreenshot: alam-scene-replay

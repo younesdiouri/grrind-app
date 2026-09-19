@@ -115,6 +115,14 @@ export function messageFor(failure: Failure): string {
 
 function messageForProblem(problem: ProblemDetails): string {
   switch (problem.type) {
+    case 'https://grrind.app/problems/recipe-unavailable':
+      return 'Cette recette n’est plus disponible. Recharge l’atelier.';
+    case 'https://grrind.app/problems/insufficient-crafting-resources':
+      return 'Tes ressources ne suffisent plus pour cette recette. Recharge l’atelier.';
+    case 'https://grrind.app/problems/alam-manual-disabled':
+      return 'Le lancement manuel est désactivé. Rendez-vous au prochain raid.';
+    case 'https://grrind.app/problems/alam-run-not-found':
+      return 'Cette édition est introuvable.';
     case 'https://grrind.app/problems/validation-failed':
       return 'Certaines informations sont refusées.';
 

@@ -1,0 +1,32 @@
+appId: app.grrind.e2e
+---
+- launchApp
+- openLink: grrindapp-e2e://inventaire
+- extendedWaitUntil:
+    visible:
+      id: character-tab-equipment
+    timeout: 30000
+- scrollUntilVisible:
+    element: "Gantelets de fer"
+    direction: DOWN
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Équiper — Gantelets de fer"
+    commands:
+      - tapOn: "Équiper — Gantelets de fer"
+- extendedWaitUntil:
+    visible: ÉQUIPÉ
+    timeout: 30000
+- takeScreenshot: alam-crafted-equipped
+- scrollUntilVisible:
+    element:
+      id: character-tab-bag
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: character-tab-bag
+- assertVisible: RESSOURCES
+- assertVisible: "Ressource · atelier"
+- assertNotVisible: "Équiper — Essence du Nafs"
+- takeScreenshot: alam-resources-inventory

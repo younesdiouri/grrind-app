@@ -1,5 +1,12 @@
 import type { components } from '@/api/schema';
 
+/** Présentation du raid : aucune cible, durée métier ou probabilité ne vit ici. */
+export const alamMotion = {
+  stageHeight: 300, avatarSize: 48, actorWidth: 80, impulseDuration: 900,
+  travel: 24, beamTravel: 110, beamWidth: 3, beamHeight: 38,
+  impactSize: 72, phaseHeight: 110, pollMaxMs: 30_000,
+} as const;
+
 export const guildChat = {
   photoHeight: 220,
   previewHeight: 88,
@@ -546,6 +553,7 @@ export const xpNoCreditReasonLabel: Record<
   string
 > = {
   NO_XP_FEEDS_VITALITY: 'Ne rapporte pas d’XP · nourrit ta Vitalité',
+  ALAM_WINDOW: 'Pendant ʿĀlam al-Nafs · séance conservée sans XP',
 };
 
 /**

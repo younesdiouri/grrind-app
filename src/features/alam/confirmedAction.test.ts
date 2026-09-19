@@ -25,3 +25,16 @@ it('ne lance aucun POST si la clé ne peut pas être persistée', async () => {
   const run = createConfirmedAction({ keyFor: async () => { throw new Error('keychain'); }, forget: async () => undefined }, async () => { throw new Error('POST interdit'); });
   assert.deepEqual(await run('intent'), { kind: 'refused', failure: { kind: 'offline' } });
 });
+
+it('retrouve une fabrication après fermeture et isole les comptes', async () => {
+  let disk: Record<string, string> = {};
+  let minted = 0;
+  const storage = { read: async () => disk, write: async (value: Record<string, string>) => { disk = value; }, mint: () => String(++minted) };
+  const seen: string[] = [];
+  const request = async (_intent: string, key: string) => { seen.push(key); throw new Error('response lost'); };
+  await createConfirmedAction(createActionKeys(storage), request)('craft:one:recipe');
+  const restored = createConfirmedAction(createActionKeys(storage), request);
+  await restored('craft:one:recipe');
+  await restored('craft:two:recipe');
+  assert.deepEqual(seen, ['1', '1', '2']);
+});

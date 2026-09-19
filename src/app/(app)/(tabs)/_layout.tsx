@@ -57,7 +57,8 @@ export default function TabsLayout() {
         name="combat"
         options={{
           tabBarButtonTestID: 'tab-combat',
-          title: 'Combat',
+          title: 'ʿĀlam al-Nafs',
+          tabBarLabel: 'ʿĀlam',
           tabBarIcon: ({ color: tint, focused }) => <TabIcon name="bolt.shield" color={tint} focused={focused} beacon={beacon.effect !== undefined} />,
         }}
       />

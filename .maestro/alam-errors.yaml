@@ -1,0 +1,22 @@
+appId: app.grrind.e2e
+---
+- launchApp
+- openLink: grrindapp-e2e://alam/00000000-0000-7000-8000-000000000000
+- extendedWaitUntil:
+    visible: Réessayer
+    timeout: 30000
+- takeScreenshot: alam-missing-edition
+- tapOn: Réessayer
+- extendedWaitUntil:
+    visible: Réessayer
+    timeout: 30000
+- takeScreenshot: alam-edition-retry
+- openLink: grrindapp-e2e://atelier
+- extendedWaitUntil:
+    visible: Donne forme à tes efforts
+    timeout: 30000
+- scrollUntilVisible:
+    element: Ressources insuffisantes.*
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: alam-insufficient-resources
