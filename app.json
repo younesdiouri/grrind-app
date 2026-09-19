@@ -14,7 +14,9 @@
         "NSHealthShareUsageDescription": "GRRIND lit les séances de sport déjà enregistrées dans Santé — leur durée, leur distance, leur dénivelé, tes calories actives et ta fréquence cardiaque moyenne — pour les convertir en expérience et faire progresser ton personnage. GRRIND ne lit rien d'autre, n'écrit jamais dans Santé, et ne partage ces données avec personne.",
         "NSHealthUpdateUsageDescription": "GRRIND n'écrit jamais dans Santé. Cette autorisation est exigée par iOS dès que l'app demande un accès à Santé, mais GRRIND ne l'utilise jamais pour modifier tes données.",
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
@@ -47,7 +49,15 @@
         }
       ],
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

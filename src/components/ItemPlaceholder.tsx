@@ -47,6 +47,9 @@ function SlotGlyph({
   if (kind === 'CHEST') {
     return <Path {...common} d="M4 10h16v10H4V10Zm-1-4h18v4H3V6Zm6 4v10m6-10v10" />;
   }
+  if (kind === 'RESOURCE') {
+    return <Path {...common} d="m12 3 7 6-3 11H8L5 9l7-6Zm0 0v17M5 9h14M5 9l7 11 7-11" />;
+  }
 
   switch (slot) {
     case 'HEAD':

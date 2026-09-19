@@ -1,0 +1,38 @@
+appId: app.grrind.e2e
+---
+- launchApp
+- runFlow: alam-session.yaml
+- openLink: grrindapp-e2e://inventaire
+- extendedWaitUntil:
+    visible:
+      id: character-tab-equipment
+    timeout: 30000
+# La silhouette n'affiche qu'un emplacement à la fois : chercher les gantelets sans avoir
+# choisi MAINS revient à les chercher dans le panneau du TORSE, et le flow échoue en disant
+# que l'objet n'existe pas alors qu'il est porté.
+- tapOn:
+    id: equipment-slot-HANDS
+- scrollUntilVisible:
+    element: "Gantelets de fer"
+    direction: DOWN
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Équiper — Gantelets de fer"
+    commands:
+      - tapOn: "Équiper — Gantelets de fer"
+- extendedWaitUntil:
+    visible: ÉQUIPÉ
+    timeout: 30000
+- takeScreenshot: alam-crafted-equipped
+- scrollUntilVisible:
+    element:
+      id: character-tab-bag
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: character-tab-bag
+- assertVisible: RESSOURCES
+- assertVisible: "Ressource · atelier"
+- assertNotVisible: "Équiper — Essence du Nafs"
+- takeScreenshot: alam-resources-inventory

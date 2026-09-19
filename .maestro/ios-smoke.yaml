@@ -149,6 +149,7 @@ tags:
 
 - tapOn:
     id: "tab-combat"
+- tapOn: "Anciens combats solo"
 - extendedWaitUntil:
     visible: "Ton équipement et tes statistiques.*"
     timeout: 15000
@@ -234,6 +235,7 @@ tags:
       # sac, à chercher une barre d'onglets qu'il cachait.
       - tapOn:
           id: "tab-combat"
+      - tapOn: "Anciens combats solo"
       - extendedWaitUntil:
           visible: "Adversaires"
           timeout: 15000
@@ -243,8 +245,7 @@ tags:
       # comparaison se fait avec `08-fighter-before`, même compte, même écran.
       - takeScreenshot: 11-fighter-after-equip
 
-- tapOn:
-    id: "tab-inventaire"
+- openLink: grrindapp-e2e://inventaire
 - scrollUntilVisible:
     element:
       id: "character-tab-statistics"

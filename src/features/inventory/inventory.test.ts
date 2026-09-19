@@ -58,6 +58,11 @@ function inventory(overrides: Partial<Inventory> = {}): Inventory {
 }
 
 describe("la doublure et le sac, tels que l'écran les lit (#30)", () => {
+  it('conserve la quantité des ressources sans les proposer comme équipement', () => {
+    const resource = line({ kind: 'RESOURCE', slot: null, quantity: 12 });
+    assert.equal(isEquippable(resource), false);
+    assert.equal(itemCount(inventory({ items: [resource] })), 12);
+  });
   it('ne propose d’équiper que les objets que le contrat nomme EQUIPMENT', () => {
     const equipment = line({ kind: 'EQUIPMENT', slot: 'FEET' });
     const chest = line({ kind: 'CHEST', slot: null, key: 'DUNE_CHEST' });

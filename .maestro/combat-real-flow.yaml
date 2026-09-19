@@ -10,6 +10,7 @@ appId: app.grrind.e2e
 
 - tapOn:
     id: "tab-combat"
+- tapOn: "Anciens combats solo"
 - extendedWaitUntil:
     visible: "Adversaires"
     timeout: 15000
@@ -71,3 +72,6 @@ appId: app.grrind.e2e
 - takeScreenshot: 05a-battle-replay
 - tapOn:
     point: "50%,50%"
+- swipe:
+    start: "2%, 55%"
+    end: "95%, 55%"

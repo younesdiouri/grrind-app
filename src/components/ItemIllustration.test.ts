@@ -7,6 +7,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ItemIllustration } from '@/components/ItemIllustration';
 
 describe('ItemIllustration', () => {
+  it('dessine un cristal local pour une ressource sans illustration', () => {
+    const markup = renderToStaticMarkup(createElement(ItemIllustration, {
+      item: { imageUrl: '', kind: 'RESOURCE', name: 'Essence', slot: null }, accessibilityLabel: 'Essence',
+    }));
+    assert.match(markup, /<svg/);
+    assert.match(markup, /m12 3 7 6/);
+  });
   it('rend l’URL distante contenue derrière le pictogramme pendant le chargement', () => {
     const markup = renderToStaticMarkup(
       createElement(ItemIllustration, {

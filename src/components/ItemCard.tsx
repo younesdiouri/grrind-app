@@ -56,7 +56,7 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
   // `kind` décide le libellé. Le second cas EQUIPMENT est une ceinture de sûreté pour la forme
   // OpenAPI aplatie : elle ne peut pas exprimer au type que ce variant porte toujours un slot.
   const category =
-    item.kind === 'CHEST'
+    item.kind === 'RESOURCE' ? 'Ressource · atelier' : item.kind === 'CHEST'
       ? 'Coffre'
       : item.slot === null
         ? 'Équipement'

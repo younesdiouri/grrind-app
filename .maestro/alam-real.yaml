@@ -1,0 +1,82 @@
+appId: app.grrind.e2e
+---
+- launchApp
+- runFlow: alam-session.yaml
+- extendedWaitUntil:
+    visible: "NIVEAU|.*Toucher pour continuer.*"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: ".*Toucher pour continuer.*"
+    commands:
+      - tapOn:
+          point: "50%,65%"
+      - tapOn:
+          point: "50%,65%"
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 90000
+- tapOn:
+    id: tab-guilde
+- extendedWaitUntil:
+    visible: "ʿĀlam al-Nafs · raid et histoires"
+    timeout: 30000
+- takeScreenshot: alam-real-guild
+- tapOn: "ʿĀlam al-Nafs · raid et histoires"
+- extendedWaitUntil:
+    visible: "PRÉPARATION.*"
+    timeout: 60000
+- takeScreenshot: alam-real-gauges
+- scrollUntilVisible:
+    element: Lancer maintenant
+    direction: DOWN
+    timeout: 20000
+- tapOn: Lancer maintenant
+- extendedWaitUntil:
+    visible: Al-Kasal
+    timeout: 60000
+- takeScreenshot: alam-real-live
+- scrollUntilVisible:
+    element: Couper le son
+    direction: DOWN
+    timeout: 20000
+- tapOn: Couper le son
+- assertVisible: Activer le son
+- extendedWaitUntil:
+    visible: "Le fruit de vos efforts"
+    timeout: 90000
+- takeScreenshot: alam-real-summary
+- scrollUntilVisible:
+    element: Rejouer depuis le début
+    direction: DOWN
+    timeout: 30000
+- tapOn: Rejouer depuis le début
+- scrollUntilVisible:
+    element: REPLAY
+    direction: UP
+    timeout: 20000
+- takeScreenshot: alam-real-replay
+- scrollUntilVisible:
+    element: Voir le résumé
+    direction: DOWN
+    timeout: 20000
+- tapOn: Voir le résumé
+- scrollUntilVisible:
+    element: Ouvrir l’atelier
+    direction: DOWN
+    timeout: 30000
+- tapOn: Ouvrir l’atelier
+- extendedWaitUntil:
+    visible: "Donne forme à tes efforts"
+    timeout: 30000
+- takeScreenshot: alam-real-recipes
+- scrollUntilVisible:
+    element: "Fabriquer —.*"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Fabriquer —.*"
+- scrollUntilVisible:
+    element: FABRICATION TERMINÉE
+    direction: UP
+    timeout: 30000
+- takeScreenshot: alam-real-crafted

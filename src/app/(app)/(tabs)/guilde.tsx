@@ -385,6 +385,7 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
       }
       ListHeaderComponent={
         <View style={styles.rosterHeader}>
+          <Button label="ʿĀlam al-Nafs · raid et histoires" onPress={() => router.push('/combat')} />
           <Button label="Chat de la guilde" onPress={() => setChatting(true)} />
           {/* En tête, avant même l'identité de la guilde : c'est le présent de la guilde, le
               roster en est l'archive (#105). Un push `GUILD_RISALAT` (#104) doit trouver la

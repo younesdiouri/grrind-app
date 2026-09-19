@@ -70,6 +70,10 @@ export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoard
         return (
           <Pressable
             key={slot}
+            // Même raison que `character-tab-*` : l'étiquette d'accessibilité porte le nom de
+            // l'objet porté, donc elle change dès qu'on change d'équipement. Un parcours qui
+            // vise un emplacement vise l'emplacement, pas ce qu'il contient aujourd'hui.
+            testID={`equipment-slot-${slot}`}
             accessibilityRole={onSelect === undefined ? 'image' : 'button'}
             accessibilityLabel={`${equipmentSlotLabel[slot]}, ${line?.name ?? 'vide'}`}
             accessibilityHint={onSelect === undefined ? undefined : 'Afficher les objets compatibles'}

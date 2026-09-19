@@ -44,3 +44,8 @@ export const shopActionKeys: ActionKeys = createActionKeys({
   write: (record) => SecureStore.setItemAsync(RECORD_KEY, JSON.stringify(record), OPTIONS),
   mint: () => Crypto.randomUUID(),
 });
+
+/** Retrouve les intentions de fabrication/lancement après une fermeture pendant le POST. */
+export async function pendingActionIntentions(prefix: string): Promise<string[]> {
+  return Object.keys(await read()).filter((intention) => intention.startsWith(prefix));
+}
