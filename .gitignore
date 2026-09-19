@@ -44,3 +44,8 @@ example
 /android
 
 .idea/
+
+# Les colorsets du widget sont dérivés des `colors` d'`expo-target.config.js` et réécrits à
+# chaque `expo prebuild` — même raison que `/ios` plus haut : un artefact généré qui
+# traîne en versionné finit par décrire une couleur qui n'existe plus.
+/targets/*/Assets.xcassets
