@@ -36,12 +36,14 @@ tags:
     visible: "QA Défis"
     timeout: 30000
 - takeScreenshot: duel-00-guilde
-- tapOn: "QA Rival"
+# Maestro exige que la regex couvre **tout** le texte d'accessibilité de l'élément, et une
+# ligne de membre s'annonce « QR, QA Rival, Niv. 1 » d'un seul bloc.
+- tapOn: ".*QA Rival.*"
 - extendedWaitUntil:
-    visible: "Défier"
+    visible: ".*Défier.*"
     timeout: 30000
 - takeScreenshot: duel-01-profil
-- tapOn: "Défier"
+- tapOn: "Défier QA Rival"
 # L'écran de combat, et pas le profil qu'on quitte : le nom du défié est visible sur les deux,
 # donc c'est l'identifiant de l'écran qui fait foi. `battle-combat` est la séquence jouée —
 # sans illustration, un défi n'a ni chargement d'images ni dialogue d'entrée.
@@ -50,5 +52,5 @@ tags:
       id: "battle-combat"
     timeout: 60000
 # Le nom du défié prend la place de celui d'un ennemi, sur le même composant.
-- assertVisible: "QA Rival"
+- assertVisible: ".*QA Rival.*"
 - takeScreenshot: duel-02-combat

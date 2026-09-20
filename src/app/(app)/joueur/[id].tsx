@@ -52,10 +52,13 @@ export default function JoueurScreen() {
 
           {player.data.title === null ? null : <TitleBadge name={player.data.title.name} />}
 
+          {/* Au-dessus des cercles et de l'équipement, pas sous eux : c'est l'action de
+              l'écran, et le plateau d'équipement fait à lui seul plus d'une hauteur de
+              téléphone — un bouton placé après lui ne se découvre qu'en cherchant. */}
+          <Challenge id={id} name={player.data.displayName} />
+
           <PlayerAttributes player={player.data} />
           <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics} />
-
-          <Challenge id={id} name={player.data.displayName} />
 
           <Text style={styles.body}>
             Membre GRRIND depuis le {formatCalendarDate(player.data.registeredAt)}.
