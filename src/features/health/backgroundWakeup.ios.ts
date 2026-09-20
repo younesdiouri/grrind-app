@@ -7,6 +7,8 @@ import { creditedNotice } from '@/features/health/creditedNotice';
 import { isE2eBuild } from '@/features/health/e2e';
 import { noteRegistration, noteWake } from '@/features/diagnostics/journal';
 import { sync } from '@/features/health/sync';
+import { hasAwardedXp } from '@/features/reward/timeline';
+import { refreshWidget } from '@/features/widget/publish';
 
 /**
  * Le réveil HealthKit, câblé jusqu'au réseau. La seule capacité qui ne passe pas par le port
@@ -95,16 +97,43 @@ async function handleWakeup(anchor: string): Promise<void> {
     await announce(outcome.result.summary);
   }
 
-  if (!shouldCommitAnchor(outcome.result)) {
-    return;
+  /**
+   * Le widget se rafraîchit-il (#174) ?
+   *
+   * Conditionné à une XP **réellement accordée**, et pas au simple fait qu'un résumé soit
+   * revenu : un lot entièrement écarté — doublons, séances hors fenêtre — ne change aucun des
+   * chiffres affichés, et lui faire payer une requête de plus n'apporterait rien.
+   */
+  const widgetIsStale =
+    outcome.result.kind === 'summary' && hasAwardedXp(outcome.result.summary.totals);
+
+  if (shouldCommitAnchor(outcome.result)) {
+    try {
+      await GrrindHealth.commitAnchor(anchor);
+    } catch {
+      // Une ancre illisible ou une écriture qui échoue : rien à faire ici, personne ne
+      // regarde. Ne pas avancer laisse relire la même différence au prochain réveil — sans
+      // conséquence, voir `anchorPolicy.ts`.
+    }
   }
 
-  try {
-    await GrrindHealth.commitAnchor(anchor);
-  } catch {
-    // Une ancre illisible ou une écriture qui échoue : rien à faire ici, personne ne regarde.
-    // Ne pas avancer laisse relire la même différence au prochain réveil — sans conséquence,
-    // voir `anchorPolicy.ts`.
+  /**
+   * Le widget en dernier, et c'est un ordre de priorité, pas de lisibilité.
+   *
+   * iOS accorde au réveil un temps qu'il ne garantit pas : ce qui passe en premier est ce dont
+   * la perte coûte le plus cher. Une ancre non commise fait relire la même différence au
+   * prochain réveil, sans conséquence ; mais si on se faisait couper *pendant* la requête du
+   * widget alors que l'ancre attendait encore, on perdrait les deux — et l'ancre est celle qui
+   * garde une séance.
+   *
+   * C'est *le* moment qui justifie le widget, cela dit : personne n'est devant l'écran, la
+   * séance vient d'être comptée, et l'écran d'accueil le dira déjà quand le joueur sortira son
+   * téléphone. Attendu et non lancé dans le vide — le réveil rend la main à iOS au retour de
+   * cette fonction, et une requête encore en cours à ce moment-là serait suspendue sans jamais
+   * aboutir. `refreshWidget` ne jette pas.
+   */
+  if (widgetIsStale) {
+    await refreshWidget();
   }
 }
 

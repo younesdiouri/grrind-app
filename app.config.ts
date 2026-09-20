@@ -93,6 +93,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
          * remettre `development` dans `app.json`.
          */
         'aps-environment': 'development',
+        /**
+         * Le conteneur partagé avec le widget (#174), et **un par variante** — c'est la même
+         * raison que tout le reste de ce fichier. Deux apps installées qui écriraient dans
+         * `group.app.grrind` y mettraient deux états du même joueur, et le widget afficherait
+         * celui qui a écrit en dernier : les chiffres de la dev sur l'écran d'accueil pendant
+         * qu'on teste la prod, sans que rien ne le dise.
+         *
+         * `targets/stats/expo-target.config.js` relit ce tableau pour en faire les entitlements
+         * de l'extension : la variante se décide donc ici, et une seule fois.
+         */
+        'com.apple.security.application-groups': [`group.${identifier}`],
       },
     },
     android: {

@@ -18,12 +18,18 @@ METRO_PID_FILE="${DEV_STATE_DIR}/metro.pid"
 STARTED_AT="$(date +%s)"
 E2E_METRO_STARTED=0
 
+# `modules/*` et `targets/*` sont balayés en entier plutôt que nommés un par un : le module du
+# widget (#174) s'est ajouté à côté de celui de la santé, et une empreinte qui cite ses sources
+# en dur laisse le harnais rejouer un binaire périmé au premier module suivant — sans rien
+# signaler, puisque le build est « à jour ».
 native_fingerprint() {
   {
     shasum app.json app.config.ts package.json package-lock.json
-    find modules/grrind-health \
+    find modules \
       \( -path '*/ios/*' -o -name 'expo-module.config.json' \) \
       -type f -exec shasum {} \; | sort
+    # La cible du widget est native aussi, et elle ne vit pas sous `modules/`.
+    find targets -type f -not -path '*/Assets.xcassets/*' -exec shasum {} \; | sort
   } | shasum | awk '{ print $1 }'
 }
 

@@ -4,6 +4,7 @@ import { api } from '@/api/client';
 import type { components } from '@/api/schema';
 import { failureFrom, type Failure } from '@/features/auth/problems';
 import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
+import { publishProgression } from '@/features/widget/publish';
 
 export type Progression = components['schemas']['Progression'];
 export type Workout = components['schemas']['Workout'];
@@ -87,6 +88,11 @@ export function usePlayerHome(): {
     if (history.data === undefined) {
       return { step: 'failed', failure: failureFrom(history.error) };
     }
+
+    // Le widget suit l'accueil (#174) : ces chiffres-là viennent d'arriver, et les republier
+    // ne coûte rien puisqu'il n'y a rien à redemander. `void` parce que l'écran n'attend pas
+    // après un écran d'accueil — et que la publication ne jette pas, voir `bridge.ios.ts`.
+    void publishProgression(progression.data);
 
     return {
       step: 'ready',
