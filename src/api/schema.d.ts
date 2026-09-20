@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/players/{id}/battles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_combat_battle_challenge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/enemies": {
         parameters: {
             query?: never;
@@ -715,7 +731,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {string} */
-        PushRouteType: "PLAYER_PROFILE" | "GUILD_RISALAT";
+        PushRouteType: "PLAYER_PROFILE" | "GUILD_RISALAT" | "GUILD_CHAT";
         /**
          * @description Le `data` d'une notification push, **le seul morceau qui se décode plutôt que
          *     s'affiche**. Il n'arrive par aucune route : le canal est APNs via Expo, pas HTTP.
@@ -724,7 +740,9 @@ export interface components {
          *
          *     **Rien à afficher tel quel.** `routeId` est une clé de ressource à relire —
          *     pour `PLAYER_PROFILE`, l'identifiant que `GET /api/players/{id}` résout ; pour
-         *     `GUILD_RISALAT`, celui de la guilde dont il faut ouvrir l'écran des Risālāt. Une
+         *     `GUILD_RISALAT`, celui de la guilde dont il faut ouvrir l'écran des Risālāt ;
+         *     pour `GUILD_CHAT`, celui de la guilde dont il faut ouvrir le chat — le message
+         *     n'est pas désigné, la conversation l'est. Une
          *     notification peut dormir des heures dans le centre de notifications ; ce que le
          *     tap montre ensuite doit être exact, donc relu depuis l'API. `groupingKey`, lui,
          *     ne se lit pas : il dit seulement quelle notification une nouvelle remplace.
@@ -891,7 +909,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/recipe-unavailable" | "https://grrind.app/problems/insufficient-crafting-resources" | "https://grrind.app/problems/alam-manual-disabled" | "https://grrind.app/problems/alam-run-not-found" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/item-not-sellable" | "https://grrind.app/problems/item-equipped" | "https://grrind.app/problems/sale-price-changed" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/recipe-unavailable" | "https://grrind.app/problems/insufficient-crafting-resources" | "https://grrind.app/problems/alam-manual-disabled" | "https://grrind.app/problems/alam-run-not-found" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/opponent-not-found" | "https://grrind.app/problems/cannot-challenge-yourself" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/item-not-sellable" | "https://grrind.app/problems/item-equipped" | "https://grrind.app/problems/sale-price-changed" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -2162,12 +2180,28 @@ export interface components {
          *     **Le nom arrive traduit**, comme les titres : le client n'a pas de table de
          *     correspondance. `key` reste stable d'une locale à l'autre — c'est l'entrée du
          *     catalogue DB publié, pas une donnée d'affichage.
+         *
+         *     **`key` et `playerId` sont exclusifs, et l'un des deux est toujours nul.**
+         *     Un combat PvE porte `key`, un défi PvP porte `playerId` et un `name` qui est le
+         *     **pseudo du défié au moment du combat** — jamais relu depuis son compte : un
+         *     combat déjà joué est un fait écrit, et son rejeu ne dépend ni d'un renommage
+         *     postérieur ni de la présence de ce compte. Un joueur n'a ni `imageUrls` ni
+         *     `introduction` : les deux valent `null`, comme pour un ennemi sans présentation
+         *     publiée, et l'animation est la même.
          */
         BattleEnemy: {
-            /** @example SAND_JACKAL */
-            key: string;
             /**
-             * @description Déjà traduit, dans la langue négociée sur `Accept-Language`.
+             * @description L'entrée du catalogue, ou `null` pour un défi PvP.
+             * @example SAND_JACKAL
+             */
+            key: string | null;
+            /**
+             * Format: uuid
+             * @description Le co-équipier défié, ou `null` pour un combat PvE.
+             */
+            playerId: string | null;
+            /**
+             * @description Déjà traduit, dans la langue négociée sur `Accept-Language` — ou le pseudo du défié, snapshoté.
              * @example Chacal des sables
              */
             name: string;
@@ -2285,8 +2319,13 @@ export interface components {
             };
         };
         /**
-         * @description Un combat PvE joué et jugé — ce que rendent `POST /api/battles` et
-         *     `GET /api/battles/{id}`, à l'identique.
+         * @description Un combat joué et jugé — ce que rendent `POST /api/battles`,
+         *     `POST /api/players/{id}/battles` et `GET /api/battles/{id}`, à l'identique.
+         *
+         *     **Un défi PvP a exactement cette forme** : c'est ce qui permet au client de
+         *     l'animer avec le composant écrit pour le PvE, sans une branche. `enemy.key` et
+         *     `enemy.playerId` disent lequel des deux on regarde, et `rewards` est vide pour un
+         *     défi — un défi ne rapporte rien en v1.
          *
          *     **L'ordre des champs est l'ordre de l'animation**, et c'est un contrat, pas une
          *     convention d'écriture — même règle que `RewardSummary`.
@@ -2355,8 +2394,16 @@ export interface components {
              *     voir la description de `Battle`.
              */
             enemy: {
-                /** @example SAND_JACKAL */
-                key: string;
+                /**
+                 * @description `null` pour un défi PvP.
+                 * @example SAND_JACKAL
+                 */
+                key: string | null;
+                /**
+                 * Format: uuid
+                 * @description Le co-équipier défié, `null` pour un combat PvE.
+                 */
+                playerId: string | null;
                 /** @example Chacal des sables */
                 name: string;
             };
@@ -2535,7 +2582,7 @@ export interface components {
             refreshToken: string;
         };
         /** @enum {string} */
-        NotificationCategory: "GUILD_ACTIVITY" | "RISALA_TURN" | "RISALA_REVEALED";
+        NotificationCategory: "GUILD_ACTIVITY" | "RISALA_TURN" | "RISALA_REVEALED" | "GUILD_CHAT";
         NotificationPreferenceRequest: {
             /** @default null */
             category: components["schemas"]["NotificationCategory"] | null;
@@ -2784,6 +2831,61 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    post_combat_battle_challenge: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Le défi est joué et écrit. Exactement la charge utile de `POST /api/battles` : `enemy.key` vaut `null`, `enemy.playerId` porte le défié, `enemy.name` son pseudo au moment du combat. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Battle"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /**
+             * @description Ce joueur n'existe pas, **ou n'est pas un co-équipier** (`opponent-not-found`).
+             *     Les deux cas rendent la même réponse, et **jamais 403** : un 403 confirmerait qu'un
+             *     compte porte cet UUID, et les UUID v7 encodent leur instant de création — l'API
+             *     deviendrait un moyen d'énumérer les comptes ouverts un jour donné.
+             */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            409: components["responses"]["Conflict"];
+            /** @description On ne se défie pas soi-même (`cannot-challenge-yourself`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     get_combat_enemies_list: {
         parameters: {
             query?: never;

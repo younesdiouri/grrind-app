@@ -31,6 +31,13 @@ function hrefFor(target: PushRouteTarget) {
       return { pathname: '/joueur/[id]', params: { id: target.routeId } } as const;
     case 'GUILD_RISALAT':
       return { pathname: '/guilde' } as const;
+    // `GUILD_CHAT` (younesdiouri/grrind-back#281) mène au même onglet : le fil est une vue de
+    // l'écran de guilde, pas une route. L'ouvrir directement demanderait un paramètre que
+    // `guilde.tsx` ne lit pas encore — c'est #177, pas ce ticket. Le cas est écrit ici parce
+    // que sans lui le client ne compile plus, et c'est exactement ce que ce `switch` existe
+    // pour provoquer.
+    case 'GUILD_CHAT':
+      return { pathname: '/guilde' } as const;
     default:
       return unroutablePushRouteType(target.type);
   }

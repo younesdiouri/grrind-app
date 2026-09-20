@@ -7,7 +7,7 @@ function battle(id: string, foughtAt: string): BattleSummary {
   return {
     id,
     result: 'VICTORY',
-    enemy: { key: 'SAND_JACKAL', name: 'Chacal des sables' },
+    enemy: { key: 'SAND_JACKAL', playerId: null, name: 'Chacal des sables' },
     attackCount: 16, actionCount: 15, elapsedTicks: 7000, endReason: 'KO', algorithmVersion: 'v2',
     foughtAt,
     // Sans intérêt pour l'accumulation de pages testée ici : un gain nul, comme une
