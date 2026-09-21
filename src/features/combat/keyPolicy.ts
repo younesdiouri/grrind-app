@@ -34,14 +34,34 @@ export function intentionOf(enemyKey: string | null): string {
 }
 
 /**
+ * L'intention d'un défi (younesdiouri/grrind-back#283).
+ *
+ * Même raisonnement, autre préfixe : défier Carla deux fois de suite sans verdict entre les
+ * deux est un rejeu, défier Karim ensuite est une autre intention. Le préfixe `player:` les
+ * sépare d'un `enemy:` — sans lui, un identifiant de joueur et une clé de catalogue
+ * cohabiteraient dans le même espace de noms, et rien ne garantit qu'ils ne se croiseront
+ * jamais.
+ */
+export function duelIntentionOf(playerId: string): string {
+  return `player:${playerId}`;
+}
+
+/**
  * Les refus qui **prouvent qu'aucun combat n'a été écrit**.
  *
  * La liste est courte exprès. Le ticket back (#219) est explicite : un joueur sous le niveau
- * minimum reçoit un 422 et *aucune ligne n'est écrite* ; une clé inconnue non plus.
+ * minimum reçoit un 422 et *aucune ligne n'est écrite* ; une clé inconnue non plus. Les deux
+ * refus du défi (#283) ont la même propriété, et pour la même raison : ils sont tranchés avant
+ * la simulation.
  */
 const PROVES_NOTHING_WRITTEN: ReadonlySet<ProblemType> = new Set<ProblemType>([
   'https://grrind.app/problems/enemy-key-unknown',
   'https://grrind.app/problems/enemy-level-too-low',
+  // Le défi (younesdiouri/grrind-back#283), et le ticket est tout aussi explicite : les deux
+  // refus tombent **avant** qu'une ligne soit écrite — l'adversaire n'est pas un co-équipier,
+  // ou c'est soi-même.
+  'https://grrind.app/problems/opponent-not-found',
+  'https://grrind.app/problems/cannot-challenge-yourself',
 ]);
 
 /**

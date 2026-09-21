@@ -1,4 +1,5 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
@@ -9,7 +10,9 @@ import { TitleBadge } from '@/components/TitleBadge';
 import { XpBar } from '@/components/XpBar';
 import { progressFill } from '@/components/guildProgress';
 import { color, space, type } from '@/design/tokens';
-import { messageFor } from '@/features/auth/problems';
+import { messageFor, type Failure } from '@/features/auth/problems';
+import { useAuth } from '@/features/auth/useAuth';
+import { challenge } from '@/features/combat/fight';
 import { formatCalendarDate } from '@/features/community/format';
 import { usePlayer, type Player } from '@/features/community/usePlayer';
 import { VitalityNote } from '@/features/progression/PlayerHomeView';
@@ -48,6 +51,11 @@ export default function JoueurScreen() {
           </View>
 
           {player.data.title === null ? null : <TitleBadge name={player.data.title.name} />}
+
+          {/* Au-dessus des cercles et de l'équipement, pas sous eux : c'est l'action de
+              l'écran, et le plateau d'équipement fait à lui seul plus d'une hauteur de
+              téléphone — un bouton placé après lui ne se découvre qu'en cherchant. */}
+          <Challenge id={id} name={player.data.displayName} />
 
           <PlayerAttributes player={player.data} />
           <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics} />
@@ -94,6 +102,64 @@ function PlayerAttributes({ player }: { player: Player }) {
   );
 }
 
+/**
+ * Le défi (younesdiouri/grrind-back#283) : un bouton, et l'écran de combat derrière.
+ *
+ * ————— Pourquoi il disparaît au lieu de se griser —————————————————————————————————————
+ *
+ * Cet écran sert aussi à **se regarder soi-même** — première clause du voter serveur — et le
+ * serveur refuse l'auto-défi. Un bouton grisé sur son propre profil poserait une question sans
+ * réponse (« qu'est-ce qui me manque ? ») ; l'absence n'en pose aucune.
+ *
+ * ————— Pourquoi rien n'est rechargé au retour ————————————————————————————————————————
+ *
+ * Le combat est déjà **en main** quand le verdict tombe : le back rend la timeline entière sur
+ * le `POST`, et `/battle` la reprend sans second appel. Cet écran n'a donc rien à faire du
+ * `Battle` qu'il vient de recevoir, sinon en passer l'identifiant.
+ *
+ * Un seul défi en vol : le bouton devient occupé et l'appui ne passe plus. Deux défis lancés
+ * en parallèle seraient deux intentions, donc deux clés, donc deux combats écrits pour une
+ * seule animation regardée — même raisonnement que l'onglet Combat.
+ */
+function Challenge({ id, name }: { id: string; name: string }) {
+  const auth = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [refusal, setRefusal] = useState<Failure | null>(null);
+
+  if (auth.status !== 'signedIn' || auth.user.id === id) {
+    return null;
+  }
+
+  const launch = async () => {
+    setBusy(true);
+    setRefusal(null);
+
+    const outcome = await challenge(id);
+    setBusy(false);
+
+    if (outcome.kind === 'fought') {
+      router.push({ pathname: '/battle', params: { id: outcome.battle.id } });
+      return;
+    }
+
+    setRefusal(outcome.failure);
+  };
+
+  return (
+    <View style={styles.challenge}>
+      <Button
+        label="Défier"
+        accessibilityLabel={`Défier ${name}`}
+        busy={busy}
+        onPress={() => {
+          void launch();
+        }}
+      />
+      {refusal === null ? null : <Text style={styles.body}>{messageFor(refusal)}</Text>}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { padding: space.lg, gap: space.md },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -103,6 +169,7 @@ const styles = StyleSheet.create({
   level: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   title: { ...type.title, color: color.text },
   body: { ...type.body, color: color.textMuted },
+  challenge: { gap: space.xs },
   attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   legendWrap: { flex: 1 },
 });

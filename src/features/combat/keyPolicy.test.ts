@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { createBatchKeys, type KeyRecord } from '@/features/health/batchKey';
 import type { Failure, ProblemDetails } from '@/features/auth/problems';
 
-import { forgetsKeyAfter, intentionOf } from './keyPolicy.ts';
+import { duelIntentionOf, forgetsKeyAfter, intentionOf } from './keyPolicy.ts';
 
 /**
  * Un trousseau qui survit à l'app, et une app qui redémarre.
@@ -63,6 +63,22 @@ describe('l’intention d’un combat', () => {
   });
 });
 
+describe('l’intention d’un défi', () => {
+  it('distingue deux adversaires', () => {
+    assert.notEqual(
+      duelIntentionOf('0199a0e6-0000-7000-8000-000000000001'),
+      duelIntentionOf('0199a0e6-0000-7000-8000-000000000002'),
+    );
+  });
+
+  it('ne peut pas se confondre avec un combat PvE', () => {
+    // Sans préfixe distinct, un identifiant de joueur et une clé de catalogue cohabiteraient
+    // dans le même espace de noms : un rejeu rendrait alors le mauvais combat.
+    assert.notEqual(duelIntentionOf('SAND_JACKAL'), intentionOf('SAND_JACKAL'));
+    assert.notEqual(duelIntentionOf('auto'), intentionOf(null));
+  });
+});
+
 describe('la clé d’idempotence d’un combat', () => {
   it('ne change pas entre deux tentatives, même app redémarrée', async () => {
     // **Le test qui justifie le ticket.** Son échec ne se voit pas à l'œil : les deux issues
@@ -118,6 +134,24 @@ describe('quand la clé s’efface, et quand elle survit', () => {
   it('s’efface sur les deux refus qui prouvent qu’aucun combat n’a été écrit', () => {
     assert.equal(forgetsKeyAfter(problem('https://grrind.app/problems/enemy-key-unknown')), true);
     assert.equal(forgetsKeyAfter(problem('https://grrind.app/problems/enemy-level-too-low')), true);
+  });
+
+  it('s’efface sur les deux refus d’un défi, tranchés avant toute écriture', () => {
+    assert.equal(forgetsKeyAfter(problem('https://grrind.app/problems/opponent-not-found')), true);
+    assert.equal(
+      forgetsKeyAfter(problem('https://grrind.app/problems/cannot-challenge-yourself')),
+      true,
+    );
+  });
+
+  it('en frappe une neuve pour un autre défié', async () => {
+    const disk = keychain();
+    const keys = disk.boot();
+
+    const carla = await keys.keyFor(duelIntentionOf('0199a0e6-0000-7000-8000-000000000001'));
+    const karim = await keys.keyFor(duelIntentionOf('0199a0e6-0000-7000-8000-000000000002'));
+
+    assert.notEqual(karim, carla);
   });
 
   it('survit à une panne sans réponse — la fenêtre que tout ceci ferme', () => {

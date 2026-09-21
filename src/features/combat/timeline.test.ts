@@ -94,6 +94,7 @@ function fabricated(attacks: number): Battle {
     player: { hp: 10_000, damage: 1, mitigationPercent: 0, comboPercent: 0, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 0 },
     enemy: {
       key: 'SAND_JACKAL',
+      playerId: null,
       name: 'Chacal des sables',
       hp: 10_000,
       damage: 1,

@@ -274,6 +274,20 @@ function messageForProblem(problem: ProblemDetails): string {
     case 'https://grrind.app/problems/enemy-level-too-low':
       return "Cet adversaire demande un niveau que tu n'as pas encore.";
 
+    // ————— Le défi PvP (younesdiouri/grrind-back#283) ———————————————————————————————
+
+    // Joueur inconnu **ou** joueur qui n'est pas un co-équipier : le back rend la même chose
+    // dans les deux cas, et jamais un 403 — les UUID v7 encodent leur instant de création. Le
+    // message doit rester vrai pour les deux, donc il ne parle pas de guilde : dire « il n'est
+    // pas dans ta guilde » confirmerait l'existence du compte que le 404 protège.
+    case 'https://grrind.app/problems/opponent-not-found':
+      return 'Ce joueur est introuvable.';
+
+    // Un bug de l'app, pas une situation de jeu : l'écran masque le bouton sur son propre
+    // profil. Même registre qu'`enemy-key-unknown`.
+    case 'https://grrind.app/problems/cannot-challenge-yourself':
+      return "L'app a envoyé une requête que le serveur ne comprend pas.";
+
     // ————— Le sac (younesdiouri/grrind-back#27 à #30) ————————————————————————————————
 
     // Un bug de l'app, pas une situation de jeu : les sept emplacements viennent de la
