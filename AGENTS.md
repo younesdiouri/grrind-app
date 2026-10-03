@@ -33,18 +33,11 @@ of this machine.
 The E2E workflow may use the running local `grrind-back`, but it must never reset its database,
 run its migrations, or modify that repository unless the user explicitly asks for it.
 
-# Codex workflow: architect and implementation agent
+# Workflow: scope, build, ship
 
-For implementation-ready tickets, the primary Codex thread is the architect.
-It delegates the full implementation to the project custom agent `developer`, defined in
-`.codex/agents/developer.toml`, and gives it the ticket number plus every decision or
-constraint that is not already explicit in the ticket.
-
-`developer` owns the implementation, tests, required mobile QA, commits, push, and PR. It
-never merges. Once the required tests and QA pass, it pushes the branch and opens the PR directly,
-without waiting for a cross-review or approval from the primary thread. While it is working, the
-primary thread must not edit the same scope in parallel. The primary thread reports the resulting
-PR and validation evidence to the user; no cross-agent review is required.
-
-Use this delegation workflow only after the ticket and its scope are ready. Exploration,
-architecture decisions, and ticket writing remain with the primary thread.
+There are no architect/developer roles and no delegated implementation agent. The agent in the
+conversation scopes the ticket with the user, implements it, runs the gates, opens the PR, merges
+it to `main` itself (`gh pr merge <N> --merge --delete-branch`) and, when the scoping says so,
+ships it with EAS (`eas build --profile production` then `eas submit --profile production`; the
+EAS quota is about ten builds a month, so `main` is the default destination). No cross-review and
+no re-asking for approval. Spawn sub-agents only when the user asks for them.
