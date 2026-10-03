@@ -111,11 +111,19 @@ tags:
       EMAIL: ${MULTIPLE_EMAIL}
 
 - extendedWaitUntil:
-    visible: ".*Toucher pour continuer.*"
+    visible: ".*Toucher pour voir le butin.*"
     timeout: 90000
 - assertVisible: ".*3 séances.*"
 - assertVisible: ".*Premiers pas.*"
 - takeScreenshot: 06-reward-summary
+
+# Trois séances créditées rapportent toujours des pièces : la page du butin suit.
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible: ".*BUTIN.*"
+    timeout: 10000
+- takeScreenshot: 06b-reward-loot
 
 # La mise en scène a pris l'écran toute seule, et c'est la règle : `mayOpenReward` laisse
 # passer tant que personne n'a touché la coquille de l'app depuis le lancement. Le formulaire

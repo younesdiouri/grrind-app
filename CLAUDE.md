@@ -70,37 +70,26 @@ sur un jeton expiré, absent ou illisible — un trousseau muet retombe sur la r
 une déconnexion (#142). Le chemin paresseux ne bouge pas : un 401 appelle toujours `refresh()`,
 et c'est lui le filet.
 
-## `SyncSummary` : l'ordre des clés est l'ordre de l'animation
+## `SyncSummary` : un bilan du lot, pas un rejeu séance par séance
 
-C'est *l'*écran du produit. Le payload d'import se joue **de haut en bas**, sans jamais être trié
-ni réordonné, et à deux niveaux : d'abord entre les workouts — `imported` est chronologique,
-celui du crédit — puis à l'intérieur de chacun.
+C'est *l'*écran du produit, et il tient en deux pages (`src/features/reward/`). Rejouer chaque
+workout l'un après l'autre rendait l'écran illisible dès la deuxième séance : on ne le fait plus.
 
-```
-imported[i] → session → xp.breakdown (ligne à ligne) → level.reached → titlesUnlocked → loot → streak → unlockableNodes
-```
+1. **L'XP** — un seul compteur jusqu'à `totals.xpAwarded`, une seule barre qui court du palier de
+   départ du premier workout (`xpIntoLevelBefore` / `xpToNextLevelBefore`) au palier d'arrivée du
+   dernier, niveaux franchis compris. Puis le niveau, les titres, et le gain de chaque
+   caractéristique en chiffres (somme des `gained`, Vitalité en avant/après).
+2. **Le butin** — seulement s'il y en a : les objets tombés et la bourse, de `imported[0].coins.before`
+   à `imported[dernier].coins.after`, jamais une somme de `gained`.
 
-`loot`, `streak` et `unlockableNodes` sont **présents et vides** jusqu'aux lots correspondants côté
-back. Le client les saute tant qu'ils le sont ; il ne les rend pas optionnels.
+Les séances écartées (`skipped`) ne s'affichent pas : elles n'ont rien rapporté.
 
-**La continuité entre workouts est offerte, pas calculée.** Chaque `RewardSummary` porte son
-palier de départ (`xpIntoLevelBefore` / `xpToNextLevelBefore`), et celui du workout *i+1* est
-exactement l'arrivée du workout *i*. La barre s'enchaîne sans un seul recalcul ici.
+`gains.ts` ramène le lot à ces chiffres, en **pure** et testée sur les fixtures capturées. Elle
+additionne des valeurs serveur, elle ne calcule rien du jeu. `totals` vaut **`null`** quand rien
+n'a été crédité : il n'y a pas d'état d'arrivée, et le client n'invente pas un zéro.
 
-**Le serveur envoie tout, le client décide de ce qu'il joue.** Rien ne se tronque côté serveur :
-au-delà de `DETAILED_WORKOUTS`, le client condense le reste en une montée continue. C'est une
-décision de mise en scène, elle vit dans `timeline.ts`, et elle ne change pas les totaux — ils
-viennent de `totals`, qui existe pour ça et pour le saut.
-
-`totals` vaut **`null`** quand rien n'a été crédité. Il n'y a pas d'état d'arrivée quand rien
-n'est arrivé, et le client n'invente pas un zéro.
-
-Le séquenceur vit dans `src/features/reward/`. `buildTimeline` est **pure** — pas de React, pas de
-Reanimated, pas d'horloge — et porte toute la mise en scène, rampes d'interpolation comprises :
-elle se prouve sur les fixtures capturées sans monter le moindre composant. Le composant ne fait
-qu'interpoler. Les valeurs animées sont des `useSharedValue`, il n'y a **qu'une seule horloge**, et
-**rien ne passe par `setState` dans une boucle** : les compteurs numériques s'animent sur le thread
-UI. Le retour vers JS est réservé à l'haptique.
+Une seule valeur animée (`useSharedValue`), les compteurs s'écrivent sur le thread UI, et
+**rien ne passe par `setState` dans une boucle**. Le retour vers JS est réservé à l'haptique.
 
 ## Le serveur n'a plus l'horloge, il l'arbitre
 
@@ -129,7 +118,7 @@ une erreur — la séance est écartée et **nommée** dans la réponse. Le clie
 - Le design system a **un seul sens** : les composants RN sont la source de vérité, les previews
   HTML en sont dérivées via `react-native-web` (`npm run previews`, vérifié en CI). Jamais
   l'inverse. Les durées et les courbes d'animation sont des tokens comme les couleurs — elles
-  sortent du spike, et `timeline.ts` compose avec elles au lieu d'en inventer.
+  sortent du spike, et l'écran de récompense compose avec elles au lieu d'en inventer.
 - Erreurs : `application/problem+json`, les `type` sont des URIs `https://grrind.app/problems/…`.
   C'est dessus que les messages se branchent, pas sur le code HTTP.
 
