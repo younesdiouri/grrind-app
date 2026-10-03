@@ -519,6 +519,7 @@ export const xpSourceLabel: Record<components['schemas']['XpLine']['source'], st
   BASE: 'Effort',
   DISTANCE: 'Distance',
   ELEVATION: 'Dénivelé',
+  HEART_RATE: 'Cardio',
   STREAK: 'Série',
   ITEM: 'Équipement',
   SKILL: 'Compétence',

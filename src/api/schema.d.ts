@@ -1553,11 +1553,12 @@ export interface components {
             /**
              * @description `BASE` est le temps — une minute vaut un point. `DISTANCE` et `ELEVATION`
              *     sont ce que le terrain ajoute, et n'apparaissent que sur les disciplines où
-             *     une montre les mesure de façon fiable. Les cinq suivantes sont les
+             *     une montre les mesure de façon fiable. `HEART_RATE` est le bonus cardiaque,
+             *     absent quand la FC moyenne n'est pas mesurée. Les cinq suivantes sont les
              *     contributeurs de modificateurs ; les deux dernières, les garde-fous.
              * @enum {string}
              */
-            source: "BASE" | "DISTANCE" | "ELEVATION" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "GUILD" | "DIMINISHING" | "DAILY_CAP";
+            source: "BASE" | "DISTANCE" | "ELEVATION" | "HEART_RATE" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "GUILD" | "DIMINISHING" | "DAILY_CAP";
             /** @example -55 */
             amount: number;
         };
