@@ -135,43 +135,37 @@ l'autre dépôt s'écrit en toutes lettres : `Closes younesdiouri/grrind-back#42
 Format conventionnel, corps en français, à l'impératif, qui explique le *pourquoi* :
 `feat(reward):`, `fix(auth):`, `refactor:`, `chore:`, `docs:`, `test:`.
 
-## Qui écrit quoi : l'architecte et le développeur
+## Du cadrage à `main`, d'une traite
 
-Le travail se fait à deux, et la séparation n'est pas une répartition de charge — c'est **une
-relecture par quelqu'un qui n'a pas écrit le code**.
+Il n'y a pas d'intermédiaire : **Claude cadre, code, vérifie, fusionne et déploie**. Pas de
+sous-agent par défaut (on en lance un seulement quand l'utilisateur le demande), pas de revue
+croisée, pas de validation à redemander. Le garde-fou, c'est le cadrage, puis les barrières.
 
-```
-        Architecte  ──────────────►  developer-sonnet  ──────────────►  PR  ──────────────►  Architecte
-        (Opus)        délègue         (.claude/agents/)     ouvre                              revue finale
-                                                                                               et fusion
-   ticket rédigé,                 implémentation, tests,                              relit contre le ticket,
-   périmètre tranché              lint, typecheck, commits                            fusionne ou renvoie
-```
+1. **Cadrer.** Le ticket dit le *pourquoi*, le périmètre en cases à cocher, et **ce qu'on ne
+   fait pas**. Le comment peut rester ouvert, le pourquoi non. Si une décision de produit
+   manque et changerait le travail, elle se pose à l'utilisateur *ici*, pas en cours de route.
+2. **Coder** sur une branche `feat/<N>-<slug>` (ou `fix/`, `chore/`), par petits pas qui
+   compilent.
+3. **Prouver** : les barrières de la section suivante, toutes au vert. On ne modifie jamais un
+   test pour le faire passer — soit le code a tort, soit la règle a changé et le ticket le dit.
+4. **Fusionner** : PR (`Closes #N`), puis `gh pr merge <N> --merge --delete-branch` dans la
+   foulée, sans demander. Le corps de la PR dit ce qui n'a pas été coché et pourquoi, et ce qui
+   reste à vérifier sur appareil physique.
+5. **Déployer** si le cadrage le prévoit : `eas build --profile production` puis
+   `eas submit --profile production`. Le quota est d'environ **dix builds par mois** — `main`
+   est la destination par défaut, un build part quand on décide d'une sortie, pas à chaque
+   fusion.
 
-**L'architecte** rédige le ticket avant qu'une ligne soit écrite : le *pourquoi*, le périmètre en
-cases à cocher, et surtout **ce qu'on ne fait pas**. Un ticket qui laisse le comment ouvert est
-normal ; un ticket qui laisse le pourquoi ouvert ne part pas.
-
-**`developer-sonnet`** implémente le ticket en entier et ouvre la PR. Il ne fusionne jamais, il
-ne réduit jamais le périmètre de lui-même, et il **remonte au lieu de contourner** quand un
-invariant du client lui barre la route. Sa fiche vit dans `.claude/agents/developer-sonnet.md`
-et porte les six interdits sous une forme opérationnelle.
-
-**La revue finale revient à l'architecte**, et elle se fait *contre le ticket* : ce qui est coché
-l'est-il vraiment, ce qui ne l'est pas est-il expliqué, et la PR a-t-elle tranché quelque chose
-qui aurait dû remonter. C'est là que les décisions de produit se tiennent — il n'y a nulle part
-ailleurs où elles pourraient se tenir, voir la section suivante.
-
-**Et l'architecte fusionne lui-même sur `main`**, dans la foulée de sa revue, sans demander la
-permission de le faire. La revue *est* l'autorisation ; redemander après l'avoir donnée n'ajoute
-aucune sécurité, ça ajoute un aller-retour. La seule chose qui reste à remonter avant de
-fusionner est une PR qui a tranché quelque chose que le ticket ne tranchait pas.
+Ce qui reste à remonter avant de fusionner : un invariant du client qui barre la route, un
+contrat qui ne sert pas la donnée dont l'écran a besoin, ou une décision que le cadrage ne
+tranchait pas. Dans ce cas on livre tout le reste et on dit ce qui manque. Une donnée que l'API
+ne sert pas ne s'affiche pas : un blanc vaut mieux qu'un chiffre faux.
 
 ## Il n'y a pas de CI, et les barrières tournent avant le push
 
 Le workflow GitHub Actions a été supprimé (#85), comme celui du back avant lui
 (`grrind-back#178`) : il rejouait, sur une machine reconstruite à chaque fois, exactement ce
-qu'on lance déjà en local en quelques secondes. Le développeur passe les barrières **avant de
+qu'on lance déjà en local en quelques secondes. Les barrières passent **avant de
 pousser**, et c'est cette exécution-là qui fait foi — pas une seconde, plus lente, qu'on ne
 regarde qu'après coup.
 
