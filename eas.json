@@ -5,6 +5,7 @@
   },
   "build": {
     "development": {
+      "node": "24.9.0",
       "developmentClient": true,
       "distribution": "internal",
       "env": {
@@ -12,12 +13,14 @@
       }
     },
     "preview": {
+      "node": "24.9.0",
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://grrind-back.fly.dev"
       }
     },
     "production": {
+      "node": "24.9.0",
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://grrind-back.fly.dev"
