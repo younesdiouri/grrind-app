@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
@@ -17,6 +17,8 @@ test('retention removes old reports but preserves dev state, pinned proofs and s
   writeFileSync(resolve(root, '2026-10-05_100000/.keep'), '');
   symlinkSync(resolve(root, 'dev'), resolve(root, '2026-10-05_090000'));
   assert.equal(pruneReports(root, 1), 1);
+  assert.ok(existsSync(resolve(root, '2026-10-05_120000')));
+  assert.equal(existsSync(resolve(root, '2026-10-05_110000')), false);
   assert.equal(readFileSync(resolve(root, 'dev/native-fingerprint'), 'utf8'), 'keep');
   assert.equal(pruneReports(root, 1), 0);
 });

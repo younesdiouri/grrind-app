@@ -67,11 +67,7 @@ tags:
     start: "2%, 55%"
     end: "95%, 55%"
 
-- tapOn:
-    id: "tab-reglages"
-# Le compte est en tête : la déconnexion reste atteignable sans traverser les sections qui
-# grandissent, et surtout sans finir sous la barre d'onglets.
-- assertVisible: "Se déconnecter"
+# Retour dans Réglages, à la position conservée après Santé.
 # Le bloc Synchronisation (#82, #140) : sur le compte E2E, `isE2eBuild` court-circuite le réveil
 # HealthKit (`backgroundWakeup.ios.ts`), donc « Dernier réveil en arrière-plan » et
 # « Inscription au réveil » restent à `—` — c'est attendu, pas un défaut du flow. La ligne
