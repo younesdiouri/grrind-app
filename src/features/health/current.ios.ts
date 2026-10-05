@@ -9,7 +9,7 @@ import type { HealthProvider } from '@/features/health/provider';
  *
  * Le branchement ne coûte rien au chemin de production : `isE2eBuild` est une constante de
  * *bundling* (voir `e2e.ts`), donc dans toute app qui n'a pas été construite par
- * `scripts/e2e-ios.sh`, cette expression est déjà résolue et le bouchon n'est pas embarqué.
+ * le Metro E2E (`EXPO_PUBLIC_E2E=1`), cette expression est déjà résolue et le bouchon n’est pas embarqué.
  */
 export const healthProvider: HealthProvider = isE2eBuild
   ? mockHealthProvider

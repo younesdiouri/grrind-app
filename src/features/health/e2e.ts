@@ -5,7 +5,7 @@
  *
  * `EXPO_PUBLIC_E2E` est lue au *bundling*, pas à l'exécution : Babel remplace l'expression par
  * la chaîne littérale, et `isE2eBuild` devient un `false` constant dans tout bundle qui n'a pas
- * été construit par `scripts/e2e-ios.sh`. Les branches qui en dépendent disparaissent au lieu
+ * été servi avec `EXPO_PUBLIC_E2E=1`. Les branches qui en dépendent disparaissent au lieu
  * de rester là à attendre qu'on les allume — un bundle de production n'embarque ni le
  * fournisseur bouchon, ni le moyen de le choisir.
  *
