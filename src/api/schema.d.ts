@@ -332,6 +332,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/streak": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_streak_state"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/appearances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_identity_appearances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/devices": {
         parameters: {
             query?: never;
@@ -765,6 +797,8 @@ export interface components {
             playerId: string;
             displayName: string;
             avatarUrl: string | null;
+            /** @description Figée à la résolution (#289) ; poses dans GET /api/appearances, miniatures pour la guilde. */
+            appearance: components["schemas"]["Appearance"];
             contribution: number;
             gauges: components["schemas"]["AlamGauge"][];
             activitySummary?: {
@@ -799,6 +833,8 @@ export interface components {
             index: number;
             enemyKey: string;
             enemyName: string;
+            /** @description Poses du boss lues dans le catalogue figé de l'édition, null sans présentation publiée (#289). */
+            imageUrls: components["schemas"]["EnemyImageUrls"];
             thresholdPermille: number;
             won: boolean;
             probabilityMillionths: number;
@@ -1244,6 +1280,8 @@ export interface components {
             title: components["schemas"]["PlayerTitle"] | null;
             /** @description Le plus proche d'aboutir parmi ceux qui restent. `null` quand il les a tous. */
             nextTitle: components["schemas"]["PlayerTitle"] | null;
+            /** @description Le modèle de héros porté (#289), modifiable par `PATCH /api/me`. Les images sont dans `GET /api/appearances`. */
+            appearance: components["schemas"]["Appearance"];
             /**
              * @description Toutes les catégories vivantes : le client lit l'état exact de chacune plutôt
              *     que de connaître le défaut. Clé = valeur de `NotificationCategory`, valeur =
@@ -1579,6 +1617,32 @@ export interface components {
             /** @example 5108 */
             after: number;
         };
+        /**
+         * @description Une série de régularité (#286), relue des jours sportifs. Un jour sportif cumule
+         *     30 minutes de sport valide (la marche ne compte pas). La série casse dès que
+         *     deux jours manqués tombent à moins de 7 jours d'écart ; le jour courant n'est pas
+         *     encore manqué. Chaque semaine de la série à 6 jours sportifs rapporte un coffre :
+         *     commun, rare, épique, puis légendaire chaque semaine.
+         */
+        StreakState: {
+            /**
+             * Format: date
+             * @description Premier jour de la série en cours ; `null` sans série.
+             * @example 2026-08-07
+             */
+            startedOn: string | null;
+            /**
+             * @description Jours écoulés depuis `startedOn`, aujourd'hui compris.
+             * @example 6
+             */
+            days: number;
+            /** @example 1 */
+            weeksCompleted: number;
+            /** @example 6 */
+            sportDaysInLast7: number;
+            /** @enum {string} */
+            nextChestRarity: "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
+        };
         /** @description Un effet porté par un objet tombé — même vocabulaire que `ModifierType`, jamais un mécanisme parallèle. */
         DroppedItemModifier: {
             /** @enum {string} */
@@ -1887,9 +1951,9 @@ export interface components {
          *     `loot: []` et un `coins` à gain nul, jamais des clés absentes : le client anime
          *     la même séquence dans tous les cas.
          *
-         *     `streak` et `unlockableNodes` restent **présents et vides** jusqu'aux Lots 5 et
-         *     7. Une clé qui apparaîtrait plus tard obligerait un client déjà déployé à la
-         *     rendre optionnelle pour toujours.
+         *     **`streak` suit `coins` (#286)** : le jour sportif, la série avant, la série
+         *     après, puis le coffre de la semaine s'il tombe. `unlockableNodes` reste
+         *     **présent et vide** jusqu'au Lot 7.
          */
         RewardSummary: {
             session: components["schemas"]["Workout"];
@@ -1982,8 +2046,21 @@ export interface components {
                 /** @example 52 */
                 after: number;
             };
-            /** @description Lot 5 : toujours `null` aujourd'hui. */
-            streak: Record<string, never> | null;
+            /** @description Ce que la séance a fait à la série de régularité (#286), dans l'ordre de l'animation. Présent pour chaque séance, marche comprise — qui ne compte simplement pas. */
+            streak: {
+                /**
+                 * Format: date
+                 * @description Le jour local du sport, dans le fuseau du joueur.
+                 * @example 2026-08-12
+                 */
+                sportDay: string;
+                /** @description Ce jour atteint 30 minutes de sport valide, cette séance comprise. */
+                dayCounted: boolean;
+                before: components["schemas"]["StreakState"];
+                after: components["schemas"]["StreakState"];
+                /** @description Le coffre de la semaine de régularité qui vient d'être acquise — vide le plus souvent. Déjà crédité à l'inventaire, il s'ouvre par `POST /api/inventory/chests/{key}/open`. */
+                chests: components["schemas"]["DroppedItem"][];
+            };
             /** @description Lot 7 : toujours vide aujourd'hui. */
             unlockableNodes: Record<string, never>[];
             /** @description L'équilibrage sous lequel ces montants ont été accordés. Le client n'en fait rien ; un rapport de bug, si. */
@@ -2166,6 +2243,30 @@ export interface components {
             /** @description Réduction relative de la chance d’esquive adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
             precisionPercent: number;
         };
+        /** @description Trois PNG RGBA carrés, même cadrage et même ligne de sol. `hit` est le coup reçu ; une esquive utilise `idle`. */
+        AppearancePoses: {
+            /** Format: uri */
+            idle: string;
+            /** Format: uri */
+            attack: string;
+            /** Format: uri */
+            hit: string;
+        };
+        /** @description **De dos** pour le joueur lui-même, **de face** pour qui l'affronte. */
+        AppearanceViews: {
+            back: components["schemas"]["AppearancePoses"];
+            front: components["schemas"]["AppearancePoses"];
+        };
+        /** @description Un modèle de héros complet, purement cosmétique. `imageUrls` en 1024 px, `thumbnailUrls` en 256 px pour afficher une guilde entière. */
+        AppearanceModel: {
+            key: components["schemas"]["Appearance"];
+            imageUrls: components["schemas"]["AppearanceViews"];
+            thumbnailUrls: components["schemas"]["AppearanceViews"];
+        };
+        /** @description Tous les modèles que `PATCH /api/me` accepte. Le profil, les combats et Ālam ne portent que la clé. */
+        AppearanceCatalog: {
+            appearances: components["schemas"]["AppearanceModel"][];
+        };
         /** @description Pack publié complet ou null. URLs absolues publiques, HTTPS en production. hit est la pose de coup reçu ; une esquive utilise idle. La présentation courante est aussi utilisée au rejeu. */
         EnemyImageUrls: {
             /** Format: uri */
@@ -2228,6 +2329,8 @@ export interface components {
             cooldownReductionPercent: number;
             /** @description Réduction relative de la chance d’esquive adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
             precisionPercent: number;
+            /** @description Le héros du défié au moment du combat (#289), `null` face à un ennemi du catalogue. Ses poses **de face** sont dans `GET /api/appearances` ; `imageUrls` reste `null` pour un joueur. */
+            appearance: components["schemas"]["Appearance"] | null;
             imageUrls?: components["schemas"]["EnemyImageUrls"];
             /** @description Texte brut localisé selon Accept-Language (repli EN puis FR), indépendant des images. Toujours présent, null si absent ; facultatif pour les anciennes réponses. */
             introduction?: string | null;
@@ -2363,7 +2466,10 @@ export interface components {
              * @description L'instant de la requête : contrairement à un workout, un combat n'a aucune antériorité au serveur.
              */
             foughtAt: string;
-            player: components["schemas"]["BattleFighter"];
+            /** @description Le combattant de l'appelant, et le héros qu'il portait au combat (#289). */
+            player: components["schemas"]["BattleFighter"] & {
+                appearance: components["schemas"]["Appearance"];
+            };
             enemy: components["schemas"]["BattleEnemy"];
             /** @description La timeline complète, dans l'ordre de l'animation. */
             events: components["schemas"]["BattleEvent"][];
@@ -2590,6 +2696,8 @@ export interface components {
             /** @default null */
             enabled: boolean | null;
         };
+        /** @enum {string} */
+        Appearance: "MURID";
         UpdateProfileRequest: {
             /** @default null */
             displayName: string | null;
@@ -2602,6 +2710,8 @@ export interface components {
             locale: "en" | "fr" | null;
             /** @default [] */
             notificationPreferences: components["schemas"]["NotificationPreferenceRequest"][];
+            /** @default null */
+            appearance: components["schemas"]["Appearance"] | null;
         };
         RegisterRequest: {
             /** @default  */
@@ -3715,6 +3825,48 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+        };
+    };
+    get_streak_state: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La série en cours, relue des jours sportifs — aucun compteur stocké. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StreakState"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    get_identity_appearances: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Les modèles de héros disponibles et leurs poses. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppearanceCatalog"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
     post_identity_device_register: {

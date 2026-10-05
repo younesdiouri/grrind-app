@@ -20,7 +20,7 @@ export function contactAt(beat: Pick<BattleBeat, 'at' | 'until'>): number {
  * de revenir. Seul le corps s'arrête — l'éclat, les PV et l'haptique gardent l'instant du
  * contact, ce qui est précisément ce qui donne du poids au coup.
  */
-export function fighterMotionAt(beats: BattleBeat[], self: Actor, time: number, reduced = false) {
+export function fighterMotionAt(beats: BattleBeat[], self: Actor, time: number, reduced = false, lateral = false) {
   'worklet';
   const state = { pose: 'idle' as FighterPose, x: 0, y: 0, scale: 1, rotate: 0, flash: 0 };
   const beat = beatAt(beats, time);
@@ -41,7 +41,8 @@ export function fighterMotionAt(beats: BattleBeat[], self: Actor, time: number, 
   if (beat.attacker === self) {
     if (landed) state.pose = 'attack';
     if (!reduced) {
-      state.y += toward * force * combatMotion.lunge;
+      if (lateral) state.x -= toward * force * combatMotion.lunge;
+      else state.y += toward * force * combatMotion.lunge;
       state.scale += force * combatMotion.attackScale;
     }
   } else if (beat.kind === 'dodge') {
@@ -52,7 +53,8 @@ export function fighterMotionAt(beats: BattleBeat[], self: Actor, time: number, 
   } else if (landed) {
     state.pose = 'hit';
     if (!reduced) {
-      state.y -= toward * force * combatMotion.recoil;
+      if (lateral) state.x += toward * force * combatMotion.recoil;
+      else state.y -= toward * force * combatMotion.recoil;
       state.scale -= force * combatMotion.recoilScale;
       state.flash = Math.max(0, 1 - (time - contact) / combatMotion.flashDuration);
     }

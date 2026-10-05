@@ -9,6 +9,16 @@ const fixtures = ['victoire', 'defaite-boss', 'combat-long'].map((name) => JSON.
 ) as Battle);
 const timeline = buildBattleTimeline(fixtures[1], { illustrated: true });
 describe('Combattants : mise en scène', () => {
+  it('en duel latéral, les deux camps s’avancent vers le centre et reculent vers leur bord', () => {
+    const beat = { kind: 'attack', at: 0, until: 1000, index: 0, attacker: 'PLAYER', damage: 5, mitigated: 0 } as const;
+    const at = contactAt(beat);
+    assert.ok(fighterMotionAt([beat], 'PLAYER', at, false, true).x > 0);
+    assert.ok(fighterMotionAt([beat], 'ENEMY', at, false, true).x > 0);
+    assert.equal(fighterMotionAt([beat], 'PLAYER', at, true, true).x, 0);
+    const enemyBeat = { ...beat, attacker: 'ENEMY' } as const;
+    assert.ok(fighterMotionAt([enemyBeat], 'ENEMY', at, false, true).x < 0);
+    assert.ok(fighterMotionAt([enemyBeat], 'PLAYER', at, false, true).x < 0);
+  });
   it('réagit au contact, avec vie et haptique synchronisées', () => {
     const beat = timeline.beats.find((b) => b.kind === 'attack' && b.attacker === 'PLAYER')!;
     const contact = contactAt(beat);
