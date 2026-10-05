@@ -133,4 +133,3 @@ tags:
     timeout: 20000
 - assertVisible: "3 séances.*"
 - takeScreenshot: 07-multiple-history
-

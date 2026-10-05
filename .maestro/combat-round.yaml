@@ -58,4 +58,3 @@ appId: app.grrind.e2e
 - takeScreenshot: portrait-return-before-device-reset
 # L’app a déjà rétabli le portrait ; aligner maintenant les coordonnées du pilote iOS.
 - setOrientation: PORTRAIT
-
