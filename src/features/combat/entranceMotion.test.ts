@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { combatMotion } from '@/design/tokens';
 import { entranceMotionAt } from './entranceMotion.ts';
 
 describe('arrivée d’Al-Kasal', () => {
@@ -28,7 +29,10 @@ describe('arrivée d’Al-Kasal', () => {
     assert.equal(dialogue.top, start.top);
     assert.equal(dialogue.bottom, start.bottom);
     assert.equal(end.top, 0);
-    assert.equal(end.bottom, 24);
+    // Le héros tient désormais le bas gauche de la scène (#187) : l'ennemi lui cède la place.
+    assert.equal(end.bottom, combatMotion.combatBottom);
+    assert.equal(dialogue.left, 0);
+    assert.equal(end.left, combatMotion.combatLeft);
     assert.equal(end.dialogueOpacity, 0);
   });
   it('reste visible et immobile quand les animations sont réduites', () => {

@@ -1,0 +1,21 @@
+appId: app.grrind.e2e
+---
+- openLink: grrindapp-e2e://combat-demo?scenario=${SCENARIO}&at=${AT}
+- repeat:
+    times: 2
+    commands:
+      - runFlow:
+          when:
+            visible: "Ouvrir dans.*"
+          commands:
+            - tapOn: "Ouvrir"
+- extendedWaitUntil:
+    visible: ".*Toucher pour combattre.*"
+    timeout: 15000
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 10000
+- takeScreenshot: ${NAME}

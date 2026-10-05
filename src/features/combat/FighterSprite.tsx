@@ -4,12 +4,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle, useDerivedValue } from 'react-native-reanimated';
 import { color, combatMotion, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
-import { enemyMotionAt, type EnemyPose } from './enemyMotion';
-import type { BattleBeat } from './timeline';
-import { ENEMY_IMAGE_TIMEOUT_MS, type EnemyArtwork } from './enemyPresentation';
+import { fighterMotionAt, type FighterPose } from './fighterMotion';
+import type { Actor, BattleBeat } from './timeline';
+import { ENEMY_IMAGE_TIMEOUT_MS, type FighterArtwork } from './enemyPresentation';
 
-export type { EnemyArtwork } from './enemyPresentation';
-export const AL_KASAL: EnemyArtwork = {
+export type { FighterArtwork } from './enemyPresentation';
+export const AL_KASAL: FighterArtwork = {
   name: 'Al-Kasal',
   introduction: "je suis la paresse, laissez tomber, ce jeu n'est pas fait pour vous.",
   poses: {
@@ -19,18 +19,30 @@ export const AL_KASAL: EnemyArtwork = {
   },
 };
 
-const poses: EnemyPose[] = ['idle', 'attack', 'hit'];
+/** Le héros par défaut, vu de dos (#187). Provisoire : voir son `README.md`. */
+export const DEFAULT_HERO: FighterArtwork = {
+  name: 'Toi',
+  poses: {
+    idle: require('../../../assets/images/heroes/default/idle.png'),
+    attack: require('../../../assets/images/heroes/default/attack.png'),
+    hit: require('../../../assets/images/heroes/default/hit.png'),
+  },
+};
+
+const poses: FighterPose[] = ['idle', 'attack', 'hit'];
 
 /** Les trois images se chargent ensemble ; aucune source ne change au milieu d'un coup. */
-export function EnemySprite({ artwork, clock, beats, pose, onReady, onError }: {
-  artwork: EnemyArtwork;
+export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, onReady, onError }: {
+  artwork: FighterArtwork;
+  /** Le camp qu'il incarne : il oriente l'élan et le recul. */
+  side?: Actor;
   clock: SharedValue<number>;
   beats: BattleBeat[];
-  pose?: EnemyPose;
+  pose?: FighterPose;
   onReady?: () => void;
   onError?: () => void;
 }) {
-  const loaded = useRef(new Set<EnemyPose>());
+  const loaded = useRef(new Set<FighterPose>());
   const settled = useRef(false);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [failed, setFailed] = useState(false);
@@ -51,7 +63,7 @@ export function EnemySprite({ artwork, clock, beats, pose, onReady, onError }: {
     onError?.();
   };
   const reduced = useReducedMotion();
-  const motion = useDerivedValue(() => enemyMotionAt(beats, clock.get(), reduced !== false));
+  const motion = useDerivedValue(() => fighterMotionAt(beats, side, clock.get(), reduced !== false));
   const transform = useAnimatedStyle(() => ({
     transform: pose ? [] : [
       { translateX: motion.get().x }, { translateY: motion.get().y },
@@ -84,9 +96,9 @@ export function EnemySprite({ artwork, clock, beats, pose, onReady, onError }: {
 
 function PoseLayer({ source, candidate, selected, motion, onLoad, onError }: {
   source: ImageSource;
-  candidate: EnemyPose;
-  selected?: EnemyPose;
-  motion: SharedValue<ReturnType<typeof enemyMotionAt>>;
+  candidate: FighterPose;
+  selected?: FighterPose;
+  motion: SharedValue<ReturnType<typeof fighterMotionAt>>;
   onLoad: () => void;
   onError: () => void;
 }) {

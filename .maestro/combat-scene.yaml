@@ -1,0 +1,26 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - combat
+---
+# Images figées de la scène (#187) : le héros et le mob au contact, un critique, le coup final.
+# Démonstration locale, aucune connexion : E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/combat-scene.yaml
+- launchApp
+- runFlow:
+    file: combat-scene-frame.yaml
+    env: { SCENARIO: victoire, AT: "900", NAME: scene-hero-strikes }
+- runFlow:
+    file: combat-scene-frame.yaml
+    env: { SCENARIO: victoire, AT: "1320", NAME: scene-hero-hit }
+- runFlow:
+    file: combat-scene-frame.yaml
+    env: { SCENARIO: defaiteBoss, AT: "2440", NAME: scene-critical }
+- runFlow:
+    file: combat-scene-frame.yaml
+    env: { SCENARIO: victoire, AT: "11150", NAME: scene-final-blow }
+- runFlow:
+    file: combat-scene-raid.yaml
+    env: { AT: "4072", NAME: scene-raid-effort }
+- runFlow:
+    file: combat-scene-raid.yaml
+    env: { AT: "11050", NAME: scene-raid-victory }

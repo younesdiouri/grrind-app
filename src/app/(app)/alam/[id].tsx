@@ -11,7 +11,7 @@ import { messageFor } from '@/features/auth/problems';
 import { useAlamRun, type AlamRun } from '@/features/alam/api';
 import { RaidStage } from '@/features/alam/RaidStage';
 import { RaidAvatar } from '@/features/alam/RaidAvatar';
-import { raidBeats } from '@/features/alam/presentation';
+import { frontRow, raidBeats, raidImpacts } from '@/features/alam/presentation';
 import { alamStyles as s } from '@/features/alam/styles';
 import { useAlamSound } from '@/features/alam/useAlamSound';
 import { useRaidClock } from '@/features/alam/useRaidClock';
@@ -44,6 +44,10 @@ function Edition({ run, receivedAt, replay }: { run: AlamRun; receivedAt: number
     if (!reduced) void Haptics.impactAsync(event.action === 'DROP' ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
   }, [presentation.cursor, reduced, run.events, sound]);
   const beats = useMemo(() => raidBeats(run.events), [run.events]);
+  const impacts = useMemo(() => raidImpacts(run.events), [run.events]);
+  const rows = useMemo(() => frontRow(run.participants), [run.participants]);
+  const heroes = useMemo(() => rows.front.map((player) => ({ id: player.playerId, name: player.displayName,
+    beats: raidBeats(run.events, player.playerId) })), [rows.front, run.events]);
   const event = run.events[presentation.cursor];
   const encounter = run.encounters.find((entry) => entry.index === event?.encounterIndex);
   const revealed = run.events.slice(0, presentation.cursor + 1).some((entry) =>
@@ -52,8 +56,9 @@ function Edition({ run, receivedAt, replay }: { run: AlamRun; receivedAt: number
     <Text style={s.label}>{presentation.finished ? 'HISTOIRE DE LA GUILDE' : presentation.replaying ? 'REPLAY' : 'EN DIRECT'}</Text>
     <Text style={s.title}>{encounter?.enemyName ?? 'Al-Kasal'}</Text>
     {encounter && <Text style={s.muted}>Rencontre {encounter.index} · seuil {encounter.thresholdPermille / 10} %</Text>}
-    <RaidStage clock={presentation.clock} beats={beats} arrivals={run.events.filter((entry) => entry.action === 'ARRIVAL').map((entry) => entry.offsetMs)}>
-      {run.participants.map((player) => <RaidAvatar key={player.playerId} name={player.displayName} avatarUrl={player.avatarUrl}
+    <RaidStage clock={presentation.clock} beats={beats} heroes={heroes} impacts={impacts}
+      arrivals={run.events.filter((entry) => entry.action === 'ARRIVAL').map((entry) => entry.offsetMs)}>
+      {rows.back.length > 0 && rows.back.map((player) => <RaidAvatar key={player.playerId} name={player.displayName} avatarUrl={player.avatarUrl}
         impulses={run.events.filter((entry) => entry.actorId === player.playerId && entry.action === 'EFFORT').map((entry) => entry.offsetMs)}
         clock={presentation.clock} reduced={reduced} />)}
     </RaidStage>
