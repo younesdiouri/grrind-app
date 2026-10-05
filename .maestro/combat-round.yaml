@@ -1,0 +1,61 @@
+appId: app.grrind.e2e
+---
+# ————— Combat (#227) — le combattant du joueur, un combat gagné, son butin ————————————————
+#
+# `SAND_JACKAL` est le seul adversaire accessible à un compte neuf, et le socle livré le bat
+# toujours — `CombatCoverageTest::testTheShippedFighterSocleWinsTheLevelOneEncounter` le
+# garantit côté back. La victoire est donc déterministe ; le butin exact (`loot.yaml`, table
+# `SAND_JACKAL`) ne l'est pas, sauf la bourse, dont la borne basse n'est jamais nulle — c'est
+# elle qu'on vérifie, jamais un objet précis qui pourrait ne pas tomber.
+
+- tapOn:
+    id: "tab-combat"
+- tapOn: "Anciens combats solo"
+- extendedWaitUntil:
+    visible: "Adversaires"
+    timeout: 15000
+- assertVisible: "Ton équipement et tes statistiques.*"
+- takeScreenshot: 03-combat-catalog
+
+- tapOn: "Combattre"
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- runFlow:
+    when:
+      visible: ".*Toucher pour combattre.*"
+    commands:
+      - tapOn:
+          id: "battle-dialogue"
+
+# Attendre le verdict naturel : la recherche conditionnelle du dialogue peut déjà avoir
+# consommé la fin d'un combat sans réplique. Un tap tardif sortirait alors du bilan.
+- extendedWaitUntil:
+    visible: ".*Touche pour revenir.*"
+    timeout: 30000
+- assertVisible: ".*Victoire.*"
+- repeat:
+    times: 6
+    commands:
+      - runFlow:
+          when:
+            notVisible: ".*Bourse.*"
+          commands:
+            - swipe:
+                from:
+                  id: "battle-recap-scroll"
+                direction: UP
+- assertVisible: ".*Bourse.*"
+- takeScreenshot: 04-battle-recap-loot
+
+- tapOn:
+    id: "battle-exit"
+- extendedWaitUntil:
+    visible: "Adversaires"
+    timeout: 15000
+- takeScreenshot: portrait-return-before-device-reset
+# L’app a déjà rétabli le portrait ; aligner maintenant les coordonnées du pilote iOS.
+- setOrientation: PORTRAIT
+

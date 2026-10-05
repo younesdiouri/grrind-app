@@ -48,6 +48,7 @@
     "@babel/plugin-transform-react-jsx": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@bacons/apple-targets": "^5.0.0",
+    "@expo/fingerprint": "0.20.7",
     "@types/babel__core": "^7.20.5",
     "@types/node": "~26.2.0",
     "@types/react": "~19.2.2",
@@ -57,23 +58,23 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
+    "start": "APP_VARIANT=development expo start --dev-client",
     "prebuild": "APP_VARIANT=development npx expo prebuild --clean -p ios",
     "android": "APP_VARIANT=development expo run:android",
-    "ios": "APP_VARIANT=development expo run:ios --device",
+    "ios": "./scripts/ios-dev.sh",
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "previews": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/use-module-hooks.ts scripts/build-previews.ts",
     "previews:check": "npm run previews && git diff --exit-code --stat previews && test -z \"$(git status --porcelain previews)\"",
-    "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/use-module-hooks.ts \"src/**/*.test.ts\"",
+    "test": "node --test --experimental-test-module-mocks --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/use-module-hooks.ts \"src/**/*.test.ts\"",
     "e2e:ios:dev": "./scripts/e2e-ios-dev.sh",
     "e2e:ios:flow": "./scripts/e2e-ios-flow.sh",
-    "e2e:ios:full": "./scripts/e2e-ios.sh",
-    "test:e2e:ios": "./scripts/e2e-ios.sh",
     "api:pull": "./scripts/api-pull.sh",
     "api:generate": "npx --yes openapi-typescript@7.13.0 api/openapi.yaml -o src/api/schema.d.ts",
-    "api:check": "npm run api:pull && npm run api:generate && git diff --exit-code --stat api/openapi.yaml src/api/schema.d.ts"
+    "api:check": "npm run api:pull && npm run api:generate && git diff --exit-code --stat api/openapi.yaml src/api/schema.d.ts",
+    "e2e:ios:clean": "node scripts/e2e-ios-clean.mjs",
+    "test:ios:tools": "node --test scripts/ios-qa.test.mjs"
   },
   "private": true
 }

@@ -35,13 +35,20 @@ e2e_require_backend() {
 }
 
 e2e_register_accounts() {
+  scenario="${1:-empty}"
   run_id="$(date +%s)-$$"
   E2E_EMPTY_EMAIL="grrind-e2e-empty-${run_id}@example.test"
   E2E_MULTIPLE_EMAIL="grrind-e2e-multiple-${run_id}@example.test"
   export E2E_EMPTY_EMAIL E2E_MULTIPLE_EMAIL
 
-  e2e_register_account "$E2E_EMPTY_EMAIL" "E2E Sans séance"
-  e2e_register_account "$E2E_MULTIPLE_EMAIL" "E2E Plusieurs séances"
+  case "$scenario" in
+    empty) e2e_register_account "$E2E_EMPTY_EMAIL" "E2E Sans séance" ;;
+    multiple) e2e_register_account "$E2E_MULTIPLE_EMAIL" "E2E Plusieurs séances" ;;
+    both)
+      e2e_register_account "$E2E_EMPTY_EMAIL" "E2E Sans séance"
+      e2e_register_account "$E2E_MULTIPLE_EMAIL" "E2E Plusieurs séances" ;;
+    *) echo "Scénario de santé inconnu : $scenario" >&2; exit 1 ;;
+  esac
 }
 
 e2e_register_account() {
@@ -102,7 +109,9 @@ e2e_reset_state() {
   # Simulator est dédié à GRRIND, donc son trousseau peut être remis à zéro sans toucher au
   # Simulator de développement ni à un appareil réel.
   xcrun simctl keychain "$E2E_SIMULATOR_UDID" reset
-  maestro --device "$E2E_SIMULATOR_UDID" test .maestro/ios-reset-state.yaml >/dev/null
+  maestro --device "$E2E_SIMULATOR_UDID" test \
+    --test-output-dir artifacts/e2e/reset --debug-output artifacts/e2e/reset \
+    .maestro/ios-reset-state.yaml >/dev/null
 }
 
 e2e_run_flow() {
@@ -112,6 +121,7 @@ e2e_run_flow() {
   mkdir -p artifacts/e2e
   maestro --device "$E2E_SIMULATOR_UDID" test \
     --test-output-dir artifacts/e2e \
+    --debug-output artifacts/e2e \
     --format JUNIT \
     --output artifacts/e2e/report.xml \
     -e EMPTY_EMAIL="$E2E_EMPTY_EMAIL" \
