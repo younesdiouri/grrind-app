@@ -161,6 +161,10 @@ tags:
     id: "tab-reglages"
 - assertVisible: "Autorisations Santé"
 - takeScreenshot: final-settings-health
+- scrollUntilVisible:
+    element:
+      text: "Ouvrir Santé"
+    direction: DOWN
 - tapOn: "Ouvrir Santé"
 - extendedWaitUntil:
     visible: "Santé"

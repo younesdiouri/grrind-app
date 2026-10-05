@@ -1,8 +1,22 @@
 import { combatMotion } from '@/design/tokens';
-import type { Actor, BattleBeat } from './timeline.ts';
-import { beatAt } from './sampling.ts';
+import type { Actor, BattleBeat, Ramp } from './timeline.ts';
+import { beatAt, sampleRamp } from './sampling.ts';
 
-export type FighterPose = 'idle' | 'attack' | 'hit';
+export type BaseFighterPose = 'idle' | 'attack' | 'hit';
+export type SpecialFighterPose = 'critical' | 'dodge' | 'combo' | 'replay';
+export type FighterPose = BaseFighterPose | SpecialFighterPose;
+export type PoseSignals = Record<SpecialFighterPose, Ramp>;
+
+/** Les rampes serveur allument les poses, sans changer le geste ni les dégâts. */
+export function fighterPoseAt(base: BaseFighterPose, time: number, signals?: PoseSignals): FighterPose {
+  'worklet';
+  if (!signals) return base;
+  for (const pose of ['dodge', 'critical', 'replay', 'combo'] as const) {
+    if (pose === 'critical' && base !== 'attack') continue;
+    if (sampleRamp(signals[pose], time) > 0) return pose;
+  }
+  return base;
+}
 
 /** Le même instant pilote les sprites, les dégâts, les PV, la caméra et l'haptique. */
 export function contactAt(beat: Pick<BattleBeat, 'at' | 'until'>): number {
@@ -22,7 +36,7 @@ export function contactAt(beat: Pick<BattleBeat, 'at' | 'until'>): number {
  */
 export function fighterMotionAt(beats: BattleBeat[], self: Actor, time: number, reduced = false, lateral = false) {
   'worklet';
-  const state = { pose: 'idle' as FighterPose, x: 0, y: 0, scale: 1, rotate: 0, flash: 0 };
+  const state = { pose: 'idle' as BaseFighterPose, x: 0, y: 0, scale: 1, rotate: 0, flash: 0 };
   const beat = beatAt(beats, time);
   if (!beat || beat.kind === 'verdict') return state;
   if (!reduced) state.y = Math.sin(time / combatMotion.breathPeriod * Math.PI * 2) * combatMotion.breath;

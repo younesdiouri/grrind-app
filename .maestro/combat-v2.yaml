@@ -1,150 +1,114 @@
 appId: app.grrind.e2e
 tags:
-  - combat
   - ios
+  - combat
 ---
-# Serveur synthétique local ; frames figées uniquement dans la démo E2E.
+# Huit poses/effets, lecture ×2/Passer et butin défilant avec retour au portrait.
 - launchApp
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=dodge-player"
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${EMPTY_EMAIL}
 - extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-dodge-player
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=dodge-enemy"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-dodge-enemy
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=critical-player"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-critical-player
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=critical-enemy"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-critical-enemy
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=combo-player"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-combo-player
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=combo-enemy"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-combo-enemy
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=replay-player"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-replay-player
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects&frame=replay-enemy"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- takeScreenshot: v2-replay-enemy
-- tapOn:
-    point: "50%,70%"
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 5000
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=effects"
-- extendedWaitUntil:
-    visible:
-      id: battle-combat
-    timeout: 15000
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
+    visible: "NIVEAU"
     timeout: 30000
-- takeScreenshot: v2-effects-recap
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=limit"
+# Les huit poses et effets sont figés pour comparer leur camp et lire les captures.
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=dodge-player"
 - extendedWaitUntil:
     visible:
       id: battle-combat
     timeout: 15000
-- extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
-- assertVisible: ".*Limite atteinte.*"
-- assertNotVisible: ".*Coup fatal.*"
-- takeScreenshot: v2-limit-recap
-- tapOn:
-    point: "50%,70%"
-- openLink: "grrindapp-e2e://combat-demo?network=long"
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-dodge-player
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=dodge-enemy"
 - extendedWaitUntil:
     visible:
       id: battle-combat
     timeout: 15000
-- tapOn:
-    point: "50%,70%"
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-dodge-enemy
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=critical-player"
 - extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
-- assertVisible: ".*Limite atteinte.*"
-- assertNotVisible: ".*Coup fatal.*"
-- takeScreenshot: v2-long-recap
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-critical-player
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=critical-enemy"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-critical-enemy
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=combo-player"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-combo-player
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=combo-enemy"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-combo-enemy
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=replay-player"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-replay-player
+- openLink: "grrindapp-e2e://combat-demo?network=effects&opponent=murid&frame=replay-enemy"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible: ".*ENCAISSES?.*"
+- takeScreenshot: feedback-replay-enemy
+# Long scénario synthétique : laisse au pilote le temps de vérifier ×2 puis Passer.
+- openLink: "grrindapp-e2e://combat-demo?network=long&opponent=murid"
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- tapOn: "Vitesse ×2"
+- assertVisible: "Passer"
+- tapOn: "Passer"
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 5000
+- takeScreenshot: feedback-playback-recap
 - tapOn:
-    point: "50%,70%"
+    id: battle-exit
+- setOrientation: PORTRAIT
+- assertVisible: "Repos"
+- runFlow: combat-recap-loot.yaml

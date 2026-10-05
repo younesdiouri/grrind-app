@@ -16,12 +16,15 @@ const server = createServer((request, response) => {
       `http://127.0.0.1:8099/images/${scenario}/${pose}.png`]));
     response.setHeader('Content-Type', 'application/json');
     const sample = ['effects', 'limit', 'long'].includes(scenario) ? synthetic(scenario) : battle;
-    response.end(JSON.stringify({ ...sample, enemy: { ...sample.enemy, name: 'Gardien du repos',
-      ...(scenario === 'legacy' ? {} : {
-        imageUrls: scenario === 'dialogue' ? null : imageUrls,
-        introduction: ['silent', 'effects', 'limit', 'long'].includes(scenario) ? null : 'Cette réplique vient de la réponse du combat.',
-      }),
-    } }));
+    const enemy = { ...sample.enemy, name: 'Gardien du repos' };
+    if (scenario === 'legacy') {
+      delete enemy.imageUrls;
+      delete enemy.introduction;
+    } else {
+      enemy.imageUrls = scenario === 'dialogue' ? null : imageUrls;
+      enemy.introduction = ['silent', 'effects', 'limit', 'long'].includes(scenario) ? null : 'Cette réplique vient de la réponse du combat.';
+    }
+    response.end(JSON.stringify({ ...sample, enemy }));
     return;
   }
   const match = path.match(/^\/images\/([a-z]+)\/(idle|attack|hit)\.png$/);

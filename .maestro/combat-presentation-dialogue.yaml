@@ -9,16 +9,18 @@ appId: app.grrind.e2e
 - extendedWaitUntil:
     visible: ".*Toucher pour combattre.*"
     timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
 - assertVisible: ".*Gardien du repos.*"
 - assertVisible: ".*Cette réplique vient de la réponse du combat.*"
 - takeScreenshot: presentation-${SCENARIO}
 - tapOn:
-    point: "50%,50%"
+    id: "battle-dialogue"
 - assertNotVisible: ".*Toucher pour combattre.*"
 - extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - assertVisible: ".*Victoire.*"
 - tapOn:
-    point: "50%,70%"
+    id: "battle-exit"
+- setOrientation: PORTRAIT
 - assertVisible: "Repos"

@@ -6,6 +6,7 @@ tags:
 # Images figées de la scène (#187) : le héros et le mob au contact, un critique, le coup final.
 # Démonstration locale, aucune connexion : E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/combat-scene.yaml
 - launchApp
+- setOrientation: PORTRAIT
 - runFlow:
     file: combat-scene-frame.yaml
     env: { SCENARIO: victoire, AT: "900", NAME: scene-hero-strikes }
@@ -18,6 +19,15 @@ tags:
 - runFlow:
     file: combat-scene-frame.yaml
     env: { SCENARIO: victoire, AT: "11150", NAME: scene-final-blow }
+- openLink: grrindapp-e2e://combat-demo?scenario=duel&at=900
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- takeScreenshot: scene-duel
+# Deux ateliers indépendants : le raid repart d'un lancement en portrait, comme l'app.
+- stopApp
+- launchApp
 - runFlow:
     file: combat-scene-raid.yaml
     env: { AT: "4072", NAME: scene-raid-effort }

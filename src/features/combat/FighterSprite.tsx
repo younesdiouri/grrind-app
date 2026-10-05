@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle, useDerivedValue } from 'react-native-reanimated';
 import { color, combatMotion, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
-import { fighterMotionAt, type FighterPose } from './fighterMotion';
+import { fighterMotionAt, fighterPoseAt, type FighterPose, type PoseSignals } from './fighterMotion';
 import type { Actor, BattleBeat } from './timeline';
 import { ENEMY_IMAGE_TIMEOUT_MS, type FighterArtwork } from './enemyPresentation';
 
@@ -19,29 +19,55 @@ export const AL_KASAL: FighterArtwork = {
   },
 };
 
-/** Le héros par défaut, vu de dos (#187). Provisoire : voir son `README.md`. */
+/** Repli local : garde latérale orientée vers la droite (#187 / #189). */
 export const DEFAULT_HERO: FighterArtwork = {
   name: 'Toi',
   poses: {
-    idle: require('../../../assets/images/heroes/default/idle.png'),
-    attack: require('../../../assets/images/heroes/default/attack.png'),
-    hit: require('../../../assets/images/heroes/default/hit.png'),
+    idle: require('../../../assets/images/heroes/murid/back/idle.png'),
+    attack: require('../../../assets/images/heroes/murid/back/attack.png'),
+    hit: require('../../../assets/images/heroes/murid/back/hit.png'),
+    critical: require('../../../assets/images/heroes/murid/back/critical.png'),
+    dodge: require('../../../assets/images/heroes/murid/back/dodge.png'),
+    combo: require('../../../assets/images/heroes/murid/back/combo.png'),
+    replay: require('../../../assets/images/heroes/murid/back/replay.png'),
   },
 };
 
-const poses: FighterPose[] = ['idle', 'attack', 'hit'];
+export const DEFAULT_OPPONENT: FighterArtwork = {
+  name: 'Murīd',
+  poses: {
+    idle: require('../../../assets/images/heroes/murid/front/idle.png'),
+    attack: require('../../../assets/images/heroes/murid/front/attack.png'),
+    hit: require('../../../assets/images/heroes/murid/front/hit.png'),
+    critical: require('../../../assets/images/heroes/murid/front/critical.png'),
+    dodge: require('../../../assets/images/heroes/murid/front/dodge.png'),
+    combo: require('../../../assets/images/heroes/murid/front/combo.png'),
+    replay: require('../../../assets/images/heroes/murid/front/replay.png'),
+  },
+};
+export const DEFAULT_RAID_HERO: FighterArtwork = {
+  name: 'Murīd',
+  poses: {
+    idle: require('../../../assets/images/heroes/murid/thumb/front/idle.png'),
+    attack: require('../../../assets/images/heroes/murid/thumb/front/attack.png'),
+    hit: require('../../../assets/images/heroes/murid/thumb/front/hit.png'),
+  },
+};
 
-/** Les trois images se chargent ensemble ; aucune source ne change au milieu d'un coup. */
-export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, onReady, onError }: {
+/** Les poses disponibles se chargent ensemble ; aucune source ne change au milieu d'un coup. */
+export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, signals, lateral = false, onReady, onError }: {
   artwork: FighterArtwork;
   /** Le camp qu'il incarne : il oriente l'élan et le recul. */
   side?: Actor;
   clock: SharedValue<number>;
   beats: BattleBeat[];
   pose?: FighterPose;
+  signals?: PoseSignals;
+  lateral?: boolean;
   onReady?: () => void;
   onError?: () => void;
 }) {
+  const poses = Object.keys(artwork.poses) as FighterPose[];
   const loaded = useRef(new Set<FighterPose>());
   const settled = useRef(false);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -63,7 +89,11 @@ export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, onR
     onError?.();
   };
   const reduced = useReducedMotion();
-  const motion = useDerivedValue(() => fighterMotionAt(beats, side, clock.get(), reduced !== false));
+  const motion = useDerivedValue(() => {
+    const state = fighterMotionAt(beats, side, clock.get(), reduced !== false, lateral);
+    const selected = fighterPoseAt(state.pose, clock.get(), signals);
+    return { ...state, pose: artwork.poses[selected] ? selected : state.pose };
+  });
   const transform = useAnimatedStyle(() => ({
     transform: pose ? [] : [
       { translateX: motion.get().x }, { translateY: motion.get().y },
@@ -75,7 +105,7 @@ export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, onR
     <View style={styles.container} pointerEvents="none">
       <Animated.View style={[styles.body, transform]}>
         {poses.map((candidate) => (
-          <PoseLayer key={candidate} source={artwork.poses[candidate]} candidate={candidate}
+          <PoseLayer key={candidate} source={artwork.poses[candidate]!} candidate={candidate}
             selected={pose} motion={motion} onError={fail}
             onLoad={() => {
               if (settled.current) return;
@@ -98,7 +128,7 @@ function PoseLayer({ source, candidate, selected, motion, onLoad, onError }: {
   source: ImageSource;
   candidate: FighterPose;
   selected?: FighterPose;
-  motion: SharedValue<ReturnType<typeof fighterMotionAt>>;
+  motion: SharedValue<Omit<ReturnType<typeof fighterMotionAt>, 'pose'> & { pose: FighterPose }>;
   onLoad: () => void;
   onError: () => void;
 }) {

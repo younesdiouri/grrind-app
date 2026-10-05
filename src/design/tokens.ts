@@ -68,7 +68,7 @@ export const combatMotion = {
   /** La gerbe d'étincelles (Skia) : combien, jusqu'où, quelle taille, combien de temps. */
   sparkCount: 22,
   sparkTravel: 70,
-  sparkRadius: 4.5,
+  sparkRadius: 1.5,
   sparkLife: 420,
   /** La lueur additive au contact ; un critique et le coup final l'élargissent. */
   glowRadius: 64,
@@ -79,6 +79,28 @@ export const combatMotion = {
   /** Le héros tient le bas gauche de la scène, les annonces se rangent à sa droite. */
   heroStage: { bottom: 0, left: '-8%', width: '62%', height: '52%' } as const,
   heroCalls: { top: '58%', left: '44%', right: 0, bottom: 0 } as const,
+} as const;
+
+/** Deux cadrages de la même mise en scène, sans toucher au journal de combat. */
+export const arena = {
+  scrim: 'rgba(5, 8, 22, 0.72)',
+  hudWidth: '43%' as const,
+  fighterWidth: '48%' as const,
+  fighterHeight: '112%' as const,
+  playerLeft: '1%' as const,
+  enemyRight: '1%' as const,
+  groundBottom: '3%' as const,
+  impactPoint: { PLAYER: { x: 0.25, y: 0.55 }, ENEMY: { x: 0.75, y: 0.55 } },
+  recapWidth: 640, heroPreviewHeight: 240, effectHeight: 90,
+  raidHeight: 420, raidBossWidth: 150, raidBossHeight: 170,
+  raidHeroWidth: 90, raidHeroHeight: 110,
+  raidSmallWidth: 64, raidSmallHeight: 80,
+  raidBoss: { x: 0.3, y: 0.46 },
+  raidFirstRow: [{ x: 0.78, y: 0.53 }, { x: 0.58, y: 0.62 }, { x: 0.38, y: 0.71 },
+    { x: 0.78, y: 0.77 }, { x: 0.58, y: 0.86 }],
+  raidBackColumns: 4, raidBackX: 0.55, raidBackY: 0.25, raidBackStepX: 0.11, raidBackStepY: 0.08,
+  baseline: 930 / 1024,
+  raidImpactPoint: { ENEMY: { x: 0.3, y: 0.25 }, PLAYER: { x: 0.6, y: 0.65 } },
 } as const;
 
 /**

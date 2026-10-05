@@ -26,10 +26,11 @@ tags:
 - extendedWaitUntil:
     visible: ".*Toucher pour combattre.*"
     timeout: 10000
+- setOrientation: LANDSCAPE_LEFT
 - assertVisible: ".*je suis la paresse, laissez tomber, ce jeu n'est pas fait pour vous.*"
 - takeScreenshot: al-kasal-dialogue
 - tapOn:
-    point: "50%,50%"
+    id: "battle-dialogue"
 - assertNotVisible: ".*Toucher pour combattre.*"
 - extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
@@ -37,31 +38,35 @@ tags:
 - assertVisible: ".*Victoire.*"
 - takeScreenshot: al-kasal-victory
 - tapOn:
-    point: "50%,70%"
+    id: "battle-exit"
+- setOrientation: PORTRAIT
 - assertVisible: "Repos"
 - tapOn: "Jouer une défaite"
 - extendedWaitUntil:
     visible: ".*Toucher pour combattre.*"
     timeout: 10000
+- setOrientation: LANDSCAPE_LEFT
 - tapOn:
-    point: "50%,50%"
+    id: "battle-dialogue"
 - extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - assertVisible: ".*Défaite.*"
 - takeScreenshot: al-kasal-defeat
 - tapOn:
-    point: "50%,70%"
+    id: "battle-exit"
+- setOrientation: PORTRAIT
 - assertVisible: "Repos"
 - tapOn: "Jouer une victoire"
 - extendedWaitUntil:
     visible: ".*Toucher pour combattre.*"
     timeout: 10000
+- setOrientation: LANDSCAPE_LEFT
 - tapOn:
-    point: "50%,50%"
+    id: "battle-dialogue"
 - tapOn:
-    point: "50%,70%"
+    id: "battle-combat"
 - assertVisible: ".*Victoire.*"
 - tapOn:
-    point: "50%,70%"
+    id: "battle-exit"
 - assertVisible: "Repos"
