@@ -1,0 +1,16 @@
+appId: app.grrind.e2e
+---
+- openLink: grrindapp-e2e://alam-demo?at=${AT}
+- repeat:
+    times: 2
+    commands:
+      - runFlow:
+          when:
+            visible: "Ouvrir dans.*"
+          commands:
+            - tapOn: "Ouvrir"
+- extendedWaitUntil:
+    visible: "DÉMONSTRATION · AUCUN GAIN RÉEL"
+    timeout: 15000
+- assertVisible: Younes
+- takeScreenshot: ${NAME}

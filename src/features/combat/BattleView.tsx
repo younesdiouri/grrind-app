@@ -1,3 +1,4 @@
+import { setAudioModeAsync, useAudioPlayer } from 'expo-audio';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -39,7 +40,9 @@ import {
 import { useReducedMotion } from '@/design/useReducedMotion';
 
 import { hasBattleReward } from './reward.ts';
-import { EnemySprite, type EnemyArtwork } from './EnemySprite';
+import { cameraAt, IMPACT } from './camera.ts';
+import { DEFAULT_HERO, FighterSprite, type FighterArtwork } from './FighterSprite';
+import { ImpactLayer } from './ImpactLayer';
 import { enemyArtworkOf } from './enemyPresentation';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
 import {
@@ -97,7 +100,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 export function BattleView({ battle, enemyArt, ...props }: {
   battle: Battle;
-  enemyArt?: EnemyArtwork;
+  enemyArt?: FighterArtwork;
   demo?: boolean;
   demoTime?: number;
   onDismiss?: () => void;
@@ -109,7 +112,7 @@ export function BattleView({ battle, enemyArt, ...props }: {
 
 function PresentedBattle({ artwork, ...props }: {
   battle: Battle;
-  artwork?: EnemyArtwork;
+  artwork?: FighterArtwork;
   introduction?: string;
   demo?: boolean;
   demoTime?: number;
@@ -132,7 +135,7 @@ function BattleScene({
   demoTime,
 }: {
   battle: Battle;
-  enemyArt?: EnemyArtwork;
+  enemyArt?: FighterArtwork;
   introduction?: string;
   onArtworkError: () => void;
   demo?: boolean;
@@ -160,6 +163,8 @@ function BattleScene({
    * d'animation ne passe par `setState`.
    */
   const [done, setDone] = useState(false);
+  /** ×1 ou ×2 : seule la durée restante change, l'horloge garde ses instants. */
+  const [speed, setSpeed] = useState(1);
 
   const verdict = timeline.beats[timeline.beats.length - 1];
 
@@ -185,9 +190,13 @@ function BattleScene({
     setDone(false);
     clock.set(0);
     if (__DEV__ && demo && demoTime !== undefined) { clock.set(demoTime); return; }
+    run(speed);
+  };
+
+  const run = (rate: number) => {
     clock.set(withTiming(
       timeline.duration,
-      { duration: timeline.duration, easing: Easing.linear },
+      { duration: Math.max(0, timeline.duration - clock.get()) / rate, easing: Easing.linear },
       (finished) => {
         'worklet';
         // `finished` est faux quand `cancelAnimation` est passé par là — c'est le saut, qui
@@ -221,6 +230,14 @@ function BattleScene({
    * Il n'y a rien à calculer : poser l'horloge à la fin met chaque interpolation sur sa
    * dernière valeur, et ces dernières valeurs sont celles que le serveur a écrites.
    */
+  const toggleSpeed = () => {
+    const next = speed === 1 ? 2 : 1;
+    setSpeed(next);
+    // Le rappel de l'animation annulée reçoit `finished: false` : il ne marque pas la fin.
+    cancelAnimation(clock);
+    run(next);
+  };
+
   const skip = () => {
     skipping.set(true);
     cancelAnimation(clock);
@@ -249,16 +266,37 @@ function BattleScene({
     skip();
   };
 
-  // Le seul aller-retour vers JS de toute la séquence : un choc par coup **porté**. Les
-  // esquives n'en déclenchent pas — rien n'a été encaissé, et vibrer dirait le contraire.
+  // Un effet sonore court se mêle à la musique du joueur et se tait avec l'interrupteur de
+  // sonnerie : l'écran n'a pas de bouton de coupure, contrairement au raid.
+  useEffect(() => {
+    void setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(() => undefined);
+  }, []);
+  const impactSound = useAudioPlayer(require('../../../assets/audio/alam/impact.wav'));
+  const strike = useCallback((strength: number) => {
+    if (reducedMotion === false) {
+      void Haptics.impactAsync(strength > IMPACT.blow ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium)
+        .catch(() => undefined);
+    }
+    void impactSound.seekTo(0).then(() => impactSound.play()).catch(() => undefined);
+  }, [impactSound, reducedMotion]);
+
+  // Le seul aller-retour vers JS de toute la séquence : un choc par coup **porté**, plus lourd
+  // sur un critique ou le coup final. Les esquives n'en déclenchent pas — rien n'a été
+  // encaissé, et vibrer dirait le contraire.
   useAnimatedReaction(
     () => countBlowsAt(timeline.blows, clock.value),
     (landed, previous) => {
-      if (previous !== null && landed > previous && !skipping.get() && reducedMotion === false) {
-        scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Medium);
+      if (previous !== null && landed > previous && !skipping.get()) {
+        scheduleOnRN(strike, timeline.impacts[landed - 1].strength);
       }
     },
   );
+
+  /** La caméra : tremblement à chaque impact, approche sur le coup final. */
+  const cameraStyle = useAnimatedStyle(() => {
+    const camera = cameraAt(timeline.impacts, clock.get(), reducedMotion !== false);
+    return { transform: [{ translateX: camera.x }, { translateY: camera.y }, { scale: camera.scale }] };
+  });
 
   /** Le bilan chasse les annonces : à partir du verdict, il n'y a plus rien d'autre à lire. */
   const actionsStyle = useAnimatedStyle(() => ({
@@ -296,9 +334,16 @@ function BattleScene({
   const spriteEntranceStyle = useAnimatedStyle(() => {
     if (!hasEntrance) return {};
     const motion = entranceMotionAt(entrance, clock.get(), reducedMotion !== false);
-    return { top: `${motion.top}%`, bottom: `${motion.bottom}%`,
+    return { top: `${motion.top}%`, bottom: `${motion.bottom}%`, left: `${motion.left}%`,
       opacity: entrance === 'combat' && clock.get() >= verdict.at ? 0 : motion.opacity,
       transform: [{ translateY: motion.y }, { scale: motion.scale }] };
+  });
+  // Le héros entre avec le combat — pendant le dialogue, la scène appartient au mob — et
+  // s'efface au verdict comme lui.
+  const heroStyle = useAnimatedStyle(() => {
+    if (entrance !== 'combat') return { opacity: 0 };
+    const entered = reducedMotion !== false ? 1 : Math.min(1, Math.max(0, clock.get() / duration.enter));
+    return { opacity: clock.get() >= verdict.at ? 0 : entered };
   });
   const dialogueStyle = useAnimatedStyle(() => ({
     opacity: entranceMotionAt(entrance, clock.get(), reducedMotion !== false).dialogueOpacity,
@@ -314,12 +359,24 @@ function BattleScene({
         <SystemFrame tier="event" style={styles.eventSurface} contentStyle={styles.eventContent}>
           <Fighter clock={clock} side="enemy" name={enemyName} ramps={timeline.enemy} stats={battle.enemy} />
 
-          <View style={styles.stage}>
+          <Animated.View style={[styles.stage, cameraStyle]}>
             {enemyArt && (
               <Animated.View style={[styles.spriteStage, actionsStyle, spriteEntranceStyle]}>
-                <EnemySprite artwork={enemyArt} clock={clock} beats={timeline.beats}
+                <FighterSprite artwork={enemyArt} clock={clock} beats={timeline.beats}
                   pose={entrance === 'combat' ? undefined : 'idle'} onReady={ready} onError={onArtworkError} />
+                <DamagePop clock={clock} ramps={timeline.enemy} tone={styles.dealt} />
               </Animated.View>
+            )}
+            {enemyArt && (
+              <Animated.View style={[styles.heroStage, heroStyle]} pointerEvents="none">
+                <FighterSprite artwork={DEFAULT_HERO} side="PLAYER" clock={clock} beats={timeline.beats}
+                  pose={entrance === 'combat' ? undefined : 'idle'} />
+                <DamagePop clock={clock} ramps={timeline.player} tone={styles.taken} />
+              </Animated.View>
+            )}
+            {enemyArt && entrance === 'combat' && (
+              <ImpactLayer clock={clock} impacts={timeline.impacts}
+                combos={{ PLAYER: timeline.player.comboFlash, ENEMY: timeline.enemy.comboFlash }} />
             )}
             {hasIntroduction && entrance !== 'combat' && (
               <Animated.View style={[styles.dialogue, dialogueStyle]}
@@ -367,11 +424,22 @@ function BattleScene({
             <Animated.View style={[styles.layer, recapStyle]} pointerEvents="none">
               <Recap battle={battle} tally={timeline.tally} done={done} enemyName={enemyName} demo={demo} />
             </Animated.View>
-          </View>
+          </Animated.View>
 
           <Fighter clock={clock} side="player" name="Toi" ramps={timeline.player} stats={battle.player} />
         </SystemFrame>
       </Animated.View>
+      {entrance === 'combat' && !done && !demo && (
+        <View style={styles.controls}>
+          <Pressable onPress={toggleSpeed} style={[styles.control, speed === 2 && styles.controlOn]} hitSlop={space.sm}
+            accessibilityRole="button" accessibilityLabel="Vitesse ×2" accessibilityState={{ selected: speed === 2 }}>
+            <Text style={styles.controlLabel}>×2</Text>
+          </Pressable>
+          <Pressable onPress={skip} style={styles.control} hitSlop={space.sm} accessibilityRole="button">
+            <Text style={styles.controlLabel}>Passer</Text>
+          </Pressable>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -461,6 +529,31 @@ function Blow({
       </Animated.View>
     </View>
   );
+}
+
+/**
+ * Le chiffre qui jaillit de la cible : il paraît au contact, monte sur son battement et s'éteint
+ * avec l'éclat. Le détail — qui encaisse, ce que l'armure a retenu — reste au centre.
+ */
+function DamagePop({ clock, ramps, tone }: { clock: SharedValue<number>; ramps: SideRamps; tone: { color: string } }) {
+  const reduced = useReducedMotion();
+  const props = useAnimatedProps(() => {
+    const text = `-${Math.round(sampleRamp(ramps.damage, clock.value))}`;
+    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
+  });
+  const style = useAnimatedStyle(() => {
+    const critical = sampleRamp(ramps.criticalFlash, clock.value);
+    return {
+      opacity: sampleRamp(ramps.damageFlash, clock.value),
+      color: critical > 0 ? combatEffects.critical : tone.color,
+      transform: [
+        { translateY: reduced !== false ? 0 : -sampleRamp(ramps.rise, clock.value) * combatMotion.popRise },
+        { scale: 1 + critical * combatMotion.popCritical },
+      ],
+    };
+  });
+  return <AnimatedTextInput editable={false} pointerEvents="none" style={[styles.pop, style]}
+    animatedProps={props} defaultValue="" accessible={false} />;
 }
 
 const EFFECTS = {
@@ -710,8 +803,18 @@ const styles = StyleSheet.create({
 
   /** Le centre : tout ce qui arrive s'y annonce, et le bilan l'occupe à la fin. */
   stage: { flex: 1, justifyContent: 'center' },
-  spriteStage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: combatMotion.spriteBottom },
-  spriteCalls: { top: combatMotion.callsTop },
+  spriteStage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: `${combatMotion.combatBottom}%` },
+  spriteCalls: combatMotion.heroCalls,
+  heroStage: { position: 'absolute', ...combatMotion.heroStage },
+  pop: { position: 'absolute', top: '22%', alignSelf: 'center', width: combatMotion.popWidth, padding: 0,
+    ...type.title, textAlign: 'center', fontFamily: typography.display.bold, fontWeight: typography.display.weight.bold,
+    textShadowColor: color.background, textShadowRadius: space.xs, textShadowOffset: { width: 0, height: control.borderWidth } },
+  controls: { position: 'absolute', top: space.lg, right: space.lg, flexDirection: 'row', gap: space.sm,
+    zIndex: ambient.contentLayer + 1 },
+  control: { paddingHorizontal: space.md, paddingVertical: space.xs, borderRadius: radius.pill,
+    borderWidth: control.borderWidth, borderColor: color.border, backgroundColor: color.surfaceRaised },
+  controlOn: { borderColor: color.accent },
+  controlLabel: { ...type.label, color: color.text, letterSpacing: 0 },
   dialogue: { position: 'absolute', top: space.sm, left: 0, right: 0, padding: space.md,
     gap: space.sm, backgroundColor: color.surfaceRaised, borderRadius: radius.md,
     borderWidth: control.borderWidth, borderColor: color.accent },
@@ -735,6 +838,8 @@ const styles = StyleSheet.create({
   who: { ...type.label, color: color.textMuted },
   hit: {
     ...type.display,
+    // Un `TextInput` animé n'a pas de largeur propre : sans elle, « -15 » se tronque en « -1 ».
+    alignSelf: 'stretch',
     padding: 0,
     textAlign: 'center',
     fontFamily: typography.display.bold,

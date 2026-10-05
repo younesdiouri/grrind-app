@@ -5,6 +5,9 @@ export const alamMotion = {
   stageHeight: 300, avatarSize: 48, actorWidth: 80, impulseDuration: 900,
   travel: 24, beamTravel: 110, beamWidth: 3, beamHeight: 38,
   impactSize: 72, phaseHeight: 110, pollMaxMs: 30_000,
+  /** Le premier rang du raid (#187) : les cinq plus gros contributeurs, en sprites. */
+  frontRow: 5, heroWidth: 66, heroHeight: 128, bossHeight: 240,
+  impactPoint: { ENEMY: { x: 0.5, y: 0.4 }, PLAYER: { x: 0.5, y: 0.82 } },
 } as const;
 
 export const guildChat = {
@@ -37,17 +40,45 @@ export const combatMotion = {
   flashDuration: 90,
   impactSize: 64,
   previewHeight: 320,
-  spriteBottom: '24%' as const,
-  callsTop: '72%' as const,
   arrivalDuration: 850,
   arrivalTravel: 64,
   arrivalScale: 0.9,
   dialogueTop: 28,
-  combatBottom: 24,
+  combatBottom: 30,
+  /** En combat, l'ennemi cède la gauche de la scène au héros (#187). */
+  combatLeft: 22,
   dialogueReveal: -0.3,
   bubbleTailSize: 12,
   bubbleTailLeft: '42%' as const,
   bubbleTailRotation: '45deg' as const,
+  /** Le corps se fige au contact : c'est ce qui donne son poids au coup (#187). */
+  hitStop: 70,
+  /** La scène tremble au contact ; un critique double l'amplitude, le coup final la triple. */
+  shake: 5,
+  shakeDuration: 260,
+  shakePeriod: 55,
+  /** La caméra s'approche sur le coup final, puis revient. */
+  finalZoom: 0.08,
+  /** Le chiffre jaillit de la cible et monte de cette hauteur sur son battement. */
+  popRise: 46,
+  popCritical: 0.3,
+  popWidth: 140,
+  /** Où frappe un coup, en fractions de la scène : le centre de chaque combattant en combat. */
+  impactPoint: { ENEMY: { x: 0.61, y: 0.36 }, PLAYER: { x: 0.23, y: 0.72 } },
+  /** La gerbe d'étincelles (Skia) : combien, jusqu'où, quelle taille, combien de temps. */
+  sparkCount: 22,
+  sparkTravel: 70,
+  sparkRadius: 4.5,
+  sparkLife: 420,
+  /** La lueur additive au contact ; un critique et le coup final l'élargissent. */
+  glowRadius: 64,
+  glowOpacity: 0.5,
+  /** L'anneau qui entoure celui qui enchaîne un combo. */
+  comboRing: 74,
+  comboStroke: 3,
+  /** Le héros tient le bas gauche de la scène, les annonces se rangent à sa droite. */
+  heroStage: { bottom: 0, left: '-8%', width: '62%', height: '52%' } as const,
+  heroCalls: { top: '58%', left: '44%', right: 0, bottom: 0 } as const,
 } as const;
 
 /**

@@ -6,7 +6,7 @@ export type EntrancePhase = 'loading' | 'entering' | 'dialogue' | 'combat';
 export function entranceMotionAt(phase: EntrancePhase, time: number, reduced: boolean) {
   'worklet';
   const state = { opacity: 1, y: 0, scale: 1, top: combatMotion.dialogueTop as number,
-    bottom: 0, dialogueOpacity: 1 };
+    bottom: 0, left: 0, dialogueOpacity: 1 };
   if (phase === 'loading') return { ...state, opacity: 0, dialogueOpacity: 0 };
   if (phase === 'entering' && !reduced) {
     const progress = Math.max(0, Math.min(1, time + 1));
@@ -20,6 +20,7 @@ export function entranceMotionAt(phase: EntrancePhase, time: number, reduced: bo
     const progress = reduced ? 1 : Math.max(0, Math.min(1, time / duration.enter));
     state.top *= 1 - progress;
     state.bottom = progress * combatMotion.combatBottom;
+    state.left = progress * combatMotion.combatLeft;
     state.dialogueOpacity = 0;
   }
   return state;

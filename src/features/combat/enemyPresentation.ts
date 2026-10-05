@@ -1,12 +1,12 @@
 import type { ImageSource } from 'expo-image';
 import type { components } from '@/api/schema';
-import type { EnemyPose } from './enemyMotion';
+import type { FighterPose } from './fighterMotion';
 
-export type EnemyArtwork = { name: string; introduction?: string; poses: Record<EnemyPose, ImageSource> };
+export type FighterArtwork = { name: string; introduction?: string; poses: Record<FighterPose, ImageSource> };
 type EnemyPresentation = Pick<components['schemas']['BattleEnemy'], 'name' | 'imageUrls'>;
 
 /** Le contrat du combat est autonome, y compris au rejeu : aucune recherche dans le catalogue. */
-export function enemyArtworkOf(enemy: EnemyPresentation): EnemyArtwork | undefined {
+export function enemyArtworkOf(enemy: EnemyPresentation): FighterArtwork | undefined {
   const urls = enemy.imageUrls;
   if (!urls || ![urls.idle, urls.attack, urls.hit].every((url) => typeof url === 'string' && /^https?:\/\/\S+$/.test(url))) return undefined;
   return {

@@ -1,6 +1,7 @@
 import type { components } from '@/api/schema';
 import { combatMotion, duration } from '@/design/tokens';
-import { contactAt } from './enemyMotion.ts';
+import { contactAt } from './fighterMotion.ts';
+import { IMPACT, type Impact } from './camera.ts';
 
 export type Battle = components['schemas']['Battle'];
 export type BattleEvent = components['schemas']['BattleEvent'];
@@ -158,6 +159,8 @@ export type SideRamps = {
   /** L'éclat d'un combo **de ce camp**. */
   comboFlash: Ramp;
   replayFlash: Ramp;
+  /** La montée du chiffre qui jaillit de la cible : 0 au contact, 1 à la fin du battement. */
+  rise: Ramp;
   criticalFlash: Ramp;
   guardFlash: Ramp;
   guardReduction: Ramp;
@@ -220,6 +223,8 @@ export type BattleTimeline = {
    * le contraire de ce qui se passe. Ils sont ici parce qu'ils sont déjà connus ici.
    */
   blows: number[];
+  /** Les mêmes instants, avec leur poids pour la caméra et l'haptique. Voir `camera.ts`. */
+  impacts: Impact[];
   /** Le tempo retenu, en ms par échange. Rendu pour que les tests puissent le lire. */
   tempo: number;
   /** Ce qui s'est passé, en chiffres. Voir `BattleTally`. */
@@ -321,6 +326,7 @@ function sideRamps(maxHp: number): SideRamps {
     dodgeFlash: { input: [0], output: [0] },
     comboFlash: { input: [0], output: [0] },
     replayFlash: { input: [0], output: [0] },
+    rise: { input: [0], output: [0] },
     criticalFlash: { input: [0], output: [0] },
     guardFlash: { input: [0], output: [0] },
     guardReduction: { input: [0], output: [0] },
@@ -341,6 +347,7 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
 
   const beats: BattleBeat[] = [];
   const blows: number[] = [];
+  const impacts: Impact[] = [];
 
   const tally: BattleTally = {
     attackCount: battle.attackCount,
@@ -419,6 +426,8 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
       if (event.critical) pulse(target.criticalFlash, contact, until);
       if (event.guarded) pulse(target.guardFlash, contact, until);
       pulse(target.damageFlash, contact, until);
+      stepTo(target.rise, contact, 0);
+      slideTo(target.rise, contact + 1, until, 1);
 
       if (mitigated > 0) {
         pulse(target.mitigatedFlash, contact, until);
@@ -438,6 +447,8 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
       if (battle.endReason === 'KO' && remaining === 0) tally.lastBlow = { by: attacker, damage };
 
       blows.push(illustrated ? contact : until);
+      impacts.push({ at: illustrated ? contact : until, target: opponentOf(attacker),
+        strength: battle.endReason === 'KO' && remaining === 0 ? IMPACT.final : event.critical ? IMPACT.critical : IMPACT.blow });
       beats.push({ ...position, kind: 'attack', at, until, index, attacker, damage, mitigated });
     } else if (event.type === 'DODGE') {
       const attacker = event.attacker ?? 'PLAYER';
@@ -481,14 +492,14 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
     holdUntil(side.mitigatedFlash, at);
     holdUntil(side.dodgeFlash, at);
     holdUntil(side.comboFlash, at);
-    for (const ramp of [side.replayFlash, side.criticalFlash, side.guardFlash, side.guardReduction, side.power]) holdUntil(ramp, at);
+    for (const ramp of [side.replayFlash, side.rise, side.criticalFlash, side.guardFlash, side.guardReduction, side.power]) holdUntil(ramp, at);
   }
 
   // Les points de vie qui restent au joueur : la dernière valeur de sa rampe, celle que le
   // serveur a écrite. Jamais une soustraction, ici comme partout ailleurs dans ce fichier.
   tally.hpLeft = player.hp.output[player.hp.output.length - 1];
 
-  return { beats, duration: at, player, enemy, blows, tempo, tally };
+  return { beats, duration: at, player, enemy, blows, impacts, tempo, tally };
 }
 
 export { sampleRamp, beatAt, countBlowsAt } from './sampling.ts';

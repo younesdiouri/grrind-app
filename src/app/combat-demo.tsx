@@ -6,20 +6,26 @@ import { Button } from '@/components/Button';
 import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { color, combatMotion, space, type } from '@/design/tokens';
 import { BattleView } from '@/features/combat/BattleView';
-import { AL_KASAL, EnemySprite } from '@/features/combat/EnemySprite';
-import type { EnemyPose } from '@/features/combat/enemyMotion';
+import { AL_KASAL, FighterSprite } from '@/features/combat/FighterSprite';
+import type { FighterPose } from '@/features/combat/fighterMotion';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { useAuth } from '@/features/auth/useAuth';
 import { isE2eBuild } from '@/features/health/e2e';
 import { buildBattleTimeline, type Battle } from '@/features/combat/timeline';
 
-const POSES: { value: EnemyPose; label: string }[] = [
+const POSES: { value: FighterPose; label: string }[] = [
   { value: 'idle', label: 'Repos' }, { value: 'attack', label: 'Attaque' }, { value: 'hit', label: 'Coup reçu' },
 ];
 
 export default function CombatDemoScreen() {
-  const { network, frame } = useLocalSearchParams<{ network?: string; frame?: string }>();
+  const { network, frame, scenario, at } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
+  // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
+  if (at && (scenario === 'victoire' || scenario === 'defaiteBoss')) return <AmbientBackdropProvider>
+    <View style={styles.screen}>
+      <BattleView key={at} battle={BATTLE_FIXTURES[scenario]} enemyArt={AL_KASAL} demo demoTime={Number(at)} />
+    </View>
+  </AmbientBackdropProvider>;
   if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}`} scenario={network} frame={frame} /></AmbientBackdropProvider>;
   return <AmbientBackdropProvider><CombatDemo /></AmbientBackdropProvider>;
 }
@@ -53,7 +59,7 @@ function NetworkDemo({ scenario, frame }: { scenario: string; frame?: string }) 
 
 function CombatDemo() {
   const auth = useAuth();
-  const [pose, setPose] = useState<EnemyPose>('idle');
+  const [pose, setPose] = useState<FighterPose>('idle');
   const [scenario, setScenario] = useState<'victoire' | 'defaiteBoss' | null>(null);
   const clock = useSharedValue(0);
   return (
@@ -74,7 +80,7 @@ function CombatDemo() {
           <Text style={styles.title}>Al-Kasal</Text>
           <Text style={styles.subtitle}>La paresse prend corps.</Text>
           <View style={styles.preview} testID={`al-kasal-${pose}`}>
-            <EnemySprite artwork={AL_KASAL} clock={clock} beats={[]} pose={pose} />
+            <FighterSprite artwork={AL_KASAL} clock={clock} beats={[]} pose={pose} />
           </View>
           <View style={styles.poses}>
             {POSES.map((option) => (
