@@ -146,7 +146,7 @@ croisée, pas de validation à redemander. Le garde-fou, c'est le cadrage, puis 
    manque et changerait le travail, elle se pose à l'utilisateur *ici*, pas en cours de route.
 2. **Coder** sur une branche `feat/<N>-<slug>` (ou `fix/`, `chore/`), par petits pas qui
    compilent.
-3. **Prouver** : les barrières de la section suivante, toutes au vert. On ne modifie jamais un
+3. **Prouver** : les barrières pertinentes de la section suivante, au vert. On ne modifie jamais un
    test pour le faire passer — soit le code a tort, soit la règle a changé et le ticket le dit.
 4. **Fusionner** : PR (`Closes #N`), puis `gh pr merge <N> --merge --delete-branch` dans la
    foulée, sans demander. Le corps de la PR dit ce qui n'a pas été coché et pourquoi, et ce qui
@@ -169,29 +169,33 @@ qu'on lance déjà en local en quelques secondes. Les barrières passent **avant
 pousser**, et c'est cette exécution-là qui fait foi — pas une seconde, plus lente, qu'on ne
 regarde qu'après coup.
 
+Les vérifications se choisissent selon le changement, avec les règles de `AGENTS.md` :
+
 ```bash
-npm run typecheck       # TypeScript strict
+npm run typecheck
 npm run lint
-npm test                # node --test, sans appareil ni Metro
-npm run previews:check  # celle qu'on oublie
-npm run api:check       # dès qu'on touche au contrat
+npm test                 # une fois sur le code final ; tests ciblés pendant l’édition
+npm run previews:check   # si composants rendus / tokens / previews changent
+npm run api:check        # si le contrat change
+npm run test:ios:tools   # si le harnais iOS change
 ```
 
-**`previews:check` est celle qu'on oublie, et c'est la seule que le CI attrapait vraiment.** Le
-design system a **un seul sens** : les composants React Native sont la source de vérité, les
-previews HTML en sont dérivées. Une preview qui bouge alors que personne ne l'a régénérée, c'est
-une carte poussée vers Claude Design qui décrit un composant qui n'existe plus — et ça ne se
-remarque nulle part ailleurs.
+Pour un écran ou une navigation : réutiliser le development build avec Metro, jouer **un flow
+pertinent après un ensemble cohérent de changements**, puis regarder les captures. Une capture
+existante suffit comme baseline ; ne la rejouer que pour reproduire un défaut ou combler une
+référence absente. Ne pas empiler smoke, combat, apparences et tous les ateliers sur une retouche.
 
-Et une sixième, qui ne se lance que quand un écran ou un enchaînement d'écrans a bougé : le smoke
-test iOS sur Simulator (#122). Pendant l'implémentation, `npm run e2e:ios:dev` prépare une fois le
-development build et Metro, puis `npm run e2e:ios:flow` rejoue le parcours sans rebuild natif.
-Ce flow Metro et ses captures constituent la barrière mobile normale, y compris avant un push ou
-une PR. `npm run e2e:ios:full` ne se lance jamais de manière autonome : seul l'utilisateur peut
-demander explicitement cette validation Release. Un ticket important, un changement natif ou une
-demande de terminer ne l'autorisent pas implicitement. La procédure complète vit dans
-`docs/ai/mobile-qa.md`, la règle dans `AGENTS.md`. Un écran qu'on n'a pas vu tourner n'a pas été
-vérifié, et les captures d'`artifacts/e2e/` sont là pour être lues, pas seulement produites.
+Le smoke couvre connexion → accueil → un combat → retour. La santé et ses récompenses ont
+`.maestro/health-sync.yaml`, l’inventaire et les guildes leurs propres flows. Le full local et
+son alias ont été supprimés : la validation de production porte sur le vrai candidat iPhone /
+TestFlight à la livraison. Une modification native exige seulement le development build concerné.
+La procédure et la conservation des rapports vivent dans `docs/ai/mobile-qa.md` ; `AGENTS.md`
+est la source des règles, pas une seconde checklist à cumuler.
+
+Les tests importent le code réel. `session.test.ts` vérifie `session.ts` et `tokenStore.ts` en
+simulant uniquement les frontières natives, le journal et HTTP. Aucun clone de `restore()` ou
+`adopt()` dans les tests. Les détails décoratifs ne sont pas des invariants ; les valeurs serveur,
+l’accessibilité, les jetons et les clés d’idempotence le sont.
 
 `api:check` a le même rôle pour le contrat, dans l'autre sens : il retire `openapi.yaml` du
 back et régénère `schema.d.ts`. Un diff, et c'est que le contrat a bougé sans qu'on le suive.

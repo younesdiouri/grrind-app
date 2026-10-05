@@ -18,19 +18,8 @@ METRO_PID_FILE="${DEV_STATE_DIR}/metro.pid"
 STARTED_AT="$(date +%s)"
 E2E_METRO_STARTED=0
 
-# `modules/*` et `targets/*` sont balayés en entier plutôt que nommés un par un : le module du
-# widget (#174) s'est ajouté à côté de celui de la santé, et une empreinte qui cite ses sources
-# en dur laisse le harnais rejouer un binaire périmé au premier module suivant — sans rien
-# signaler, puisque le build est « à jour ».
 native_fingerprint() {
-  {
-    shasum app.json app.config.ts package.json package-lock.json
-    find modules \
-      \( -path '*/ios/*' -o -name 'expo-module.config.json' \) \
-      -type f -exec shasum {} \; | sort
-    # La cible du widget est native aussi, et elle ne vit pas sous `modules/`.
-    find targets -type f -not -path '*/Assets.xcassets/*' -exec shasum {} \; | sort
-  } | shasum | awk '{ print $1 }'
+  APP_VARIANT=e2e node scripts/ios-native-fingerprint.cjs
 }
 
 metro_is_ready() {
@@ -124,7 +113,8 @@ if [ "${E2E_FORCE_BUILD:-0}" = "1" ] || [ "$installed" = "0" ] ||
   APP_VARIANT=e2e \
   EXPO_PUBLIC_E2E=1 \
   EXPO_PUBLIC_API_URL="$E2E_API_URL_VALUE" \
-    npx expo prebuild --platform ios
+    npx expo prebuild --clean --platform ios
+  printf '%s\n' "$fingerprint" >ios/.grrind-native-fingerprint
 
   # En Debug, Expo CLI force Metro même avec `--no-bundler` lorsqu'il installe directement sur
   # un Simulator. Le build générique évite cette branche : Expo compile et rend la main, puis

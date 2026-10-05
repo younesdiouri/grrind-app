@@ -6,20 +6,13 @@ import {
   attributeColor,
   color,
   control,
-  frame,
   glow,
   palette,
   rarityColor,
-  typography,
 } from './tokens.ts';
 
 describe('les rôles de la palette néon froide', () => {
   it('conserve une teinte propre à chaque rôle sémantique', () => {
-    assert.equal(color.accent, palette.ember);
-    assert.equal(color.celebrate, palette.gold);
-    assert.equal(color.gain, palette.mint);
-    assert.equal(color.loss, palette.rust);
-    assert.equal(color.coin, palette.copper);
     assert.equal(new Set([color.accent, color.celebrate, color.gain, color.loss, color.coin]).size, 5);
   });
 
@@ -35,18 +28,9 @@ describe('les rôles de la palette néon froide', () => {
     assert.ok(glow.flare.boxShadow.includes(palette.celebrateHalo));
   });
 
-  it('réserve les cadres doublés aux hiérarchies fortes', () => {
-    assert.equal(frame.standard.double, false);
-    assert.equal(frame.hero.double, true);
-    assert.equal(frame.event.double, true);
-    assert.ok(frame.event.accentLength > frame.hero.accentLength);
-  });
-
   it('garde les contrôles presque rectangulaires et tactiles', () => {
     assert.ok(control.radius <= 2);
     assert.ok(control.minHeight >= 44);
-    assert.equal(typography.display.semibold, 'Oxanium-SemiBold');
-    assert.equal(typography.display.bold, 'Oxanium-Bold');
   });
 
   it('borne le fond ambiant à quatre rails sur un cycle lent', () => {

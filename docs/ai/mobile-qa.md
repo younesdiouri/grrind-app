@@ -1,281 +1,145 @@
 # QA mobile iOS
 
-Un agent qui change un écran ou un enchaînement d'écrans le valide lui-même avant de rendre la
-main : il construit la variante E2E, la pilote sur un Simulator, lit les captures, corrige, et
-relance. Cette page dit comment, sans rien supposer de la machine.
-
-Le harnais s'appuie sur ce qui existe déjà — [Maestro](https://maestro.dev) pour piloter,
-`HealthProvider` pour la santé, le back local pour les comptes. Il n'y a pas de framework maison
-à apprendre : des flows YAML, de petits scripts shell, un fournisseur bouchon.
+La boucle quotidienne utilise un development build déjà installé et Metro. On valide le
+comportement changé, puis on regarde les captures. Les règles communes sont dans `AGENTS.md`.
 
 ## Prérequis
 
-- Xcode et un runtime iOS Simulator compatibles avec Expo SDK 57 ;
-- Java 17 ou plus récent (`brew install openjdk` ; le script retrouve ce JDK tout seul) ;
-- Maestro (`brew install mobile-dev-inc/tap/maestro`) ;
-- `grrind-back` qui répond sur `http://localhost:8080`.
+Xcode et un runtime iOS compatibles SDK 57, Java 17+ (`brew install openjdk`), Maestro
+(`brew install mobile-dev-inc/tap/maestro`). Pour les flows authentifiés, le back doit répondre
+sur `http://localhost:8080`. Le harnais crée des comptes jetables via l’API : il ne réinitialise
+jamais cette base, ne joue aucune migration et ne modifie pas le dépôt du back.
 
-Le test **crée** deux comptes jetables par exécution sur cette base. Il ne la réinitialise pas,
-ne joue aucune migration, et ne touche pas au dépôt du back.
+## Deux variantes utiles, une seule boucle Metro
 
-## Les deux modes
+- **GRRIND dev** : iPhone réel, vraie santé, permissions, widget, sons et haptique.
+- **GRRIND E2E** : Simulator dédié, comptes isolés et fournisseur santé simulé.
 
-Le harnais sépare explicitement l'itération JS/TS de la validation native. La première s'appuie
-sur un **development build E2E** contenant les mêmes modules natifs que l'app et charge le code
-depuis Metro. La seconde conserve le build Release propre historique, mais elle est réservée à
-une demande explicite de l'utilisateur.
+Les variantes ont des bundle IDs, schémas de liens et App Groups distincts. Le projet généré
+`ios/` est partagé ; il ne faut pas construire le workspace d’une autre variante. `npm run ios`
+calcule l’empreinte dev et régénère le projet lorsque la configuration ou la variante diffère.
+`npm start` charge le JS de développement sans reconstruire le natif.
 
-### Boucle de développement rapide
-
-```bash
+```sh
 npm run e2e:ios:dev
-npm run e2e:ios:flow
+npm run e2e:ios:flow -- .maestro/ios-smoke.yaml
 ```
 
-`e2e:ios:dev` prépare ou réutilise le Simulator « GRRIND E2E », le development build
-`app.grrind.e2e` et un Metro E2E sur le port 8082. Le premier passage — ou un changement natif —
-peut faire un prebuild non destructif et un build Debug. Les passages suivants vérifient
-l'empreinte native, réutilisent l'app installée et Metro, puis sortent sans build. Cette
-préparation fonctionne même si le back est momentanément arrêté ; seul le flow en dépend.
-Quand la commande démarre Metro, elle reste ouverte comme un `expo start` normal : conserver ce
-terminal — ou cette session d'agent — et lancer les flows depuis un autre. `Ctrl+C` arrête Metro.
+`dev` réutilise le Simulator « GRRIND E2E », l’app installée et Metro (8082). Il ne compile en
+Debug que si le binaire manque, si son empreinte native change ou avec `E2E_FORCE_BUILD=1`.
+L’empreinte officielle Expo suit la configuration résolue, les plugins, les dépendances
+natives autolinkées et les sources natives, avec les sources du widget `targets/` en complément.
+Elle ignore les scripts npm, les changements JS ordinaires et le lockfile pris globalement.
+Changer une dépendance native ou un plugin reste détecté. La régénération utilise `prebuild --clean` uniquement dans ce cas natif, pour éviter les
+restes de plugins ; elle ne nettoie ni DerivedData ni DeviceSupport. L’introduction de cette nouvelle
+empreinte peut nécessiter une reconstruction initiale ; ne pas fabriquer une empreinte pour
+faire passer un ancien binaire pour neuf.
 
-`e2e:ios:flow` crée deux comptes neufs, remet à zéro l'état ciblé, rouvre le bundle Metro et joue
-`.maestro/ios-smoke.yaml`. Il ne lance ni `expo prebuild`, ni Xcode, ni effacement, ni reboot du
-Simulator. Les assertions, captures et le rapport JUnit sont les mêmes que dans le mode complet.
-Un échec sort en code non nul.
+Lorsque `dev` démarre Metro, le terminal reste ouvert. Lancer les flows depuis un autre terminal.
+Un Metro reconnu est réutilisé ; un processus inconnu sur le même port n’est jamais tué.
 
-Pendant une modification d'écran :
+`flow` ne compile rien et n’efface ni ne redémarre le Simulator. Il vérifie Metro et le back,
+crée le compte requis, remet à zéro l’état de l’app et le Keychain du Simulator dédié, puis joue
+Maestro. Le code de sortie signale l’échec. Ne pas utiliser ce reset sur un Simulator partagé.
 
-1. lancer `npm run e2e:ios:dev` une fois ;
-2. lancer `npm run e2e:ios:flow` et lire les captures de départ ;
-3. modifier le JS/TS et laisser Fast Refresh mettre l'app à jour ;
-4. relancer seulement `npm run e2e:ios:flow` ;
-5. lire les assertions et captures, corriger, puis répéter.
+## Choisir une vérification
 
-On peut viser un autre flow sans modifier le script :
+| Changement | Vérification mobile |
+| --- | --- |
+| Présentation d’un écran | Un atelier/flow existant adapté, captures inspectées |
+| Navigation commune / intégration | `ios-smoke.yaml` : connexion, accueil, un combat, retour |
+| Santé, import, récompense, diagnostics | `health-sync.yaml` : empty puis multiple |
+| Combat serveur, historique et rejeu | `combat-real.yaml` |
+| Postures et effets du combat | `combat-v2.yaml` ou l’atelier concerné |
+| Inventaire et profil public | `inventory-profile.yaml`, puis actions seulement si modifiées |
+| Guilde/chat | Le flow correspondant au comportement changé |
+| Scripts du harnais uniquement | `npm run test:ios:tools`, puis un flow si sa conduite change |
+| Documentation / tests seuls | Aucun Simulator ni build |
 
-```bash
-npm run e2e:ios:flow -- .maestro/mon-flow.yaml
-```
+Un flow pertinent après une modification cohérente suffit. Une capture existante peut servir
+avant modification ; ne rejouer une baseline que pour reproduire un bug ou obtenir une référence
+manquante. Après un passage vert, ne pas relancer sans changement, échec ou doute précis.
+Les flows partagés sont réutilisés, pas tous exécutés à chaque ticket. Ne pas modifier le bundle
+pendant Maestro : même un commentaire dans un module de mock peut le réévaluer et réinitialiser
+son état par Fast Refresh. Terminer les changements avant de lancer la vérification.
 
-Pour une démonstration autonome sans API, comme l’atelier Al-Kasal :
+Le smoke utilise un compte `empty`. `health-sync` en utilise deux car il vérifie réellement les
+deux scénarios : l’adresse contenant `-empty-` n’a aucune activité ; l’autre présente quatre
+séances, dont trois importables et une hors fenêtre. Les dates sont relatives à l’exécution.
+Les comportements boutique/vente/équipement ont leurs flows dédiés ; pas de retry jusqu’à obtenir
+un loot aléatoire. Ne pas assimiler une branche conditionnelle jamais jouée à une preuve.
+
+Pour une scène autonome, ou un flow documenté qui doit conserver la session QA :
 
 ```sh
 E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/al-kasal.yaml
 ```
 
-Ce mode explicite conserve le contrôle de Metro et du Simulator, mais ne vérifie pas le backend,
-ne crée aucun compte et ne réinitialise pas la session. Il ne remplace pas le smoke authentifié.
+Ce drapeau supprime la vérification du back, la création de comptes et le reset, pas les éventuels
+appels réseau de l’app. Il ne remplace pas le smoke authentifié.
 
-Pour viser un autre back ou un autre port Metro, passer les mêmes valeurs aux deux commandes :
+Pour changer les ports, garder les mêmes paramètres sur `dev` et `flow` :
 
-```bash
-E2E_API_URL=http://… E2E_METRO_PORT=8083 npm run e2e:ios:dev
-E2E_API_URL=http://… E2E_METRO_PORT=8083 npm run e2e:ios:flow
+```sh
+E2E_API_URL=http://localhost:8090 E2E_METRO_PORT=8083 npm run e2e:ios:dev
+E2E_API_URL=http://localhost:8090 E2E_METRO_PORT=8083 npm run e2e:ios:flow
 ```
 
-### Validation complète, uniquement sur demande explicite
+## Quand reconstruire
 
-```bash
-npm run e2e:ios:full
+JS/TS, styles, animations, navigation, API, fournisseurs JS et YAML : **aucun rebuild**.
+Modules/dépendances natifs, Swift/Objective-C, plugins, entitlements, HealthKit, icônes/polices
+embarquées par plugins : **rebuild Debug de la variante concernée**. En cas de modification native
+directe hors sources générées, `E2E_FORCE_BUILD=1 npm run e2e:ios:dev` force ce rebuild.
+
+Le clean Release local `e2e:ios:full`, son alias et `E2E_SKIP_BUILD` ont été retirés. Ne pas les
+remplacer par un autre effacement/Release automatique. Un candidat de production se construit
+lors d’une livraison explicitement cadrée, puis se vérifie sur iPhone/TestFlight : démarrage,
+session, HealthKit/permissions, widget, push, arrière-plan et performance selon le changement.
+Les simulations E2E ne prouvent pas ces intégrations réelles. EAS ne part pas à chaque fusion.
+
+## Rapports, disque et processus
+
+Maestro écrit désormais sorties et logs globaux dans `artifacts/e2e/`, le reset dans
+`artifacts/e2e/reset/`. Le rapport JUnit `report.xml` décrit le dernier flow. Après une exécution,
+y compris échouée, seuls les **cinq derniers dossiers horodatés** et **le dernier reset** restent.
+Cette limite de nombre n’est pas une limite stricte d’octets : un run bloqué peut produire un gros
+log. Diagnostiquer ce run, puis nettoyer son historique ; ne pas conserver des dizaines de reprises.
+
+```sh
+npm run e2e:ios:clean
+# Exception ponctuelle : épingler un dossier avant qu’il ne sorte de l’historique.
+touch artifacts/e2e/<dossier-horodate>/.keep
 ```
 
-`npm run test:e2e:ios` reste un alias compatible vers cette validation. Le script vérifie les
-outils et le back, crée les comptes, crée ou retrouve le Simulator, l'arrête et l'efface,
-exécute `expo prebuild --clean`, construit la variante E2E en Release, l'installe, remet l'état à
-zéro, puis joue le smoke test.
+`.keep` conserve une preuve utile, pas toute une campagne. Pour une preuve durable, conserver
+quelques captures choisies dans la documentation plutôt que tous les journaux du run.
+Le nettoyage ne touche pas `artifacts/e2e/dev/` (empreinte, PID/configuration Metro), les fixtures,
+les autres dossiers de travail, les caches Xcode ou les journaux Maestro d’autres projets.
+Les anciens rapports GRRIND dans `~/.maestro/tests` peuvent être retirés une fois identifiés ;
+aucun nettoyage automatique global de ce dossier partagé.
 
-Un agent ne lance jamais ce mode de manière autonome. Il l'exécute seulement lorsque
-l'utilisateur demande explicitement `e2e:ios:full` ou la validation iOS Release complète. Un
-ticket mobile important, un changement natif/configuration, un environnement rapide obsolète ou
-une demande de terminer, pousser ou ouvrir une PR ne valent pas autorisation. Sans cette demande,
-la validation mobile de référence reste `e2e:ios:dev` puis `e2e:ios:flow`, captures inspectées.
-Comme le build Release et le development build partagent l'identifiant E2E, le full remplace le
-development build ; le prochain `e2e:ios:dev` le reconstruira une seule fois.
+Les tests unitaires et Maestro terminés ne restent pas en RAM. Metro, Xcode et le Simulator
+restent actifs pour accélérer la boucle. À la fin d’une séance E2E : `Ctrl+C` dans son terminal,
+puis `xcrun simctl shutdown "GRRIND E2E"` si le Simulator n’est plus utilisé. Préserver le Metro
+qui sert l’app du téléphone. Ne pas tuer tous les processus Node.
 
-L'ancien `E2E_SKIP_BUILD=1 npm run test:e2e:ios` reste disponible pour rejouer un bundle Release
-déjà installé, notamment sur une ancienne session. Il ne voit pas les changements JS/TS : la
-boucle Metro est désormais la voie normale.
+Conserver `~/Library/Developer/Xcode/iOS DeviceSupport` pour l’iOS actuel du téléphone : ce sont
+les symboles système copiés/extraits lors de sa préparation. Conserver DerivedData pour les
+compilations incrémentales et l’index du projet. Pods, app installée et runtime Simulator se
+réutilisent aussi. Les vider systématiquement transforme de l’espace récupéré en attente.
+Les nettoyages de caches et du jumelage ne sont jamais une étape normale de QA.
 
-### Quand reconstruire l'app native
+## Lire un échec et terminer
 
-| Changement | Rebuild natif |
-| --- | --- |
-| `.ts` / `.tsx` | Non |
-| styles React Native | Non |
-| logique d'animation JS | Non |
-| appels API | Non |
-| navigation côté JS | Non |
-| mock/provider côté JS | Non |
-| YAML Maestro | Non |
-| Swift / Objective-C | Oui |
-| module natif | Oui |
-| nouvelle dépendance native | Oui |
-| plugin de configuration Expo | Oui |
-| `app.config.*` qui affecte le natif | Oui |
-| entitlements / capacité HealthKit | Oui |
+Lire la hiérarchie d’accessibilité et les captures du dernier dossier horodaté. Les onglets se
+ciblent par `id` (`tab-combat`, etc.), les textes agrégés par fragments `.*`. Le retour paysage →
+portrait doit être observé avant de réorienter le pilote, pour ne pas masquer une régression.
+`clearState` ne vide pas le Keychain ; le reset dédié le fait. Après reset, « Continue » / « Close »
+du dev-client se ferment conditionnellement. Entre les deux comptes santé, relancer le processus
+réinitialise les singletons ; aucun reboot/second clearState n’est nécessaire.
 
-`e2e:ios:dev` compare une empreinte des fichiers de configuration, dépendances et sources iOS du
-module Santé. En cas de modification native directe non détectée, forcer la reconstruction sans
-effacer le Simulator :
-
-```bash
-E2E_FORCE_BUILD=1 npm run e2e:ios:dev
-```
-
-### Réinitialisation déterministe sans effacer le Simulator
-
-Chaque flow rapide utilise trois niveaux minimaux :
-
-- `clearState` vide le conteneur de `app.grrind.e2e` ;
-- `simctl keychain … reset` vide le Keychain du Simulator GRRIND E2E, requis parce que le refresh
-  token est dans `expo-secure-store` ;
-- deux comptes neufs sont créés sur le back, sans réinitialiser sa base ni jouer de migration.
-
-Après `clearState`, `expo-dev-client` réaffiche son onboarding natif « Continue », puis ouvre le
-panneau Dev Menu. Le smoke test ferme conditionnellement les deux avant la connexion ; la branche
-n'existe visuellement pas dans le build Release et n'altère donc pas la validation complète.
-
-Le development build reste installé, le Simulator reste démarré et Metro reste vivant. Entre les
-deux comptes du smoke test, une déconnexion suivie d'un simple redémarrage du processus suffit à
-réinitialiser les singletons JS ; aucun second `clearState` ni reboot n'est nécessaire.
-
-Le reset du Keychain porte sur tout le Simulator, raison pour laquelle le harnais utilise un
-Simulator dédié. Si un futur scénario doit préserver une session ou tester précisément le
-Keychain, il devra employer un flow dédié et documenter son propre reset ; il ne faut pas retirer
-celui du smoke test par défaut.
-
-### Temps attendu
-
-Le mode full comprend un prebuild clean, toute la compilation Xcode et le flow : il prend
-plusieurs minutes sur cette machine. Après la préparation initiale, un changement `.tsx` utilise
-le bundle Metro puis le flow seul. Mesures observées le 31 août 2026 : 1 à 3 secondes pour
-réutiliser le Simulator, le development build et Metro déjà prêts ; 1 min 46 à 1 min 56 pour le
-smoke Maestro complet (environ 2 min 17 au total avec création des comptes et reset ciblé), sans
-aucune compilation native. Les scripts affichent leur durée finale afin de garder cette différence
-observable.
-
-Si `e2e:ios:flow` fait apparaître une compilation Xcode ou `expo prebuild`, le fast loop est cassé.
-Il doit seulement vérifier Metro, réinitialiser l'état ciblé et lancer Maestro.
-
-Pour arrêter Metro volontairement, faire `Ctrl+C` dans le terminal `e2e:ios:dev`. Son PID est
-aussi écrit dans `artifacts/e2e/dev/metro.pid` pour le diagnostic. Le harnais ne tue pas
-automatiquement un processus inconnu qui occuperait le port 8082.
-
-## Choisir un scénario de santé
-
-Le bundle E2E remplace HealthKit par `src/features/health/mockHealth.ts`. Le scénario se choisit
-**sur l'adresse e-mail saisie à la connexion**, et le script en crée une de chaque :
-
-| Adresse | Scénario | Ce que lit l'app |
-| --- | --- | --- |
-| contient `-empty-` | `empty` | aucune séance, aucune énergie active |
-| toute autre | `multiple` | 4 séances (course, vélo, musculation) dont une hors fenêtre d'import |
-
-Les dates sont **relatives à l'exécution** — *n* jours avant maintenant — et tout le reste est
-figé : heures, durées, distances, calories, ordre. Deux exécutions à deux jours d'écart créditent
-la même XP. Une date absolue, elle, serait sortie de la fenêtre d'import le lendemain.
-
-Pour ajouter un scénario : une valeur dans `E2eHealthScenario`, un jeu de séances dans
-`mockHealth.ts`, un cas dans `mockHealth.test.ts`. Le fournisseur de production n'est pas
-concerné.
-
-## Ce que le smoke test traverse
-
-1. connexion avec le compte sans séance ;
-2. accueil vide, puis Réglages › Santé sur « Aucune activité trouvée » ;
-3. onglet Combat : accès à l’équipement et portraits des adversaires, un combat gagné contre le
-   seul adversaire accessible à un compte neuf (`SAND_JACKAL`, victoire garantie côté back),
-   le bilan avec son butin, l'historique avec le gain ;
-4. onglet Réglages : le bloc Synchronisation (#82, #140), puis déconnexion ;
-5. relance de l'app, puis connexion avec le compte à séances ;
-6. import des trois séances de la fenêtre et mise en scène jouée en entier ;
-7. retour à l'accueil, historique à trois séances ;
-8. le sac : l'entrée de l'accueil, puis l'ouverture depuis le bloc du combattant, la doublure
-   et la bourse — et, **si le tirage a donné un objet**, l'équiper et voir le combattant avoir
-   changé au retour.
-
-L'étape 8 est la seule qui **dépend d'un tirage** : un objet ne tombe que trois fois sur dix
-par séance créditée, donc environ deux exécutions sur trois en font tomber un. Ce qui est
-certain — la bourse, les sept emplacements, le sac vide qui se nomme — se joue sans condition ;
-l'équipement vit dans un `runFlow` conditionnel, et son absence ne fait pas échouer le flow.
-Il ne faut pas relancer le smoke jusqu'à avoir de la chance : la branche d'équipement reste une
-couverture opportuniste, pas une preuve déterministe. Une validation fiable de cette branche
-demandera un compte E2E avec objet préchargé ou une fixture back dédiée ; jusque-là, la capture
-`11-fighter-after-equip` n'est produite que lorsqu'un objet est réellement tombé.
-
-## Les captures
-
-`artifacts/e2e/` — ignoré par Git. On y trouve les captures explicites du flow
-(`01-empty-home` … `11-fighter-after-equip`, `05a-settings-sync` pour le bloc Synchronisation
-de Réglages), le rapport JUnit `report.xml`, et pour chaque
-exécution un dossier horodaté avec la capture, la **hiérarchie d'accessibilité** et les journaux
-de l'étape qui a échoué.
-
-**Les regarder fait partie du travail.** Un flow vert ne dit pas qu'un écran est juste : il dit
-qu'on y est arrivé.
-
-## Lire un échec
-
-La hiérarchie JSON du dossier horodaté dit ce que Maestro a vu, et c'est presque toujours la
-réponse. Quatre pièges connus, tous déjà payés :
-
-- **Le texte se compare en entier.** `"Accueil"` ne trouve pas l'onglet dont iOS a composé le
-  libellé en « Accueil, tab, 1 of 5 ». Les onglets se visent donc par `id` (`tab-accueil`,
-  `tab-inventaire`, `tab-combat`, `tab-guilde`, `tab-reglages`), posés par `tabBarButtonTestID`.
-  Ailleurs, un `.*` explicite là où le libellé porte plus que ce qu'on cherche.
-- **L'écran de récompense, et l'écran de combat, sont chacun un seul élément d'accessibilité.**
-  Les deux enveloppent tout leur contenu dans un `Pressable` racine, qui agrège ses enfants en
-  une phrase. On y cherche des fragments (`".*Toucher pour continuer.*"`, `".*Victoire.*"`),
-  jamais un texte exact — et un `tapOn: point:` plutôt qu'un `tapOn:` sur un libellé, puisqu'il
-  n'y a rien à cibler individuellement dedans.
-- **`clearState` ne déconnecte pas.** Le jeton de rafraîchissement vit dans le trousseau
-  (invariant n°3), qui survit à l'effacement du conteneur de données. Le script fait
-  `xcrun simctl keychain <udid> reset` ; en pilotant Maestro à la main, il faut le faire aussi,
-  sinon la session du passage précédent est encore là.
-- **Deux singletons de module survivent à la déconnexion**, et le flow relance donc l'app entre
-  ses deux scénarios. Le coordinateur refuse une synchronisation dans les trente secondes qui
-  suivent la précédente, et `markInteracted` décide si la récompense a le droit de prendre
-  l'écran. Enchaîner deux sessions dans le même processus rend l'import du second compte
-  dépendant du temps qu'a pris le premier scénario — et rien ne le dit.
-- **La récompense prend l'écran d'elle-même après une connexion**, parce que le formulaire vit
-  hors de la coquille de l'app : y taper n'appelle pas `markInteracted`, donc `mayOpenReward`
-  laisse passer. Elle recouvre l'accueil : l'historique se vérifie **après** l'avoir refermée,
-  jamais avant.
-
-Si le flow échoue avant même le build : `curl http://localhost:8080/health`, `maestro --version`,
-et le JDK.
-
-## Avant de considérer un ticket mobile terminé
-
-- `npm run typecheck`, `npm run lint`, `npm test`, `npm run previews:check` ;
-- `npm run e2e:ios:dev` puis le flow pertinent avec `npm run e2e:ios:flow` au vert ;
-- les captures d'`artifacts/e2e/` ouvertes et lues, pas seulement produites ;
-- un flow ou une assertion ajoutés si le ticket a ouvert un écran que le smoke test ne traverse
-  pas ;
-- `npm run e2e:ios:full` au vert uniquement si l'utilisateur a explicitement demandé cette
-  validation complète.
-
-## Ce qui ne tourne pas en CI
-
-Il n'y a pas de CI dans ce dépôt (#85) : les barrières tournent avant le push, et c'est cette
-exécution-là qui fait foi. Le E2E iOS ne fait pas exception, et il aurait de toute façon les
-pires raisons d'y aller — il lui faut Xcode, un Simulator, et un `grrind-back` joignable, c'est-
-à-dire trois choses qu'un runner jetable devrait reconstruire à chaque fois pour rejouer, plus
-lentement, ce qu'on vient de lancer en local.
-
-## Inventaire et profils (#168)
-
-Le smoke ouvre le nouvel onglet Inventaire depuis Combat, traverse boutique et bourse,
-puis ses vues Équipement, Statistiques et Sac. Les captures `12-inventory-attributes`,
-`13-inventory-combat-stats` et `14-inventory-bag` montrent la fiche commune.
-Le parcours ciblé `.maestro/inventory-profile.yaml` vérifie un compte équipé déterministe
-et le profil d’un autre membre de guilde, avec cercles et lecture seule.
-Les comptes et preuves JSON restent uniquement dans `artifacts/e2e/`.
-
-Après `inventory-profile.yaml`, le scénario `.maestro/inventory-actions.yaml` confirme
-l’annulation puis la validation d’une vente et l’ouverture d’un coffre depuis la vue Sac :
-`E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/inventory-actions.yaml`.
-Ici le drapeau conserve seulement la session QA ; les mutations de l’app utilisent toujours
-le backend réel. Il ne remplace pas le smoke authentifié.
+Avant push : typecheck, lint et unit tests une fois sur le code final. Previews seulement si le
+rendu/tokens change, API seulement si le contrat change, outils iOS si le harnais change. Pour un
+écran/parcours modifié, le flow pertinent doit être vert et ses captures réellement inspectées.
+Ne pas ajouter de tests qui recopient la logique testée ou figent des détails décoratifs.

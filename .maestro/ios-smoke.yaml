@@ -5,8 +5,8 @@ tags:
 ---
 # ————— Ce que ce flow prouve ————————————————————————————————————————————————————————————
 #
-# Deux comptes neufs, deux jeux de données de santé déterministes, et la chaîne complète entre
-# les deux : connexion, synchronisation, crédit, mise en scène, historique.
+# Un compte neuf : connexion, accueil, un combat et retour.
+# Santé, inventaire et rejeu ont leurs propres flows ciblés.
 #
 # ————— Deux règles de Maestro qu'on paye si on les oublie ————————————————————————————————
 #
@@ -20,17 +20,14 @@ tags:
 
 - launchApp
 
-# Un development build fraîchement réinstallé peut demander à iOS de confirmer l'ouverture de
-# l'URL Metro. Le build Release n'affiche pas cette feuille ; la branche garde donc les deux
-# parcours sur le même flow.
+# iOS peut demander confirmation pour ouvrir le lien Metro après une réinstallation.
 - runFlow:
     when:
       visible: "Ouvrir dans.*"
     commands:
       - tapOn: "Ouvrir"
 
-# Le development build affiche son onboarding natif après chaque `clearState`. Le build Release
-# ne l'affiche pas : cette branche conditionnelle ne change donc pas le parcours full.
+# Après `clearState`, fermer conditionnellement l’onboarding du development build.
 - runFlow:
     when:
       visible: "Continue"
@@ -40,8 +37,6 @@ tags:
           visible: "Close"
           timeout: 5000
       - tapOn: "Close"
-
-# ————— Scénario « aucune séance » ————————————————————————————————————————————————————————
 
 - runFlow:
     file: login.yaml
@@ -54,230 +49,6 @@ tags:
 - assertVisible: "Aucune séance"
 - takeScreenshot: 01-empty-home
 
-- tapOn:
-    id: "tab-reglages"
-- scrollUntilVisible:
-    element:
-      text: "Ouvrir Santé"
-    direction: DOWN
-- tapOn: "Ouvrir Santé"
-- extendedWaitUntil:
-    visible: "Aucune activité trouvée"
-    timeout: 30000
-- takeScreenshot: 02-empty-health
 
-- swipe:
-    start: "2%, 55%"
-    end: "95%, 55%"
-- runFlow: combat-real-flow.yaml
-
-- tapOn:
-    id: "tab-reglages"
-# Le compte est en tête : la déconnexion reste atteignable sans traverser les sections qui
-# grandissent, et surtout sans finir sous la barre d'onglets.
-- assertVisible: "Se déconnecter"
-# Le bloc Synchronisation (#82, #140) : sur le compte E2E, `isE2eBuild` court-circuite le réveil
-# HealthKit (`backgroundWakeup.ios.ts`), donc « Dernier réveil en arrière-plan » et
-# « Inscription au réveil » restent à `—` — c'est attendu, pas un défaut du flow. La ligne
-# « Dernière synchronisation », elle, porte le verdict de la synchronisation au lancement, avec
-# sa durée mesurée (`runDurationSeconds`, `runDiagnostics.ts`).
-- scrollUntilVisible:
-    element:
-      text: "Synchronisation"
-    direction: DOWN
-- takeScreenshot: 05a-settings-sync
-- scrollUntilVisible:
-    element:
-      text: "Se déconnecter"
-    direction: UP
-- tapOn: "Se déconnecter"
-- extendedWaitUntil:
-    visible: "Connexion"
-    timeout: 15000
-
-# ————— Scénario « plusieurs séances » ————————————————————————————————————————————————————
-#
-# Quatre séances sont lisibles, trois tombent dans la fenêtre d'import : la quatrième a
-# quarante-cinq jours et prouve que la fenêtre est bien celle du client.
-#
-# **Un processus neuf, et ce n'est pas du confort.** Le coordinateur de synchronisation refuse
-# une seconde tentative dans les trente secondes qui suivent la précédente, et son horloge est
-# un singleton de module que la déconnexion n'efface pas. Enchaîner les deux sessions dans le
-# même processus ferait dépendre l'import du second compte du temps qu'a pris le premier
-# scénario — sous les trente secondes, rien ne part et rien ne le dit.
-
-- stopApp
-- launchApp
-
-- runFlow:
-    file: login.yaml
-    env:
-      EMAIL: ${MULTIPLE_EMAIL}
-
-- extendedWaitUntil:
-    visible: ".*Toucher pour voir le butin.*"
-    timeout: 90000
-- assertVisible: ".*3 séances.*"
-- assertVisible: ".*Premiers pas.*"
-- takeScreenshot: 06-reward-summary
-
-# Trois séances créditées rapportent toujours des pièces : la page du butin suit.
-- tapOn:
-    point: "50%,50%"
-- extendedWaitUntil:
-    visible: ".*BUTIN.*"
-    timeout: 10000
-- takeScreenshot: 06b-reward-loot
-
-# La mise en scène a pris l'écran toute seule, et c'est la règle : `mayOpenReward` laisse
-# passer tant que personne n'a touché la coquille de l'app depuis le lancement. Le formulaire
-# de connexion vit **hors** de cette coquille — c'est pour ça qu'y taper ne compte pas, et que
-# le joueur qui se connecte voit sa progression tout de suite plutôt qu'au lancement suivant.
-
-- tapOn:
-    point: "50%,50%"
-- extendedWaitUntil:
-    visible: "NIVEAU"
-    timeout: 20000
-- assertVisible: "3 séances.*"
-- takeScreenshot: 07-multiple-history
-
-# ————— Le sac (#30) — les deux entrées, et le combattant qui suit ————————————————————————
-#
-# Le second compte vient de créditer trois séances : il a donc des pièces à coup sûr — la bande
-# de `STARTER_SESSION_DROP` n'a pas de borne basse nulle — mais **pas forcément un objet**, qui
-# ne tombe que trois fois sur dix par séance créditée. Ce qui est certain se prouve sans
-# condition ; l'équipement, seulement s'il y a de quoi.
-#
-# **Le parcours passe par l'onglet Combat, et ce n'est pas un raccourci.** C'est la seule façon
-# d'avoir un avant et un après du **même** combattant : le catalogue se capture, on ouvre le sac
-# depuis lui, on équipe, on revient. Sans l'avant, « les chiffres ont changé » n'est pas une
-# preuve, c'est une affirmation.
-
-# L'entrée de l'accueil existe et porte son résumé — c'est tout ce qu'on lui demande ici.
-- assertVisible:
-    id: "bag-row"
-- assertVisible: ".*Sac et bourse.*[1-9][0-9]* pièces.*"
-
-- tapOn:
-    id: "tab-combat"
-- tapOn: "Anciens combats solo"
-- extendedWaitUntil:
-    visible: "Ton équipement et tes statistiques.*"
-    timeout: 15000
-- takeScreenshot: 08-fighter-before
-
-# La seconde entrée : on change d'équipement là où l'on voit les chiffres qu'il va déplacer.
-- tapOn:
-    id: "open-bag"
-- extendedWaitUntil:
-    visible: "BOURSE"
-    timeout: 15000
-# Les sept emplacements sont toujours là, vides compris : c'est la moitié de ce que cet écran
-# montre, et le contrat les sert précisément pour qu'on n'ait pas à distinguer « pas chargé »
-# de « rien ici ».
-- assertVisible:
-    id: "character-tab-equipment"
-- assertVisible: ".*Tête.*"
-- takeScreenshot: 09-bag
-
-# La boutique reste dans le hub objets : on vérifie sa porte depuis le sac, sans acheter une
-# entrée de catalogue dont le prix et la disponibilité appartiennent au serveur.
-#
-# Les deux bornes sont des `id`, pas du texte. Le sac écrit « BOUTIQUE » sur sa porte et
-# « BOURSE » sur son solde, et l'étal écrit les deux mots lui aussi : une attente sur ce
-# texte-là serait vraie **avant** la transition comme après, et ce bloc passerait entier sans
-# que rien n'ait navigué. `shop-screen` n'existe que sur l'étal, `shop-entry` que dans le sac.
-- tapOn:
-    id: "shop-entry"
-- extendedWaitUntil:
-    visible:
-      id: "shop-screen"
-    timeout: 15000
-- takeScreenshot: 09a-shop
-- swipe:
-    start: "2%, 55%"
-    end: "95%, 55%"
-- extendedWaitUntil:
-    visible:
-      id: "shop-entry"
-    timeout: 15000
-
-# La bourse a une histoire (#129), et c'est le bloc du solde qui l'ouvre. Elle est **toujours**
-# garnie ici : les trois séances créditées ont chacune fait tomber des pièces, la bande de
-# `STARTER_SESSION_DROP` n'ayant pas de borne basse nulle. Contrairement au loot, rien à
-# conditionner.
-- tapOn: "BOURSE"
-- extendedWaitUntil:
-    visible: "SOLDE"
-    timeout: 15000
-- assertVisible: ".*Séance créditée.*"
-- takeScreenshot: 09b-coin-ledger
-
-# Et on revient au sac pour la suite — par le geste de bord, comme plus bas : `back` ne replie
-# pas la pile depuis une vue défilante.
-- swipe:
-    start: "2%, 55%"
-    end: "95%, 55%"
-- extendedWaitUntil:
-    visible: "BOURSE"
-    timeout: 15000
-
-# On déroule **avant** de conditionner : `when: visible` ne voit que ce qui est à l'écran, et le
-# bouton d'un objet vit sous la doublure. Sans ce défilement, un sac garni se testait comme un
-# sac vide — la branche était sautée alors qu'il y avait de quoi la jouer.
-- scrollUntilVisible:
-    element:
-      text: ".*Équiper.*"
-    direction: DOWN
-    optional: true
-
-- runFlow:
-    when:
-      visible: ".*Équiper.*"
-    commands:
-      - tapOn: ".*Équiper.*"
-      - extendedWaitUntil:
-          visible: "ÉQUIPÉ"
-          timeout: 15000
-      - takeScreenshot: 10-bag-equipped
-
-      # Le retour par le geste de bord, et non par `back` : depuis une vue défilante qu'on
-      # vient de parcourir, le raccourci de Maestro n'a pas replié la pile — on restait sur le
-      # sac, à chercher une barre d'onglets qu'il cachait.
-      - tapOn:
-          id: "tab-combat"
-      - tapOn: "Anciens combats solo"
-      - extendedWaitUntil:
-          visible: "Adversaires"
-          timeout: 15000
-
-      # Et le combattant a suivi, sans qu'on ait rien rechargé à la main : l'onglet n'a jamais
-      # été démonté, c'est le compteur d'équipement qui lui a fait relire son catalogue. La
-      # comparaison se fait avec `08-fighter-before`, même compte, même écran.
-      - takeScreenshot: 11-fighter-after-equip
-
-- openLink: grrindapp-e2e://inventaire
-- scrollUntilVisible:
-    element:
-      id: "character-tab-statistics"
-    direction: UP
-- tapOn:
-    id: "character-tab-statistics"
-- assertVisible:
-    id: "attribute-strength"
-- assertVisible:
-    id: "attribute-dexterity"
-- takeScreenshot: 12-inventory-attributes
-- scrollUntilVisible:
-    element:
-      id: "stat-dodgePercent"
-    direction: DOWN
-- takeScreenshot: 13-inventory-combat-stats
-- scrollUntilVisible:
-    element:
-      id: "character-tab-bag"
-    direction: UP
-- tapOn:
-    id: "character-tab-bag"
-- takeScreenshot: 14-inventory-bag
+- runFlow: combat-round.yaml
+- takeScreenshot: 03-portrait-return

@@ -14,6 +14,7 @@ METRO_HOST_FILE="${DEV_STATE_DIR}/metro-host"
 FLOW_PATH="${1:-.maestro/ios-smoke.yaml}"
 STARTED_AT="$(date +%s)"
 EXPECTED_SETTINGS="port=${METRO_PORT};api=${E2E_API_URL_VALUE}"
+trap 'node scripts/e2e-ios-clean.mjs >&2 || true' EXIT
 
 e2e_require_tools
 # Les ateliers de présentation peuvent tourner sans compte ni serveur. Ce mode est explicite
@@ -46,7 +47,11 @@ if [ "${E2E_OFFLINE:-0}" = "1" ]; then
   E2E_EMPTY_EMAIL=""
   E2E_MULTIPLE_EMAIL=""
 else
-  e2e_register_accounts
+  # Health/reward has its own flow; other authenticated flows use one empty account.
+  case "$FLOW_PATH" in
+    */health-sync.yaml) e2e_register_accounts both ;;
+    *) e2e_register_accounts empty ;;
+  esac
   e2e_reset_state
 fi
 

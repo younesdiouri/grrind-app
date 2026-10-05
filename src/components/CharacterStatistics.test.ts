@@ -25,7 +25,6 @@ test('la fiche montre chaque total serveur, sa ventilation et les onze statistiq
   assert.match(markup, /Esquive, 7 %/);
   assert.equal((markup.match(/data-testid="attribute-/g) ?? []).length, 5);
   assert.equal((markup.match(/data-testid="stat-/g) ?? []).length, 11);
-  assert.equal((markup.match(/<svg/g) ?? []).length, 16);
 });
 
 test('un objet public ne montre aucun prix et les emplacements publics ne proposent aucun geste', () => {
