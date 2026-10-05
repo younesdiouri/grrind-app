@@ -18,29 +18,34 @@ const POSES: { value: FighterPose; label: string }[] = [
 ];
 
 export default function CombatDemoScreen() {
-  const { network, frame, scenario, at } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string }>();
+  const { network, frame, scenario, at, opponent } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
   // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
-  if (at && (scenario === 'victoire' || scenario === 'defaiteBoss')) return <AmbientBackdropProvider>
+  if (at && (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel')) return <AmbientBackdropProvider>
+    <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <View style={styles.screen}>
-      <BattleView key={at} battle={BATTLE_FIXTURES[scenario]} enemyArt={AL_KASAL} demo demoTime={Number(at)} />
+      <BattleView key={at} battle={scenario === 'duel' ? { ...BATTLE_FIXTURES.victoire,
+        enemy: { ...BATTLE_FIXTURES.victoire.enemy, name: 'Murīd', appearance: 'MURID', imageUrls: null, introduction: null } }
+        : BATTLE_FIXTURES[scenario]} enemyArt={scenario === 'duel' ? undefined : AL_KASAL} demo demoTime={Number(at)} />
     </View>
   </AmbientBackdropProvider>;
-  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}`} scenario={network} frame={frame} /></AmbientBackdropProvider>;
+  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}-${opponent}`} scenario={network} frame={frame} duel={opponent === 'murid'} /></AmbientBackdropProvider>;
   return <AmbientBackdropProvider><CombatDemo /></AmbientBackdropProvider>;
 }
 
 /** Banc réseau isolé : scripts/combat-presentation-server.mjs, jamais une mutation du catalogue. */
-function NetworkDemo({ scenario, frame }: { scenario: string; frame?: string }) {
+function NetworkDemo({ scenario, frame, duel }: { scenario: string; frame?: string; duel: boolean }) {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`http://127.0.0.1:8099/battle/${encodeURIComponent(scenario)}`, { signal: controller.signal })
       .then((response) => { if (!response.ok) throw new Error('fixture'); return response.json(); })
-      .then(setBattle).catch(() => { if (!controller.signal.aborted) setError(true); });
+      .then((sample: Battle) => setBattle(duel ? { ...sample, enemy: { ...sample.enemy,
+        name: 'Murīd', appearance: 'MURID', imageUrls: null, introduction: null } } : sample))
+      .catch(() => { if (!controller.signal.aborted) setError(true); });
     return () => controller.abort();
-  }, [scenario]);
+  }, [scenario, duel]);
   let demoTime: number | undefined;
   if (battle && frame) {
     const timeline = buildBattleTimeline(battle, { illustrated: true });
@@ -51,6 +56,7 @@ function NetworkDemo({ scenario, frame }: { scenario: string; frame?: string }) 
     demoTime = ramp.input[effect === 'damage' ? ramp.output.lastIndexOf(1) : ramp.output.indexOf(1)];
   }
   return <View style={styles.screen}>
+    <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <Text style={styles.notice}>DÉMONSTRATION RÉSEAU · AUCUN GAIN RÉEL</Text>
     {battle ? <BattleView battle={battle} demo demoTime={demoTime} onDismiss={() => router.replace('/combat-demo')} />
       : <Text style={styles.subtitle}>{error ? 'Serveur de test indisponible' : 'Chargement du scénario…'}</Text>}
@@ -64,7 +70,7 @@ function CombatDemo() {
   const clock = useSharedValue(0);
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ headerLeft: () => (
+      <Stack.Screen options={{ headerShown: !scenario, statusBarHidden: !!scenario, headerLeft: () => (
         <Pressable accessibilityRole="button" onPress={() => {
           if (router.canGoBack()) router.back();
           else router.replace(auth.status === 'signedIn' ? '/combat' : '/login');

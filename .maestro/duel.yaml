@@ -11,6 +11,7 @@ tags:
 # Le jeu de données vient de `node scripts/seed-duel-qa.mjs` : deux comptes dans une même
 # guilde, tous les deux présents.
 - launchApp
+- setOrientation: PORTRAIT
 - runFlow:
     when:
       visible: "DEVELOPMENT SERVERS"
@@ -46,11 +47,21 @@ tags:
 - tapOn: "Défier QA Rival"
 # L'écran de combat, et pas le profil qu'on quitte : le nom du défié est visible sur les deux,
 # donc c'est l'identifiant de l'écran qui fait foi. `battle-combat` est la séquence jouée —
-# sans illustration, un défi n'a ni chargement d'images ni dialogue d'entrée.
+# l'illustration du défié vient du catalogue, sans dialogue d'entrée.
 - extendedWaitUntil:
     visible:
       id: "battle-combat"
     timeout: 60000
+- setOrientation: LANDSCAPE_LEFT
 # Le nom du défié prend la place de celui d'un ennemi, sur le même composant.
 - assertVisible: ".*QA Rival.*"
 - takeScreenshot: duel-02-combat
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 30000
+- tapOn:
+    id: battle-exit
+- setOrientation: PORTRAIT
+- assertVisible: ".*QA Rival.*"
+- takeScreenshot: duel-03-retour

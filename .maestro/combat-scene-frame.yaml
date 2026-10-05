@@ -12,8 +12,9 @@ appId: app.grrind.e2e
 - extendedWaitUntil:
     visible: ".*Toucher pour combattre.*"
     timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
 - tapOn:
-    point: "50%,50%"
+    id: "battle-dialogue"
 - extendedWaitUntil:
     visible:
       id: battle-combat

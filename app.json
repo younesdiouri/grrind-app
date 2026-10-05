@@ -3,14 +3,16 @@
     "name": "grrind-app",
     "slug": "grrind-app",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "grrindapp",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "requireFullScreen": true,
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "app.grrind",
       "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": true,
         "NSHealthShareUsageDescription": "GRRIND lit les séances de sport déjà enregistrées dans Santé — leur durée, leur distance, leur dénivelé, tes calories actives et ta fréquence cardiaque moyenne — pour les convertir en expérience et faire progresser ton personnage. GRRIND ne lit rien d'autre, n'écrit jamais dans Santé, et ne partage ces données avec personne.",
         "NSHealthUpdateUsageDescription": "GRRIND n'écrit jamais dans Santé. Cette autorisation est exigée par iOS dès que l'app demande un accès à Santé, mais GRRIND ne l'utilise jamais pour modifier tes données.",
         "ITSAppUsesNonExemptEncryption": false,

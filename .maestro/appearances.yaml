@@ -1,0 +1,49 @@
+appId: app.grrind.e2e
+tags:
+  - ios
+  - combat
+---
+# Catalogue serveur, PATCH /me, combat et relecture avec retour au portrait.
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${EMPTY_EMAIL}
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 30000
+- tapOn:
+    id: "tab-reglages"
+- scrollUntilVisible:
+    element:
+      id: "hero-MURID"
+    direction: DOWN
+- tapOn:
+    id: "hero-MURID"
+- extendedWaitUntil:
+    visible: "Apparence enregistrée"
+    timeout: 15000
+- assertVisible:
+    id: "hero-MURID"
+- takeScreenshot: hero-picker
+- runFlow: combat-real-flow.yaml
+- runFlow: combat-recap-loot.yaml
+- tapOn:
+    id: "tab-reglages"
+- assertVisible: "Réglages"
+- takeScreenshot: portrait-after-combat

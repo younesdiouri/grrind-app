@@ -2,13 +2,35 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { buildBattleTimeline, type Battle } from './timeline.ts';
-import { fighterMotionAt, contactAt } from './fighterMotion.ts';
+import { fighterMotionAt, fighterPoseAt, contactAt, type PoseSignals } from './fighterMotion.ts';
 
 const fixtures = ['victoire', 'defaite-boss', 'combat-long'].map((name) => JSON.parse(
   readFileSync(new URL(`../../../fixtures/battle/${name}.json`, import.meta.url), 'utf8'),
 ) as Battle);
 const timeline = buildBattleTimeline(fixtures[1], { illustrated: true });
 describe('Combattants : mise en scène', () => {
+  it('joue les poses spécifiques sur leurs rampes et réserve le critique à l’attaquant', () => {
+    const off = { input: [0, 1000], output: [0, 0] };
+    const on = { input: [0, 1000], output: [1, 1] };
+    const signals: PoseSignals = { critical: off, dodge: off, combo: off, replay: off };
+    for (const effect of ['dodge', 'combo', 'replay'] as const) {
+      assert.equal(fighterPoseAt('idle', 500, { ...signals, [effect]: on }), effect);
+    }
+    assert.equal(fighterPoseAt('attack', 500, { ...signals, critical: on }), 'critical');
+    assert.equal(fighterPoseAt('hit', 500, { ...signals, critical: on }), 'hit');
+    assert.equal(fighterPoseAt('attack', 500, signals), 'attack');
+    assert.equal(fighterPoseAt('idle', 500), 'idle');
+  });
+  it('en duel latéral, les deux camps s’avancent vers le centre et reculent vers leur bord', () => {
+    const beat = { kind: 'attack', at: 0, until: 1000, index: 0, attacker: 'PLAYER', damage: 5, mitigated: 0 } as const;
+    const at = contactAt(beat);
+    assert.ok(fighterMotionAt([beat], 'PLAYER', at, false, true).x > 0);
+    assert.ok(fighterMotionAt([beat], 'ENEMY', at, false, true).x > 0);
+    assert.equal(fighterMotionAt([beat], 'PLAYER', at, true, true).x, 0);
+    const enemyBeat = { ...beat, attacker: 'ENEMY' } as const;
+    assert.ok(fighterMotionAt([enemyBeat], 'ENEMY', at, false, true).x < 0);
+    assert.ok(fighterMotionAt([enemyBeat], 'PLAYER', at, false, true).x < 0);
+  });
   it('réagit au contact, avec vie et haptique synchronisées', () => {
     const beat = timeline.beats.find((b) => b.kind === 'attack' && b.attacker === 'PLAYER')!;
     const contact = contactAt(beat);

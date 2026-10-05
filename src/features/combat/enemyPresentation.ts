@@ -1,8 +1,9 @@
 import type { ImageSource } from 'expo-image';
 import type { components } from '@/api/schema';
-import type { FighterPose } from './fighterMotion';
+import type { BaseFighterPose, SpecialFighterPose } from './fighterMotion';
 
-export type FighterArtwork = { name: string; introduction?: string; poses: Record<FighterPose, ImageSource> };
+export type FighterArtwork = { name: string; introduction?: string;
+  poses: Record<BaseFighterPose, ImageSource> & Partial<Record<SpecialFighterPose, ImageSource>> };
 type EnemyPresentation = Pick<components['schemas']['BattleEnemy'], 'name' | 'imageUrls'>;
 
 /** Le contrat du combat est autonome, y compris au rejeu : aucune recherche dans le catalogue. */

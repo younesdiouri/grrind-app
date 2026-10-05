@@ -163,6 +163,7 @@ describe("le middleware d'authentification", () => {
         displayName: 'Ada',
         timezone: 'Europe/Paris',
         locale: null,
+        appearance: null,
         notificationPreferences: [],
       },
     });

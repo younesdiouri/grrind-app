@@ -22,12 +22,13 @@ appId: app.grrind.e2e
     visible:
       id: "battle-(dialogue|combat)"
     timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
 - runFlow:
     when:
       visible: ".*Toucher pour combattre.*"
     commands:
       - tapOn:
-          point: "50%,50%"
+          id: "battle-dialogue"
 
 # Attendre le verdict naturel : la recherche conditionnelle du dialogue peut déjà avoir
 # consommé la fin d'un combat sans réplique. Un tap tardif sortirait alors du bilan.
@@ -35,14 +36,28 @@ appId: app.grrind.e2e
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - assertVisible: ".*Victoire.*"
+- repeat:
+    times: 6
+    commands:
+      - runFlow:
+          when:
+            notVisible: ".*Bourse.*"
+          commands:
+            - swipe:
+                from:
+                  id: "battle-recap-scroll"
+                direction: UP
 - assertVisible: ".*Bourse.*"
 - takeScreenshot: 04-battle-recap-loot
 
 - tapOn:
-    point: "50%,50%"
+    id: "battle-exit"
 - extendedWaitUntil:
     visible: "Adversaires"
     timeout: 15000
+- takeScreenshot: portrait-return-before-device-reset
+# L’app a déjà rétabli le portrait ; aligner maintenant les coordonnées du pilote iOS.
+- setOrientation: PORTRAIT
 
 # La ligne d'historique porte les pièces, jamais les objets (#227) — voir le docblock de
 # `coinsGained` sur `BattleRow`. Elle est sous le catalogue, hors cadre sans défiler.
@@ -59,19 +74,25 @@ appId: app.grrind.e2e
     visible:
       id: "battle-(dialogue|combat)"
     timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
 - runFlow:
     when:
       visible: ".*Toucher pour combattre.*"
     commands:
       - tapOn:
-          point: "50%,50%"
+          id: "battle-dialogue"
 - extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - assertVisible: ".*Victoire.*"
 - takeScreenshot: 05a-battle-replay
 - tapOn:
-    point: "50%,50%"
+    id: "battle-exit"
+- extendedWaitUntil:
+    visible: "Anciens combats"
+    timeout: 15000
+- takeScreenshot: portrait-replay-before-device-reset
+- setOrientation: PORTRAIT
 - swipe:
     start: "2%, 55%"
     end: "95%, 55%"

@@ -5,6 +5,7 @@ tags:
 ---
 # Serveur HTTP synthétique local, pas le catalogue réel : voir scripts/combat-presentation-server.mjs.
 - launchApp
+- setOrientation: PORTRAIT
 - runFlow:
     file: combat-presentation-dialogue.yaml
     env:
@@ -26,22 +27,26 @@ tags:
     visible:
       id: battle-combat
     timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*Toucher pour combattre.*"
 - takeScreenshot: presentation-silent
 - extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - tapOn:
-    point: "50%,70%"
+    id: "battle-exit"
+- setOrientation: PORTRAIT
 - openLink: grrindapp-e2e://combat-demo?network=legacy
 - extendedWaitUntil:
     visible:
       id: battle-combat
     timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*Toucher pour combattre.*"
 - extendedWaitUntil:
     visible: ".*Touche pour revenir.*"
     timeout: 30000
 - tapOn:
-    point: "50%,70%"
+    id: "battle-exit"
+- setOrientation: PORTRAIT
 - assertVisible: "Repos"

@@ -10,6 +10,7 @@ import { color, notificationCategoryLabel, radius, space, type } from '@/design/
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { signOut } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
+import { HeroPicker } from '@/features/combat/HeroPicker';
 import {
   fetchProfile,
   updateNotificationPreference,
@@ -130,6 +131,8 @@ export default function ReglagesScreen() {
           <DangerRow label="Se déconnecter" onPress={() => void signOut()} />
         </View>
       ) : null}
+
+      {state.step === 'ready' && <HeroPicker profile={state.profile} onProfile={(profile) => setState({ step: 'ready', profile })} />}
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Santé</Text>

@@ -2,7 +2,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import { Platform } from 'react-native';
 import { useEffect, useSyncExternalStore } from 'react';
 
 import { queryClient } from '@/api/queryClient';
@@ -37,6 +38,7 @@ export default function RootLayout() {
   const fontsSettled = fontsLoaded || fontError !== null;
 
   useEffect(() => {
+    if (Platform.OS !== 'web') void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
     purgeChatPhotoCache();
     // En développement, React monte deux fois : le coordinateur de rafraîchissement partage
     // sa promesse, donc il ne part quand même qu'un seul appel.
@@ -59,7 +61,10 @@ export default function RootLayout() {
       return;
     }
 
-    if (auth.status === 'signedOut') purgeChatPhotoCache();
+    if (auth.status === 'signedOut') {
+      purgeChatPhotoCache();
+      queryClient.removeQueries({ queryKey: ['appearances'] });
+    }
 
     // La pile connectée est rendue sous l'écran de démarrage, donc la synchronisation de
     // lancement est déjà partie quand on arrive ici. `beginLaunch` est idempotent.
@@ -82,9 +87,9 @@ export default function RootLayout() {
     // racine plutôt que sous `(tabs)` pour qu'un futur écran hors onglets n'ait pas à le
     // redécouvrir.
     <QueryClientProvider client={queryClient}>
-      <StatusBar style="light" />
       <Stack
         screenOptions={{
+          statusBarStyle: 'light',
           headerStyle: { backgroundColor: color.background },
           headerTintColor: color.text,
           contentStyle: { backgroundColor: color.background },

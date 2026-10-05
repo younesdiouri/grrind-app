@@ -10,7 +10,9 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor } from '@/features/auth/problems';
 import { useAlamRun, type AlamRun } from '@/features/alam/api';
 import { RaidStage } from '@/features/alam/RaidStage';
-import { RaidAvatar } from '@/features/alam/RaidAvatar';
+import { appearanceArtwork } from '@/features/combat/appearances';
+import { useAppearances } from '@/features/combat/useAppearances';
+import { enemyArtworkOf } from '@/features/combat/enemyPresentation';
 import { frontRow, raidBeats, raidImpacts } from '@/features/alam/presentation';
 import { alamStyles as s } from '@/features/alam/styles';
 import { useAlamSound } from '@/features/alam/useAlamSound';
@@ -31,6 +33,7 @@ export default function AlamEdition() {
 }
 
 function Edition({ run, receivedAt, replay }: { run: AlamRun; receivedAt: number; replay: boolean }) {
+  const catalog = useAppearances();
   const reduced = useReducedMotion() !== false;
   const presentation = useRaidClock(run, receivedAt, replay);
   const sound = useAlamSound(!presentation.finished);
@@ -46,22 +49,20 @@ function Edition({ run, receivedAt, replay }: { run: AlamRun; receivedAt: number
   const beats = useMemo(() => raidBeats(run.events), [run.events]);
   const impacts = useMemo(() => raidImpacts(run.events), [run.events]);
   const rows = useMemo(() => frontRow(run.participants), [run.participants]);
-  const heroes = useMemo(() => rows.front.map((player) => ({ id: player.playerId, name: player.displayName,
-    beats: raidBeats(run.events, player.playerId) })), [rows.front, run.events]);
+  const heroes = useMemo(() => [...rows.front, ...rows.back].map((player) => ({ id: player.playerId, name: player.displayName,
+    artwork: appearanceArtwork(catalog.data?.appearances ?? [], player.appearance, 'front', player.displayName, true),
+    beats: raidBeats(run.events, player.playerId) })), [rows, run.events, catalog.data]);
   const event = run.events[presentation.cursor];
   const encounter = run.encounters.find((entry) => entry.index === event?.encounterIndex);
+  const boss = useMemo(() => encounter ? enemyArtworkOf({ name: encounter.enemyName, imageUrls: encounter.imageUrls }) : undefined, [encounter]);
   const revealed = run.events.slice(0, presentation.cursor + 1).some((entry) =>
     entry.encounterIndex === encounter?.index && (entry.action === 'VICTORY' || entry.action === 'DEFEAT'));
   return <ScrollView contentContainerStyle={s.screen}>
     <Text style={s.label}>{presentation.finished ? 'HISTOIRE DE LA GUILDE' : presentation.replaying ? 'REPLAY' : 'EN DIRECT'}</Text>
     <Text style={s.title}>{encounter?.enemyName ?? 'Al-Kasal'}</Text>
     {encounter && <Text style={s.muted}>Rencontre {encounter.index} · seuil {encounter.thresholdPermille / 10} %</Text>}
-    <RaidStage clock={presentation.clock} beats={beats} heroes={heroes} impacts={impacts}
-      arrivals={run.events.filter((entry) => entry.action === 'ARRIVAL').map((entry) => entry.offsetMs)}>
-      {rows.back.length > 0 && rows.back.map((player) => <RaidAvatar key={player.playerId} name={player.displayName} avatarUrl={player.avatarUrl}
-        impulses={run.events.filter((entry) => entry.actorId === player.playerId && entry.action === 'EFFORT').map((entry) => entry.offsetMs)}
-        clock={presentation.clock} reduced={reduced} />)}
-    </RaidStage>
+    <RaidStage clock={presentation.clock} beats={beats} heroes={heroes} impacts={impacts} boss={boss}
+      arrivals={run.events.filter((entry) => entry.action === 'ARRIVAL').map((entry) => entry.offsetMs)} />
     <SystemFrame contentStyle={s.card}>
       <Text style={s.body} accessibilityLiveRegion="polite">{event?.text ?? 'La guilde entre dans la dimension du Nafs…'}</Text>
       {encounter && revealed && <Text style={s.muted}>{encounter.narration}</Text>}

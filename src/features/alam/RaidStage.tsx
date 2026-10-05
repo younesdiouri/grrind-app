@@ -1,26 +1,21 @@
-import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Image } from 'expo-image';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { SystemFrame } from '@/components/SystemFrame';
-import { alamMotion, color, combatMotion, radius, space, type } from '@/design/tokens';
+import { arena, color, combatMotion, radius, space, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
-import { cameraAt, type Impact } from '@/features/combat/camera';
-import { AL_KASAL, DEFAULT_HERO, FighterSprite } from '@/features/combat/FighterSprite';
-import { ImpactLayer } from '@/features/combat/ImpactLayer';
+import type { Impact } from '@/features/combat/camera';
+import { AL_KASAL, DEFAULT_RAID_HERO, FighterSprite, type FighterArtwork } from '@/features/combat/FighterSprite';
+import { Stage } from '@/features/combat/Stage';
 import type { BattleBeat } from '@/features/combat/timeline';
 
-export type RaidHero = { id: string; name: string; beats: BattleBeat[] };
+export type RaidHero = { id: string; name: string; beats: BattleBeat[]; artwork?: FighterArtwork };
 
-/**
- * La même scène reçoit les rencontres successives ; leur entrée vient du journal serveur.
- *
- * Depuis #187 elle parle la langue du combat : le boss et le premier rang sont des
- * `FighterSprite` sur l'horloge du raid, la caméra tremble aux impacts et la lumière est celle
- * du 1v1. Les membres au-delà du premier rang restent en pastille, derrière (`children`).
- */
-export function RaidStage({ clock, beats, arrivals, heroes, impacts, children }: {
+/** Carte vue de haut : les cinq contributeurs en grand, les autres sur les rangs du fond. */
+export function RaidStage({ clock, beats, arrivals, heroes, impacts, boss = AL_KASAL }: {
   clock: SharedValue<number>; beats: BattleBeat[]; arrivals: number[];
-  heroes: RaidHero[]; impacts: Impact[]; children?: ReactNode;
+  heroes: RaidHero[]; impacts: Impact[]; boss?: FighterArtwork;
 }) {
   const reduced = useReducedMotion() !== false;
   const entry = useAnimatedStyle(() => {
@@ -29,44 +24,51 @@ export function RaidStage({ clock, beats, arrivals, heroes, impacts, children }:
     return { opacity: reduced ? 1 : progress,
       transform: [{ scale: reduced ? 1 : combatMotion.arrivalScale + (1 - combatMotion.arrivalScale) * progress }] };
   });
-  const camera = useAnimatedStyle(() => {
-    const state = cameraAt(impacts, clock.get(), reduced);
-    return { transform: [{ translateX: state.x }, { translateY: state.y }, { scale: state.scale }] };
-  });
   return <SystemFrame tier="hero" contentStyle={styles.scene}>
-    <Animated.View style={camera}>
-      <View style={styles.horizon} />
-      <Text style={styles.dimension}>ʿĀLAM AL-NAFS</Text>
+    <Stage clock={clock} impacts={impacts} points={arena.raidImpactPoint} style={styles.map}>
+      <Image source={require('../../../assets/images/arenas/alam.png')} style={StyleSheet.absoluteFill} contentFit="cover" />
       <Animated.View style={[styles.enemy, entry]}>
-        <FighterSprite artwork={AL_KASAL} clock={clock} beats={beats} />
+        <RaidFighter key={JSON.stringify(boss.poses)} artwork={boss} fallback={AL_KASAL} clock={clock} beats={beats} />
       </Animated.View>
-      <View style={styles.front}>
-        {heroes.map((hero) => <View key={hero.id} style={styles.hero} accessibilityLabel={hero.name}>
-          <View style={styles.heroSprite}>
-            <FighterSprite artwork={DEFAULT_HERO} side="PLAYER" clock={clock} beats={hero.beats} />
-          </View>
-          <Text style={styles.name} numberOfLines={1}>{hero.name}</Text>
-        </View>)}
-      </View>
-      <ImpactLayer clock={clock} impacts={impacts} points={alamMotion.impactPoint} />
-    </Animated.View>
-    <View style={styles.ground} />
-    {children && <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.roster}>
-      {children}
-    </ScrollView>}
+      {heroes.map((hero, index) => {
+        const large = index < arena.raidFirstRow.length;
+        const rank = index - arena.raidFirstRow.length;
+        const point = large ? arena.raidFirstRow[index] : {
+          x: arena.raidBackX + (rank % arena.raidBackColumns) * arena.raidBackStepX,
+          y: arena.raidBackY + Math.floor(rank / arena.raidBackColumns) * arena.raidBackStepY,
+        };
+        const width = large ? arena.raidHeroWidth : arena.raidSmallWidth;
+        const height = large ? arena.raidHeroHeight : arena.raidSmallHeight;
+        const artwork = hero.artwork ?? DEFAULT_RAID_HERO;
+        return <View key={hero.id} style={[styles.hero, { left: `${point.x * 100}%`, top: `${point.y * 100}%`,
+          width, height, marginLeft: -width / 2, marginTop: -height * arena.baseline, zIndex: Math.round(point.y * 100) }]}
+          accessibilityLabel={hero.name}>
+          <RaidFighter key={JSON.stringify(artwork.poses)} artwork={artwork} fallback={DEFAULT_RAID_HERO}
+            side="PLAYER" clock={clock} beats={hero.beats} />
+          {large && <Text style={styles.name} numberOfLines={1}>{hero.name}</Text>}
+        </View>;
+      })}
+    </Stage>
+    <Text style={styles.dimension}>ʿĀLAM AL-NAFS</Text>
   </SystemFrame>;
 }
 
+function RaidFighter({ artwork, fallback, ...props }: Omit<React.ComponentProps<typeof FighterSprite>, 'artwork'> & {
+  artwork: FighterArtwork; fallback: FighterArtwork;
+}) {
+  const [failed, setFailed] = useState(false);
+  return <FighterSprite key={failed ? 'fallback' : 'remote'} artwork={failed ? fallback : artwork}
+    {...props} onError={() => setFailed(true)} />;
+}
+
 const styles = StyleSheet.create({
-  scene: { overflow: 'hidden', paddingTop: space.md, backgroundColor: color.background },
-  dimension: { ...type.label, color: color.accent, textAlign: 'center' },
-  enemy: { height: alamMotion.bossHeight },
-  horizon: { position: 'absolute', alignSelf: 'center', top: space.xl, width: '85%',
-    height: alamMotion.bossHeight, borderRadius: radius.pill, borderWidth: StyleSheet.hairlineWidth, borderColor: color.border },
-  front: { flexDirection: 'row', justifyContent: 'center', paddingHorizontal: space.sm },
-  hero: { width: alamMotion.heroWidth, alignItems: 'center' },
-  heroSprite: { width: alamMotion.heroWidth, height: alamMotion.heroHeight },
-  name: { ...type.label, color: color.text, textAlign: 'center', letterSpacing: 0 },
-  ground: { height: StyleSheet.hairlineWidth, backgroundColor: color.accent, marginHorizontal: space.md, marginTop: space.sm },
-  roster: { flexGrow: 1, justifyContent: 'center', gap: space.md, padding: space.md, paddingTop: space.lg },
+  scene: { overflow: 'hidden', backgroundColor: color.background },
+  map: { height: arena.raidHeight },
+  dimension: { position: 'absolute', top: 0, left: 0, right: 0, ...type.label, color: color.accent, textAlign: 'center', padding: space.sm, backgroundColor: arena.scrim },
+  enemy: { position: 'absolute', left: `${arena.raidBoss.x * 100}%`, top: `${arena.raidBoss.y * 100}%`,
+    width: arena.raidBossWidth, height: arena.raidBossHeight, marginLeft: -arena.raidBossWidth / 2,
+    marginTop: -arena.raidBossHeight * arena.baseline, zIndex: Math.round(arena.raidBoss.y * 100) },
+  hero: { position: 'absolute' },
+  name: { ...type.label, color: color.text, textAlign: 'center', letterSpacing: 0,
+    backgroundColor: arena.scrim, borderRadius: radius.sm, paddingHorizontal: space.xs },
 });

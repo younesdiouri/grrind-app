@@ -14,7 +14,7 @@ import type { Actor, Ramp } from './timeline.ts';
  *
  * Tout se dessine sur le thread UI à partir de la même horloge que les sprites : aucune
  * particule n'est un composant, la gerbe entière est **un** chemin reconstruit à chaque image.
- * Sous Réduire les animations, la couche ne dessine rien — le centre dit déjà ce qui arrive.
+ * Sous Réduire les animations, la couche ne dessine rien — les images d'effet restent lisibles.
  */
 type Points = Record<Actor, { x: number; y: number }>;
 
