@@ -16,42 +16,41 @@ export { AL_KASAL } from './bundledMobs';
 export const DEFAULT_HERO: FighterArtwork = {
   name: 'Toi',
   poses: {
-    idle: require('../../../assets/images/heroes/murid/back/idle.png'),
-    attack: require('../../../assets/images/heroes/murid/back/attack.png'),
-    hit: require('../../../assets/images/heroes/murid/back/hit.png'),
-    critical: require('../../../assets/images/heroes/murid/back/critical.png'),
-    dodge: require('../../../assets/images/heroes/murid/back/dodge.png'),
-    combo: require('../../../assets/images/heroes/murid/back/combo.png'),
-    replay: require('../../../assets/images/heroes/murid/back/replay.png'),
+    idle: require('../../../assets/images/heroes/retro-strength/v1/back/idle.png'),
+    attack: require('../../../assets/images/heroes/retro-strength/v1/back/attack.png'),
+    hit: require('../../../assets/images/heroes/retro-strength/v1/back/hit.png'),
+    critical: require('../../../assets/images/heroes/retro-strength/v1/back/critical.png'),
+    dodge: require('../../../assets/images/heroes/retro-strength/v1/back/dodge.png'),
+    combo: require('../../../assets/images/heroes/retro-strength/v1/back/combo.png'),
+    replay: require('../../../assets/images/heroes/retro-strength/v1/back/replay.png'),
   },
 };
 
 export const DEFAULT_OPPONENT: FighterArtwork = {
-  name: 'Murīd',
+  name: 'Muscu',
   poses: {
-    idle: require('../../../assets/images/heroes/murid/front/idle.png'),
-    attack: require('../../../assets/images/heroes/murid/front/attack.png'),
-    hit: require('../../../assets/images/heroes/murid/front/hit.png'),
-    critical: require('../../../assets/images/heroes/murid/front/critical.png'),
-    dodge: require('../../../assets/images/heroes/murid/front/dodge.png'),
-    combo: require('../../../assets/images/heroes/murid/front/combo.png'),
-    replay: require('../../../assets/images/heroes/murid/front/replay.png'),
+    idle: require('../../../assets/images/heroes/retro-strength/v1/front/idle.png'),
+    attack: require('../../../assets/images/heroes/retro-strength/v1/front/attack.png'),
+    hit: require('../../../assets/images/heroes/retro-strength/v1/front/hit.png'),
+    critical: require('../../../assets/images/heroes/retro-strength/v1/front/critical.png'),
+    dodge: require('../../../assets/images/heroes/retro-strength/v1/front/dodge.png'),
+    combo: require('../../../assets/images/heroes/retro-strength/v1/front/combo.png'),
+    replay: require('../../../assets/images/heroes/retro-strength/v1/front/replay.png'),
   },
 };
 export const DEFAULT_RAID_HERO: FighterArtwork = {
-  name: 'Murīd',
+  name: 'Muscu',
   poses: {
-    idle: require('../../../assets/images/heroes/murid/thumb/front/idle.png'),
-    attack: require('../../../assets/images/heroes/murid/thumb/front/attack.png'),
-    hit: require('../../../assets/images/heroes/murid/thumb/front/hit.png'),
+    idle: require('../../../assets/images/heroes/retro-strength/v1/thumb/front/idle.png'),
+    attack: require('../../../assets/images/heroes/retro-strength/v1/thumb/front/attack.png'),
+    hit: require('../../../assets/images/heroes/retro-strength/v1/thumb/front/hit.png'),
   },
 };
 
 /** Les poses disponibles se chargent ensemble ; aucune source ne change au milieu d'un coup. */
-export function FighterSprite({ artwork, equipment, attachments, side = 'ENEMY', clock, beats, pose, signals, lateral = false, onReady, onError }: {
+export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, beats, pose, signals, lateral = false, staticPreview = false, onReady, onError }: {
   artwork: FighterArtwork;
-  equipment?: EquipmentArtwork;
-  attachments?: FighterAttachments;
+  equipment?: EquipmentArtwork[];
   /** Le camp qu'il incarne : il oriente l'élan et le recul. */
   side?: Actor;
   clock: SharedValue<number>;
@@ -59,21 +58,23 @@ export function FighterSprite({ artwork, equipment, attachments, side = 'ENEMY',
   pose?: FighterPose;
   signals?: PoseSignals;
   lateral?: boolean;
+  staticPreview?: boolean;
   onReady?: () => void;
   onError?: () => void;
 }) {
-  const poses = Object.keys(artwork.poses) as FighterPose[];
-  const wearable = attachments ? equipment : undefined;
-  const loaded = useRef(new Set<FighterPose | 'equipment'>());
+  const poses = staticPreview && pose ? [pose] : Object.keys(artwork.poses) as FighterPose[];
+  const wearables = equipment.filter((item) => artwork.attachments?.[item.attachment]);
+  const foregroundPoses = wearables.length ? poses.filter((entry) => artwork.foreground?.[entry]) : [];
+  const loaded = useRef(new Set<string>());
   const settled = useRef(false);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [failed, setFailed] = useState(false);
-  const [equipmentFailed, setEquipmentFailed] = useState(false);
+  const [equipmentFailed, setEquipmentFailed] = useState<Set<string>>(new Set());
   const [canvasSize, setCanvasSize] = useState<number>();
-  const ready = (candidate: FighterPose | 'equipment') => {
+  const ready = (candidate: string) => {
     if (settled.current) return;
     loaded.current.add(candidate);
-    if (poses.every((entry) => loaded.current.has(entry)) && (!wearable || loaded.current.has('equipment'))) {
+    if (poses.every((entry) => loaded.current.has(entry)) && wearables.every((item) => loaded.current.has(item.key)) && foregroundPoses.every((entry) => loaded.current.has('foreground-' + entry))) {
       settled.current = true;
       clearTimeout(timeout.current);
       onReady?.();
@@ -83,9 +84,9 @@ export function FighterSprite({ artwork, equipment, attachments, side = 'ENEMY',
     timeout.current = setTimeout(() => {
       if (settled.current) return;
       settled.current = true;
-      if (poses.every((entry) => loaded.current.has(entry))) {
+      if (poses.every((entry) => loaded.current.has(entry)) && foregroundPoses.every((entry) => loaded.current.has('foreground-' + entry))) {
         // Un accessoire lent est facultatif : jouer le corps prêt sans le faire apparaître en plein coup.
-        setEquipmentFailed(true);
+        setEquipmentFailed(new Set(wearables.filter((item) => !loaded.current.has(item.key)).map((item) => item.key)));
         onReady?.();
         return;
       }
@@ -122,17 +123,24 @@ export function FighterSprite({ artwork, equipment, attachments, side = 'ENEMY',
       setCanvasSize((current) => current === size ? current : size);
     }}>
       <Animated.View style={[styles.body, canvasSize === undefined ? undefined : { width: canvasSize, height: canvasSize }, transform]}>
-        {wearable?.plane === 'behind' && !equipmentFailed && <EquipmentLayer item={wearable} attachments={attachments}
-          selected={pose} motion={motion} onLoad={() => ready('equipment')}
-          onError={() => { setEquipmentFailed(true); ready('equipment'); }} />}
+        {wearables.filter((item) => item.plane === 'behind' && !equipmentFailed.has(item.key)).map((item) => (
+          <EquipmentLayer key={item.key} item={item} attachments={artwork.attachments?.[item.attachment]}
+            selected={pose} motion={motion} onLoad={() => ready(item.key)}
+            onError={() => { setEquipmentFailed((failed) => new Set([...failed, item.key])); ready(item.key); }} />
+        ))}
         {poses.map((candidate) => (
           <PoseLayer key={candidate} source={artwork.poses[candidate]!} candidate={candidate}
             selected={pose} motion={motion} onError={fail}
             onLoad={() => ready(candidate)} />
         ))}
-        {wearable?.plane === 'front' && !equipmentFailed && <EquipmentLayer item={wearable} attachments={attachments}
-          selected={pose} motion={motion} onLoad={() => ready('equipment')}
-          onError={() => { setEquipmentFailed(true); ready('equipment'); }} />}
+        {wearables.filter((item) => item.plane === 'front' && !equipmentFailed.has(item.key)).map((item) => (
+          <EquipmentLayer key={item.key} item={item} attachments={artwork.attachments?.[item.attachment]}
+            selected={pose} motion={motion} onLoad={() => ready(item.key)}
+            onError={() => { setEquipmentFailed((failed) => new Set([...failed, item.key])); ready(item.key); }} />
+        ))}
+        {foregroundPoses.map((candidate) => <PoseLayer key={'foreground-' + candidate}
+          source={artwork.foreground![candidate]!} candidate={candidate} selected={pose} motion={motion}
+          onLoad={() => ready('foreground-' + candidate)} onError={fail} />)}
         <Animated.View style={[styles.flash, flash]} />
       </Animated.View>
       {failed && <Text style={styles.error}>Illustration indisponible. Reviens puis réessaie.</Text>}

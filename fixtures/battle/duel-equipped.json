@@ -19,19 +19,23 @@
     "criticalResistancePercent": 5,
     "cooldownReductionPercent": 0,
     "precisionPercent": 7,
-    "appearance": "MURID",
+    "appearance": "STRENGTH_V1",
     "equipment": {
       "HANDS": {
         "key": "IRON_GAUNTLETS",
         "artworkVersion": null
       },
       "HEAD": {
-        "key": "TEMPERED_HEADBAND",
+        "key": "PURSUIT_GOGGLES",
         "artworkVersion": "v1"
       },
       "FEET": {
         "key": "WORN_RUNNING_SHOES",
         "artworkVersion": null
+      },
+      "WEAPON": {
+        "key": "HALTER_EGO",
+        "artworkVersion": "v1"
       }
     }
   },
@@ -52,10 +56,10 @@
     "precisionPercent": 1,
     "imageUrls": null,
     "introduction": null,
-    "appearance": "MURID",
+    "appearance": "RUNNER_V1",
     "equipment": {
       "HEAD": {
-        "key": "TEMPERED_HEADBAND",
+        "key": "HEADACHE_CAP",
         "artworkVersion": "v1"
       }
     }

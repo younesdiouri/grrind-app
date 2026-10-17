@@ -1089,6 +1089,7 @@ export interface components {
             displayName: string;
             /** Format: date-time */
             registeredAt: string;
+            appearance: components["schemas"]["Appearance"];
             /** @example 12 */
             level: number;
             /** @example 340 */
@@ -2243,7 +2244,11 @@ export interface components {
             /** @description Réduction relative de la chance d’esquive adverse. Pourcentage entier tronqué depuis les millièmes serveur. */
             precisionPercent: number;
         };
-        /** @description Trois PNG RGBA carrés, même cadrage et même ligne de sol. `hit` est le coup reçu ; une esquive utilise `idle`. */
+        /**
+         * @description Clé stable d’un avatar du catalogue graphique administrable.
+         * @example RUNNER_V1
+         */
+        Appearance: string;
         AppearancePoses: {
             /** Format: uri */
             idle: string;
@@ -2251,21 +2256,81 @@ export interface components {
             attack: string;
             /** Format: uri */
             hit: string;
+            /** Format: uri */
+            critical: string;
+            /** Format: uri */
+            dodge: string;
+            /** Format: uri */
+            combo: string;
+            /** Format: uri */
+            replay: string;
         };
-        /** @description **De dos** pour le joueur lui-même, **de face** pour qui l'affronte. */
+        /** @description back regarde à droite ; front regarde à gauche. */
         AppearanceViews: {
             back: components["schemas"]["AppearancePoses"];
             front: components["schemas"]["AppearancePoses"];
         };
-        /** @description Un modèle de héros complet, purement cosmétique. `imageUrls` en 1024 px, `thumbnailUrls` en 256 px pour afficher une guilde entière. */
+        FighterAttachment: {
+            x: number;
+            y: number;
+            span: number;
+            rotate: number;
+        };
+        FighterAttachments: {
+            [key: string]: components["schemas"]["FighterAttachment"];
+        };
+        AppearanceAttachments: {
+            back: {
+                [key: string]: components["schemas"]["FighterAttachments"];
+            };
+            front: {
+                [key: string]: components["schemas"]["FighterAttachments"];
+            };
+        };
+        /** @description Base rétro sans équipement, sept poses par orientation et ancrages des objets. */
         AppearanceModel: {
             key: components["schemas"]["Appearance"];
+            version: string;
+            name: string;
+            selectable: boolean;
+            pixelArt: boolean;
             imageUrls: components["schemas"]["AppearanceViews"];
             thumbnailUrls: components["schemas"]["AppearanceViews"];
+            foregroundUrls?: components["schemas"]["AppearanceViews"];
+            attachments: components["schemas"]["AppearanceAttachments"];
         };
-        /** @description Tous les modèles que `PATCH /api/me` accepte. Le profil, les combats et Ālam ne portent que la clé. */
+        EquipmentArtworkLayer: {
+            attachment: string;
+            /** @enum {string} */
+            plane: "front" | "behind";
+            aspectRatio: number;
+            scale: number;
+            pivot: {
+                x: number;
+                y: number;
+            };
+            sourceUrls: {
+                /** Format: uri */
+                back: string;
+                /** Format: uri */
+                front: string;
+            };
+        };
+        EquipmentArtworkModel: {
+            key: string;
+            version: string;
+            name: string;
+            selectable: boolean;
+            slot: string;
+            /** Format: uri */
+            iconUrl: string;
+            compatibleAppearances: components["schemas"]["Appearance"][];
+            layers: components["schemas"]["EquipmentArtworkLayer"][];
+        };
+        /** @description Packs graphiques administrables ; les versions non sélectionnables restent lisibles. */
         AppearanceCatalog: {
             appearances: components["schemas"]["AppearanceModel"][];
+            equipment: components["schemas"]["EquipmentArtworkModel"][];
         };
         /** @description Pack publié complet ou null. URLs absolues publiques, HTTPS en production. hit est la pose de coup reçu ; une esquive utilise idle. La présentation courante est aussi utilisée au rejeu. */
         EnemyImageUrls: {
@@ -2276,7 +2341,7 @@ export interface components {
             /** Format: uri */
             hit: string;
         } | null;
-        /** @description Objets réellement portés au combat, indexés par emplacement (HEAD, FEET…). Clé et version sont figées dans le snapshot des deux joueurs. Un objet dans le sac est absent ; un ancien combat rend {}. Le client ne consulte jamais l’inventaire courant pour un replay. Une artworkVersion nulle signifie qu’aucun calque n’est livré. Le premier pack TEMPERED_HEADBAND v1 utilise la base et les ancrages Murīd v2. */
+        /** @description Objets réellement portés au combat, indexés par emplacement (HEAD, FEET…). Clé et version sont figées dans le snapshot des deux joueurs. Un objet dans le sac est absent ; un ancien combat rend {}. Le client ne consulte jamais l’inventaire courant pour un replay. Une artworkVersion nulle signifie qu’aucun calque n’est livré. Les images et compatibilités de chaque version viennent du catalogue graphique. */
         BattleEquipment: {
             [key: string]: {
                 /** @example TEMPERED_HEADBAND */
@@ -2707,8 +2772,6 @@ export interface components {
             /** @default null */
             enabled: boolean | null;
         };
-        /** @enum {string} */
-        Appearance: "MURID";
         UpdateProfileRequest: {
             /** @default null */
             displayName: string | null;
@@ -2722,7 +2785,7 @@ export interface components {
             /** @default [] */
             notificationPreferences: components["schemas"]["NotificationPreferenceRequest"][];
             /** @default null */
-            appearance: components["schemas"]["Appearance"] | null;
+            appearance: string | null;
         };
         RegisterRequest: {
             /** @default  */
@@ -3868,7 +3931,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Les modèles de héros disponibles et leurs poses. */
+            /** @description Avatars, poses, ancrages et équipements graphiques. */
             200: {
                 headers: {
                     [name: string]: unknown;

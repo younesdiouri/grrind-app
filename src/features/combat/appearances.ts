@@ -7,5 +7,7 @@ export type AppearanceModel = components['schemas']['AppearanceModel'];
 export function appearanceArtwork(models: AppearanceModel[], key: components['schemas']['Appearance'] | null | undefined,
   view: 'front' | 'back', name: string, miniature = false) {
   const model = models.find((entry) => entry.key === key);
-  return enemyArtworkOf({ name, imageUrls: model ? (miniature ? model.thumbnailUrls : model.imageUrls)[view] : null });
+  const artwork = enemyArtworkOf({ name, imageUrls: model ? (miniature ? model.thumbnailUrls : model.imageUrls)[view] : null });
+  return artwork && model ? { ...artwork, attachments: model.attachments[view],
+    foreground: model.foregroundUrls ? Object.fromEntries(Object.entries(model.foregroundUrls[view]).map(([pose, uri]) => [pose, { uri }])) : undefined } : artwork;
 }

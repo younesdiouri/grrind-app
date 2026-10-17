@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
@@ -20,29 +21,29 @@ type EquipmentBoardProps = {
   equipment: components['schemas']['PublicInventory']['equipment'];
   selected?: EquipmentSlot;
   onSelect?: (slot: EquipmentSlot) => void;
+  avatar?: ReactNode;
 };
 
 const placement: Record<EquipmentSlot, ViewStyle> = {
   HEAD: { top: 0, left: '50%', marginLeft: -38 },
   ACCESSORY: { top: 70, left: 0 },
-  CHEST: { top: 100, left: '50%', marginLeft: -38 },
+  CHEST: { top: 70, right: 0 },
   HANDS: { top: 170, left: 0 },
   WEAPON: { top: 170, right: 0 },
   LEGS: { top: 280, left: 0 },
-  FEET: { top: 350, right: 0 },
+  FEET: { bottom: 0, left: '50%', marginLeft: -38 },
 };
 
 /**
  * La doublure du combattant : le corps donne la carte, les sept cases donnent le geste.
  *
- * La silhouette est volontairement un mannequin articulé, pas un personnage final. Elle
- * restera juste quand les illustrations d'objets remplaceront les placeholders, et les cases
- * gardent une cible tactile confortable sans prétendre que le dessin lui-même est le bouton.
+ * Les cases entourent l’avatar sans couvrir son visage, sa prise ou ses palmes.
+ * Le mannequin reste le repli des aperçus sans catalogue ; chaque case garde sa cible tactile.
  */
-export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoardProps) {
+export function EquipmentBoard({ equipment, selected, onSelect, avatar }: EquipmentBoardProps) {
   return (
     <SystemFrame tier="hero" style={styles.frame} contentStyle={styles.board}>
-      <View style={styles.silhouette}>
+      {avatar ? <View style={StyleSheet.absoluteFill}>{avatar}</View> : <View style={styles.silhouette}>
         <Svg width="100%" height="100%" viewBox="0 0 180 350">
           <Circle cx="90" cy="29" r="21" fill={color.surfaceRaised} stroke={color.border} strokeWidth="2" />
           <Line x1="90" y1="51" x2="90" y2="177" stroke={color.border} strokeWidth="4" strokeLinecap="round" />
@@ -60,7 +61,7 @@ export function EquipmentBoard({ equipment, selected, onSelect }: EquipmentBoard
           <Circle cx="63" cy="285" r="5" fill={color.surfaceRaised} stroke={color.border} strokeWidth="2" />
           <Circle cx="117" cy="285" r="5" fill={color.surfaceRaised} stroke={color.border} strokeWidth="2" />
         </Svg>
-      </View>
+      </View>}
 
       {(Object.keys(placement) as EquipmentSlot[]).map((slot) => {
         const line = equipment[slot];

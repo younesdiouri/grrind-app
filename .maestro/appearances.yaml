@@ -31,19 +31,227 @@ tags:
     id: "tab-reglages"
 - scrollUntilVisible:
     element:
-      id: "hero-MURID"
+      id: hero-STRENGTH_V1
     direction: DOWN
 - tapOn:
-    id: "hero-MURID"
-- extendedWaitUntil:
-    visible: "Apparence enregistrée"
+    id: hero-STRENGTH_V1
+- scrollUntilVisible:
+    element: Apparence enregistrée
+    direction: DOWN
     timeout: 15000
-- assertVisible:
-    id: "hero-MURID"
-- takeScreenshot: hero-picker
-- runFlow: combat-real-flow.yaml
-- runFlow: combat-recap-loot.yaml
+- scrollUntilVisible:
+    element:
+      id: hero-RUNNER_V1
+    direction: UP
 - tapOn:
-    id: "tab-reglages"
-- assertVisible: "Réglages"
-- takeScreenshot: portrait-after-combat
+    id: hero-RUNNER_V1
+- scrollUntilVisible:
+    element: Apparence enregistrée
+    direction: DOWN
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: hero-CLIMBER_V1
+    direction: UP
+- tapOn:
+    id: hero-CLIMBER_V1
+- scrollUntilVisible:
+    element: Apparence enregistrée
+    direction: DOWN
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: hero-SWIMMER_V1
+    direction: UP
+- tapOn:
+    id: hero-SWIMMER_V1
+- scrollUntilVisible:
+    element: Apparence enregistrée
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: retro-01-avatar-picker
+- openLink: grrindapp-dev://avatars
+- extendedWaitUntil:
+    visible: Avatars sportifs
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: art-item-HALTER_EGO
+    direction: DOWN
+- tapOn:
+    id: art-item-HALTER_EGO
+- scrollUntilVisible:
+    element:
+      id: art-item-PURSUIT_GOGGLES
+    direction: DOWN
+- tapOn:
+    id: art-item-PURSUIT_GOGGLES
+- scrollUntilVisible:
+    element:
+      id: art-item-QUIET_STRENGTH_BELT
+    direction: DOWN
+- tapOn:
+    id: art-item-QUIET_STRENGTH_BELT
+- scrollUntilVisible:
+    element:
+      id: art-item-ACADEMIC_FLIPPERS
+    direction: DOWN
+- tapOn:
+    id: art-item-ACADEMIC_FLIPPERS
+- scrollUntilVisible:
+    element:
+      id: art-avatar-STRENGTH_V1
+    direction: UP
+- tapOn:
+    id: art-avatar-STRENGTH_V1
+- takeScreenshot: retro-STRENGTH_V1-equipped
+- scrollUntilVisible:
+    element:
+      id: art-avatar-RUNNER_V1
+    direction: UP
+- tapOn:
+    id: art-avatar-RUNNER_V1
+- takeScreenshot: retro-RUNNER_V1-equipped
+- scrollUntilVisible:
+    element:
+      id: art-avatar-CLIMBER_V1
+    direction: UP
+- tapOn:
+    id: art-avatar-CLIMBER_V1
+- takeScreenshot: retro-CLIMBER_V1-equipped
+- scrollUntilVisible:
+    element:
+      id: art-avatar-SWIMMER_V1
+    direction: UP
+- tapOn:
+    id: art-avatar-SWIMMER_V1
+- takeScreenshot: retro-SWIMMER_V1-equipped
+- scrollUntilVisible:
+    element:
+      text: Vers la droite
+    direction: DOWN
+- tapOn:
+    text: Vers la droite
+- scrollUntilVisible:
+    element:
+      id: art-pose-idle
+    direction: DOWN
+- tapOn:
+    id: art-pose-idle
+- takeScreenshot: retro-back-idle
+- scrollUntilVisible:
+    element:
+      id: art-pose-attack
+    direction: DOWN
+- tapOn:
+    id: art-pose-attack
+- takeScreenshot: retro-back-attack
+- scrollUntilVisible:
+    element:
+      id: art-pose-hit
+    direction: DOWN
+- tapOn:
+    id: art-pose-hit
+- takeScreenshot: retro-back-hit
+- scrollUntilVisible:
+    element:
+      id: art-pose-critical
+    direction: DOWN
+- tapOn:
+    id: art-pose-critical
+- takeScreenshot: retro-back-critical
+- scrollUntilVisible:
+    element:
+      id: art-pose-dodge
+    direction: DOWN
+- tapOn:
+    id: art-pose-dodge
+- takeScreenshot: retro-back-dodge
+- scrollUntilVisible:
+    element:
+      id: art-pose-combo
+    direction: DOWN
+- tapOn:
+    id: art-pose-combo
+- takeScreenshot: retro-back-combo
+- scrollUntilVisible:
+    element:
+      id: art-pose-replay
+    direction: DOWN
+- tapOn:
+    id: art-pose-replay
+- takeScreenshot: retro-back-replay
+- scrollUntilVisible:
+    element:
+      text: Vers la gauche
+    direction: DOWN
+- tapOn:
+    text: Vers la gauche
+- scrollUntilVisible:
+    element:
+      id: art-pose-idle
+    direction: DOWN
+- tapOn:
+    id: art-pose-idle
+- takeScreenshot: retro-front-idle
+- scrollUntilVisible:
+    element:
+      id: art-pose-attack
+    direction: DOWN
+- tapOn:
+    id: art-pose-attack
+- takeScreenshot: retro-front-attack
+- scrollUntilVisible:
+    element:
+      id: art-pose-hit
+    direction: DOWN
+- tapOn:
+    id: art-pose-hit
+- takeScreenshot: retro-front-hit
+- scrollUntilVisible:
+    element:
+      id: art-pose-critical
+    direction: DOWN
+- tapOn:
+    id: art-pose-critical
+- takeScreenshot: retro-front-critical
+- scrollUntilVisible:
+    element:
+      id: art-pose-dodge
+    direction: DOWN
+- tapOn:
+    id: art-pose-dodge
+- takeScreenshot: retro-front-dodge
+- scrollUntilVisible:
+    element:
+      id: art-pose-combo
+    direction: DOWN
+- tapOn:
+    id: art-pose-combo
+- takeScreenshot: retro-front-combo
+- scrollUntilVisible:
+    element:
+      id: art-pose-replay
+    direction: DOWN
+- tapOn:
+    id: art-pose-replay
+- takeScreenshot: retro-front-replay
+- scrollUntilVisible:
+    element: Jouer un combat de démonstration
+    direction: DOWN
+- tapOn: Jouer un combat de démonstration
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- takeScreenshot: retro-equipped-battle
+- tapOn: Passer
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 10000
+- tapOn:
+    id: battle-exit
+- setOrientation: PORTRAIT
+- assertVisible: Avatars sportifs

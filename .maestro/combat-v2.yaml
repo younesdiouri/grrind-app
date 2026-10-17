@@ -28,7 +28,7 @@ tags:
     visible: "NIVEAU"
     timeout: 30000
 # Les huit poses et effets sont figés pour comparer leur camp et lire les captures.
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=dodge-player"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=dodge-player"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -36,7 +36,7 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-dodge-player
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=dodge-enemy"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=dodge-enemy"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -44,7 +44,7 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-dodge-enemy
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=critical-player"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=critical-player"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -52,7 +52,7 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-critical-player
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=critical-enemy"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=critical-enemy"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -60,7 +60,7 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-critical-enemy
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=combo-player"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=combo-player"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -68,7 +68,7 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-combo-player
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=combo-enemy"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=combo-enemy"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -76,7 +76,7 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-combo-enemy
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=replay-player"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=replay-player"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -84,7 +84,7 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-replay-player
-- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=murid&frame=replay-enemy"
+- openLink: "grrindapp-dev://combat-demo?network=effects&opponent=player&frame=replay-enemy"
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -93,7 +93,7 @@ tags:
 - assertNotVisible: ".*ENCAISSES?.*"
 - takeScreenshot: feedback-replay-enemy
 # Long scénario synthétique : laisse au pilote le temps de vérifier ×2 puis Passer.
-- openLink: "grrindapp-dev://combat-demo?network=long&opponent=murid"
+- openLink: "grrindapp-dev://combat-demo?network=long&opponent=player"
 - extendedWaitUntil:
     visible:
       id: battle-combat

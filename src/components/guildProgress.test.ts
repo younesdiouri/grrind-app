@@ -11,6 +11,7 @@ function member(
   return {
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'Sam Petit',
+    appearance: 'STRENGTH_V1',
     registeredAt: '2026-01-01T00:00:00Z',
     level: 4,
     xpIntoLevel: 0,

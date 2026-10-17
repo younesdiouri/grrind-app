@@ -870,3 +870,6 @@ export const coinReasonLabel: Record<components['schemas']['CoinTransaction']['r
   CHEST: 'Coffre ouvert',
   SALE: 'Vente',
 };
+
+/** Avatars sportifs : cartes comparables et atelier des poses. */
+export const appearanceArt = { choiceWidth: '47%' as const, choiceHeight: 180, overviewHeight: 300, itemIconSize: 48 } as const;
