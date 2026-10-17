@@ -23,7 +23,7 @@ const poses: { value: FighterPose; label: string }[] = [
 
 export default function AvatarsScreen() {
   const catalog = useAppearances();
-  const [key, setKey] = useState('STRENGTH_V2');
+  const [key, setKey] = useState('STRENGTH_V3');
   const [view, setView] = useState<'back' | 'front'>('back');
   const [pose, setPose] = useState<FighterPose>('idle');
   const [selected, setSelected] = useState<Record<string, string>>({});
@@ -54,7 +54,7 @@ export default function AvatarsScreen() {
   return <ScrollView contentContainerStyle={styles.screen}>
     <Stack.Screen options={{ title: 'Atelier des avatars' }} />
     <Text style={styles.title}>Avatars sportifs</Text>
-    <Text style={styles.body}>Garde commune aux sept états. Le combat anime le personnage équipé sans déplacer la prise d’arme.</Text>
+    <Text style={styles.body}>Sept stances distinctes, une même main porteuse. Vérifie chaque objet dans les deux orientations.</Text>
     {catalog.isLoading && <ActivityIndicator color={color.accent} />}
     {catalog.isError && <Text style={styles.body}>{messageFor(catalog.error)}</Text>}
     <View style={styles.options}>

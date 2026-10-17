@@ -28,7 +28,7 @@ export default function CombatDemoScreen() {
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <View style={styles.screen}>
       <BattleView key={at} battle={scenario === 'duel' ? { ...BATTLE_FIXTURES.victoire,
-        enemy: { ...BATTLE_FIXTURES.victoire.enemy, name: 'Muscu', appearance: 'STRENGTH_V2', imageUrls: null, introduction: null } }
+        enemy: { ...BATTLE_FIXTURES.victoire.enemy, name: 'Muscu', appearance: 'STRENGTH_V3', imageUrls: null, introduction: null } }
         : BATTLE_FIXTURES[scenario]}
         enemyArt={scenario === 'duel' ? undefined : AL_KASAL} demo demoTime={Number(at)} />
     </View>
@@ -46,7 +46,7 @@ function NetworkDemo({ scenario, frame, duel, pebble }: { scenario: string; fram
     void fetch(`http://127.0.0.1:8099/battle/${encodeURIComponent(scenario)}`, { signal: controller.signal })
       .then((response) => { if (!response.ok) throw new Error('fixture'); return response.json(); })
       .then((sample: Battle) => setBattle(duel ? { ...sample, enemy: { ...sample.enemy,
-        name: 'Muscu', appearance: 'STRENGTH_V2', imageUrls: null, introduction: null } } : pebble ? { ...sample, enemy: { ...sample.enemy, key: 'SAND_JACKAL', name: PEBBLE.name, appearance: null, imageUrls: null, introduction: null } } : sample))
+        name: 'Muscu', appearance: 'STRENGTH_V3', imageUrls: null, introduction: null } } : pebble ? { ...sample, enemy: { ...sample.enemy, key: 'SAND_JACKAL', name: PEBBLE.name, appearance: null, imageUrls: null, introduction: null } } : sample))
       .catch(() => { if (!controller.signal.aborted) setError(true); });
     return () => controller.abort();
   }, [scenario, duel, pebble]);

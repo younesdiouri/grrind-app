@@ -1,123 +1,96 @@
-# Avatars sportifs rétro — construction V2
+# Avatars sportifs rétro — stances et raccords V3
 
-La [planche D](references/retro-avatars-approved.png) reste la référence de style choisie.
-Les premiers calques V1 ont été rejetés : baskets sous les palmes, prise d’haltère bricolée,
-ceintures et gourdes sans support crédible. Les captures de cette version ne sont pas des
-références approuvées. La V2 corrige la construction plutôt que multiplier les réglages par pose.
+La [planche D](references/retro-avatars-approved.png) est la référence de style choisie.
+La V1 a été rejetée pour ses raccords. La V2 a corrigé certaines bases mais a supprimé les
+stances distinctes ; sa revue a aussi manqué l’ouverture du bonnet. Ces validations anciennes
+ne constituent pas une approbation visuelle. La V3 est le candidat corrigé, à essayer par l’auteur.
 
-## Choix de construction
+## Construction
 
-Quatre identités : STRENGTH_V2, RUNNER_V2, CLIMBER_V2, SWIMMER_V2. Toutes ont une tenue neutre,
-la tête nue et **les pieds nus**. Une garde maître par identité est réutilisée pour idle,
-attack, hit, critical, dodge, combo et replay. Ce ne sont donc pas sept dessins anatomiques
-indépendants : les mouvements du combat transforment le personnage équipé entier.
-Cette limite V1 est volontaire ; une future animation articulée devra préserver les contacts.
+Quatre identités : STRENGTH_V3, RUNNER_V3, CLIMBER_V3, SWIMMER_V3. Tenue neutre, tête nue,
+pieds nus, aucun objet intégré. Chaque identité possède sept vrais dessins et leurs ancrages :
 
-Le poing extérieur est fermé en prise verticale, dégagé du torse, avec du vide au-dessus et
-en dessous. L’arme est dessinée derrière le corps : le poing masque la poignée naturellement.
-Aucun masque rectangulaire de doigts, morceau de peau dans l’item ou correctif par arme/pose.
-L’haltère vertical définit cette famille de prise ; une arme qui ne s’y adapte pas est refusée
-ou reçoit une autre famille explicite, jamais des coordonnées improvisées pour chaque état.
+| État | Intention |
+| --- | --- |
+| idle | Garde équilibrée |
+| attack | Engagement vers l’avant, bras porteur allongé |
+| hit | Recul du buste, bras libre protégeant le torse |
+| critical | Fente plus profonde et poids engagé |
+| dodge | Appuis abaissés, garde protectrice |
+| combo | Bras porteur plus haut, autre bras revenu près des côtes |
+| replay | Relance, retour du bras libre en garde haute |
 
-Les palmes ont un chausson opaque qui couvre talon, dessus et orteils. Le pied arrière fait
-face à la caméra, l’autre pointe de côté : **deux dessins de perspective**, pas le même item
-retourné artificiellement. Les ancrages appartiennent à chaque silhouette. La cape est portée
-sur les épaules derrière le corps ; elle réutilise l’item existant TRAVELERS_CLOAK sans modifier
-ses caractéristiques, son prix ou son nom canonique dans l’inventaire.
+Le même bras porte l’arme dans tous les états. Le poing reste vertical et hors du torse,
+avec du vide au-dessus et en dessous. L’arme passe derrière le corps ; aucun patch de peau.
+La tête garde une perspective proche, les pieds restent plantés. Les limites de cette animation
+par poses sont assumées : elle ne simule pas une rotation libre de l’arme ou des articulations.
 
-| Calque visible V1 | Emplacement | Construction |
-| --- | --- | --- |
-| Haltère ego | WEAPON | hand, derrière le poing |
-| Lunettes de course-poursuite | HEAD | eyes, devant |
-| Prise de tête / Bonnet de bain de minuit | HEAD | head, devant |
-| Palmes académiques | FEET | footRear de face + footFront de côté |
-| Cape du voyageur | CHEST | shoulder, derrière le corps |
+| Objet | Calque et contact |
+| --- | --- |
+| Haltère ego | hand, derrière le poing fermé |
+| Lunettes de course-poursuite | eyes, devant les yeux |
+| Prise de tête / Bonnet de bain de minuit | head, devant, couronne fermée sans intérieur apparent |
+| Palmes académiques | footRear de face + footFront de côté, chaussons opaques |
+| Cape du voyageur | shoulder, derrière les épaules et le corps |
 
-Une seule pièce par emplacement : lunettes et coiffes s’excluent. Ceinture, gourde et sac à
-magnésie n’ont plus de pack actif. Ils restent dans les inventaires ; les nouveaux combats
-conservent leur clé avec artworkVersion=null, sans calque affiché. Les versions V1 archivées
-restent lisibles pour leurs anciens replays, sans être proposées dans le choix d’avatar/atelier.
-Les profils existants passent à la V2 correspondante ; aucune progression n’est réinitialisée.
+Une seule pièce HEAD : lunettes et coiffes s’excluent. Ceinture, gourde et sac à magnésie
+restent hors rendu. Leurs inventaires ne sont pas supprimés. Les anciens packs restent
+inactifs mais accessibles aux replays. Les profils V2 passent à leur identité V3 sans perte.
 
-## Essayer et configurer
+## Fabrication et configuration
 
-Réglages → Ton héros : choisir et sauvegarder le sportif. Inventaire et prochains combats
-utilisent ce choix. Réglages → Atelier des avatars (development build) : équiper les objets,
-inspecter les deux sens puis jouer une démonstration. Les boutons d’état partagent la garde ;
-la démonstration montre les mouvements. Aucun gain ni changement d’inventaire dans cet atelier.
+Les prompts ImageGen intégré et leurs références sont dans
+[le journal V3](references/retro-v3-generation.json). Les maîtres V2 servent d’identité ;
+les gardes communes rejetées et les premiers raccords ne servent pas de validation positive.
+Sources locales : artifacts/artwork-v3/source/. Exports : ../grrind/public/artwork/.
 
-Backend : http://localhost:8080/admin/artwork, session administrateur. Les objets actifs et
-avatars actuels s’y composent réellement. Le menu « Avatars et calques » édite disponibilité,
-nom, ordre, chemins PNG, ancrages, plans, proportions et pivots. Les prix/modificateurs restent
-dans le catalogue numérique avec sa publication habituelle. L’import PNG sécurisé renvoie
-un chemin /game-images/<hash>.png utilisable dans un manifeste.
+1. Éditer une identité avec ImageGen, puis inspecter la logique de la pose seule. Refuser
+   changement de main porteuse, pied levé incompatible, prise contre le visage ou perspective
+   qui rend les objets impossibles. Corriger avant de décliner.
+2. Générer l’objet seul en vrai alpha. Une coiffe ouverte vue par-dessous ne devient pas
+   portable avec un simple déplacement. Corriger sa forme, puis composer les vrais calques.
+3. Exporter avec scripts/prepare-retro-art.swift, mode avatar pour sept sources carrées,
+   item pour un objet. Le mode guard reste historique. Grille 256², corps 512², miniatures 256²,
+   alpha binaire, miroir mécanique. normalization.json peut fixer les hauteurs par pose ;
+   ne pas agrandir une esquive accroupie pour lui donner la hauteur d’une garde.
+4. Calibrer les six séries eyes/head/hand/shoulder/footFront/footRear sur les exports réels,
+   pose par pose. Le pivot et les proportions appartiennent à l’objet. back regarde à droite,
+   front à gauche : x → 1-x, rotate → -rotate, pivot.x → 1-pivot.x.
+5. Composer avec scripts/render-retro-proofs.swift MANIFESTE PUBLIC SORTIE. Lire les vues
+   entières et les *-details.png : chaque ligne représente idle, attack, hit, critical, dodge,
+   combo, replay ; colonnes vue entière puis contact, droite puis gauche. Pour les palmes,
+   deux gros plans séparés. Les *-contacts-0.png regroupent les contacts des quatre identités ;
+   *-contacts-1.png montre le deuxième pied. Ordre des paires : Muscu, Course, Escalade, Natation.
+6. Vérifier chaque objet seul, puis arme + pieds + cape avec chacune des trois pièces HEAD.
+   Après correction, refaire une passe sur les fichiers finaux et le rendu mobile. Les tests
+   de présence/coordonnées ne remplacent pas ce jugement visuel.
 
-Le backend ../grrind possède public/artwork/ et config/artwork/retro-v2.json (4 avatars,
-6 packs d’objets). Les anciennes migrations/manifeste sont figés. Nouvelle DA incompatible =
-nouveaux chemins et version ; les combats figent appearance et key+artworkVersion. Les packs
-inactifs restent disponibles pour la relecture, pas pour les nouveaux choix.
+Le calibrage actif vit dans ../grrind/config/artwork/retro-v3.json, la migration possède sa
+copie figée. make console c=app:artwork:import recharge ces dix packs et peut écraser un réglage
+admin : exporter les modifications à conserver avant de réimporter. Nouvelle DA incompatible =
+nouveaux chemins et versions ; ne pas écraser une image mise en cache dans un ancien replay.
 
-## Générer et exporter
+## Aperçus et cadrage
 
-Le skill grrind-art-direction porte les contraintes et refus. Les huit prompts ImageGen
-intégré sont conservés dans [le journal V2](references/retro-v2-generation.json).
-Les sources locales sont dans artifacts/artwork-v2/source/ ; les PNG prêts à jouer sont
-versionnés dans le backend. Le client embarque aussi la garde Muscu pieds nus comme repli.
+Réglages → Ton héros permet de choisir le sportif. L’atelier de développement /avatars expose
+les sept états, les deux sens et les six objets, puis un combat de démonstration.
+L’inventaire conserve l’aperçu au-dessus de la grille des cases, sans contrôler par-dessus la main.
 
-1. Éditer le maître de référence avec ImageGen intégré : identité préservée, pieds nus,
-   poing vertical fermé hors du torse. Contrôler l’anatomie avant de décliner les identités.
-2. Générer chaque objet seul en vrai alpha, sans corps ni main peinte dedans. Une image
-   équipée générée d’un bloc ne prouve pas que ses calques fonctionnent.
-3. Exporter mécaniquement : `swift scripts/prepare-retro-art.swift guard SOURCE.png DEST`
-   pour une base, ou `item SOURCE.png DEST` pour l’objet. Grille 256², corps 512² par
-   agrandissement entier, miniatures 256², alpha binaire, miroir sans redessin.
-4. Calibrer UNE série d’ancrages par identité, copiée sur les sept états. back regarde à
-   droite, front à gauche ; x → 1-x, rotate → -rotate, pivot.x → 1-pivot.x. Les deux palmes
-   gardent leurs perspectives différentes quand l’ensemble est reflété.
-5. Composer avec `swift scripts/render-retro-proofs.swift MANIFESTE PUBLIC SORTIE [ITEM]`.
-   Inspecter les bandes *-guards.png et overview.png : pieds nus, chaque objet isolément,
-   puis coiffe + arme + palmes + cape ensemble, sur les quatre identités dans les deux sens.
-   Les sept lignes de la matrice partagent la même garde ; leur nombre ne constitue pas
-   sept preuves indépendantes. Ne pas confondre présence des fichiers et qualité visuelle.
-6. Côté backend, `make console c=app:artwork:import` charge le manifeste V2. Il peut écraser
-   le calibrage admin de ces mêmes packs : exporter les réglages à conserver avant réimport.
-7. Tester le flow existant .maestro/appearances.yaml avec le binaire installé et Metro,
-   sans build natif ; inspecter aussi le combat et l’inventaire à la taille réelle sur iPhone.
+http://localhost:8080/admin/artwork compose les mêmes PNG et ancrages. « Inspecter les raccords »
+ouvre chaque stance entière et ses contacts agrandis. Le CRUD « Avatars et calques » édite
+images, ancrages, disponibilité et compatibilité, sans publication de règles numériques.
 
-## Critères de refus et performance
+Le corps et les objets partagent parent et horloge Reanimated. Les sept images sont chargées
+avant combat, puis affichées par opacité ; aucun bitmap n’est calculé par frame. Le cadrage
+réserve la place des objets dans TOUTES les poses du même équipement, rotations comprises,
+pour qu’une palme en fente ne soit pas coupée et que la taille ne saute pas entre deux états.
+Le repli embarqué Muscu possède aussi sept dessins. Les archives à garde unique restent lisibles.
 
-Refuser un pied/ancienne chaussure qui dépasse, un chausson vide, une arme qui flotte ou
-traverse les doigts, une cape sans contact d’épaule, une boucle sans attache. Vérifier en
-zoom et vers 96–128 px sur le fond sombre du front. Le style rétro ne justifie pas l’anatomie
-incohérente. Les screenshots précédents n’avaient pas satisfait ces critères malgré les tests.
+## Revue du candidat
 
-Même parent et horloge Reanimated pour corps et objets. Une garde partagée ne monte qu’une
-image corporelle : pas sept couches identiques. Chargement avant combat, cache des sources,
-aucun bitmap calculé à chaque frame. Les nouveaux corps n’ont pas de foregroundUrls ; le
-support historique reste uniquement pour les replays V1. Le Simulator ne mesure pas les FPS
-sur l’iPhone de l’auteur. La livraison reste locale, sans EAS ni déploiement Fly.
-
-Le manifeste de garde utilise `stanceMode: "guard"` et uniquement `idle` dans chaque série
-d’images et d’ancrages. Le catalogue développe les sept états à la lecture, sans changer le
-contrat HTTP. Les autres états dans un manifeste de garde sont refusés pour éviter des
-calibrages contradictoires ; omettre ce mode conserve les poses indépendantes historiques.
-
-Dans l’inventaire, l’aperçu équipé précède la grille des sept cases : les contrôles ne se
-superposent plus au corps, à la prise ou aux palmes. Le mannequin sans avatar conserve
-sa disposition historique pour les aperçus sans catalogue.
-
-## Validation locale finale
-
-TypeScript, lint, 553 tests client et previews:check passent. Côté backend, PHPStan,
-CS Fixer, Deptrac et 1 448 tests / 30 397 assertions passent ; OpenAPI reste inchangé.
-Le flow appearances passe (3 min 10 s) : choix persistés, quatre sportifs équipés,
-sept états dans les deux sens, combat et retour portrait. Son attente de sortie accepte
-le retour déjà effectué si le scénario court s’achève pendant le tap sur Passer.
-Le contrôle ciblé d’inventaire passe avec de vrais objets achetés/équipés sur le compte QA
-via les API normales. Les cases ne recouvrent plus le personnage.
-
-Preuves sélectionnées : [vue d’ensemble des vrais calques](proofs/retro-v2-overview.png),
-[atelier mobile](proofs/retro-v2-equipped.png), [combat](proofs/retro-v2-battle.png),
-[grille sous le personnage](proofs/retro-v2-inventory.png).
-Les contrôles utilisent le development build installé et Metro, sans reconstruction native.
-Le test physique sur l’iPhone de l’auteur et les FPS restent à vérifier.
+[Journal de revue et preuves](retro-v3-review.md). Le contrôle statique couvre six objets seuls,
+quatre identités, sept poses, deux orientations, puis trois tenues complètes selon HEAD.
+Les coiffes sont fermées ; la revue a aussi corrigé des changements de main et des talons/instep
+encore visibles après le premier calibrage. La grille de preuves garde une marge pour les objets.
+Le test physique iPhone et la mesure des FPS restent à faire par l’auteur. Livraison locale,
+sans build natif, EAS ou déploiement backend.
