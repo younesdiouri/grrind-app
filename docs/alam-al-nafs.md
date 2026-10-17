@@ -35,7 +35,7 @@ initiales. Les anciens combats restent accessibles depuis le bas de l’écran �
 ## QA reproductible
 
 Préparer le build Metro avec `npm run e2e:ios:dev`. La scène autonome, sans gain, est accessible
-en développement via `grrindapp-e2e://alam-demo` et `.maestro/alam-scene.yaml`.
+en développement via `grrindapp-dev://alam-demo` et `.maestro/alam-scene.yaml`.
 
 Le parcours réel exige un compte de QA dans une guilde, des contributions et la capacité de
 lancement manuel activée sur le serveur local. Le backend prépare ces données ; le mobile ne

@@ -1,4 +1,4 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 tags:
   - ios
   - combat
@@ -19,7 +19,7 @@ tags:
 - runFlow:
     file: combat-scene-frame.yaml
     env: { SCENARIO: victoire, AT: "11150", NAME: scene-final-blow }
-- openLink: grrindapp-e2e://combat-demo?scenario=duel&at=900
+- openLink: grrindapp-dev://combat-demo?scenario=duel&at=900
 - extendedWaitUntil:
     visible:
       id: battle-combat

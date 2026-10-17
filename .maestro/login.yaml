@@ -1,4 +1,4 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 ---
 # Le sous-flow de connexion, partagé par les deux scénarios du smoke test.
 #

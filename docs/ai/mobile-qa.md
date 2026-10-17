@@ -10,14 +10,17 @@ Xcode et un runtime iOS compatibles SDK 57, Java 17+ (`brew install openjdk`), M
 sur `http://localhost:8080`. Le harnais crée des comptes jetables via l’API : il ne réinitialise
 jamais cette base, ne joue aucune migration et ne modifie pas le dépôt du back.
 
-## Deux variantes utiles, une seule boucle Metro
+## Un binaire, deux appareils, deux Metro
 
-- **GRRIND dev** : iPhone réel, vraie santé, permissions, widget, sons et haptique.
-- **GRRIND E2E** : Simulator dédié, comptes isolés et fournisseur santé simulé.
+Le même development build **GRRIND dev** (`app.grrind.dev`) tourne sur les deux appareils (#198) :
 
-Les variantes ont des bundle IDs, schémas de liens et App Groups distincts. Le projet généré
-`ios/` est partagé ; il ne faut pas construire le workspace d’une autre variante. `npm run ios`
-calcule l’empreinte dev et régénère le projet lorsque la configuration ou la variante diffère.
+- **iPhone** : Metro 8081 (`npm start`), vraie santé, permissions, widget, sons et haptique.
+- **Simulator « GRRIND E2E »** : Metro 8082 (`EXPO_PUBLIC_E2E=1`), comptes isolés et fournisseur
+  santé simulé. Tout ce qui distingue l’E2E est dans le bundle JS, rien dans le natif.
+
+Les deux appareils ne partagent ni session ni Keychain. `npm run ios` et `npm run e2e:ios:dev`
+calculent la même empreinte : passer de l’un à l’autre ne régénère pas `ios/`, seul un changement
+natif le fait.
 `npm start` charge le JS de développement sans reconstruire le natif.
 
 ```sh

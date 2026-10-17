@@ -1,8 +1,8 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 ---
 - launchApp
 - runFlow: alam-session.yaml
-- openLink: grrindapp-e2e://inventaire
+- openLink: grrindapp-dev://inventaire
 - extendedWaitUntil:
     visible:
       id: character-tab-equipment

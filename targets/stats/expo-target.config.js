@@ -21,7 +21,7 @@ module.exports = (config) => ({
   displayName: 'GRRIND',
   /**
    * Le point initial fait de l'identifiant celui de l'app **de la variante en cours**, suffixé :
-   * `app.grrind.stats`, `app.grrind.dev.stats`, `app.grrind.e2e.stats`. C'est aussi ce dont
+   * `app.grrind.stats`, `app.grrind.dev.stats`. C'est aussi ce dont
    * `TargetStats.swift` se sert pour retrouver son conteneur partagé.
    */
   bundleIdentifier: '.stats',
