@@ -64,9 +64,13 @@ Sources locales : artifacts/artwork-v3/source/. Exports : ../grrind/public/artwo
 6. Vérifier chaque objet seul, puis arme + pieds + cape avec chacune des trois pièces HEAD.
    Après correction, refaire une passe sur les fichiers finaux et le rendu mobile. Les tests
    de présence/coordonnées ne remplacent pas ce jugement visuel.
+   Pour les lunettes, examiner séparément les branches proche et éloignée : la tête doit
+   masquer l’arceau arrière et la branche opposée. Le calque porté omet ces surfaces ;
+   une boucle complète de catalogue ne doit jamais traverser le front.
 
 Le calibrage actif vit dans ../grrind/config/artwork/retro-v3.json, la migration possède sa
-copie figée. make console c=app:artwork:import recharge ces dix packs et peut écraser un réglage
+copie figée. Les lunettes corrigées sont en version d’équipement V4 ; les avatars restent V3.
+make console c=app:artwork:import recharge ces dix packs et peut écraser un réglage
 admin : exporter les modifications à conserver avant de réimporter. Nouvelle DA incompatible =
 nouveaux chemins et versions ; ne pas écraser une image mise en cache dans un ancien replay.
 
@@ -94,3 +98,6 @@ Les coiffes sont fermées ; la revue a aussi corrigé des changements de main et
 encore visibles après le premier calibrage. La grille de preuves garde une marge pour les objets.
 Le test physique iPhone et la mesure des FPS restent à faire par l’auteur. Livraison locale,
 sans build natif, EAS ou déploiement backend.
+
+La revue V3 avait manqué les parties arrière des lunettes visibles à tort devant la tête.
+Le verdict sur cet objet est retiré ; [correctif V4 et preuves actuelles](retro-goggles-v4-review.md).
