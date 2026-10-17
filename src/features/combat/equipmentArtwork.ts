@@ -5,6 +5,7 @@ export type Attachment = { x: number; y: number; span: number; rotate: number };
 export type FighterAttachments = Partial<Record<FighterPose, Attachment>>;
 export type EquipmentArtwork = {
   key: string;
+  attachment: string;
   source: ImageSource;
   aspectRatio: number;
   scale: number;

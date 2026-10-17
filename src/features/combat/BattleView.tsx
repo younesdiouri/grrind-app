@@ -47,8 +47,7 @@ import { Stage } from './Stage';
 import { enemyArtworkOf } from './enemyPresentation';
 import { BUNDLED_MOBS } from './bundledMobs';
 import type { EquipmentArtwork } from './equipmentArtwork';
-import { MURID_ATTACHMENTS } from './fighterAttachments';
-import { headwearArtwork } from './headwearArtwork';
+import { equippedArtwork } from './equippedArtwork';
 import { appearanceArtwork } from './appearances';
 import { useAppearances } from './useAppearances';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
@@ -97,11 +96,12 @@ import {
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export function BattleView({ battle, enemyArt, heroEquipment, opponentEquipment, ...props }: {
+export function BattleView({ battle, enemyArt, heroArt, heroEquipment, opponentEquipment, ...props }: {
   battle: Battle;
   enemyArt?: FighterArtwork;
-  heroEquipment?: EquipmentArtwork;
-  opponentEquipment?: EquipmentArtwork;
+  heroArt?: FighterArtwork;
+  heroEquipment?: EquipmentArtwork[];
+  opponentEquipment?: EquipmentArtwork[];
   demo?: boolean;
   demoTime?: number;
   onDismiss?: () => void;
@@ -114,23 +114,19 @@ export function BattleView({ battle, enemyArt, heroEquipment, opponentEquipment,
     return () => { void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP); };
   }, []);
   const catalog = useAppearances();
-  const playerEquipment = heroEquipment ?? headwearArtwork(battle.player, 'back');
-  const enemyEquipment = opponentEquipment ?? headwearArtwork(battle.enemy, 'front');
+  const playerEquipment = heroEquipment ?? equippedArtwork(catalog.data?.equipment ?? [], battle.player, 'back');
+  const enemyEquipment = opponentEquipment ?? equippedArtwork(catalog.data?.equipment ?? [], battle.enemy, 'front');
   const { artwork, hero } = useMemo(() => {
-    const models = props.demo ? [] : catalog.data?.appearances ?? [];
+    const models = catalog.data?.appearances ?? [];
     const player = appearanceArtwork(models, battle.player.appearance, 'back', 'Toi');
     const opponent = appearanceArtwork(models, battle.enemy.appearance, 'front', battle.enemy.name);
-    // Les poses de base restent celles du catalogue ; les variantes de Murīd sont embarquées.
-    if (player && battle.player.appearance === 'MURID') player.poses = { ...DEFAULT_HERO.poses, ...player.poses };
-    if (opponent && battle.enemy.appearance === 'MURID') opponent.poses = { ...DEFAULT_OPPONENT.poses, ...opponent.poses };
     return {
-      // Ce premier calque v1 est calibré sur Murīd v2 : conserver ce corps pour les replays.
-      artwork: enemyArt ?? (enemyEquipment ? { ...DEFAULT_OPPONENT, name: battle.enemy.name } : battle.enemy.appearance
+      artwork: enemyArt ?? (battle.enemy.appearance
         ? opponent ?? { ...DEFAULT_OPPONENT, name: battle.enemy.name }
         : enemyArtworkOf(battle.enemy, BUNDLED_MOBS)),
-      hero: playerEquipment ? DEFAULT_HERO : player ?? DEFAULT_HERO,
+      hero: heroArt ?? player ?? DEFAULT_HERO,
     };
-  }, [catalog.data, battle, enemyArt, props.demo, playerEquipment, enemyEquipment]);
+  }, [catalog.data, battle, enemyArt, heroArt]);
   if (!props.demo && catalog.isLoading) return <View style={styles.screen}><ActivityIndicator color={color.accent} /></View>;
   return <PresentedBattle key={battle.id} {...props} battle={battle} artwork={artwork} hero={hero}
     heroEquipment={playerEquipment} opponentEquipment={enemyEquipment}
@@ -142,8 +138,8 @@ function PresentedBattle({ artwork, ...props }: {
   artwork?: FighterArtwork;
   hero: FighterArtwork;
   introduction?: string;
-  heroEquipment?: EquipmentArtwork;
-  opponentEquipment?: EquipmentArtwork;
+  heroEquipment?: EquipmentArtwork[];
+  opponentEquipment?: EquipmentArtwork[];
   demo?: boolean;
   demoTime?: number;
   onDismiss?: () => void;
@@ -170,8 +166,8 @@ function BattleScene({
   battle: Battle;
   enemyArt?: FighterArtwork;
   hero: FighterArtwork;
-  heroEquipment?: EquipmentArtwork;
-  opponentEquipment?: EquipmentArtwork;
+  heroEquipment?: EquipmentArtwork[];
+  opponentEquipment?: EquipmentArtwork[];
   introduction?: string;
   onArtworkError: () => void;
   demo?: boolean;
@@ -399,7 +395,7 @@ function BattleScene({
             {enemyArt && (
               <Animated.View style={[styles.spriteStage, actionsStyle, spriteEntranceStyle]}>
                 <FighterSprite artwork={enemyArt} clock={clock} beats={timeline.beats} lateral
-                  equipment={opponentEquipment} attachments={battle.enemy.appearance === 'MURID' ? MURID_ATTACHMENTS.front : undefined}
+                  equipment={opponentEquipment}
                   signals={{ critical: timeline.player.criticalFlash, dodge: timeline.enemy.dodgeFlash,
                     combo: timeline.enemy.comboFlash, replay: timeline.enemy.replayFlash }}
                   pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('enemy')} onError={onArtworkError} />
@@ -410,7 +406,7 @@ function BattleScene({
             {(
               <Animated.View style={[styles.heroStage, heroStyle]} pointerEvents="none">
                 <FighterSprite key={heroFailed ? 'fallback' : 'hero'} artwork={heroFailed ? DEFAULT_HERO : hero} side="PLAYER" clock={clock} beats={timeline.beats} lateral
-                  equipment={heroEquipment} attachments={hero === DEFAULT_HERO || battle.player.appearance === 'MURID' ? MURID_ATTACHMENTS.back : undefined}
+                  equipment={heroEquipment}
                   signals={{ critical: timeline.enemy.criticalFlash, dodge: timeline.player.dodgeFlash,
                     combo: timeline.player.comboFlash, replay: timeline.player.replayFlash }}
                   pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('player')}

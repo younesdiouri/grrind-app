@@ -17,6 +17,6 @@ export function useAppearances() {
       try { return await queryOrFailure(() => api.GET('/api/appearances', { signal: controller.signal })); }
       finally { clearTimeout(timeout); }
     },
-    enabled: auth.status === 'signedIn', staleTime: Infinity, gcTime: Infinity, retry: false,
+    enabled: auth.status === 'signedIn', staleTime: 60_000, gcTime: Infinity, retry: false,
   });
 }

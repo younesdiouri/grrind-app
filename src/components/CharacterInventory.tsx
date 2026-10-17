@@ -5,16 +5,18 @@ import type { components } from '@/api/schema';
 import { CharacterStatistics } from '@/components/CharacterStatistics';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
+import { EquippedAvatar } from '@/features/combat/EquippedAvatar';
 import { color, opacity, radius, space, type } from '@/design/tokens';
 
 const sections = { equipment: 'Équipement', statistics: 'Statistiques', bag: 'Sac' } as const;
 
 /** Même feuille pour soi et les autres ; les gestes privés restent fournis par l'écran personnel. */
-export function CharacterInventory({ inventory, statistics, equipment, bag }: {
+export function CharacterInventory({ inventory, statistics, equipment, bag, appearance }: {
   inventory: components['schemas']['PublicInventory'];
   statistics: components['schemas']['PlayerStatistics'];
   equipment?: ReactNode;
   bag?: ReactNode;
+  appearance?: string;
 }) {
   const [section, setSection] = useState<keyof typeof sections>('equipment');
   return (
@@ -31,7 +33,7 @@ export function CharacterInventory({ inventory, statistics, equipment, bag }: {
       {section === 'statistics' ? <CharacterStatistics statistics={statistics} /> : null}
       {section === 'equipment' ? equipment ?? (
         <>
-          <EquipmentBoard equipment={inventory.equipment} />
+          <EquipmentBoard equipment={inventory.equipment} avatar={appearance ? <EquippedAvatar appearance={appearance} equipment={inventory.equipment} /> : undefined} />
           {Object.values(inventory.equipment).every((line) => line === null)
             ? <Text style={styles.note}>Aucun équipement porté.</Text>
             : Object.entries(inventory.equipment).map(([slot, line]) => line === null ? null : <ItemCard key={slot} item={line} equipped />)}

@@ -9,6 +9,7 @@ import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { CoinAmount } from '@/components/CoinAmount';
 import { CharacterInventory } from '@/components/CharacterInventory';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
+import { CurrentAvatar } from '@/features/combat/EquippedAvatar';
 import { ItemCard } from '@/components/ItemCard';
 import { SystemFrame } from '@/components/SystemFrame';
 import { decorativeGlow } from '@/design/decorativeGlow';
@@ -315,7 +316,7 @@ export default function InventoryScreen() {
             <Text style={styles.hint}>Choisis une zone</Text>
           </View>
 
-          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} />
+          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={<CurrentAvatar equipment={data.equipment} />} />
 
           <SystemFrame contentStyle={styles.drawer}>
             <View style={styles.drawerHead}>

@@ -1,8 +1,11 @@
 import type { ImageSource } from 'expo-image';
 import type { components } from '@/api/schema';
-import type { BaseFighterPose, SpecialFighterPose } from './fighterMotion';
+import type { FighterPose, BaseFighterPose, SpecialFighterPose } from './fighterMotion';
+import type { FighterAttachments } from './equipmentArtwork';
 
 export type FighterArtwork = { name: string; introduction?: string;
+  foreground?: Partial<Record<FighterPose, ImageSource>>;
+  attachments?: Record<string, FighterAttachments>;
   poses: Record<BaseFighterPose, ImageSource> & Partial<Record<SpecialFighterPose, ImageSource>> };
 type EnemyPresentation = Pick<components['schemas']['BattleEnemy'], 'name' | 'imageUrls'>
   & Partial<Pick<components['schemas']['BattleEnemy'], 'key' | 'introduction'>>;
@@ -13,9 +16,14 @@ export function enemyArtworkOf(enemy: EnemyPresentation, bundled: Readonly<Recor
   if (local) return { ...local, name: enemy.name, introduction: enemy.introduction ?? undefined };
   const urls = enemy.imageUrls;
   if (!urls || ![urls.idle, urls.attack, urls.hit].every((url) => typeof url === 'string' && /^https?:\/\/\S+$/.test(url))) return undefined;
+  const extras: Partial<Record<SpecialFighterPose, ImageSource>> = {};
+  for (const pose of ['critical', 'dodge', 'combo', 'replay'] as const) {
+    const url = (urls as Partial<Record<SpecialFighterPose, string>>)[pose];
+    if (typeof url === 'string' && /^https?:\/\/\S+$/.test(url)) extras[pose] = { uri: url };
+  }
   return {
     name: enemy.name,
-    poses: { idle: { uri: urls.idle }, attack: { uri: urls.attack }, hit: { uri: urls.hit } },
+    poses: { idle: { uri: urls.idle }, attack: { uri: urls.attack }, hit: { uri: urls.hit }, ...extras },
   };
 }
 
