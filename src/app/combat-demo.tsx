@@ -7,6 +7,7 @@ import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { color, combatMotion, space, type } from '@/design/tokens';
 import { BattleView } from '@/features/combat/BattleView';
 import { AL_KASAL, FighterSprite } from '@/features/combat/FighterSprite';
+import { PEBBLE } from '@/features/combat/bundledMobs';
 import type { FighterPose } from '@/features/combat/fighterMotion';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { useAuth } from '@/features/auth/useAuth';
@@ -15,10 +16,12 @@ import { buildBattleTimeline, type Battle } from '@/features/combat/timeline';
 
 const POSES: { value: FighterPose; label: string }[] = [
   { value: 'idle', label: 'Repos' }, { value: 'attack', label: 'Attaque' }, { value: 'hit', label: 'Coup reçu' },
+  { value: 'critical', label: 'Critique' }, { value: 'dodge', label: 'Esquive' },
+  { value: 'combo', label: 'Combo' }, { value: 'replay', label: 'Relance' },
 ];
 
 export default function CombatDemoScreen() {
-  const { network, frame, scenario, at, opponent } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string }>();
+  const { network, frame, scenario, at, opponent, mob } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string; mob?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
   // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
   if (at && (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel')) return <AmbientBackdropProvider>
@@ -29,12 +32,12 @@ export default function CombatDemoScreen() {
         : BATTLE_FIXTURES[scenario]} enemyArt={scenario === 'duel' ? undefined : AL_KASAL} demo demoTime={Number(at)} />
     </View>
   </AmbientBackdropProvider>;
-  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}-${opponent}`} scenario={network} frame={frame} duel={opponent === 'murid'} /></AmbientBackdropProvider>;
-  return <AmbientBackdropProvider><CombatDemo /></AmbientBackdropProvider>;
+  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}-${opponent}`} scenario={network} frame={frame} duel={opponent === 'murid'} pebble={opponent === 'pebble'} /></AmbientBackdropProvider>;
+  return <AmbientBackdropProvider><CombatDemo key={mob ?? 'al-kasal'} pebble={mob === 'pebble'} /></AmbientBackdropProvider>;
 }
 
 /** Banc réseau isolé : scripts/combat-presentation-server.mjs, jamais une mutation du catalogue. */
-function NetworkDemo({ scenario, frame, duel }: { scenario: string; frame?: string; duel: boolean }) {
+function NetworkDemo({ scenario, frame, duel, pebble }: { scenario: string; frame?: string; duel: boolean; pebble: boolean }) {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
@@ -42,10 +45,10 @@ function NetworkDemo({ scenario, frame, duel }: { scenario: string; frame?: stri
     void fetch(`http://127.0.0.1:8099/battle/${encodeURIComponent(scenario)}`, { signal: controller.signal })
       .then((response) => { if (!response.ok) throw new Error('fixture'); return response.json(); })
       .then((sample: Battle) => setBattle(duel ? { ...sample, enemy: { ...sample.enemy,
-        name: 'Murīd', appearance: 'MURID', imageUrls: null, introduction: null } } : sample))
+        name: 'Murīd', appearance: 'MURID', imageUrls: null, introduction: null } } : pebble ? { ...sample, enemy: { ...sample.enemy, key: 'SAND_JACKAL', name: PEBBLE.name, appearance: null, imageUrls: null, introduction: null } } : sample))
       .catch(() => { if (!controller.signal.aborted) setError(true); });
     return () => controller.abort();
-  }, [scenario, duel]);
+  }, [scenario, duel, pebble]);
   let demoTime: number | undefined;
   if (battle && frame) {
     const timeline = buildBattleTimeline(battle, { illustrated: true });
@@ -63,7 +66,8 @@ function NetworkDemo({ scenario, frame, duel }: { scenario: string; frame?: stri
   </View>;
 }
 
-function CombatDemo() {
+function CombatDemo({ pebble }: { pebble: boolean }) {
+  const artwork = pebble ? PEBBLE : AL_KASAL;
   const auth = useAuth();
   const [pose, setPose] = useState<FighterPose>('idle');
   const [scenario, setScenario] = useState<'victoire' | 'defaiteBoss' | null>(null);
@@ -80,13 +84,13 @@ function CombatDemo() {
       ) }} />
       <Text style={styles.notice}>DÉMONSTRATION · AUCUN GAIN RÉEL</Text>
       {scenario ? (
-        <BattleView battle={BATTLE_FIXTURES[scenario]} enemyArt={AL_KASAL} demo onDismiss={() => setScenario(null)} />
+        <BattleView battle={BATTLE_FIXTURES[scenario]} enemyArt={artwork} demo onDismiss={() => setScenario(null)} />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.title}>Al-Kasal</Text>
-          <Text style={styles.subtitle}>La paresse prend corps.</Text>
-          <View style={styles.preview} testID={`al-kasal-${pose}`}>
-            <FighterSprite artwork={AL_KASAL} clock={clock} beats={[]} pose={pose} />
+          <Text style={styles.title}>{artwork.name}</Text>
+          <Text style={styles.subtitle}>{pebble ? 'Un petit obstacle prend corps.' : 'La paresse prend corps.'}</Text>
+          <View style={styles.preview} testID={`${pebble ? 'pebble' : 'al-kasal'}-${pose}`}>
+            <FighterSprite artwork={artwork} clock={clock} beats={[]} pose={pose} />
           </View>
           <View style={styles.poses}>
             {POSES.map((option) => (
@@ -112,8 +116,8 @@ const styles = StyleSheet.create({
   title: { ...type.title, color: color.text, textAlign: 'center' },
   subtitle: { ...type.body, color: color.textMuted, textAlign: 'center' },
   preview: { height: combatMotion.previewHeight },
-  poses: { flexDirection: 'row', gap: space.sm },
-  pose: { flex: 1, paddingVertical: space.md, borderWidth: 1, borderColor: color.border },
+  poses: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  pose: { minWidth: '22%', flexGrow: 1, paddingVertical: space.md, borderWidth: 1, borderColor: color.border },
   selected: { borderColor: color.accent, backgroundColor: color.surfaceRaised },
   poseLabel: { ...type.label, color: color.text, textAlign: 'center', letterSpacing: 0 },
   close: { paddingVertical: space.sm, paddingRight: space.sm },

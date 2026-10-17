@@ -1,0 +1,26 @@
+{
+  "tool": "ImageGen intégré",
+  "date": "2026-10-17",
+  "key": "SAND_JACKAL",
+  "version": "v2",
+  "reference": "../idle.png",
+  "idle": "Exact Pebble identity, side profile facing left, idle guard, basalt, amber eyes/cracks, cyan rimlight, transparent alpha, no VFX or floor.",
+  "variants": {
+    "attack": "A strong horizontal forward punch toward the LEFT, front arm fully extended, torso leaning into punch, rear fist guarding. Keep feet planted.",
+    "hit": "Recoiling from a blow arriving from the LEFT: body leaning to the RIGHT, fists lifted defensively, knees absorbing impact. Clearly injured, no attack.",
+    "critical": "A powerful overhead downward hammer-fist strike toward the LEFT, front fist raised and descending, crouched forceful forward posture. Distinct from horizontal punch.",
+    "dodge": "A low nimble evasive lean BACK toward the RIGHT, crouched knees, fists held close and eyes watching LEFT. Clearly purposeful evasion, not injured.",
+    "combo": "A flowing follow-through wide sweeping stone fist strike toward the LEFT at waist height, torso rotated, rear heel raised. Distinct from normal straight punch.",
+    "replay": "A compact quick second attack toward the LEFT: low forward step, tight rising stone uppercut, other fist pulled back. Distinct from wide sweep and straight punch."
+  },
+  "constraints": "One full-body sprite per call. Same anatomy/scale/pelvis, feet about 91% height, actual transparent alpha, no text/UI/background/shadow/effects. Variants edit the generated idle.",
+  "sources": {
+    "idle": "exec-1ee604c3-ecaf-484b-b96d-eb11055c4e26.png",
+    "attack": "exec-b7bc6c27-2783-4a85-b00c-d140b16260be.png",
+    "hit": "exec-de458d48-3765-4633-accb-9e16a19e4a50.png",
+    "critical": "exec-b036d6d2-d383-4ecf-b5a8-bb8ce2e04991.png",
+    "dodge": "exec-f413d7ec-20cb-48ce-9748-19febbf9dd83.png",
+    "combo": "exec-84af57c8-b523-4c4a-b882-30c6a95214b4.png",
+    "replay": "exec-fddbb367-6302-46ba-ab16-66c3e44c54e7.png"
+  }
+}

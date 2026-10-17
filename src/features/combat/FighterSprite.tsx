@@ -9,15 +9,7 @@ import type { Actor, BattleBeat } from './timeline';
 import { ENEMY_IMAGE_TIMEOUT_MS, type FighterArtwork } from './enemyPresentation';
 
 export type { FighterArtwork } from './enemyPresentation';
-export const AL_KASAL: FighterArtwork = {
-  name: 'Al-Kasal',
-  introduction: "je suis la paresse, laissez tomber, ce jeu n'est pas fait pour vous.",
-  poses: {
-    idle: require('../../../assets/images/enemies/al-kasal/idle.png'),
-    attack: require('../../../assets/images/enemies/al-kasal/attack.png'),
-    hit: require('../../../assets/images/enemies/al-kasal/hit.png'),
-  },
-};
+export { AL_KASAL } from './bundledMobs';
 
 /** Repli local : garde latérale orientée vers la droite (#187 / #189). */
 export const DEFAULT_HERO: FighterArtwork = {
@@ -136,7 +128,7 @@ function PoseLayer({ source, candidate, selected, motion, onLoad, onError }: {
   return (
     <Animated.View style={[StyleSheet.absoluteFill, style]}>
       <Image source={source} style={StyleSheet.absoluteFill} contentFit="contain"
-        transition={0} cachePolicy="memory-disk" onLoad={onLoad} onError={onError} accessible={false} />
+        enforceEarlyResizing transition={0} cachePolicy="memory-disk" onLoad={onLoad} onError={onError} accessible={false} />
     </Animated.View>
   );
 }

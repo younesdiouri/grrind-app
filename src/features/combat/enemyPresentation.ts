@@ -4,10 +4,13 @@ import type { BaseFighterPose, SpecialFighterPose } from './fighterMotion';
 
 export type FighterArtwork = { name: string; introduction?: string;
   poses: Record<BaseFighterPose, ImageSource> & Partial<Record<SpecialFighterPose, ImageSource>> };
-type EnemyPresentation = Pick<components['schemas']['BattleEnemy'], 'name' | 'imageUrls'>;
+type EnemyPresentation = Pick<components['schemas']['BattleEnemy'], 'name' | 'imageUrls'>
+  & Partial<Pick<components['schemas']['BattleEnemy'], 'key' | 'introduction'>>;
 
 /** Le contrat du combat est autonome, y compris au rejeu : aucune recherche dans le catalogue. */
-export function enemyArtworkOf(enemy: EnemyPresentation): FighterArtwork | undefined {
+export function enemyArtworkOf(enemy: EnemyPresentation, bundled: Readonly<Record<string, FighterArtwork>> = {}): FighterArtwork | undefined {
+  const local = enemy.key ? bundled[enemy.key] : undefined;
+  if (local) return { ...local, name: enemy.name, introduction: enemy.introduction ?? undefined };
   const urls = enemy.imageUrls;
   if (!urls || ![urls.idle, urls.attack, urls.hit].every((url) => typeof url === 'string' && /^https?:\/\/\S+$/.test(url))) return undefined;
   return {
