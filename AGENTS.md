@@ -16,9 +16,10 @@ builds, repeated E2E runs, or speculative tests.
   Never rebuild native iOS for these changes. Reuse the installed development build.
 - Native modules/dependencies, config plugins, entitlements, icons/fonts embedded by plugins
   and HealthKit capabilities require a development rebuild of the affected variant only.
-- `npm run ios` prepares the development variant before building. GRRIND dev (real iPhone)
-  and GRRIND E2E (dedicated Simulator) have separate sessions and health providers. They share
-  the generated `ios/` directory: never compile its current workspace under another variant.
+- The real iPhone (`npm run ios`, Metro 8081) and the dedicated "GRRIND E2E" Simulator
+  (`npm run e2e:ios:dev`, Metro 8082, `EXPO_PUBLIC_E2E=1`) run the same GRRIND dev binary
+  (`app.grrind.dev`); E2E behaviour lives in the JS bundle only. Switching devices does not
+  regenerate `ios/`. Never reintroduce a separate native E2E variant.
 - For mobile UI/user-flow changes, reuse `npm run e2e:ios:dev`, choose one relevant existing
   flow, then run `npm run e2e:ios:flow -- .maestro/<flow>.yaml` after a coherent change and
   inspect its screenshots. Existing captures can supply the baseline; run a baseline only

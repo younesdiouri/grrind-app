@@ -51,8 +51,8 @@ let snapshotKey = "snapshot"
  `group.` + l'identifiant de l'app hôte, retrouvé plutôt que recopié.
 
  Une extension vit dans `…/GRRIND.app/PlugIns/stats.appex` : remonter deux niveaux donne le
- bundle de l'app, donc son identifiant. C'est ce qui fait que les trois variantes — `app.grrind`,
- `app.grrind.dev`, `app.grrind.e2e` — trouvent chacune *leur* conteneur sans qu'aucune constante
+ bundle de l'app, donc son identifiant. C'est ce qui fait que les deux variantes — `app.grrind` et
+ `app.grrind.dev` — trouvent chacune *leur* conteneur sans qu'aucune constante
  ne soit à tenir d'accord ici. Deux variantes installées ne se marchent jamais dessus, et c'est
  la même raison qui leur donne des identifiants distincts (voir `app.config.ts`).
  */

@@ -19,7 +19,7 @@ STARTED_AT="$(date +%s)"
 E2E_METRO_STARTED=0
 
 native_fingerprint() {
-  APP_VARIANT=e2e node scripts/ios-native-fingerprint.cjs
+  APP_VARIANT=development node scripts/ios-native-fingerprint.cjs
 }
 
 metro_is_ready() {
@@ -47,7 +47,7 @@ ensure_metro() {
   mkdir -p "$DEV_STATE_DIR"
   : >"$METRO_LOG_FILE"
   env \
-    APP_VARIANT=e2e \
+    APP_VARIANT=development \
     EXPO_PUBLIC_E2E=1 \
     EXPO_PUBLIC_API_URL="$E2E_API_URL_VALUE" \
     npx expo start --dev-client --lan --port "$METRO_PORT" \
@@ -110,7 +110,7 @@ fi
 if [ "${E2E_FORCE_BUILD:-0}" = "1" ] || [ "$installed" = "0" ] ||
   [ "$recorded_fingerprint" != "$fingerprint" ]; then
   echo "Préparation du development build E2E (build natif initial ou devenu obsolète)."
-  APP_VARIANT=e2e \
+  APP_VARIANT=development \
   EXPO_PUBLIC_E2E=1 \
   EXPO_PUBLIC_API_URL="$E2E_API_URL_VALUE" \
     npx expo prebuild --clean --platform ios
@@ -125,13 +125,13 @@ if [ "${E2E_FORCE_BUILD:-0}" = "1" ] || [ "$installed" = "0" ] ||
   }
   trap cleanup_build_output EXIT HUP INT TERM
 
-  APP_VARIANT=e2e \
+  APP_VARIANT=development \
   EXPO_PUBLIC_E2E=1 \
   EXPO_PUBLIC_API_URL="$E2E_API_URL_VALUE" \
     npx expo run:ios --configuration Debug --no-bundler --device generic \
       --output "$build_output_dir"
 
-  xcrun simctl install "$E2E_SIMULATOR_UDID" "$build_output_dir/GRRINDE2E.app"
+  xcrun simctl install "$E2E_SIMULATOR_UDID" "$build_output_dir/GRRINDdev.app"
   cleanup_build_output
   trap - EXIT HUP INT TERM
 

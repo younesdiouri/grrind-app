@@ -1,8 +1,8 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 ---
 - launchApp
 - runFlow: alam-session.yaml
-- openLink: grrindapp-e2e://alam-demo
+- openLink: grrindapp-dev://alam-demo
 - extendedWaitUntil:
     visible: "DÉMONSTRATION · AUCUN GAIN RÉEL"
     timeout: 30000

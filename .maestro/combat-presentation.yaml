@@ -1,4 +1,4 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 tags:
   - combat
   - ios
@@ -22,7 +22,7 @@ tags:
     file: combat-presentation-dialogue.yaml
     env:
       SCENARIO: slow
-- openLink: grrindapp-e2e://combat-demo?network=silent
+- openLink: grrindapp-dev://combat-demo?network=silent
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -36,7 +36,7 @@ tags:
 - tapOn:
     id: "battle-exit"
 - setOrientation: PORTRAIT
-- openLink: grrindapp-e2e://combat-demo?network=legacy
+- openLink: grrindapp-dev://combat-demo?network=legacy
 - extendedWaitUntil:
     visible:
       id: battle-combat

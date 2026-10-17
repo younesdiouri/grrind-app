@@ -1,7 +1,7 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 ---
 # Récompense fixe avec objet : exige une session, appelé par appearances.yaml.
-- openLink: grrindapp-e2e://battle?fixture=victoireAvecLoot
+- openLink: grrindapp-dev://battle?fixture=victoireAvecLoot
 - extendedWaitUntil:
     visible:
       id: battle-dialogue
