@@ -2276,6 +2276,15 @@ export interface components {
             /** Format: uri */
             hit: string;
         } | null;
+        /** @description Objets réellement portés au combat, indexés par emplacement (HEAD, FEET…). Clé et version sont figées dans le snapshot des deux joueurs. Un objet dans le sac est absent ; un ancien combat rend {}. Le client ne consulte jamais l’inventaire courant pour un replay. Une artworkVersion nulle signifie qu’aucun calque n’est livré. Le premier pack TEMPERED_HEADBAND v1 utilise la base et les ancrages Murīd v2. */
+        BattleEquipment: {
+            [key: string]: {
+                /** @example TEMPERED_HEADBAND */
+                key: string;
+                /** @example v1 */
+                artworkVersion: string | null;
+            };
+        };
         /**
          * @description L'adversaire : les mêmes champs qu'un `BattleFighter`, plus son identité.
          *
@@ -2331,6 +2340,7 @@ export interface components {
             precisionPercent: number;
             /** @description Le héros du défié au moment du combat (#289), `null` face à un ennemi du catalogue. Ses poses **de face** sont dans `GET /api/appearances` ; `imageUrls` reste `null` pour un joueur. */
             appearance: components["schemas"]["Appearance"] | null;
+            equipment?: components["schemas"]["BattleEquipment"];
             imageUrls?: components["schemas"]["EnemyImageUrls"];
             /** @description Texte brut localisé selon Accept-Language (repli EN puis FR), indépendant des images. Toujours présent, null si absent ; facultatif pour les anciennes réponses. */
             introduction?: string | null;
@@ -2469,6 +2479,7 @@ export interface components {
             /** @description Le combattant de l'appelant, et le héros qu'il portait au combat (#289). */
             player: components["schemas"]["BattleFighter"] & {
                 appearance: components["schemas"]["Appearance"];
+                equipment?: components["schemas"]["BattleEquipment"];
             };
             enemy: components["schemas"]["BattleEnemy"];
             /** @description La timeline complète, dans l'ordre de l'animation. */

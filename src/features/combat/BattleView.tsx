@@ -48,6 +48,7 @@ import { enemyArtworkOf } from './enemyPresentation';
 import { BUNDLED_MOBS } from './bundledMobs';
 import type { EquipmentArtwork } from './equipmentArtwork';
 import { MURID_ATTACHMENTS } from './fighterAttachments';
+import { headwearArtwork } from './headwearArtwork';
 import { appearanceArtwork } from './appearances';
 import { useAppearances } from './useAppearances';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
@@ -113,6 +114,8 @@ export function BattleView({ battle, enemyArt, heroEquipment, opponentEquipment,
     return () => { void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP); };
   }, []);
   const catalog = useAppearances();
+  const playerEquipment = heroEquipment ?? headwearArtwork(battle.player, 'back');
+  const enemyEquipment = opponentEquipment ?? headwearArtwork(battle.enemy, 'front');
   const { artwork, hero } = useMemo(() => {
     const models = props.demo ? [] : catalog.data?.appearances ?? [];
     const player = appearanceArtwork(models, battle.player.appearance, 'back', 'Toi');
@@ -121,15 +124,16 @@ export function BattleView({ battle, enemyArt, heroEquipment, opponentEquipment,
     if (player && battle.player.appearance === 'MURID') player.poses = { ...DEFAULT_HERO.poses, ...player.poses };
     if (opponent && battle.enemy.appearance === 'MURID') opponent.poses = { ...DEFAULT_OPPONENT.poses, ...opponent.poses };
     return {
-      artwork: enemyArt ?? (battle.enemy.appearance
+      // Ce premier calque v1 est calibré sur Murīd v2 : conserver ce corps pour les replays.
+      artwork: enemyArt ?? (enemyEquipment ? { ...DEFAULT_OPPONENT, name: battle.enemy.name } : battle.enemy.appearance
         ? opponent ?? { ...DEFAULT_OPPONENT, name: battle.enemy.name }
         : enemyArtworkOf(battle.enemy, BUNDLED_MOBS)),
-      hero: player ?? DEFAULT_HERO,
+      hero: playerEquipment ? DEFAULT_HERO : player ?? DEFAULT_HERO,
     };
-  }, [catalog.data, battle, enemyArt, props.demo]);
+  }, [catalog.data, battle, enemyArt, props.demo, playerEquipment, enemyEquipment]);
   if (!props.demo && catalog.isLoading) return <View style={styles.screen}><ActivityIndicator color={color.accent} /></View>;
   return <PresentedBattle key={battle.id} {...props} battle={battle} artwork={artwork} hero={hero}
-    heroEquipment={heroEquipment} opponentEquipment={opponentEquipment}
+    heroEquipment={playerEquipment} opponentEquipment={enemyEquipment}
     introduction={enemyArt?.introduction ?? battle.enemy.introduction ?? undefined} />;
 }
 

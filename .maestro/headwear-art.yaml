@@ -1,9 +1,24 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 ---
 # Prérequis : node scripts/combat-presentation-server.mjs
 # Un vrai item du catalogue, sur les quatorze poses puis sur la même horloge de combat.
+- launchApp
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
 - setOrientation: PORTRAIT
-- openLink: grrindapp-e2e://combat-demo?head=tempered&view=back
+- openLink: grrindapp-dev://combat-demo?head=tempered&view=back
 - extendedWaitUntil:
     visible:
       id: headband-back-idle
@@ -21,7 +36,7 @@ appId: app.grrind.e2e
 - takeScreenshot: headband-back-combo
 - tapOn: "Relance"
 - takeScreenshot: headband-back-replay
-- openLink: grrindapp-e2e://combat-demo?head=tempered&view=front
+- openLink: grrindapp-dev://combat-demo?head=tempered&view=front
 - extendedWaitUntil:
     visible:
       id: headband-front-idle
@@ -39,7 +54,8 @@ appId: app.grrind.e2e
 - takeScreenshot: headband-front-combo
 - tapOn: "Relance"
 - takeScreenshot: headband-front-replay
-- openLink: grrindapp-e2e://combat-demo?scenario=duel&at=3500&head=tempered
+# Réponse réelle capturée : aucun paramètre head ni accessoire forcé par l'atelier.
+- openLink: grrindapp-dev://combat-demo?network=equipped-duel&frame=3500
 - extendedWaitUntil:
     visible:
       id: battle-combat
@@ -47,7 +63,7 @@ appId: app.grrind.e2e
 - setOrientation: LANDSCAPE_LEFT
 - takeScreenshot: headband-pvp-frame
 # Le scénario existant à 10 000 tentatives laisse le temps au pilote de toucher ×2/Passer.
-- openLink: grrindapp-e2e://combat-demo?network=long&opponent=pebble&head=tempered
+- openLink: grrindapp-dev://combat-demo?network=long&opponent=pebble&head=tempered
 - extendedWaitUntil:
     visible:
       id: battle-combat

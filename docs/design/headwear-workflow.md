@@ -67,21 +67,43 @@ Contrôle iOS du 17 octobre 2026 : les quatorze poses ont été inspectées, pui
 ×2, Passer et le retour au récapitulatif. Le flow `.maestro/headwear-art.yaml` attend le
 serveur local `node scripts/combat-presentation-server.mjs` ; il ne crée aucun compte.
 
-## Dépendance backend
+## Équipement réel et replays
 
-L’inventaire réel n’est pas encore branché : le combat actuel ne transporte aucune coiffe.
-La démonstration ne prétend pas que le joueur possède ou équipe cet objet.
+Le complément `grrind-back#296`, autorisé le 17 octobre 2026, fige `equipment` dans les
+snapshots JSONB du joueur PvE et des deux joueurs PvP. Il transporte les clés réellement
+portées par emplacement et leur `artworkVersion` ; une version nulle signifie qu’aucun
+calque n’est livré. Le sac n’est pas chargé. Le contrat officiel a été généré côté back,
+puis tiré et converti en types ici.
 
-Le complément minimal côté back doit figer l’objet HEAD et sa version d’illustration dans
-les snapshots JSONB du joueur et du défié PvP. Création et lecture doivent servir la même
-référence. Un retrait/remplacement affecte les prochains combats ; un replay ne relit jamais
-l’inventaire courant. Les anciens combats, les objets inconnus et les versions incompatibles
-conservent le héros normal. Conserver les anciennes images et versions d’ancrages utilisées.
+Création, lecture et rejeu idempotent servent les mêmes références. Un retrait/remplacement
+affecte les prochains combats ; aucun replay ne relit l’inventaire courant. Les anciens
+combats, objets inconnus et versions incompatibles gardent le héros normal.
 
-Générer le contrat officiel côté back puis le tirer (`api:pull` / `api:generate`), sans DTO
-API inventé dans le front. `grrind-back#295` ne fournit pas ce contrat d’équipement à lui seul.
-`AGENTS.md` exige une autorisation explicite avant de modifier ce dépôt : aucune modification,
-migration ou réinitialisation du back n’a été faite pour ce prototype.
+`TEMPERED_HEADBAND:v1` est compatible avec la base Murīd v2 : le client conserve ses sprites
+originaux embarqués avec ses ancrages pour ce pack. Une évolution du catalogue courant du
+héros ne doit pas déplacer le bandeau d’un ancien replay. Une nouvelle base demande un nouveau
+pack/version compatible ; conserver les anciens fichiers et ancrages utilisés.
+
+`fixtures/battle/duel-equipped.json` est une vraie réponse PvP locale capturée le 17 octobre
+2026. Le scénario réseau `equipped-duel` vérifie le branchement automatique de cette référence,
+sans `head=tempered` ni accessoire forcé par l’atelier.
+
+## Préparer le local après nettoyage
+
+La commande backend `app:combat:art-demo EMAIL --art-dir=DOSSIER` attend `pebble/idle.png`,
+`pebble/attack.png`, `pebble/hit.png` et `headband/icon.png`. Copier les trois PNG de Cailloux
+v2 et l’icône de ce dépôt dans `grrind/var/combat-art-input/`, puis exécuter via Docker :
+
+```
+make console c="app:combat:art-demo good@gmail.com --art-dir=/app/var/combat-art-input"
+```
+
+Cette préparation refuse tout environnement autre que `dev`. Elle publie la présentation
+de `SAND_JACKAL` sous le nom Cailloux, avec des fichiers nommés par leur contenu, sans modifier
+ses statistiques. Elle donne/équipe le bandeau au compte demandé et à ses coéquipiers locaux
+dont HEAD est vide ; une coiffe déjà portée reste en place. Les acquisitions et publications
+ne se multiplient pas à la réexécution. Aucun compte n’est créé, aucun mot de passe changé,
+aucune base réinitialisée. Cette commande n’est jamais lancée en production.
 
 Sources consultées : docs Expo SDK 57 Image et React Native 0.86 Transforms
 (https://reactnative.dev/docs/0.86/transforms#transform-origin).
