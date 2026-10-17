@@ -19,13 +19,26 @@
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": [
           "remote-notification"
-        ]
+        ],
+        "UIApplicationSceneManifest": {
+          "UIApplicationSupportsMultipleScenes": false,
+          "UISceneConfigurations": {
+            "UIWindowSceneSessionRoleApplication": [
+              {
+                "UISceneConfigurationName": "Default Configuration",
+                "UISceneDelegateClassName": "EXExpoAppSceneDelegate"
+              }
+            ]
+          }
+        }
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
         "com.apple.developer.healthkit.background-delivery": true,
         "aps-environment": "production",
-        "com.apple.security.application-groups": ["group.app.grrind"]
+        "com.apple.security.application-groups": [
+          "group.app.grrind"
+        ]
       }
     },
     "android": {
@@ -62,7 +75,8 @@
           "enableBackgroundPlayback": false
         }
       ],
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      "./plugins/withSceneLifecycle"
     ],
     "experiments": {
       "typedRoutes": true,
