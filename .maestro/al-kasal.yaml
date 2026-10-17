@@ -1,11 +1,11 @@
-appId: app.grrind.e2e
+appId: app.grrind.dev
 tags:
   - ios
   - combat
 ---
 # Démonstration locale : aucune connexion, création de compte ou mutation API.
 - launchApp
-- openLink: grrindapp-e2e://combat-demo
+- openLink: grrindapp-dev://combat-demo
 - repeat:
     times: 2
     commands:
@@ -18,7 +18,7 @@ tags:
     visible: "Repos"
     timeout: 30000
 # Les deux packs publiés gardent leur identité sur les sept stances.
-- openLink: grrindapp-e2e://combat-demo?mob=pebble
+- openLink: grrindapp-dev://combat-demo?mob=pebble
 - extendedWaitUntil:
     visible: "Cailloux dans la Chaussure"
     timeout: 15000
@@ -35,7 +35,7 @@ tags:
 - takeScreenshot: pebble-combo
 - tapOn: "Relance"
 - takeScreenshot: pebble-replay
-- openLink: grrindapp-e2e://combat-demo
+- openLink: grrindapp-dev://combat-demo
 - extendedWaitUntil:
     visible: "Al-Kasal"
     timeout: 15000

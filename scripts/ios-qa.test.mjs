@@ -57,7 +57,7 @@ test('Expo fingerprint ignores JS tooling but detects Swift and native configura
   };
   const hash = () => {
     const result = spawnSync(process.execPath, [resolve('scripts/ios-native-fingerprint.cjs')], {
-      cwd: root, encoding: 'utf8', env: { ...process.env, APP_VARIANT: 'e2e' },
+      cwd: root, encoding: 'utf8', env: { ...process.env, APP_VARIANT: 'development' },
     });
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout.trim(), /^[a-f0-9]{40}$/);

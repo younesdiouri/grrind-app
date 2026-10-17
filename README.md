@@ -21,17 +21,17 @@ Un compte développeur gratuit suffit — le profil dure sept jours.
 
 `npm start` sert la variante **GRRIND dev**. Une app déjà installée reçoit les changements JS/TS,
 styles et animations sans compilation Xcode. `npm run ios` sert à construire/installer sur un
-appareil ; le lanceur régénère `ios/` seulement si la configuration native ou la variante a changé.
-Il protège notamment le retour du projet E2E au projet dev. `npm run prebuild` reste disponible
+appareil ; le lanceur régénère `ios/` seulement si la configuration native a changé.
+`npm run prebuild` reste disponible
 pour une régénération native explicite, pas comme étape de chaque modification d’écran.
 
-Les variantes ont leurs propres identifiants, liens et conteneurs :
+Deux variantes natives, chacune avec son identifiant, ses liens et son conteneur :
 
-- GRRIND dev (`app.grrind.dev`) : iPhone, HealthKit et permissions réels ;
-- GRRIND E2E (`app.grrind.e2e`) : Simulator dédié, Maestro et santé simulée ;
+- GRRIND dev (`app.grrind.dev`) : installée sur l’iPhone (HealthKit et permissions réels)
+  **et** sur le Simulator E2E, où son Metro (8082, `EXPO_PUBLIC_E2E=1`) sert la santé simulée ;
 - GRRIND (`app.grrind`) : production / TestFlight.
 
-Elles partagent le projet généré `ios/`, mais ne remplacent pas leurs sessions installées.
+Passer du téléphone au Simulator ne régénère donc pas `ios/` (#198).
 Les seuls rebuilds courants sont ceux exigés par les modules/dépendances natifs, plugins,
 entitlements et ressources embarquées. Le build de production part lors d’une livraison.
 

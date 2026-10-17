@@ -3,7 +3,7 @@
 Ticket : [#161](https://github.com/younesdiouri/grrind-app/issues/161).
 
 Dans un bundle de développement, l’atelier reste accessible depuis la connexion ou par
-`/combat-demo` (schéma `grrindapp-dev` sur la variante de développement, `grrindapp-e2e` sur le
+`/combat-demo` (schéma `grrindapp-dev`, sur l’iPhone comme sur le
 Simulator E2E). La route et l’entrée de connexion sont gardées par `__DEV__`. Le raccourci
 « Essayer Al-Kasal » a été retiré du catalogue Combat, qui utilise maintenant les données réelles. Le bouton Fermer fonctionne aussi après une ouverture directe par lien profond.
 

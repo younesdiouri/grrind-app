@@ -5,7 +5,7 @@
 
 E2E_API_URL_VALUE="${E2E_API_URL:-http://localhost:8080}"
 E2E_SIMULATOR_NAME_VALUE="${E2E_SIMULATOR_NAME:-GRRIND E2E}"
-E2E_APP_ID="app.grrind.e2e"
+E2E_APP_ID="app.grrind.dev"
 E2E_PASSWORD="e2e-password-assez-long"
 
 e2e_configure_java() {

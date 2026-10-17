@@ -9,8 +9,8 @@
  * de rester là à attendre qu'on les allume — un bundle de production n'embarque ni le
  * fournisseur bouchon, ni le moyen de le choisir.
  *
- * Le variant a son propre identifiant (`app.grrind.e2e`) et son propre schéma : la variante E2E
- * ne peut pas être installée par-dessus l'app de dev, ni ouvrir ses liens.
+ * Le Simulator E2E installe le même binaire que l'iPhone (`app.grrind.dev`, #198) : c'est ce
+ * commutateur, servi par le Metro E2E, qui fait la différence, pas l'identifiant.
  *
  * ————— Pourquoi le scénario se lit sur l'adresse e-mail ————————————————————————————————
  *

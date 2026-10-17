@@ -27,7 +27,6 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  */
 const variant = process.env.APP_VARIANT;
 const isDevelopmentVariant = variant === 'development';
-const isE2eVariant = variant === 'e2e';
 
 /**
  * L'identifiant de la variante de dev.
@@ -37,25 +36,30 @@ const isE2eVariant = variant === 'e2e';
  * lit pour obtenir un jeton, donc le changer casserait le push des deux côtés.
  */
 const DEV_IDENTIFIER = 'app.grrind.dev';
-const E2E_IDENTIFIER = 'app.grrind.e2e';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  if (!isDevelopmentVariant && !isE2eVariant) {
+  if (!isDevelopmentVariant) {
     return config as ExpoConfig;
   }
 
-  const identifier = isE2eVariant ? E2E_IDENTIFIER : DEV_IDENTIFIER;
+  /**
+   * Le Simulator E2E installe **ce même** binaire (#198) : tout ce qui fait l'E2E — santé
+   * simulée, API locale — vient du bundle que sert son Metro (`EXPO_PUBLIC_E2E=1`), pas du natif.
+   * Une seconde variante ne cloisonnait rien, les deux apps ne partageant jamais un appareil, et
+   * coûtait un `prebuild --clean` à chaque passage du téléphone au Simulator.
+   */
+  const identifier = DEV_IDENTIFIER;
 
   return {
     ...(config as ExpoConfig),
-    name: isE2eVariant ? 'GRRIND E2E' : 'GRRIND dev',
+    name: 'GRRIND dev',
     /**
      * **Le schéma change aussi, et ce n'est pas un détail cosmétique.** Deux apps installées
      * qui répondent toutes les deux à `grrindapp://`, c'est iOS qui choisit laquelle ouvre un
      * lien — et il ne dit pas laquelle, ni ne s'en explique. Le jour où un lien de partage de
      * guilde ouvrira la mauvaise, on cherchera longtemps.
      */
-    scheme: isE2eVariant ? 'grrindapp-e2e' : 'grrindapp-dev',
+    scheme: 'grrindapp-dev',
     /**
      * Une icône visiblement différente, par le mécanisme d'Apple Icon Composer lui-même : le
      * même bundle, avec un dégradé ambre au lieu du bleu. Deux apps indiscernables sur
