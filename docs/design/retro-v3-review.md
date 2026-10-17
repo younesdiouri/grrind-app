@@ -4,6 +4,12 @@ Le style D reste approuvé ; le fitting V3 reste un candidat à essayer par l’
 Cette revue remplace la conclusion trop favorable de la V2. Elle porte sur les vrais PNG
 composés avec les ancrages du catalogue, puis sur le navigateur et React Native.
 
+**Correction après retour utilisateur : le verdict initial sur les lunettes était erroné.**
+La revue avait vérifié leur position sans repérer l’arceau arrière dessiné devant le front
+et la branche éloignée visible au-delà du visage. Les anciennes preuves V3 montrent ce défaut ;
+elles ne valident pas les lunettes. Le correctif V4 conserve les avatars et les autres objets V3.
+Voir [la correction et les preuves actuelles des lunettes](retro-goggles-v4-review.md).
+
 ## Défauts trouvés et corrections
 
 | Observation | Correction | Recontrôle |
@@ -37,7 +43,7 @@ sont garde, attaque, coup reçu, critique, esquive, combo, relance.
 | --- | --- | --- |
 | Bonnet de bain de minuit | Bord sur le front, absence d’intérieur apparent | [Bonnet](proofs/retro-v3-midnight_swim_cap-contacts-0.png) |
 | Prise de tête | Couronne posée, visière sans ouverture creuse | [Casquette](proofs/retro-v3-headache_cap-contacts-0.png) |
-| Lunettes | Verres devant les yeux, pont et branches cohérents | [Lunettes](proofs/retro-v3-pursuit_goggles-contacts-0.png) |
+| Lunettes V3 — rejetées après retour utilisateur | Arceau arrière et branche éloignée visibles à tort | [Ancienne preuve défectueuse](proofs/retro-v3-pursuit_goggles-contacts-0.png) |
 | Haltère ego | Même main, poing masquant la poignée, masses dégagées | [Poignée](proofs/retro-v3-halter_ego-contacts-0.png) |
 | Palmes académiques | Talon, dessus et orteils enveloppés, deux perspectives | [Pied arrière](proofs/retro-v3-academic_flippers-contacts-0.png), [pied avant](proofs/retro-v3-academic_flippers-contacts-1.png) |
 | Cape du voyageur | Derrière le dos/épaule et le bras, sans fragment flottant | [Épaule](proofs/retro-v3-travelers_cloak-contacts-0.png) |
