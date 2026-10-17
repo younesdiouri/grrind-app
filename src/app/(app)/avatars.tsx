@@ -23,14 +23,14 @@ const poses: { value: FighterPose; label: string }[] = [
 
 export default function AvatarsScreen() {
   const catalog = useAppearances();
-  const [key, setKey] = useState('STRENGTH_V1');
+  const [key, setKey] = useState('STRENGTH_V2');
   const [view, setView] = useState<'back' | 'front'>('back');
   const [pose, setPose] = useState<FighterPose>('idle');
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [playing, setPlaying] = useState(false);
   const clock = useSharedValue(0);
   if (!__DEV__) return <Redirect href="/" />;
-  const models = catalog.data?.appearances ?? [];
+  const models = (catalog.data?.appearances ?? []).filter((entry) => entry.selectable);
   const model = models.find((entry) => entry.key === key) ?? models[0];
   const items = (catalog.data?.equipment ?? []).filter((entry) => entry.selectable && entry.compatibleAppearances.includes(model?.key ?? ''));
   const equipment = Object.fromEntries(items.filter((item) => selected[item.slot] === item.key)
@@ -54,7 +54,7 @@ export default function AvatarsScreen() {
   return <ScrollView contentContainerStyle={styles.screen}>
     <Stack.Screen options={{ title: 'Atelier des avatars' }} />
     <Text style={styles.title}>Avatars sportifs</Text>
-    <Text style={styles.body}>Aperçu sans gain ni modification de ton équipement.</Text>
+    <Text style={styles.body}>Garde commune aux sept états. Le combat anime le personnage équipé sans déplacer la prise d’arme.</Text>
     {catalog.isLoading && <ActivityIndicator color={color.accent} />}
     {catalog.isError && <Text style={styles.body}>{messageFor(catalog.error)}</Text>}
     <View style={styles.options}>

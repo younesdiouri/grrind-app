@@ -32,6 +32,6 @@ export function CurrentAvatar({ equipment }: { equipment: Equipment }) {
     queryFn: () => queryOrFailure(() => api.GET('/api/me')),
     enabled: auth.status === 'signedIn', staleTime: 30_000,
   });
-  const appearance = profile.data?.appearance ?? (auth.status === 'signedIn' ? auth.user.appearance : 'STRENGTH_V1');
+  const appearance = profile.data?.appearance ?? (auth.status === 'signedIn' ? auth.user.appearance : 'STRENGTH_V2');
   return <EquippedAvatar appearance={appearance} equipment={equipment} />;
 }
