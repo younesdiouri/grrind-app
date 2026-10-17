@@ -1,0 +1,67 @@
+appId: app.grrind.e2e
+---
+# Prérequis : node scripts/combat-presentation-server.mjs
+# Un vrai item du catalogue, sur les quatorze poses puis sur la même horloge de combat.
+- setOrientation: PORTRAIT
+- openLink: grrindapp-e2e://combat-demo?head=tempered&view=back
+- extendedWaitUntil:
+    visible:
+      id: headband-back-idle
+    timeout: 15000
+- takeScreenshot: headband-back-idle
+- tapOn: "Attaque"
+- takeScreenshot: headband-back-attack
+- tapOn: "Coup reçu"
+- takeScreenshot: headband-back-hit
+- tapOn: "Critique"
+- takeScreenshot: headband-back-critical
+- tapOn: "Esquive"
+- takeScreenshot: headband-back-dodge
+- tapOn: "Combo"
+- takeScreenshot: headband-back-combo
+- tapOn: "Relance"
+- takeScreenshot: headband-back-replay
+- openLink: grrindapp-e2e://combat-demo?head=tempered&view=front
+- extendedWaitUntil:
+    visible:
+      id: headband-front-idle
+    timeout: 15000
+- takeScreenshot: headband-front-idle
+- tapOn: "Attaque"
+- takeScreenshot: headband-front-attack
+- tapOn: "Coup reçu"
+- takeScreenshot: headband-front-hit
+- tapOn: "Critique"
+- takeScreenshot: headband-front-critical
+- tapOn: "Esquive"
+- takeScreenshot: headband-front-dodge
+- tapOn: "Combo"
+- takeScreenshot: headband-front-combo
+- tapOn: "Relance"
+- takeScreenshot: headband-front-replay
+- openLink: grrindapp-e2e://combat-demo?scenario=duel&at=3500&head=tempered
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- takeScreenshot: headband-pvp-frame
+# Le scénario existant à 10 000 tentatives laisse le temps au pilote de toucher ×2/Passer.
+- openLink: grrindapp-e2e://combat-demo?network=long&opponent=pebble&head=tempered
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- takeScreenshot: headband-cailloux-combat
+- tapOn: "Vitesse ×2"
+- tapOn: "Passer"
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 5000
+- takeScreenshot: headband-playback-recap
+- tapOn:
+    id: battle-exit
+- setOrientation: PORTRAIT
+- assertVisible: "Repos"

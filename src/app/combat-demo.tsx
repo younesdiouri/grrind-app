@@ -6,8 +6,10 @@ import { Button } from '@/components/Button';
 import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { color, combatMotion, space, type } from '@/design/tokens';
 import { BattleView } from '@/features/combat/BattleView';
-import { AL_KASAL, FighterSprite } from '@/features/combat/FighterSprite';
+import { AL_KASAL, DEFAULT_HERO, DEFAULT_OPPONENT, FighterSprite } from '@/features/combat/FighterSprite';
 import { PEBBLE } from '@/features/combat/bundledMobs';
+import { MURID_HEADBAND } from '@/features/combat/headwearArtwork';
+import { MURID_ATTACHMENTS } from '@/features/combat/fighterAttachments';
 import type { FighterPose } from '@/features/combat/fighterMotion';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { useAuth } from '@/features/auth/useAuth';
@@ -21,7 +23,7 @@ const POSES: { value: FighterPose; label: string }[] = [
 ];
 
 export default function CombatDemoScreen() {
-  const { network, frame, scenario, at, opponent, mob } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string; mob?: string }>();
+  const { network, frame, scenario, at, opponent, mob, head, view } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string; mob?: string; head?: string; view?: 'front' | 'back' }>();
   if (!__DEV__) return <Redirect href="/" />;
   // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
   if (at && (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel')) return <AmbientBackdropProvider>
@@ -29,15 +31,17 @@ export default function CombatDemoScreen() {
     <View style={styles.screen}>
       <BattleView key={at} battle={scenario === 'duel' ? { ...BATTLE_FIXTURES.victoire,
         enemy: { ...BATTLE_FIXTURES.victoire.enemy, name: 'Murīd', appearance: 'MURID', imageUrls: null, introduction: null } }
-        : BATTLE_FIXTURES[scenario]} enemyArt={scenario === 'duel' ? undefined : AL_KASAL} demo demoTime={Number(at)} />
+        : BATTLE_FIXTURES[scenario]} heroEquipment={head === 'tempered' ? MURID_HEADBAND.back : undefined}
+        opponentEquipment={scenario === 'duel' && head === 'tempered' ? MURID_HEADBAND.front : undefined}
+        enemyArt={scenario === 'duel' ? undefined : AL_KASAL} demo demoTime={Number(at)} />
     </View>
   </AmbientBackdropProvider>;
-  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}-${opponent}`} scenario={network} frame={frame} duel={opponent === 'murid'} pebble={opponent === 'pebble'} /></AmbientBackdropProvider>;
-  return <AmbientBackdropProvider><CombatDemo key={mob ?? 'al-kasal'} pebble={mob === 'pebble'} /></AmbientBackdropProvider>;
+  if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}-${opponent}-${head}`} scenario={network} frame={frame} duel={opponent === 'murid'} pebble={opponent === 'pebble'} headband={head === 'tempered'} /></AmbientBackdropProvider>;
+  return <AmbientBackdropProvider><CombatDemo key={`${mob}-${head}-${view}`} pebble={mob === 'pebble'} headband={head === 'tempered'} view={view === 'front' ? 'front' : 'back'} /></AmbientBackdropProvider>;
 }
 
 /** Banc réseau isolé : scripts/combat-presentation-server.mjs, jamais une mutation du catalogue. */
-function NetworkDemo({ scenario, frame, duel, pebble }: { scenario: string; frame?: string; duel: boolean; pebble: boolean }) {
+function NetworkDemo({ scenario, frame, duel, pebble, headband }: { scenario: string; frame?: string; duel: boolean; pebble: boolean; headband: boolean }) {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
@@ -61,13 +65,14 @@ function NetworkDemo({ scenario, frame, duel, pebble }: { scenario: string; fram
   return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <Text style={styles.notice}>DÉMONSTRATION RÉSEAU · AUCUN GAIN RÉEL</Text>
-    {battle ? <BattleView battle={battle} demo demoTime={demoTime} onDismiss={() => router.replace('/combat-demo')} />
+    {battle ? <BattleView battle={battle} heroEquipment={headband ? MURID_HEADBAND.back : undefined}
+      opponentEquipment={headband && duel ? MURID_HEADBAND.front : undefined} demo demoTime={demoTime} onDismiss={() => router.replace('/combat-demo')} />
       : <Text style={styles.subtitle}>{error ? 'Serveur de test indisponible' : 'Chargement du scénario…'}</Text>}
   </View>;
 }
 
-function CombatDemo({ pebble }: { pebble: boolean }) {
-  const artwork = pebble ? PEBBLE : AL_KASAL;
+function CombatDemo({ pebble, headband, view }: { pebble: boolean; headband: boolean; view: 'front' | 'back' }) {
+  const artwork = headband ? view === 'back' ? DEFAULT_HERO : DEFAULT_OPPONENT : pebble ? PEBBLE : AL_KASAL;
   const auth = useAuth();
   const [pose, setPose] = useState<FighterPose>('idle');
   const [scenario, setScenario] = useState<'victoire' | 'defaiteBoss' | null>(null);
@@ -84,13 +89,14 @@ function CombatDemo({ pebble }: { pebble: boolean }) {
       ) }} />
       <Text style={styles.notice}>DÉMONSTRATION · AUCUN GAIN RÉEL</Text>
       {scenario ? (
-        <BattleView battle={BATTLE_FIXTURES[scenario]} enemyArt={artwork} demo onDismiss={() => setScenario(null)} />
+        <BattleView battle={BATTLE_FIXTURES[scenario]} enemyArt={headband ? PEBBLE : artwork} heroEquipment={headband ? MURID_HEADBAND.back : undefined} demo onDismiss={() => setScenario(null)} />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.title}>{artwork.name}</Text>
-          <Text style={styles.subtitle}>{pebble ? 'Un petit obstacle prend corps.' : 'La paresse prend corps.'}</Text>
-          <View style={styles.preview} testID={`${pebble ? 'pebble' : 'al-kasal'}-${pose}`}>
-            <FighterSprite artwork={artwork} clock={clock} beats={[]} pose={pose} />
+          <Text style={styles.title}>{headband ? 'Murīd · Bandeau trempé' : artwork.name}</Text>
+          <Text style={styles.subtitle}>{headband ? 'Un calque de bandeau suit la tête dans chaque stance.' : pebble ? 'Un petit obstacle prend corps.' : 'La paresse prend corps.'}</Text>
+          <View style={styles.preview} testID={`${headband ? `headband-${view}` : pebble ? 'pebble' : 'al-kasal'}-${pose}`}>
+            <FighterSprite artwork={artwork} equipment={headband ? MURID_HEADBAND[view] : undefined}
+              attachments={headband ? MURID_ATTACHMENTS[view] : undefined} clock={clock} beats={[]} pose={pose} />
           </View>
           <View style={styles.poses}>
             {POSES.map((option) => (
