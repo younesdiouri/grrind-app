@@ -4,6 +4,7 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 
 const battle = JSON.parse(readFileSync(new URL('../fixtures/battle/victoire.json', import.meta.url)));
+const equippedDuel = JSON.parse(readFileSync(new URL('../fixtures/battle/duel-equipped.json', import.meta.url)));
 const images = Object.fromEntries(['idle', 'attack', 'hit'].map((pose) => [pose,
   readFileSync(new URL(`../assets/images/enemies/al-kasal/${pose}.png`, import.meta.url))]));
 const scenarios = new Set(['complete', 'dialogue', 'missing', 'slow', 'silent', 'legacy', 'effects', 'limit', 'long']);
@@ -11,6 +12,10 @@ const server = createServer((request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;
   if (path.startsWith('/battle/')) {
     const scenario = path.slice('/battle/'.length);
+    if (scenario === 'equipped-duel') {
+      response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(equippedDuel));
+      return;
+    }
     if (!scenarios.has(scenario)) { response.writeHead(404).end(); return; }
     const imageUrls = Object.fromEntries(Object.keys(images).map((pose) => [pose,
       `http://127.0.0.1:8099/images/${scenario}/${pose}.png`]));

@@ -1,0 +1,20 @@
+{
+  "tool": "ImageGen intégré",
+  "date": "2026-10-17",
+  "itemKey": "TEMPERED_HEADBAND",
+  "version": "v1",
+  "mode": "accessory-layer",
+  "asset": "layer.png",
+  "width": 512,
+  "height": 186,
+  "pivot": {
+    "x": 0.5,
+    "y": 0.5
+  },
+  "scale": 1,
+  "plane": "front",
+  "mirrorForFront": true,
+  "source": "exec-4a44c540-1e41-4b95-aec9-8314444f093e.png",
+  "prompt": "ONE isolated wearable headband layer, not a character. Exact dark blue steel headband, narrow gold/ochre trim, silver front plate at right end. Side profile facing RIGHT, shallow perspective for Murid's forehead/hood. Only accessory, no head, body, hood, hair, text, floor or VFX. Genuine transparent alpha. References: generated icon and original Murid back/idle.",
+  "preparation": "sips -c 439 1206 --cropOffset 392 25 SOURCE --out layer.png ; sips -Z 512 layer.png"
+}
