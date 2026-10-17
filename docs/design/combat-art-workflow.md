@@ -56,3 +56,7 @@ représentent jusqu’à 28 Mio avant les autres coûts, moins lorsque le décod
 Réutiliser un flow ciblé via Metro et inspecter les captures, conformément à
 `docs/ai/mobile-qa.md`. Ne pas modifier les sources pendant le flow ni interférer avec un
 Simulator/Metro utilisé par un autre agent. Aucun rebuild natif n’est requis par ce lot.
+
+Les [quatorze poses rendues sur iOS](proofs/mobs-side-poses.png) ont été inspectées
+le 17 octobre 2026. Le flow `.maestro/al-kasal.yaml` parcourt ces poses puis les combats
+victoire, défaite et Passer, jusqu’au retour à l’atelier.
