@@ -19,7 +19,7 @@
     "criticalResistancePercent": 5,
     "cooldownReductionPercent": 0,
     "precisionPercent": 7,
-    "appearance": "STRENGTH_V2",
+    "appearance": "STRENGTH_V3",
     "equipment": {
       "HANDS": {
         "key": "IRON_GAUNTLETS",
@@ -27,7 +27,7 @@
       },
       "HEAD": {
         "key": "PURSUIT_GOGGLES",
-        "artworkVersion": "v2"
+        "artworkVersion": "v3"
       },
       "FEET": {
         "key": "WORN_RUNNING_SHOES",
@@ -35,7 +35,7 @@
       },
       "WEAPON": {
         "key": "HALTER_EGO",
-        "artworkVersion": "v2"
+        "artworkVersion": "v3"
       }
     }
   },
@@ -56,11 +56,11 @@
     "precisionPercent": 1,
     "imageUrls": null,
     "introduction": null,
-    "appearance": "RUNNER_V2",
+    "appearance": "RUNNER_V3",
     "equipment": {
       "HEAD": {
         "key": "HEADACHE_CAP",
-        "artworkVersion": "v2"
+        "artworkVersion": "v3"
       }
     }
   },

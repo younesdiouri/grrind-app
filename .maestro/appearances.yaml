@@ -31,40 +31,40 @@ tags:
     id: "tab-reglages"
 - scrollUntilVisible:
     element:
-      id: hero-STRENGTH_V2
+      id: hero-STRENGTH_V3
     direction: DOWN
 - tapOn:
-    id: hero-STRENGTH_V2
+    id: hero-STRENGTH_V3
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
     timeout: 15000
 - scrollUntilVisible:
     element:
-      id: hero-RUNNER_V2
+      id: hero-RUNNER_V3
     direction: UP
 - tapOn:
-    id: hero-RUNNER_V2
+    id: hero-RUNNER_V3
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
     timeout: 15000
 - scrollUntilVisible:
     element:
-      id: hero-CLIMBER_V2
+      id: hero-CLIMBER_V3
     direction: UP
 - tapOn:
-    id: hero-CLIMBER_V2
+    id: hero-CLIMBER_V3
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
     timeout: 15000
 - scrollUntilVisible:
     element:
-      id: hero-SWIMMER_V2
+      id: hero-SWIMMER_V3
     direction: UP
 - tapOn:
-    id: hero-SWIMMER_V2
+    id: hero-SWIMMER_V3
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
@@ -100,32 +100,32 @@ tags:
     id: art-item-ACADEMIC_FLIPPERS
 - scrollUntilVisible:
     element:
-      id: art-avatar-STRENGTH_V2
+      id: art-avatar-STRENGTH_V3
     direction: UP
 - tapOn:
-    id: art-avatar-STRENGTH_V2
-- takeScreenshot: retro-STRENGTH_V2-equipped
+    id: art-avatar-STRENGTH_V3
+- takeScreenshot: retro-STRENGTH_V3-equipped
 - scrollUntilVisible:
     element:
-      id: art-avatar-RUNNER_V2
+      id: art-avatar-RUNNER_V3
     direction: UP
 - tapOn:
-    id: art-avatar-RUNNER_V2
-- takeScreenshot: retro-RUNNER_V2-equipped
+    id: art-avatar-RUNNER_V3
+- takeScreenshot: retro-RUNNER_V3-equipped
 - scrollUntilVisible:
     element:
-      id: art-avatar-CLIMBER_V2
+      id: art-avatar-CLIMBER_V3
     direction: UP
 - tapOn:
-    id: art-avatar-CLIMBER_V2
-- takeScreenshot: retro-CLIMBER_V2-equipped
+    id: art-avatar-CLIMBER_V3
+- takeScreenshot: retro-CLIMBER_V3-equipped
 - scrollUntilVisible:
     element:
-      id: art-avatar-SWIMMER_V2
+      id: art-avatar-SWIMMER_V3
     direction: UP
 - tapOn:
-    id: art-avatar-SWIMMER_V2
-- takeScreenshot: retro-SWIMMER_V2-equipped
+    id: art-avatar-SWIMMER_V3
+- takeScreenshot: retro-SWIMMER_V3-equipped
 - scrollUntilVisible:
     element:
       text: Vers la droite

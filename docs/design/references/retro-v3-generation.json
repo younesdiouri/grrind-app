@@ -1,0 +1,291 @@
+{
+  "tool": "built-in image_gen",
+  "notes": "Idle identities reuse V2 masters. Hit/dodge/combo corrections use strength final pose as second pose-only reference; rejected drafts are not positive references. Export and calibration do not constitute visual approval.",
+  "assets": [
+    {
+      "key": "strength-attack",
+      "prompt": "Use case: identity-preserve. Edit target: this exact GRRIND retro RPG male strength avatar. Create ONE new full-body ATTACK combat stance facing RIGHT: controlled forward lunge, front/right knee bent, rear leg planted, right arm reaching outward with an empty CLOSED VERTICAL hammer-grip fist at about chest height. The weapon will be a vertical dumbbell drawn BEHIND that fist; keep fist external to body with clear empty vertical space above AND below it. Free left fist stays protecting the ribs. Show a clearly different weight shift and arm reach from reference guard. Preserve exact brown skin, short black hair, facial identity, muscular proportions, light grey tank top, charcoal shorts, bare feet, retro RPG pixel art quality and pixel density. Head stays upright looking right in exactly the same three-quarter perspective as reference; no head turn/tilt, no overhead hand, no rotated grip. Both feet keep the same viewing directions, rear foot facing camera and front foot profile looking right. Bare feet no shoes. Empty hands no weapon/item. Single full-body sprite, square transparent canvas with generous margin, comparable scale to reference. No shadow, floor, effects or text.",
+      "localSource": "artifacts/artwork-v3/source/strength/attack.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-ea8b393f-0094-4c58-8f67-feac95a819fa.png"
+    },
+    {
+      "key": "strength-hit",
+      "prompt": "Use case: precise-object-edit. Edit target image is the existing hit stance. CRITICAL correction ONLY the arms arrangement. Preserve head, face, hair, body position, clothing, legs, feet, stance, scale and pixel art unchanged. The SAME far arm that emerges from the shoulder on the RIGHT side of the torso MUST end in an upright CLOSED VERTICAL hammer-grip fist on the FAR RIGHT of the image, clearly OUTSIDE the body's right silhouette. It is the weapon hand, never switch hands. Right-side forearm remains extended toward RIGHT at chest height, upright rightmost fist outside torso despite backward recoil; other left-side hand folds across upper chest. The RIGHTMOST upright fist has EMPTY TRANSPARENT space directly above AND below for a vertical dumbbell behind it later, no overlap head/body/free arm at that contact. No weapon or item. Both fists closed but only the rightmost fist will hold item. True transparent square background, full body, no text/effects.",
+      "localSource": "artifacts/artwork-v3/source/strength/hit.png",
+      "referenceExports": [],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-f82e2492-2714-4499-b941-93d45358cb82.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-0c23d5fb-ae35-4ffd-b99c-770ee21cd326.png"
+      ],
+      "referenceNote": "Edit target was rejected for swapped weapon hand; kept only as correction provenance, not as a positive reference."
+    },
+    {
+      "key": "strength-critical",
+      "prompt": "Use case: identity-preserve. Edit target is this EXACT male strength GRRIND retro RPG avatar. Generate ONE distinct CRITICAL combat pose: powerful committed CRITICAL strike: very deep wide forward lunge, front knee strongly bent, rear leg long and planted, torso leaning forward, weapon arm reaching forward at shoulder height with upright vertical fist, free arm drawn back at ribs, determined expression. Preserve exact brown skin, short black hair/beard facial identity, muscular build, grey tank, charcoal shorts, BARE feet and retro pixel-art density/style. Upright head facing RIGHT same 3/4 camera perspective, keep original head anatomical size. Right weapon fist is CLOSED and VERTICAL like holding a mug handle, empty, side-facing knuckles outside body with unobstructed vertical clearance above/below for dumbbell added behind later. No rotated palm or fingers pointing up. Rear foot camera-facing, front foot right side-profile; both flat firmly grounded. Same fullbody scale and square canvas as reference with margin even if crouching; NEVER stretch crouch into tall figure. No equipment, shoes, effects, floor, shadow or text. True transparent background. Action must read through body/leg/arm arrangement, not effects.",
+      "localSource": "artifacts/artwork-v3/source/strength/critical.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-405d1a1d-a42b-428f-9b9a-0801d011652b.png"
+    },
+    {
+      "key": "strength-dodge",
+      "prompt": "Use case: precise-object-edit. Edit target image is the existing dodge stance. CRITICAL correction ONLY the arms arrangement. Preserve head, face, hair, body position, clothing, legs, feet, stance, scale and pixel art unchanged. The SAME far arm that emerges from the shoulder on the RIGHT side of the torso MUST end in an upright CLOSED VERTICAL hammer-grip fist on the FAR RIGHT of the image, clearly OUTSIDE the body's right silhouette. It is the weapon hand, never switch hands. That right-side arm extends forward RIGHT with elbow slightly bent, fist outside right silhouette at chest height; the other left-side forearm folds up near left cheek in a guard, no weapon hand on image left. The RIGHTMOST upright fist has EMPTY TRANSPARENT space directly above AND below for a vertical dumbbell behind it later, no overlap head/body/free arm at that contact. No weapon or item. Both fists closed but only the rightmost fist will hold item. True transparent square background, full body, no text/effects.",
+      "localSource": "artifacts/artwork-v3/source/strength/dodge.png",
+      "referenceExports": [],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-e66f1eea-0e7e-4933-9a7b-12b363b52b17.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-eb05b31b-b327-4d88-9180-0cbacda98d98.png"
+      ],
+      "referenceNote": "Edit target was rejected for swapped weapon hand; kept only as correction provenance, not as a positive reference."
+    },
+    {
+      "key": "strength-combo",
+      "prompt": "Use case: precise-object-edit. Edit target image is the existing combo stance. CRITICAL correction ONLY the arms arrangement. Preserve head, face, hair, body position, clothing, legs, feet, stance, scale and pixel art unchanged. The SAME far arm that emerges from the shoulder on the RIGHT side of the torso MUST end in an upright CLOSED VERTICAL hammer-grip fist on the FAR RIGHT of the image, clearly OUTSIDE the body's right silhouette. It is the weapon hand, never switch hands. Bend that right-side elbow to raise the rightmost fist to shoulder height, outside body and away from face. Put the other left-side fist down near left ribs in a close guard. The RIGHTMOST upright fist has EMPTY TRANSPARENT space directly above AND below for a vertical dumbbell behind it later, no overlap head/body/free arm at that contact. No weapon or item. Both fists closed but only the rightmost fist will hold item. True transparent square background, full body, no text/effects.",
+      "localSource": "artifacts/artwork-v3/source/strength/combo.png",
+      "referenceExports": [],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-6fa22893-0a57-4e79-ae39-736934b1d7ac.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-8d58653b-56a5-4dbb-b938-682a73444774.png"
+      ],
+      "referenceNote": "Edit target was rejected for swapped weapon hand; kept only as correction provenance, not as a positive reference."
+    },
+    {
+      "key": "strength-replay",
+      "prompt": "Use case: identity-preserve. Edit target is this EXACT male strength GRRIND retro RPG avatar. Generate ONE distinct REPLAY combat pose: RELANCE follow-up attack: springing forward poised to strike again, weight over forward leg, rear knee flexed feet still planted, weapon right arm half extended at chest level in upright grip, free left fist raised near left shoulder, alert determined head. Preserve exact brown skin, short black hair/beard facial identity, muscular build, grey tank, charcoal shorts, BARE feet and retro pixel-art density/style. Upright head facing RIGHT same 3/4 camera perspective, keep original head anatomical size. Right weapon fist is CLOSED and VERTICAL like holding a mug handle, empty, side-facing knuckles outside body with unobstructed vertical clearance above/below for dumbbell added behind later. No rotated palm or fingers pointing up. Rear foot camera-facing, front foot right side-profile; both flat firmly grounded. Same fullbody scale and square canvas as reference with margin even if crouching; NEVER stretch crouch into tall figure. No equipment, shoes, effects, floor, shadow or text. True transparent background. Action must read through body/leg/arm arrangement, not effects.",
+      "localSource": "artifacts/artwork-v3/source/strength/replay.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-1da59e63-d50e-41ff-810e-06bcf281098a.png"
+    },
+    {
+      "key": "runner-attack",
+      "prompt": "Use case: identity-preserve. Edit target reference is the EXACT brown athletic woman with high dark ponytail, lean runner build GRRIND retro RPG avatar. Create ONE different ATTACK combat stance: controlled forward lunge, front knee bent and rear leg extended planted, weapon right arm extended FORWARD level with chest in a closed VERTICAL hammer-grip fist, free left fist protecting ribs. Preserve identity, skin/hair/face, proportions, neutral light grey tank and charcoal shorts, BARE feet, pixel-art rendering/density/palette of reference. Head stays upright looking RIGHT in SAME three-quarter perspective, no turn or tilt. Fist empty CLOSED and VERTICAL hammer grip for a dumbbell added BEHIND later: clear space directly above/below it, outside body, no palm opened. Both feet same perspective as ref: rear foot front-facing camera, front foot side-profile looking right. Full body, square canvas with margin, consistent anatomical size. No equipment, shoes, effects, floor, text or shadow. TRUE transparent alpha. Distinct purposeful action silhouette.",
+      "localSource": "artifacts/artwork-v3/source/runner/attack.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/runner/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-3806bf7d-6a25-44d8-8493-bfb9d33b5837.png"
+    },
+    {
+      "key": "runner-hit",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (brown athletic woman, high dark ponytail, lean runner build). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its HIT stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain brown athletic woman, high dark ponytail, lean runner build original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/runner/hit.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/runner/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/hit.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-b2c6aaac-d74e-47a1-b97f-e6611cbda667.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/runner/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-f82e2492-2714-4499-b941-93d45358cb82.png"
+      ]
+    },
+    {
+      "key": "runner-critical",
+      "prompt": "Use case: identity-preserve. Edit target is the EXACT brown athletic woman with high dark ponytail and lean runner build GRRIND retro RPG avatar in reference. Make ONE distinct CRITICAL combat pose: powerful committed CRITICAL strike: very deep wide forward lunge, front knee strongly bent, rear leg long and planted, torso leaning forward, weapon arm reaching forward at shoulder height with upright vertical fist, free arm drawn back at ribs, determined expression. Preserve exact identity, skin/hair/face, original lean proportions and muscle definition, light grey tank, charcoal shorts, BARE feet, retro pixel-art density/palette. Upright head looking RIGHT in SAME three-quarter perspective, no tilt/turn. Weapon fist CLOSED VERTICAL hammer grip, empty and external to body, clear space directly above/below to add a vertical dumbbell BEHIND it later; no rotating fingers/palm. Rear foot camera-facing, front foot side-profile pointing right, both flat planted, no raised heel or curled toes. Same fullbody anatomical scale on square transparent canvas with margin, crouches actually lower. No items/shoes/effects/text/floor/shadow.",
+      "localSource": "artifacts/artwork-v3/source/runner/critical.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/runner/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-f858bd46-18b7-4d30-8b86-24172893075a.png"
+    },
+    {
+      "key": "runner-dodge",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (brown athletic woman, high dark ponytail, lean runner build). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its DODGE stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain brown athletic woman, high dark ponytail, lean runner build original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/runner/dodge.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/runner/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/dodge.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-02fb862b-43ca-48e0-92f9-ec55bc6a6468.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/runner/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-e66f1eea-0e7e-4933-9a7b-12b363b52b17.png"
+      ]
+    },
+    {
+      "key": "runner-combo",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (brown athletic woman, high dark ponytail, lean runner build). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its COMBO stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain brown athletic woman, high dark ponytail, lean runner build original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/runner/combo.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/runner/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/combo.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-1049ea84-91e2-4bf4-8d02-86c71cce2626.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/runner/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-6fa22893-0a57-4e79-ae39-736934b1d7ac.png"
+      ]
+    },
+    {
+      "key": "runner-replay",
+      "prompt": "Use case: identity-preserve. Edit target is the EXACT brown athletic woman with high dark ponytail and lean runner build GRRIND retro RPG avatar in reference. Make ONE distinct REPLAY combat pose: RELANCE follow-up attack: springing forward poised to strike again, weight over forward leg, rear knee flexed feet still planted, weapon right arm half extended at chest level in upright grip, free left fist raised near left shoulder, alert determined head. Preserve exact identity, skin/hair/face, original lean proportions and muscle definition, light grey tank, charcoal shorts, BARE feet, retro pixel-art density/palette. Upright head looking RIGHT in SAME three-quarter perspective, no tilt/turn. Weapon fist CLOSED VERTICAL hammer grip, empty and external to body, clear space directly above/below to add a vertical dumbbell BEHIND it later; no rotating fingers/palm. Rear foot camera-facing, front foot side-profile pointing right, both flat planted, no raised heel or curled toes. Same fullbody anatomical scale on square transparent canvas with margin, crouches actually lower. No items/shoes/effects/text/floor/shadow.",
+      "localSource": "artifacts/artwork-v3/source/runner/replay.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/runner/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-d1c8ea2f-7cdc-4eec-8212-790a1086bd81.png"
+    },
+    {
+      "key": "climber-attack",
+      "prompt": "Use case: identity-preserve. Edit target reference is the EXACT pale ginger-haired lean wiry male climber GRRIND retro RPG avatar. Create ONE different ATTACK combat stance: controlled forward lunge, front knee bent and rear leg extended planted, weapon right arm extended FORWARD level with chest in a closed VERTICAL hammer-grip fist, free left fist protecting ribs. Preserve identity, skin/hair/face, proportions, neutral light grey tank and charcoal shorts, BARE feet, pixel-art rendering/density/palette of reference. Head stays upright looking RIGHT in SAME three-quarter perspective, no turn or tilt. Fist empty CLOSED and VERTICAL hammer grip for a dumbbell added BEHIND later: clear space directly above/below it, outside body, no palm opened. Both feet same perspective as ref: rear foot front-facing camera, front foot side-profile looking right. Full body, square canvas with margin, consistent anatomical size. No equipment, shoes, effects, floor, text or shadow. TRUE transparent alpha. Distinct purposeful action silhouette.",
+      "localSource": "artifacts/artwork-v3/source/climber/attack.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/climber/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-6ddaf0b2-4a7a-4a08-b819-5f18568e3d03.png"
+    },
+    {
+      "key": "climber-hit",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (pale ginger-haired lean wiry male climber). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its HIT stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain pale ginger-haired lean wiry male climber original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/climber/hit.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/climber/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/hit.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-44c5f8d0-f025-4ec8-8bed-95ab9a5d6dc2.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/climber/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-f82e2492-2714-4499-b941-93d45358cb82.png"
+      ]
+    },
+    {
+      "key": "climber-critical",
+      "prompt": "Use case: identity-preserve. Edit target is EXACT pale ginger-haired lean wiry male climber GRRIND retro RPG avatar reference. Create ONE distinct CRITICAL combat pose: powerful committed CRITICAL strike: very deep wide forward lunge, front knee strongly bent, rear leg long and planted, torso leaning forward, weapon arm reaching forward at shoulder height with upright vertical fist, free arm drawn back at ribs, determined expression. Preserve exact skin, ginger hairstyle/face, lean proportions, grey tank, charcoal shorts, BARE feet and pixel-art clusters/density/palette. Upright head looking RIGHT same 3/4 eye-level camera perspective; no head turn or tilt. Weapon fist CLOSED and VERTICAL hammer grip, empty, located outside silhouette, clear vertical gap above/below for a dumbbell BEHIND it. Free arm must not overlap that grip. Rear foot front-facing camera, front foot right side profile, BOTH flat planted no heel lift. Fullbody square transparent canvas, comparable anatomical scale, generous margins. No equipment/shoes/text/effects/shadow/floor. Purposeful body/arm/leg arrangement clearly expresses state.",
+      "localSource": "artifacts/artwork-v3/source/climber/critical.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/climber/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-c8d5f8f2-6366-4eaf-809c-9eae07aa18f3.png"
+    },
+    {
+      "key": "climber-dodge",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (pale ginger-haired lean wiry male climber). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its DODGE stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain pale ginger-haired lean wiry male climber original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/climber/dodge.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/climber/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/dodge.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-2a6815e6-9f59-48c1-a64c-27b5d34dec05.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/climber/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-e66f1eea-0e7e-4933-9a7b-12b363b52b17.png"
+      ]
+    },
+    {
+      "key": "climber-combo",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (pale ginger-haired lean wiry male climber). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its COMBO stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain pale ginger-haired lean wiry male climber original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/climber/combo.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/climber/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/combo.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-136142b1-eb57-4ce7-a081-8dddd88cb028.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/climber/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-6fa22893-0a57-4e79-ae39-736934b1d7ac.png"
+      ]
+    },
+    {
+      "key": "climber-replay",
+      "prompt": "Use case: identity-preserve. Edit target is EXACT pale ginger-haired lean wiry male climber GRRIND retro RPG avatar reference. Create ONE distinct REPLAY combat pose: RELANCE follow-up attack: springing forward poised to strike again, weight over forward leg, rear knee flexed feet still planted, weapon right arm half extended at chest level in upright grip, free left fist raised near left shoulder, alert determined head. Preserve exact skin, ginger hairstyle/face, lean proportions, grey tank, charcoal shorts, BARE feet and pixel-art clusters/density/palette. Upright head looking RIGHT same 3/4 eye-level camera perspective; no head turn or tilt. Weapon fist CLOSED and VERTICAL hammer grip, empty, located outside silhouette, clear vertical gap above/below for a dumbbell BEHIND it. Free arm must not overlap that grip. Rear foot front-facing camera, front foot right side profile, BOTH flat planted no heel lift. Fullbody square transparent canvas, comparable anatomical scale, generous margins. No equipment/shoes/text/effects/shadow/floor. Purposeful body/arm/leg arrangement clearly expresses state.",
+      "localSource": "artifacts/artwork-v3/source/climber/replay.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/climber/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-27a34f9d-f839-4cb3-bf36-e2e47d5c1e04.png"
+    },
+    {
+      "key": "swimmer-attack",
+      "prompt": "Use case: identity-preserve. Edit target reference is the EXACT tan strong athletic woman with dark hair bun GRRIND retro RPG avatar. Create ONE different ATTACK combat stance: controlled forward lunge, front knee bent and rear leg extended planted, weapon right arm extended FORWARD level with chest in a closed VERTICAL hammer-grip fist, free left fist protecting ribs. Preserve identity, skin/hair/face, proportions, neutral light grey tank and charcoal shorts, BARE feet, pixel-art rendering/density/palette of reference. Head stays upright looking RIGHT in SAME three-quarter perspective, no turn or tilt. Fist empty CLOSED and VERTICAL hammer grip for a dumbbell added BEHIND later: clear space directly above/below it, outside body, no palm opened. Both feet same perspective as ref: rear foot front-facing camera, front foot side-profile looking right. Full body, square canvas with margin, consistent anatomical size. No equipment, shoes, effects, floor, text or shadow. TRUE transparent alpha. Distinct purposeful action silhouette.",
+      "localSource": "artifacts/artwork-v3/source/swimmer/attack.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/swimmer/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-820d8cdd-1f22-43d7-b45d-42ce260b7cf8.png"
+    },
+    {
+      "key": "swimmer-hit",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (tan strong athletic woman with dark bun). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its HIT stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain tan strong athletic woman with dark bun original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/swimmer/hit.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/swimmer/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/hit.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-ffdd15af-f848-44ff-b968-9ffe97a6221a.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/swimmer/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-f82e2492-2714-4499-b941-93d45358cb82.png"
+      ]
+    },
+    {
+      "key": "swimmer-critical",
+      "prompt": "Use case: identity-preserve. Edit target is EXACT tan strong athletic woman with dark hair bun GRRIND retro RPG avatar reference. Make ONE distinct CRITICAL combat stance: powerful committed CRITICAL strike: very deep wide forward lunge, front knee strongly bent, rear leg long and planted, torso leaning forward, weapon arm reaching forward at shoulder height with upright vertical fist, free arm drawn back at ribs, determined expression. Preserve exact skin/hair/face, athletic strong build, light grey tank, charcoal shorts, BARE feet and pixel-art clusters/density/palette. Upright head facing RIGHT same 3/4 eye-level perspective; no tilt/turn. Weapon fist CLOSED VERTICAL hammer grip outside torso, empty, clear space directly above and below for dumbbell added BEHIND it later. Free arm separate from weapon grip. Rear foot front-facing camera, front foot side-profile right; BOTH flat on ground no raised heels or curling toes. Fullbody square transparent canvas with margin and consistent anatomical size; crouches actually lower, no stretching to fill canvas. No items/shoes/text/shadow/effects/floor.",
+      "localSource": "artifacts/artwork-v3/source/swimmer/critical.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/swimmer/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-1dabd693-9877-48de-b4e7-57f6c5a583f4.png"
+    },
+    {
+      "key": "swimmer-dodge",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (tan strong athletic woman with dark bun). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its DODGE stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain tan strong athletic woman with dark bun original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/swimmer/dodge.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/swimmer/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/dodge.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-387e71a3-a5e2-4415-81ec-77f885329220.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/swimmer/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-e66f1eea-0e7e-4933-9a7b-12b363b52b17.png"
+      ]
+    },
+    {
+      "key": "swimmer-combo",
+      "prompt": "Use case: identity-preserve. TWO REFERENCES: image1 is the CHARACTER IDENTITY, clothing, proportions, hair, skin and exact pixel-art style to preserve (tan strong athletic woman with dark bun). Image2 is ONLY a body/arm POSE template, NOT the identity: reproduce its COMBO stance using the person from image1. Copy pose template's weight shift, legs, torso and especially arm arrangement. Weapon hand is the RIGHTMOST CLOSED VERTICAL fist outside the RIGHT side silhouette, SAME far/right arm as identity reference. Never switch it to left side. Clear transparent vertical space directly above AND below that rightmost fist for vertical dumbbell behind it. Free left fist close to ribs/left cheek/chest as template. Head stays upright looking RIGHT in same identity's three-quarter perspective; bare feet same viewing directions, both planted. Neutral light grey tank, charcoal shorts unchanged. Maintain tan strong athletic woman with dark bun original anatomical proportions, NOT muscular male template's build. Full body on square TRUE transparent canvas with margin. No equipment/shoes/floor/effects/text/shadow.",
+      "localSource": "artifacts/artwork-v3/source/swimmer/combo.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/swimmer/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/strength/v3/back/combo.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-6ac16f44-a6f1-4d53-89ed-bd78e5f6a0fd.png",
+      "referencedImagePaths": [
+        "/Users/younesdiouri/Desktop/grrind/public/artwork/avatars/swimmer/v2/back/idle.png",
+        "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-6fa22893-0a57-4e79-ae39-736934b1d7ac.png"
+      ]
+    },
+    {
+      "key": "swimmer-replay",
+      "prompt": "Use case: identity-preserve. Edit target is EXACT tan strong athletic woman with dark hair bun GRRIND retro RPG avatar reference. Make ONE distinct REPLAY combat stance: RELANCE follow-up attack: springing forward poised to strike again, weight over forward leg, rear knee flexed feet still planted, weapon right arm half extended at chest level in upright grip, free left fist raised near left shoulder, alert determined head. Preserve exact skin/hair/face, athletic strong build, light grey tank, charcoal shorts, BARE feet and pixel-art clusters/density/palette. Upright head facing RIGHT same 3/4 eye-level perspective; no tilt/turn. Weapon fist CLOSED VERTICAL hammer grip outside torso, empty, clear space directly above and below for dumbbell added BEHIND it later. Free arm separate from weapon grip. Rear foot front-facing camera, front foot side-profile right; BOTH flat on ground no raised heels or curling toes. Fullbody square transparent canvas with margin and consistent anatomical size; crouches actually lower, no stretching to fill canvas. No items/shoes/text/shadow/effects/floor.",
+      "localSource": "artifacts/artwork-v3/source/swimmer/replay.png",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/swimmer/v2/back/idle.png"
+      ],
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-2719cd76-1180-4c69-8548-ef21c2b6be5f.png"
+    },
+    {
+      "key": "cap",
+      "prompt": "Use case: precise-object-edit. Asset: isolated 2D retro RPG pixel-art swim cap equipment overlay, transparent background. Input image 1 is the OLD rejected swim-cap object, only reference for teal/cream palette and playful shark fin. Replace its open hat shape with a CLOSED close-fitting elastic swimming cap, for a human looking RIGHT in three-quarter side view, eye-level camera. Solid rounded teal crown hugging top and back of skull, small shark fin atop, narrow cream elastic hem along lower edge. Crucial: lower edge is a shallow almost horizontal curve sloping down slightly toward the back/left, touching a wearer's hairline/temple when overlaid; NO hollow arch, no dark interior, no underside, no opening visible at the right/front, no curled brim, no front visor, no hanging straps, no face/head/skin/mannequin. A single solid opaque cap silhouette to overlay on a head. Match restrained chunky pixel clusters and limited palette of input, crisp edges. Object alone, centered, large, true alpha. No text.",
+      "localSource": "artifacts/artwork-v3/cap.png",
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-4561a144-b671-43f7-93db-d965a2f52ee9.png",
+      "referenceExports": [
+        "../grrind/public/artwork/items/swim-cap/v1/back.png"
+      ]
+    },
+    {
+      "key": "climbing-cap",
+      "prompt": "Use case: precise-object-edit. Input is rejected climbing cap, palette and joke reference only. Generate a corrected isolated purple retro RPG pixel-art climbing cap decorated with three chunky colorful climbing holds on crown, gold turquoise pink. Wearable overlay for human three-quarter head looking RIGHT at eye level. Solid CLOSED crown and short flat purple visor projecting right. Lower head-contact edge is near horizontal, slight downward slope to back/left, no empty arch. Visor a thin side silhouette, NO visible inner hollow bowl, NO underside or interior, no empty space between crown and visor, no face or skin or head/mannequin. Restrained pixel clusters same rendering as reference, one single centered object true transparent background no text.",
+      "localSource": "artifacts/artwork-v3/climbing-cap.png",
+      "generated": "/Users/younesdiouri/.codex/generated_images/01a14b10-09e9-7351-bd9c-4ff70d692cac/exec-fcb1298a-c622-4953-b64a-61143cdad6ad.png",
+      "referenceExports": [
+        "../grrind/public/artwork/items/climbing-cap/v1/back.png"
+      ]
+    }
+  ]
+}

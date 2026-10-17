@@ -7,19 +7,39 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { fighterMotionAt, fighterPoseAt, type FighterPose, type PoseSignals } from './fighterMotion';
 import type { Actor, BattleBeat } from './timeline';
 import { ENEMY_IMAGE_TIMEOUT_MS, type FighterArtwork } from './enemyPresentation';
-import { equipmentPlacement, type EquipmentArtwork, type FighterAttachments } from './equipmentArtwork';
+import { equipmentFrameScale, equipmentPlacement, type EquipmentArtwork, type FighterAttachments } from './equipmentArtwork';
 
 export type { FighterArtwork } from './enemyPresentation';
 export { AL_KASAL } from './bundledMobs';
 
-/** Le repli utilise aussi une garde pieds nus ; les états sont animés sur l’ensemble équipé. */
-function guardArtwork(name: string, source: ImageSource): FighterArtwork {
-  return { name, poses: { idle: source, attack: source, hit: source, critical: source,
-    dodge: source, combo: source, replay: source } };
-}
-export const DEFAULT_HERO = guardArtwork('Toi', require('../../../assets/images/heroes/retro-strength/v2/back/idle.png'));
-export const DEFAULT_OPPONENT = guardArtwork('Muscu', require('../../../assets/images/heroes/retro-strength/v2/front/idle.png'));
-export const DEFAULT_RAID_HERO = guardArtwork('Muscu', require('../../../assets/images/heroes/retro-strength/v2/thumb/front/idle.png'));
+/** Le repli embarqué conserve les mêmes sept silhouettes que le catalogue. */
+export const DEFAULT_HERO: FighterArtwork = { name: 'Toi', poses: {
+  idle: require('../../../assets/images/heroes/retro-strength/v3/back/idle.png'),
+  attack: require('../../../assets/images/heroes/retro-strength/v3/back/attack.png'),
+  hit: require('../../../assets/images/heroes/retro-strength/v3/back/hit.png'),
+  critical: require('../../../assets/images/heroes/retro-strength/v3/back/critical.png'),
+  dodge: require('../../../assets/images/heroes/retro-strength/v3/back/dodge.png'),
+  combo: require('../../../assets/images/heroes/retro-strength/v3/back/combo.png'),
+  replay: require('../../../assets/images/heroes/retro-strength/v3/back/replay.png'),
+} };
+export const DEFAULT_OPPONENT: FighterArtwork = { name: 'Muscu', poses: {
+  idle: require('../../../assets/images/heroes/retro-strength/v3/front/idle.png'),
+  attack: require('../../../assets/images/heroes/retro-strength/v3/front/attack.png'),
+  hit: require('../../../assets/images/heroes/retro-strength/v3/front/hit.png'),
+  critical: require('../../../assets/images/heroes/retro-strength/v3/front/critical.png'),
+  dodge: require('../../../assets/images/heroes/retro-strength/v3/front/dodge.png'),
+  combo: require('../../../assets/images/heroes/retro-strength/v3/front/combo.png'),
+  replay: require('../../../assets/images/heroes/retro-strength/v3/front/replay.png'),
+} };
+export const DEFAULT_RAID_HERO: FighterArtwork = { name: 'Muscu', poses: {
+  idle: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/idle.png'),
+  attack: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/attack.png'),
+  hit: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/hit.png'),
+  critical: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/critical.png'),
+  dodge: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/dodge.png'),
+  combo: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/combo.png'),
+  replay: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/replay.png'),
+} };
 
 /** Les poses disponibles se chargent ensemble ; aucune source ne change au milieu d'un coup. */
 export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, beats, pose, signals, lateral = false, staticPreview = false, onReady, onError }: {
@@ -39,6 +59,7 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
   const poses = staticPreview && pose ? [pose] : Object.keys(artwork.poses) as FighterPose[];
   const sharedGuard = poses.every((entry) => JSON.stringify(artwork.poses[entry]) === JSON.stringify(artwork.poses[poses[0]]));
   const wearables = equipment.filter((item) => artwork.attachments?.[item.attachment]);
+  const frameScale = equipmentFrameScale(artwork.attachments, wearables);
   const foregroundPoses = wearables.length ? poses.filter((entry) => artwork.foreground?.[entry]) : [];
   const loaded = useRef(new Set<string>());
   const settled = useRef(false);
@@ -97,7 +118,7 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
       const size = Math.min(layout.width, layout.height);
       setCanvasSize((current) => current === size ? current : size);
     }}>
-      <Animated.View style={[styles.body, canvasSize === undefined ? undefined : { width: canvasSize, height: canvasSize }, transform]}>
+      <Animated.View style={[styles.body, canvasSize === undefined ? undefined : { width: canvasSize * frameScale, height: canvasSize * frameScale }, transform]}>
         {wearables.filter((item) => item.plane === 'behind' && !equipmentFailed.has(item.key)).map((item) => (
           <EquipmentLayer key={item.key} item={item} attachments={artwork.attachments?.[item.attachment]}
             selected={pose} motion={motion} onLoad={() => ready(item.key)}

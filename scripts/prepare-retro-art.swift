@@ -70,15 +70,20 @@ guard CommandLine.arguments.count == 4 else {
 let mode=CommandLine.arguments[1], input=CommandLine.arguments[2], output=CommandLine.arguments[3]
 guard URL(fileURLWithPath:input).standardizedFileURL != URL(fileURLWithPath:output).standardizedFileURL else { fail("Conserver les sources") }
 if mode == "avatar" || mode == "guard" {
-    // La garde commune supprime les raccords entre mains/pieds redessinés indépendamment.
+    // Le mode guard reste disponible pour les archives ; avatar exporte les sept dessins.
     let exportedPoses = mode == "guard" ? ["idle"] : poses
     let images=exportedPoses.map { load(mode == "guard" ? input : input+"/"+$0+".png") }
-    guard images.allSatisfy({ $0.width == $0.height && $0.width == images[0].width }) else { fail("Les sept sources doivent partager un canevas carré") }
+    guard images.allSatisfy({ $0.width == $0.height }) else { fail("Chaque source doit avoir un canevas carré") }
     let boxes=images.map(bounds), size=256.0, baseline=233.0
-    let scale=min(size/Double(images[0].width),240.0/boxes.map({$0.width}).max()!,225.0/boxes.map({$0.height}).max()!)
-    let horizontal=(size-Double(images[0].width)*scale)/2
+    // Hauteurs explicites : une esquive accroupie ne doit pas être agrandie comme une garde.
+    let calibrationURL=URL(fileURLWithPath:input+"/normalization.json")
+    let heights=(try? Data(contentsOf:calibrationURL)).flatMap {try? JSONSerialization.jsonObject(with:$0) as? [String:Double]} ?? [:]
     var layout:[String:[String:Double]]=[:]
     for (index,pose) in exportedPoses.enumerated() {
+        let height=heights[pose] ?? 225
+        guard height>=100 && height<=225 else {fail("Hauteur de pose invalide")}
+        let scale=min(size/Double(images[index].width),240.0/boxes[index].width,height/boxes[index].height)
+        let horizontal=(size-Double(images[index].width)*scale)/2
         let top=baseline+1-boxes[index].maxY*scale
         let canvas=context(256,256)
         canvas.draw(images[index],in:CGRect(x:horizontal,y:size-top-Double(images[index].height)*scale,
@@ -91,7 +96,7 @@ if mode == "avatar" || mode == "guard" {
     }
     let json=try! JSONSerialization.data(withJSONObject:layout,options:[.prettyPrinted,.sortedKeys])
     try! json.write(to:URL(fileURLWithPath:output+"/layout.json"))
-    print("\(exportedPoses.count) garde(s), 2 orientations, PNG 512 et miniatures 256 : "+output)
+    print("\(exportedPoses.count) pose(s), 2 orientations, PNG 512 et miniatures 256 : "+output)
 } else if mode == "item" {
     let image=load(input),box=bounds(image)
     let maxSide=128.0,scale=min(1,maxSide/max(box.width,box.height))
