@@ -6,6 +6,18 @@ appId: app.grrind.dev
 # qui contient `-empty-` donne un fournisseur sans séance, toutes les autres en donnent
 # quatre. C'est `src/features/health/e2e.ts` qui tranche, et seulement dans un bundle
 # construit avec `EXPO_PUBLIC_E2E=1`.
+#
+# Après une réinstallation, iOS demande « Ouvrir dans « GRRIND dev » ? » pour le lien Metro, et
+# l'alerte arrive parfois après le contrôle qui suit `launchApp` : elle masque alors le formulaire.
+# On attend donc l'un ou l'autre, puis on la referme si c'est elle.
+- extendedWaitUntil:
+    visible: "Ouvrir dans.*|Se connecter"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
 - extendedWaitUntil:
     visible: "Se connecter"
     timeout: 30000
