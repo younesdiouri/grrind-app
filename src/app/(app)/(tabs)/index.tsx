@@ -13,6 +13,7 @@ import {
 import { bagRowChevron, BagRow } from '@/components/BagRow';
 import { Button } from '@/components/Button';
 import { AmbientBackdrop } from '@/components/AmbientBackdrop';
+import { StreakMeter } from '@/components/StreakMeter';
 import { SystemFrame } from '@/components/SystemFrame';
 import { Convey, ScanLine, Seam, SparkRail } from '@/components/SystemMotion';
 import { decorativeGlow } from '@/design/decorativeGlow';
@@ -208,6 +209,11 @@ function PlayerHome({
       {home.step === 'ready' ? (
         <LevelCard progression={home.progression} scanToken={scanToken} />
       ) : null}
+      {home.step === 'ready' && home.streak !== null ? (
+        <SystemFrame contentStyle={styles.streak}>
+          <StreakMeter state={home.streak} />
+        </SystemFrame>
+      ) : null}
       {home.step === 'ready' ? (
         <AttributeCard
           attributes={home.progression.attributes}
@@ -303,6 +309,7 @@ const styles = StyleSheet.create({
   section: { ...type.label, color: color.textMuted },
   /** Le filet prend la largeur qui reste après l'intitulé, et rien de plus. */
   sectionRule: { flex: 1, height: ambient.gridLine, backgroundColor: color.border },
+  streak: { padding: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   card: {
     backgroundColor: color.surface,

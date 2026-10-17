@@ -8,6 +8,7 @@ import { publishProgression } from '@/features/widget/publish';
 
 export type Progression = components['schemas']['Progression'];
 export type Workout = components['schemas']['Workout'];
+export type StreakState = components['schemas']['StreakState'];
 
 /**
  * Ce que l'accueil affiche, en **une** requête chacun et un seul état.
@@ -36,12 +37,21 @@ export type Workout = components['schemas']['Workout'];
  *
  * ————— Ce qu'on ne fait pas ————————————————————————————————————————————————————————
  *
+ * **La série ne fait pas tomber l'écran** (#182) : elle se charge avec le reste, mais son
+ * échec la rend `null` et la carte disparaît — un niveau sans série reste un accueil juste.
+ *
  * **Pas de pagination.** `nextCursor` est lu et ignoré : la première page prouve la chaîne,
  * et un défilement infini se conçoit avec le design (#7), pas avant lui.
  */
 export type PlayerHome =
   | { step: 'loading' }
-  | { step: 'ready'; progression: Progression; workouts: Workout[]; hasMore: boolean }
+  | {
+      step: 'ready';
+      progression: Progression;
+      workouts: Workout[];
+      hasMore: boolean;
+      streak: StreakState | null;
+    }
   | { step: 'failed'; failure: Failure };
 
 export function usePlayerHome(): {
@@ -76,9 +86,10 @@ export function usePlayerHome(): {
   const load = useCallback(async (): Promise<PlayerHome> => {
     // En parallèle : elles ne dépendent pas l'une de l'autre, et les enchaîner doublerait
     // l'attente pour rien.
-    const [progression, history] = await Promise.all([
+    const [progression, history, streak] = await Promise.all([
       api.GET('/api/progression'),
       api.GET('/api/workouts', { params: { query: { limit: 20 } } }),
+      api.GET('/api/streak').catch(() => ({ data: undefined })),
     ]);
 
     if (progression.data === undefined) {
@@ -99,6 +110,7 @@ export function usePlayerHome(): {
       progression: progression.data,
       workouts: history.data.workouts,
       hasMore: history.data.nextCursor !== null,
+      streak: streak.data ?? null,
     };
   }, []);
 
