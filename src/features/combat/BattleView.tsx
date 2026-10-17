@@ -45,6 +45,7 @@ import { IMPACT } from './camera.ts';
 import { DEFAULT_HERO, DEFAULT_OPPONENT, FighterSprite, type FighterArtwork } from './FighterSprite';
 import { Stage } from './Stage';
 import { enemyArtworkOf } from './enemyPresentation';
+import { BUNDLED_MOBS } from './bundledMobs';
 import { appearanceArtwork } from './appearances';
 import { useAppearances } from './useAppearances';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
@@ -118,7 +119,7 @@ export function BattleView({ battle, enemyArt, ...props }: {
     return {
       artwork: enemyArt ?? (battle.enemy.appearance
         ? opponent ?? { ...DEFAULT_OPPONENT, name: battle.enemy.name }
-        : enemyArtworkOf(battle.enemy)),
+        : enemyArtworkOf(battle.enemy, BUNDLED_MOBS)),
       hero: player ?? DEFAULT_HERO,
     };
   }, [catalog.data, battle, enemyArt, props.demo]);

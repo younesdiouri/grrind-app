@@ -1,8 +1,20 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { enemyArtworkOf } from './enemyPresentation.ts';
+import { enemyArtworkOf, type FighterArtwork } from './enemyPresentation.ts';
 
 describe('présentation de l’adversaire fournie par le serveur', () => {
+  const generated: FighterArtwork = { name: 'Référence de dessin', poses: {
+    idle: { uri: 'idle.png' }, attack: { uri: 'attack.png' }, hit: { uri: 'hit.png' },
+    dodge: { uri: 'dodge.png' }, critical: { uri: 'critical.png' }, combo: { uri: 'combo.png' }, replay: { uri: 'replay.png' },
+  } };
+  it('résout un pack généré par clé stable tout en conservant le nom et la réplique du serveur', () => {
+    const art = enemyArtworkOf({ key: 'PEBBLE', name: 'Nom traduit', imageUrls: null, introduction: 'Réplique traduite' }, { PEBBLE: generated });
+    assert.deepEqual(art, { ...generated, name: 'Nom traduit', introduction: 'Réplique traduite' });
+  });
+  it('ne prête pas le pack d’un mob à un joueur ou à une autre clé', () => {
+    assert.equal(enemyArtworkOf({ key: null, name: 'Joueur', imageUrls: null }, { PEBBLE: generated }), undefined);
+    assert.equal(enemyArtworkOf({ key: 'OTHER', name: 'Autre', imageUrls: null }, { PEBBLE: generated }), undefined);
+  });
   it('utilise les trois URLs du combat, indépendamment du nom ou de la clé', () => {
     const imageUrls = { idle: 'https://game.test/rest.png', attack: 'https://game.test/strike.png', hit: 'https://game.test/hurt.png' };
     assert.deepEqual(enemyArtworkOf({ name: 'Un autre adversaire', imageUrls }), {

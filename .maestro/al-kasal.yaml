@@ -17,11 +17,41 @@ tags:
 - extendedWaitUntil:
     visible: "Repos"
     timeout: 30000
+# Les deux packs publiés gardent leur identité sur les sept stances.
+- openLink: grrindapp-e2e://combat-demo?mob=pebble
+- extendedWaitUntil:
+    visible: "Cailloux dans la Chaussure"
+    timeout: 15000
+- takeScreenshot: pebble-idle
+- tapOn: "Attaque"
+- takeScreenshot: pebble-attack
+- tapOn: "Coup reçu"
+- takeScreenshot: pebble-hit
+- tapOn: "Critique"
+- takeScreenshot: pebble-critical
+- tapOn: "Esquive"
+- takeScreenshot: pebble-dodge
+- tapOn: "Combo"
+- takeScreenshot: pebble-combo
+- tapOn: "Relance"
+- takeScreenshot: pebble-replay
+- openLink: grrindapp-e2e://combat-demo
+- extendedWaitUntil:
+    visible: "Al-Kasal"
+    timeout: 15000
 - takeScreenshot: al-kasal-idle
 - tapOn: "Attaque"
 - takeScreenshot: al-kasal-attack
 - tapOn: "Coup reçu"
 - takeScreenshot: al-kasal-hit
+- tapOn: "Critique"
+- takeScreenshot: al-kasal-critical
+- tapOn: "Esquive"
+- takeScreenshot: al-kasal-dodge
+- tapOn: "Combo"
+- takeScreenshot: al-kasal-combo
+- tapOn: "Relance"
+- takeScreenshot: al-kasal-replay
 - tapOn: "Jouer une victoire"
 - extendedWaitUntil:
     visible: ".*Toucher pour combattre.*"
@@ -69,4 +99,5 @@ tags:
 - assertVisible: ".*Victoire.*"
 - tapOn:
     id: "battle-exit"
+- setOrientation: PORTRAIT
 - assertVisible: "Repos"
