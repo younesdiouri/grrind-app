@@ -121,6 +121,14 @@ tags:
     timeout: 10000
 - takeScreenshot: 06b-reward-loot
 
+# Un jour sportif a compté : la série a sa page, après le butin (#182).
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible: ".*SÉRIE.*JOURS.*"
+    timeout: 10000
+- takeScreenshot: 06c-reward-streak
+
 # La mise en scène a pris l'écran toute seule, et c'est la règle : `mayOpenReward` laisse
 # passer tant que personne n'a touché la coquille de l'app depuis le lancement. Le formulaire
 # de connexion vit **hors** de cette coquille — c'est pour ça qu'y taper ne compte pas, et que

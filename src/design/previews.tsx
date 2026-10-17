@@ -25,6 +25,7 @@ import { CharacterStatistics } from '@/components/CharacterStatistics';
 import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
+import { StreakMeter } from '@/components/StreakMeter';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { ToggleRow } from '@/components/ToggleRow';
@@ -585,6 +586,27 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="Il est porté">
           <TitleBadge name="Lève-tôt" />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'serie',
+    name: 'Série',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="De tête — la synchro vient d'allumer un jour">
+          <StreakMeter
+            state={{ startedOn: '2026-10-11', days: 7, weeksCompleted: 0, sportDaysInLast7: 5, nextChestRarity: 'COMMON' }}
+            fresh={1}
+            size="hero"
+          />
+        </Specimen>
+        <Specimen label="En ligne — deux semaines tenues">
+          <StreakMeter
+            state={{ startedOn: '2026-10-01', days: 17, weeksCompleted: 2, sportDaysInLast7: 6, nextChestRarity: 'EPIC' }}
+          />
         </Specimen>
       </>
     ),

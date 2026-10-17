@@ -23,7 +23,14 @@ export type BatchGains = {
   coins: { before: number; after: number };
   /** Non nul quand tout le lot a été crédité sans rapporter d'XP (la marche, #80). */
   noCredit: XpNoCreditReason | null;
+  /**
+   * La série, de l'état d'avant la première séance à celui d'après la dernière (#182).
+   * `null` quand aucun jour sportif n'a compté et qu'aucun coffre n'est tombé : rien n'a bougé.
+   */
+  streak: { before: StreakState; after: StreakState; chests: DroppedItem[] } | null;
 };
+
+type StreakState = RewardSummary['streak']['before'];
 
 const CREDITED = ['strength', 'endurance', 'mobility', 'dexterity'] as const;
 
@@ -41,6 +48,7 @@ export function batchGains(summary: SyncSummary): BatchGains {
       loot: [],
       coins: { before: 0, after: 0 },
       noCredit: null,
+      streak: null,
     };
   }
 
@@ -62,7 +70,16 @@ export function batchGains(summary: SyncSummary): BatchGains {
     loot: summary.imported.flatMap((workout) => workout.loot),
     coins: { before: first.coins.before, after: last.coins.after },
     noCredit: soleReason(summary),
+    streak: batchStreak(summary.imported),
   };
+}
+
+function batchStreak(imported: RewardSummary[]): BatchGains['streak'] {
+  const chests = imported.flatMap((workout) => workout.streak.chests);
+  if (!imported.some((workout) => workout.streak.dayCounted) && chests.length === 0) {
+    return null;
+  }
+  return { before: imported[0].streak.before, after: imported[imported.length - 1].streak.after, chests };
 }
 
 function soleReason(summary: SyncSummary): XpNoCreditReason | null {
