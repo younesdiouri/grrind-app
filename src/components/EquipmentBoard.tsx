@@ -7,6 +7,7 @@ import { ItemPlaceholder } from '@/components/ItemPlaceholder';
 import { SystemFrame } from '@/components/SystemFrame';
 import {
   color,
+  appearanceArt,
   equipmentSlotLabel,
   opacity,
   radius,
@@ -37,13 +38,13 @@ const placement: Record<EquipmentSlot, ViewStyle> = {
 /**
  * La doublure du combattant : le corps donne la carte, les sept cases donnent le geste.
  *
- * Les cases entourent l’avatar sans couvrir son visage, sa prise ou ses palmes.
+ * Avec un avatar équipé, les cases sont sous l’aperçu pour laisser sa prise et ses pieds visibles.
  * Le mannequin reste le repli des aperçus sans catalogue ; chaque case garde sa cible tactile.
  */
 export function EquipmentBoard({ equipment, selected, onSelect, avatar }: EquipmentBoardProps) {
   return (
-    <SystemFrame tier="hero" style={styles.frame} contentStyle={styles.board}>
-      {avatar ? <View style={StyleSheet.absoluteFill}>{avatar}</View> : <View style={styles.silhouette}>
+    <SystemFrame tier="hero" style={avatar ? undefined : styles.frame} contentStyle={styles.board}>
+      {avatar ? <View style={styles.avatar}>{avatar}</View> : <View style={styles.silhouette}>
         <Svg width="100%" height="100%" viewBox="0 0 180 350">
           <Circle cx="90" cy="29" r="21" fill={color.surfaceRaised} stroke={color.border} strokeWidth="2" />
           <Line x1="90" y1="51" x2="90" y2="177" stroke={color.border} strokeWidth="4" strokeLinecap="round" />
@@ -63,6 +64,7 @@ export function EquipmentBoard({ equipment, selected, onSelect, avatar }: Equipm
         </Svg>
       </View>}
 
+      <View style={avatar ? styles.slotGrid : StyleSheet.absoluteFill}>
       {(Object.keys(placement) as EquipmentSlot[]).map((slot) => {
         const line = equipment[slot];
         const active = selected === slot;
@@ -83,7 +85,7 @@ export function EquipmentBoard({ equipment, selected, onSelect, avatar }: Equipm
             disabled={onSelect === undefined}
             style={({ pressed }) => [
               styles.slot,
-              placement[slot],
+              avatar ? styles.gridSlot : placement[slot],
               { borderColor: active ? color.accent : tint },
               active && styles.slotActive,
               pressed && styles.pressed,
@@ -106,6 +108,7 @@ export function EquipmentBoard({ equipment, selected, onSelect, avatar }: Equipm
           </Pressable>
         );
       })}
+      </View>
     </SystemFrame>
   );
 }
@@ -116,6 +119,9 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
+  avatar: { height: appearanceArt.overviewHeight },
+  slotGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm, paddingBottom: space.sm },
+  gridSlot: { position: 'relative' },
   silhouette: {
     position: 'absolute',
     top: space.xl,

@@ -12,40 +12,14 @@ import { equipmentPlacement, type EquipmentArtwork, type FighterAttachments } fr
 export type { FighterArtwork } from './enemyPresentation';
 export { AL_KASAL } from './bundledMobs';
 
-/** Repli local : garde latérale orientée vers la droite (#187 / #189). */
-export const DEFAULT_HERO: FighterArtwork = {
-  name: 'Toi',
-  poses: {
-    idle: require('../../../assets/images/heroes/retro-strength/v1/back/idle.png'),
-    attack: require('../../../assets/images/heroes/retro-strength/v1/back/attack.png'),
-    hit: require('../../../assets/images/heroes/retro-strength/v1/back/hit.png'),
-    critical: require('../../../assets/images/heroes/retro-strength/v1/back/critical.png'),
-    dodge: require('../../../assets/images/heroes/retro-strength/v1/back/dodge.png'),
-    combo: require('../../../assets/images/heroes/retro-strength/v1/back/combo.png'),
-    replay: require('../../../assets/images/heroes/retro-strength/v1/back/replay.png'),
-  },
-};
-
-export const DEFAULT_OPPONENT: FighterArtwork = {
-  name: 'Muscu',
-  poses: {
-    idle: require('../../../assets/images/heroes/retro-strength/v1/front/idle.png'),
-    attack: require('../../../assets/images/heroes/retro-strength/v1/front/attack.png'),
-    hit: require('../../../assets/images/heroes/retro-strength/v1/front/hit.png'),
-    critical: require('../../../assets/images/heroes/retro-strength/v1/front/critical.png'),
-    dodge: require('../../../assets/images/heroes/retro-strength/v1/front/dodge.png'),
-    combo: require('../../../assets/images/heroes/retro-strength/v1/front/combo.png'),
-    replay: require('../../../assets/images/heroes/retro-strength/v1/front/replay.png'),
-  },
-};
-export const DEFAULT_RAID_HERO: FighterArtwork = {
-  name: 'Muscu',
-  poses: {
-    idle: require('../../../assets/images/heroes/retro-strength/v1/thumb/front/idle.png'),
-    attack: require('../../../assets/images/heroes/retro-strength/v1/thumb/front/attack.png'),
-    hit: require('../../../assets/images/heroes/retro-strength/v1/thumb/front/hit.png'),
-  },
-};
+/** Le repli utilise aussi une garde pieds nus ; les états sont animés sur l’ensemble équipé. */
+function guardArtwork(name: string, source: ImageSource): FighterArtwork {
+  return { name, poses: { idle: source, attack: source, hit: source, critical: source,
+    dodge: source, combo: source, replay: source } };
+}
+export const DEFAULT_HERO = guardArtwork('Toi', require('../../../assets/images/heroes/retro-strength/v2/back/idle.png'));
+export const DEFAULT_OPPONENT = guardArtwork('Muscu', require('../../../assets/images/heroes/retro-strength/v2/front/idle.png'));
+export const DEFAULT_RAID_HERO = guardArtwork('Muscu', require('../../../assets/images/heroes/retro-strength/v2/thumb/front/idle.png'));
 
 /** Les poses disponibles se chargent ensemble ; aucune source ne change au milieu d'un coup. */
 export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, beats, pose, signals, lateral = false, staticPreview = false, onReady, onError }: {
@@ -63,6 +37,7 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
   onError?: () => void;
 }) {
   const poses = staticPreview && pose ? [pose] : Object.keys(artwork.poses) as FighterPose[];
+  const sharedGuard = poses.every((entry) => JSON.stringify(artwork.poses[entry]) === JSON.stringify(artwork.poses[poses[0]]));
   const wearables = equipment.filter((item) => artwork.attachments?.[item.attachment]);
   const foregroundPoses = wearables.length ? poses.filter((entry) => artwork.foreground?.[entry]) : [];
   const loaded = useRef(new Set<string>());
@@ -128,7 +103,9 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
             selected={pose} motion={motion} onLoad={() => ready(item.key)}
             onError={() => { setEquipmentFailed((failed) => new Set([...failed, item.key])); ready(item.key); }} />
         ))}
-        {poses.map((candidate) => (
+        {sharedGuard ? <Image source={artwork.poses[poses[0]]} style={StyleSheet.absoluteFill} contentFit="contain"
+          enforceEarlyResizing transition={0} cachePolicy="memory-disk" onError={fail}
+          onLoad={() => poses.forEach(ready)} accessible={false} /> : poses.map((candidate) => (
           <PoseLayer key={candidate} source={artwork.poses[candidate]!} candidate={candidate}
             selected={pose} motion={motion} onError={fail}
             onLoad={() => ready(candidate)} />

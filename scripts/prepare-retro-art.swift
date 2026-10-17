@@ -65,18 +65,20 @@ func save(_ image: CGImage, _ path: String, scale: Int = 1) {
     guard CGImageDestinationFinalize(writer) else { fail("PNG incomplet") }
 }
 guard CommandLine.arguments.count == 4 else {
-    fail("Usage : swift scripts/prepare-retro-art.swift avatar|item SOURCE DESTINATION")
+    fail("Usage : swift scripts/prepare-retro-art.swift avatar|guard|item SOURCE DESTINATION")
 }
 let mode=CommandLine.arguments[1], input=CommandLine.arguments[2], output=CommandLine.arguments[3]
 guard URL(fileURLWithPath:input).standardizedFileURL != URL(fileURLWithPath:output).standardizedFileURL else { fail("Conserver les sources") }
-if mode == "avatar" {
-    let images=poses.map { load(input+"/"+$0+".png") }
+if mode == "avatar" || mode == "guard" {
+    // La garde commune supprime les raccords entre mains/pieds redessinés indépendamment.
+    let exportedPoses = mode == "guard" ? ["idle"] : poses
+    let images=exportedPoses.map { load(mode == "guard" ? input : input+"/"+$0+".png") }
     guard images.allSatisfy({ $0.width == $0.height && $0.width == images[0].width }) else { fail("Les sept sources doivent partager un canevas carré") }
     let boxes=images.map(bounds), size=256.0, baseline=233.0
     let scale=min(size/Double(images[0].width),240.0/boxes.map({$0.width}).max()!,225.0/boxes.map({$0.height}).max()!)
     let horizontal=(size-Double(images[0].width)*scale)/2
     var layout:[String:[String:Double]]=[:]
-    for (index,pose) in poses.enumerated() {
+    for (index,pose) in exportedPoses.enumerated() {
         let top=baseline+1-boxes[index].maxY*scale
         let canvas=context(256,256)
         canvas.draw(images[index],in:CGRect(x:horizontal,y:size-top-Double(images[index].height)*scale,
@@ -89,7 +91,7 @@ if mode == "avatar" {
     }
     let json=try! JSONSerialization.data(withJSONObject:layout,options:[.prettyPrinted,.sortedKeys])
     try! json.write(to:URL(fileURLWithPath:output+"/layout.json"))
-    print("7 poses, 2 orientations, PNG 512 et miniatures 256 : "+output)
+    print("\(exportedPoses.count) garde(s), 2 orientations, PNG 512 et miniatures 256 : "+output)
 } else if mode == "item" {
     let image=load(input),box=bounds(image)
     let maxSide=128.0,scale=min(1,maxSide/max(box.width,box.height))

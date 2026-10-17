@@ -1,0 +1,66 @@
+{
+  "tool": "built-in image_gen",
+  "construction": "One bare-foot guard per identity, shared by seven combat states; weapon behind closed fist.",
+  "records": [
+    {
+      "key": "strength",
+      "prompt": "Use case: precise-object-edit.\nAsset: GRRIND production combat avatar master, transparent background.\nImage 1 is edit target and approved pixel-art identity/style. Preserve this brown-skinned muscular man, short dark hair, grey tank and charcoal shorts, restrained retro RPG pixel art, selective outlines and warm palette.\nChange only construction of his stance for modular equipment: BOTH FEET COMPLETELY BARE, natural compact bare feet, no shoes, socks, wraps, soles or footwear of any kind. Keep stance slightly bent and balanced, left foot points to image left and right foot points image right, both fully visible.\nWeapon arm: on the viewer RIGHT, lower upper arm beside ribs, elbow bent so forearm extends out to the right, with a SINGLE simple clean CLOSED FIST at outer silhouette, knuckles viewed from the side, thumb wrapped over fingers, vertical hammer grip for a vertical dumbbell bar. Fist must be well outside the torso, with clear transparent space immediately above and below it. Forearm enters fist horizontally from left. The hand has ordinary anatomy, no gripping object drawn in it. Other hand stays raised guarding torso.\nFace looks toward image right. Entire figure centered fully in frame including bare feet and fist, 10% transparent margin. No weapon, no headgear, no belt, no effects, no shadows, no text. Match original detail level, do not add realism or cartoon features. This single stable guard will be used for every combat state; gripping hand and feet must be clearly and simply constructed.",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v1/back/idle.png"
+      ]
+    },
+    {
+      "key": "runner",
+      "prompt": "Use case: identity-preserve. Production transparent pixel-art RPG sprite for GRRIND.\nImage 1: pose/construction master. Image 2: runner identity reference.\nCreate ONE full-body athletic brown-skinned woman with dark high ponytail, lean runner build, grey tank and charcoal shorts matching image2. Preserve image2 identity, gender, hair and face. Use exactly image1's stable modular combat guard: feet apart slightly bent, BARE FEET with leftmost foot pointing toward viewer and rightmost foot in side profile pointing image right, both on same baseline. No footwear at all. Rightmost elbow bent with forearm almost horizontal, clean closed fist outside torso at lower chest level, simple knuckles and thumb closed over fingers, vertical hammer grip with transparent clearance ABOVE and BELOW fist. Other fist guards chest. Face looks right.\nMatch image1 pixel-art density, selective dark outlines, limited flat shaded palette, no realism. Same camera and framing, fully visible hands and feet, transparent margin. No objects, shoes, socks, gloves, weapon, headgear, effects, floor, shadow or text. Keep limbs natural, no muscu man's bulk.",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/runner/v1/back/idle.png"
+      ]
+    },
+    {
+      "key": "climber",
+      "prompt": "Use case: identity-preserve. ONE production transparent pixel-art RPG sprite for GRRIND.\nImage 1: pose and construction master. Image 2: climber identity reference.\nCreate one pale-skinned adult ginger-haired male climber with short messy red hair, wiry athletic build distinctly leaner than image1, grey tank and charcoal shorts. Preserve image2 identity and face while making arms lean, not bodybuilder.\nUse precisely image1's modular combat guard: feet apart slightly bent, BARE FEET, leftmost foot points toward viewer and rightmost foot side profile points image right, same baseline. No footwear at all. Rightmost elbow bent with forearm horizontal, clean closed fist OUTSIDE torso at lower chest level, thumb closed over fingers in vertical hammer grip, transparent clearance above and below fist. Other fist guards chest. Face looks right. Keep feet and weapon-hand placement comparable to master.\nMatch restrained pixel-art density and selective outlines, limited flat shaded palette. Full body fully visible in square transparent canvas with margin. No shoes, socks, gloves, weapon, headgear, belts, accessories, effects, floor, shadow or text.",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/climber/v1/back/idle.png"
+      ]
+    },
+    {
+      "key": "swimmer",
+      "prompt": "Use case: identity-preserve. ONE production transparent pixel-art RPG sprite for GRRIND.\nImage 1: pose/construction master. Image 2: swimmer identity reference.\nCreate ONE tan-skinned adult woman swimmer with dark brown hair in compact bun, broad shoulders, strong athletic female build, grey tank and charcoal shorts. Preserve image2 identity, face and feminine silhouette.\nUse image1's stable modular combat guard: feet apart slightly bent, BARE FEET with leftmost foot pointing toward viewer and rightmost foot side profile pointing image right, same baseline. No footwear. Rightmost elbow bent with forearm horizontal, simple clean closed fist outside torso at lower chest level, thumb closed over fingers in vertical hammer grip, transparent clearance ABOVE and BELOW fist. Other fist guards chest. Face looks right.\nMatch pixel-art density and selective dark outlines, few flat shading values, no realism or extra detail. Full body fully visible in square transparent canvas with margin. No shoes, socks, gloves, weapon, headgear, belts, accessories, effects, floor, shadows or text.",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v2/back/idle.png",
+        "../grrind/public/artwork/avatars/swimmer/v1/back/idle.png"
+      ]
+    },
+    {
+      "key": "dumbbell",
+      "prompt": "Use case: precise-object-edit. GRRIND modular weapon overlay on true transparent background.\nImage1: existing Haltère ego, identity/material reference.\nRedesign orientation for a CLEAN VERTICAL hammer grip: compact blue steel dumbbell with two chunky matching round plate stacks, one at TOP, one at BOTTOM, connected by a narrow straight VERTICAL brown handle centered between them. Camera shows round plate faces obliquely, chunky retro RPG pixel art matching reference. Dumbbell must be symmetrical top/bottom in silhouette and have a generous unobstructed central handle gap for a fist to occlude it. Keep total height about 2.6 times width, each stack thickness about 20% of height, handle gap about 45% of height. Whole dumbbell clearly visible, center x=.5 handle middle y=.5.\nThis asset is drawn BEHIND an avatar closed fist: no hand, no body, no wrist drawn. No diagonal handle, no horizontal dumbbell, no extra parts, no effects, no text, no shadow. Large simple pixel clusters, restrained steel blue and gold accents, readable at 30px wide.",
+      "referenceExports": [
+        "../grrind/public/artwork/items/dumbbell/v1/back.png"
+      ]
+    },
+    {
+      "key": "flipper-side",
+      "prompt": "Use case: precise-object-edit. GRRIND equipment overlay, one swim fin, true transparent background.\nImage1: old yellow fin, STYLE/color reference only; replace its open shoe construction.\nCreate ONE yellow short swim fin for the avatar's RIGHTMOST foot, strict SIDE PROFILE pointing image RIGHT, heel on left and toe/blade on right. A closed dark navy neoprene ankle boot/foot pocket entirely encloses heel, toes and instep, yellow rubber structure around lower foot, ankle cuff rising at LEFT end, compact yellow fin blade extending horizontally from toe toward right. The cuff is the attachment point (roughly x=.23 y=.28); no visible hole on top, no empty open toe, NO skin, no bare foot, no leg. Make the neoprene upper tall and opaque enough to cover a bare foot completely. Single simple closed silhouette, 2.3x wider than tall, natural resting flat on ground. Inspired by sporty retro RPG loot, bold yellow and navy, simple pixel clusters, no text, effects, floating buckles or shadows.",
+      "referenceExports": [
+        "../grrind/public/artwork/items/flipper/v1/back.png"
+      ]
+    },
+    {
+      "key": "flipper-facing",
+      "prompt": "Use case: precise-object-edit. ONE GRRIND swim fin equipment overlay, transparent background.\nImage1 is exact matching item design/color/style. Create the SAME yellow and navy short swim fin viewed DIRECTLY FROM THE FRONT, the wearer points toes toward camera/viewer, not sideways. It must match a foot facing camera on a retro RPG sprite.\nA short opaque dark navy neoprene ankle cuff at top-center, closed foot pocket around all the foot, broad yellow rubber fin blade below extending toward viewer, foreshortened wide rounded trapezoid. Symmetrical around x=.5, ankle at x=.5 y=.22, cuff opening represented by one dark top seam only. Navy boot pocket entirely encloses skin and toes. One fin, no pair, no foot, no skin, no leg. Whole fin fully visible, compact slightly wider than tall silhouette, no long flipper, no shoe laces, no text/effects/shadow. Same simple pixel clusters, restrained detail and materials as reference.",
+      "referenceExports": [
+        "../grrind/public/artwork/items/flipper-side/v2/back.png"
+      ]
+    },
+    {
+      "key": "cape",
+      "prompt": "Use case: stylized-concept. ONE production RPG cape item overlay for GRRIND, true transparent background.\nImage1 supplies pixel-art style and the actual avatar guard onto which the cape will be layered BEHIND the body. Do NOT draw any person.\nDraw a sporty warm-up towel worn as a SHORT CAPE, terracotta/rust red cotton cloth with a single cream hem stripe, simple large folds, retro RPG pixel art with selective dark outline and same density as avatar. Cape viewed in 3/4 side view for a character facing RIGHT. Top is a compact draped shoulder yoke at upper RIGHT, cloth descends and gently fans toward LEFT behind the wearer's back to just below shorts / mid-thigh. Compact silhouette, no windblast or huge flutter. Top attachment at x=.72 y=.08, top edge slopes from left shoulder to right neck. Keep rightmost boundary mostly vertical with slight folds; cream hem at lower edge. Entire image fully visible on transparent canvas, no body, no hands, no head, no brooch hovering, no extra straps in front, no text, no effects, no ground or shadow. Must look physically supported by shoulders when layered behind torso.",
+      "referenceExports": [
+        "../grrind/public/artwork/avatars/strength/v2/back/idle.png"
+      ]
+    }
+  ],
+  "referenceNote": "Paths relative to the client repository root. These are versioned mechanical exports; the original full-resolution ImageGen references are retained locally under artifacts/artwork-v2/source/."
+}

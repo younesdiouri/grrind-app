@@ -95,7 +95,7 @@ function guildMember(
   return {
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'Sam Petit',
-    appearance: 'STRENGTH_V1',
+    appearance: 'STRENGTH_V2',
     registeredAt: '2025-11-02T00:00:00Z',
     level: 7,
     xpIntoLevel: 340,

@@ -31,40 +31,40 @@ tags:
     id: "tab-reglages"
 - scrollUntilVisible:
     element:
-      id: hero-STRENGTH_V1
+      id: hero-STRENGTH_V2
     direction: DOWN
 - tapOn:
-    id: hero-STRENGTH_V1
+    id: hero-STRENGTH_V2
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
     timeout: 15000
 - scrollUntilVisible:
     element:
-      id: hero-RUNNER_V1
+      id: hero-RUNNER_V2
     direction: UP
 - tapOn:
-    id: hero-RUNNER_V1
+    id: hero-RUNNER_V2
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
     timeout: 15000
 - scrollUntilVisible:
     element:
-      id: hero-CLIMBER_V1
+      id: hero-CLIMBER_V2
     direction: UP
 - tapOn:
-    id: hero-CLIMBER_V1
+    id: hero-CLIMBER_V2
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
     timeout: 15000
 - scrollUntilVisible:
     element:
-      id: hero-SWIMMER_V1
+      id: hero-SWIMMER_V2
     direction: UP
 - tapOn:
-    id: hero-SWIMMER_V1
+    id: hero-SWIMMER_V2
 - scrollUntilVisible:
     element: Apparence enregistrée
     direction: DOWN
@@ -88,10 +88,10 @@ tags:
     id: art-item-PURSUIT_GOGGLES
 - scrollUntilVisible:
     element:
-      id: art-item-QUIET_STRENGTH_BELT
+      id: art-item-TRAVELERS_CLOAK
     direction: DOWN
 - tapOn:
-    id: art-item-QUIET_STRENGTH_BELT
+    id: art-item-TRAVELERS_CLOAK
 - scrollUntilVisible:
     element:
       id: art-item-ACADEMIC_FLIPPERS
@@ -100,32 +100,32 @@ tags:
     id: art-item-ACADEMIC_FLIPPERS
 - scrollUntilVisible:
     element:
-      id: art-avatar-STRENGTH_V1
+      id: art-avatar-STRENGTH_V2
     direction: UP
 - tapOn:
-    id: art-avatar-STRENGTH_V1
-- takeScreenshot: retro-STRENGTH_V1-equipped
+    id: art-avatar-STRENGTH_V2
+- takeScreenshot: retro-STRENGTH_V2-equipped
 - scrollUntilVisible:
     element:
-      id: art-avatar-RUNNER_V1
+      id: art-avatar-RUNNER_V2
     direction: UP
 - tapOn:
-    id: art-avatar-RUNNER_V1
-- takeScreenshot: retro-RUNNER_V1-equipped
+    id: art-avatar-RUNNER_V2
+- takeScreenshot: retro-RUNNER_V2-equipped
 - scrollUntilVisible:
     element:
-      id: art-avatar-CLIMBER_V1
+      id: art-avatar-CLIMBER_V2
     direction: UP
 - tapOn:
-    id: art-avatar-CLIMBER_V1
-- takeScreenshot: retro-CLIMBER_V1-equipped
+    id: art-avatar-CLIMBER_V2
+- takeScreenshot: retro-CLIMBER_V2-equipped
 - scrollUntilVisible:
     element:
-      id: art-avatar-SWIMMER_V1
+      id: art-avatar-SWIMMER_V2
     direction: UP
 - tapOn:
-    id: art-avatar-SWIMMER_V1
-- takeScreenshot: retro-SWIMMER_V1-equipped
+    id: art-avatar-SWIMMER_V2
+- takeScreenshot: retro-SWIMMER_V2-equipped
 - scrollUntilVisible:
     element:
       text: Vers la droite
@@ -247,11 +247,16 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - takeScreenshot: retro-equipped-battle
 - tapOn: Passer
+# Le scénario court peut finir pendant le tap : le toucher de fin revient déjà à l’atelier.
 - extendedWaitUntil:
-    visible:
-      id: battle-exit
+    visible: "Touche pour revenir|Avatars sportifs"
     timeout: 10000
-- tapOn:
-    id: battle-exit
+- runFlow:
+    when:
+      visible:
+        id: battle-exit
+    commands:
+      - tapOn:
+          id: battle-exit
 - setOrientation: PORTRAIT
 - assertVisible: Avatars sportifs
