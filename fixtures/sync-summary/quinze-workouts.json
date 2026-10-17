@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-30T22:15:52+00:00",
+  "syncedAt": "2026-10-17T08:00:11+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054be-4a77-7c03-a442-99eba8627dd8",
+        "id": "01a148e0-244e-7713-8fcf-5ecd8f94d778",
         "discipline": "HIKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-15T22:15:52+00:00",
-        "endedAt": "2026-08-15T23:45:52+00:00",
+        "startedAt": "2026-10-02T08:00:11+00:00",
+        "endedAt": "2026-10-02T09:30:11+00:00",
         "durationSeconds": 5400,
         "distanceMeters": 9000,
         "calories": null,
@@ -83,7 +83,7 @@
           "name": "Premiers pas",
           "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:15:52+00:00",
+          "unlockedAt": "2026-10-17T08:00:11+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -93,42 +93,62 @@
       ],
       "loot": [
         {
-          "key": "WORN_RUNNING_SHOES",
-          "name": "Baskets usées",
-          "rarity": "COMMON",
-          "slot": "FEET",
+          "key": "TRAVELERS_CLOAK",
+          "kind": "EQUIPMENT",
+          "name": "Cape du voyageur",
+          "rarity": "UNCOMMON",
+          "slot": "CHEST",
           "modifiers": [
             {
               "type": "XP_MULTIPLIER",
-              "value": 5,
-              "discipline": "RUNNING"
+              "value": 8,
+              "discipline": null
             },
             {
-              "type": "MOBILITY_BONUS",
-              "value": 1000,
+              "type": "ENDURANCE_BONUS",
+              "value": 1200,
               "discipline": null
             }
           ],
-          "priceCoins": 30
+          "priceCoins": 80,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
         }
       ],
       "coins": {
-        "gained": 9,
+        "gained": 10,
         "before": 0,
-        "after": 9
+        "after": 10
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-02",
+        "dayCounted": true,
+        "before": {
+          "startedOn": null,
+          "days": 0,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 0,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 1,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 1,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4a87-77e4-8816-3c216c641658",
+        "id": "01a148e0-2461-7395-a57e-4f54cb1b02cf",
         "discipline": "MOBILITY",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-16T22:15:52+00:00",
-        "endedAt": "2026-08-16T22:45:52+00:00",
+        "startedAt": "2026-10-03T08:00:11+00:00",
+        "endedAt": "2026-10-03T08:30:11+00:00",
         "durationSeconds": 1800,
         "distanceMeters": null,
         "calories": null,
@@ -188,22 +208,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 5,
-        "before": 9,
-        "after": 14
+        "gained": 6,
+        "before": 10,
+        "after": 16
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-03",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 2,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 1,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 2,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 2,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4a8e-7dc7-ab19-331e9336e2e7",
+        "id": "01a148e0-2468-7026-9375-2108ddb5b5b8",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-17T22:15:52+00:00",
-        "endedAt": "2026-08-17T23:05:52+00:00",
+        "startedAt": "2026-10-04T08:00:11+00:00",
+        "endedAt": "2026-10-04T08:50:11+00:00",
         "durationSeconds": 3000,
         "distanceMeters": null,
         "calories": null,
@@ -259,24 +297,64 @@
         "skillPointsGranted": 0
       },
       "titlesUnlocked": [],
-      "loot": [],
+      "loot": [
+        {
+          "key": "WORN_RUNNING_SHOES",
+          "kind": "EQUIPMENT",
+          "name": "Baskets usées",
+          "rarity": "COMMON",
+          "slot": "FEET",
+          "modifiers": [
+            {
+              "type": "XP_MULTIPLIER",
+              "value": 5,
+              "discipline": "RUNNING"
+            },
+            {
+              "type": "MOBILITY_BONUS",
+              "value": 1000,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 30,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
+        }
+      ],
       "coins": {
-        "gained": 15,
-        "before": 14,
-        "after": 29
+        "gained": 9,
+        "before": 16,
+        "after": 25
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-04",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 3,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 2,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 3,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 3,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4a94-7dd9-8c57-ec0d8c045779",
+        "id": "01a148e0-246f-74df-952e-20b7b7be3414",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-18T22:15:52+00:00",
-        "endedAt": "2026-08-18T23:30:52+00:00",
+        "startedAt": "2026-10-05T08:00:11+00:00",
+        "endedAt": "2026-10-05T09:15:11+00:00",
         "durationSeconds": 4500,
         "distanceMeters": 35000,
         "calories": null,
@@ -344,22 +422,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 11,
-        "before": 29,
-        "after": 40
+        "gained": 7,
+        "before": 25,
+        "after": 32
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-05",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 4,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 3,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 4,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 4,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4a9a-7a6a-951e-4f5033f6907a",
+        "id": "01a148e0-2475-7ee0-9cdc-510bb99e76e7",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-19T22:15:52+00:00",
-        "endedAt": "2026-08-19T23:00:52+00:00",
+        "startedAt": "2026-10-06T08:00:11+00:00",
+        "endedAt": "2026-10-06T08:45:11+00:00",
         "durationSeconds": 2700,
         "distanceMeters": 7000,
         "calories": null,
@@ -421,22 +517,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 6,
-        "before": 40,
-        "after": 46
+        "gained": 9,
+        "before": 32,
+        "after": 41
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-06",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 5,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 4,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 5,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 5,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4aa0-772a-b743-cb599e897687",
+        "id": "01a148e0-247d-760f-941c-f68b4aa6df46",
         "discipline": "HIKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-20T22:15:52+00:00",
-        "endedAt": "2026-08-20T23:45:52+00:00",
+        "startedAt": "2026-10-07T08:00:11+00:00",
+        "endedAt": "2026-10-07T09:30:11+00:00",
         "durationSeconds": 5400,
         "distanceMeters": 9000,
         "calories": null,
@@ -511,7 +625,7 @@
           "name": "Apprenti",
           "hint": "Atteins le niveau 5",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:15:52+00:00",
+          "unlockedAt": "2026-10-17T08:00:11+00:00",
           "progress": {
             "current": 5,
             "target": 5,
@@ -521,22 +635,51 @@
       ],
       "loot": [],
       "coins": {
-        "gained": 32,
-        "before": 46,
-        "after": 78
+        "gained": 29,
+        "before": 41,
+        "after": 70
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-07",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 6,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 5,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 6,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "chests": [
+          {
+            "key": "WOODEN_CHEST",
+            "kind": "CHEST",
+            "name": "Coffre en bois",
+            "rarity": "COMMON",
+            "slot": null,
+            "modifiers": [],
+            "priceCoins": 50,
+            "imageUrl": "http://localhost:8080/game-images/placeholder.png"
+          }
+        ]
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4aa6-7997-815a-1681fd967649",
+        "id": "01a148e0-2487-79d5-b9d8-914944b4b875",
         "discipline": "MOBILITY",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-21T22:15:52+00:00",
-        "endedAt": "2026-08-21T22:45:52+00:00",
+        "startedAt": "2026-10-08T08:00:11+00:00",
+        "endedAt": "2026-10-08T08:30:11+00:00",
         "durationSeconds": 1800,
         "distanceMeters": null,
         "calories": null,
@@ -594,22 +737,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 15,
-        "before": 78,
-        "after": 93
+        "gained": 9,
+        "before": 70,
+        "after": 79
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-08",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 7,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 7,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "RARE"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4aad-7ba3-8979-e33e90677c9b",
+        "id": "01a148e0-248e-709a-8497-2ea2cf25d788",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-22T22:15:52+00:00",
-        "endedAt": "2026-08-22T23:05:52+00:00",
+        "startedAt": "2026-10-09T08:00:11+00:00",
+        "endedAt": "2026-10-09T08:50:11+00:00",
         "durationSeconds": 3000,
         "distanceMeters": null,
         "calories": null,
@@ -667,22 +828,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 26,
-        "before": 93,
-        "after": 119
+        "gained": 33,
+        "before": 79,
+        "after": 112
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-09",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 8,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 8,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "RARE"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4ab3-789c-83fe-eb51c1f29a33",
+        "id": "01a148e0-2495-7947-918f-d32a367ba150",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-23T22:15:52+00:00",
-        "endedAt": "2026-08-23T23:30:52+00:00",
+        "startedAt": "2026-10-10T08:00:11+00:00",
+        "endedAt": "2026-10-10T09:15:11+00:00",
         "durationSeconds": 4500,
         "distanceMeters": 35000,
         "calories": null,
@@ -746,24 +925,64 @@
         "skillPointsGranted": 0
       },
       "titlesUnlocked": [],
-      "loot": [],
+      "loot": [
+        {
+          "key": "LUCKY_RABBIT_CHARM",
+          "kind": "EQUIPMENT",
+          "name": "Grigri du lapin porte-bonheur",
+          "rarity": "UNCOMMON",
+          "slot": "ACCESSORY",
+          "modifiers": [
+            {
+              "type": "LOOT_LUCK",
+              "value": 10,
+              "discipline": null
+            },
+            {
+              "type": "DODGE_BONUS",
+              "value": 18,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 90,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
+        }
+      ],
       "coins": {
-        "gained": 34,
-        "before": 119,
-        "after": 153
+        "gained": 16,
+        "before": 112,
+        "after": 128
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-10",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 9,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 9,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "RARE"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4aba-700a-a657-3188feee7817",
+        "id": "01a148e0-249e-751a-b521-17dfc6839d40",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-24T22:15:52+00:00",
-        "endedAt": "2026-08-24T23:00:52+00:00",
+        "startedAt": "2026-10-11T08:00:11+00:00",
+        "endedAt": "2026-10-11T08:45:11+00:00",
         "durationSeconds": 2700,
         "distanceMeters": 7000,
         "calories": null,
@@ -827,22 +1046,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 18,
-        "before": 153,
-        "after": 171
+        "gained": 34,
+        "before": 128,
+        "after": 162
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-11",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 10,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 10,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "RARE"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4ac0-7db4-9045-ab1f612c2388",
+        "id": "01a148e0-24a6-7190-95ea-1c44cdda5571",
         "discipline": "HIKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-25T22:15:52+00:00",
-        "endedAt": "2026-08-25T23:45:52+00:00",
+        "startedAt": "2026-10-12T08:00:11+00:00",
+        "endedAt": "2026-10-12T09:30:11+00:00",
         "durationSeconds": 5400,
         "distanceMeters": 9000,
         "calories": null,
@@ -912,22 +1149,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 21,
-        "before": 171,
-        "after": 192
+        "gained": 31,
+        "before": 162,
+        "after": 193
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-12",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 11,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 11,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "RARE"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4ac7-7147-860f-5246449eee9c",
+        "id": "01a148e0-24ae-7694-9072-487599292e3c",
         "discipline": "MOBILITY",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-26T22:15:52+00:00",
-        "endedAt": "2026-08-26T22:45:52+00:00",
+        "startedAt": "2026-10-13T08:00:11+00:00",
+        "endedAt": "2026-10-13T08:30:11+00:00",
         "durationSeconds": 1800,
         "distanceMeters": null,
         "calories": null,
@@ -985,22 +1240,40 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 15,
-        "before": 192,
-        "after": 207
+        "gained": 13,
+        "before": 193,
+        "after": 206
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-13",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 12,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 12,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "RARE"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4acd-7ee0-9ff7-c602a6022c49",
+        "id": "01a148e0-24b6-7f05-a235-681a683b8c46",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-27T22:15:52+00:00",
-        "endedAt": "2026-08-27T23:05:52+00:00",
+        "startedAt": "2026-10-14T08:00:11+00:00",
+        "endedAt": "2026-10-14T08:50:11+00:00",
         "durationSeconds": 3000,
         "distanceMeters": null,
         "calories": null,
@@ -1058,25 +1331,76 @@
         "skillPointsGranted": 1
       },
       "titlesUnlocked": [],
-      "loot": [],
+      "loot": [
+        {
+          "key": "LUCKY_RABBIT_CHARM",
+          "kind": "EQUIPMENT",
+          "name": "Grigri du lapin porte-bonheur",
+          "rarity": "UNCOMMON",
+          "slot": "ACCESSORY",
+          "modifiers": [
+            {
+              "type": "LOOT_LUCK",
+              "value": 10,
+              "discipline": null
+            },
+            {
+              "type": "DODGE_BONUS",
+              "value": 18,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 90,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
+        }
+      ],
       "coins": {
-        "gained": 20,
-        "before": 207,
-        "after": 227
+        "gained": 24,
+        "before": 206,
+        "after": 230
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-14",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 13,
+          "weeksCompleted": 1,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "RARE"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 13,
+          "weeksCompleted": 2,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "EPIC"
+        },
+        "chests": [
+          {
+            "key": "IRON_BOUND_CHEST",
+            "kind": "CHEST",
+            "name": "Coffre cerclé de fer",
+            "rarity": "RARE",
+            "slot": null,
+            "modifiers": [],
+            "priceCoins": 160,
+            "imageUrl": "http://localhost:8080/game-images/placeholder.png"
+          }
+        ]
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4ad4-74bf-a88a-831564534d0a",
+        "id": "01a148e0-24c1-7ad0-b622-19bc0eaa7a1c",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-28T22:15:51+00:00",
-        "endedAt": "2026-08-28T23:30:52+00:00",
-        "durationSeconds": 4501,
+        "startedAt": "2026-10-15T08:00:11+00:00",
+        "endedAt": "2026-10-15T09:15:11+00:00",
+        "durationSeconds": 4500,
         "distanceMeters": 35000,
         "calories": null,
         "elevationGainMeters": null,
@@ -1139,24 +1463,69 @@
         "skillPointsGranted": 0
       },
       "titlesUnlocked": [],
-      "loot": [],
+      "loot": [
+        {
+          "key": "SWIFT_TRAIL_LEGGINGS",
+          "kind": "EQUIPMENT",
+          "name": "Jambières de sentier véloce",
+          "rarity": "RARE",
+          "slot": "LEGS",
+          "modifiers": [
+            {
+              "type": "XP_MULTIPLIER",
+              "value": 10,
+              "discipline": "HIKING"
+            },
+            {
+              "type": "LOOT_LUCK",
+              "value": 5,
+              "discipline": null
+            },
+            {
+              "type": "COMBO_BONUS",
+              "value": 28,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 180,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
+        }
+      ],
       "coins": {
         "gained": 34,
-        "before": 227,
-        "after": 261
+        "before": 230,
+        "after": 264
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-15",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 14,
+          "weeksCompleted": 2,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "EPIC"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 14,
+          "weeksCompleted": 2,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "EPIC"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4adb-71ab-9fca-9eed78146bb5",
+        "id": "01a148e0-24cb-7ba2-ad67-b3e25252c25d",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-29T22:15:51+00:00",
-        "endedAt": "2026-08-29T23:00:51+00:00",
+        "startedAt": "2026-10-16T08:00:11+00:00",
+        "endedAt": "2026-10-16T08:45:11+00:00",
         "durationSeconds": 2700,
         "distanceMeters": 7000,
         "calories": null,
@@ -1218,33 +1587,53 @@
       "titlesUnlocked": [],
       "loot": [
         {
-          "key": "TEMPERED_HEADBAND",
-          "name": "Bandeau trempé",
-          "rarity": "RARE",
-          "slot": "HEAD",
+          "key": "LUCKY_RABBIT_CHARM",
+          "kind": "EQUIPMENT",
+          "name": "Grigri du lapin porte-bonheur",
+          "rarity": "UNCOMMON",
+          "slot": "ACCESSORY",
           "modifiers": [
             {
-              "type": "XP_MULTIPLIER",
-              "value": 12,
+              "type": "LOOT_LUCK",
+              "value": 10,
               "discipline": null
             },
             {
-              "type": "DEXTERITY_BONUS",
-              "value": 2400,
+              "type": "DODGE_BONUS",
+              "value": 18,
               "discipline": null
             }
           ],
-          "priceCoins": 180
+          "priceCoins": 90,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
         }
       ],
       "coins": {
-        "gained": 33,
-        "before": 261,
-        "after": 294
+        "gained": 26,
+        "before": 264,
+        "after": 290
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-16",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-02",
+          "days": 15,
+          "weeksCompleted": 2,
+          "sportDaysInLast7": 6,
+          "nextChestRarity": "EPIC"
+        },
+        "after": {
+          "startedOn": "2026-10-02",
+          "days": 15,
+          "weeksCompleted": 2,
+          "sportDaysInLast7": 7,
+          "nextChestRarity": "EPIC"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     }
   ],
   "skipped": [],
@@ -1256,5 +1645,5 @@
     "xpAwarded": 1797,
     "workoutCount": 15
   },
-  "rulesetVersion": "v1-067495ed37f5"
+  "rulesetVersion": "v1-038e963146f3"
 }

@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-30T22:15:51+00:00",
+  "syncedAt": "2026-10-17T08:00:10+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054be-47ff-7512-a1f4-2c945999a361",
+        "id": "01a148e0-21c9-751d-800e-a4ccccc963bd",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-25T22:15:51+00:00",
-        "endedAt": "2026-08-25T23:15:51+00:00",
+        "startedAt": "2026-10-12T08:00:10+00:00",
+        "endedAt": "2026-10-12T09:00:10+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 10000,
         "calories": null,
@@ -75,7 +75,7 @@
           "name": "Premiers pas",
           "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:15:51+00:00",
+          "unlockedAt": "2026-10-17T08:00:10+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -85,22 +85,40 @@
       ],
       "loot": [],
       "coins": {
-        "gained": 9,
+        "gained": 8,
         "before": 0,
-        "after": 9
+        "after": 8
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-12",
+        "dayCounted": true,
+        "before": {
+          "startedOn": null,
+          "days": 0,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 0,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-12",
+          "days": 1,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 1,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-480d-7886-a900-63c00a9c3a33",
+        "id": "01a148e0-21d6-7392-af3f-6946c9c6b202",
         "discipline": "CYCLING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-27T22:15:51+00:00",
-        "endedAt": "2026-08-27T23:15:51+00:00",
+        "startedAt": "2026-10-14T08:00:10+00:00",
+        "endedAt": "2026-10-14T09:00:10+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 30000,
         "calories": null,
@@ -165,21 +183,39 @@
       "loot": [],
       "coins": {
         "gained": 13,
-        "before": 9,
-        "after": 22
+        "before": 8,
+        "after": 21
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-14",
+        "dayCounted": true,
+        "before": {
+          "startedOn": "2026-10-12",
+          "days": 3,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 1,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-12",
+          "days": 3,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 2,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     },
     {
       "session": {
-        "id": "01a054be-4813-7e7a-83ef-55cbe9e067a8",
+        "id": "01a148e0-21dc-7e56-98de-c86b6bf34585",
         "discipline": "STRENGTH",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-29T22:15:51+00:00",
-        "endedAt": "2026-08-29T23:00:51+00:00",
+        "startedAt": "2026-10-16T08:00:10+00:00",
+        "endedAt": "2026-10-16T08:45:10+00:00",
         "durationSeconds": 2700,
         "distanceMeters": null,
         "calories": null,
@@ -237,13 +273,31 @@
       "titlesUnlocked": [],
       "loot": [],
       "coins": {
-        "gained": 10,
-        "before": 22,
-        "after": 32
+        "gained": 15,
+        "before": 21,
+        "after": 36
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-16",
+        "dayCounted": true,
+        "before": {
+          "startedOn": null,
+          "days": 0,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 2,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-16",
+          "days": 1,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 3,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     }
   ],
   "skipped": [],
@@ -255,5 +309,5 @@
     "xpAwarded": 355,
     "workoutCount": 3
   },
-  "rulesetVersion": "v1-067495ed37f5"
+  "rulesetVersion": "v1-038e963146f3"
 }

@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-30T22:15:52+00:00",
+  "syncedAt": "2026-10-17T08:00:12+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054be-4d18-773c-8960-64a98ba5a330",
+        "id": "01a148e0-2731-77e5-89c6-66c02c4eac74",
         "discipline": "WALKING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-29T22:15:52+00:00",
-        "endedAt": "2026-08-29T23:15:52+00:00",
+        "startedAt": "2026-10-16T08:00:12+00:00",
+        "endedAt": "2026-10-16T09:00:12+00:00",
         "durationSeconds": 3600,
         "distanceMeters": 5000,
         "calories": null,
@@ -65,9 +65,27 @@
         "before": 0,
         "after": 0
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-16",
+        "dayCounted": false,
+        "before": {
+          "startedOn": null,
+          "days": 0,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 0,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": null,
+          "days": 0,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 0,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     }
   ],
   "skipped": [],
@@ -79,5 +97,5 @@
     "xpAwarded": 0,
     "workoutCount": 1
   },
-  "rulesetVersion": "v1-067495ed37f5"
+  "rulesetVersion": "v1-038e963146f3"
 }

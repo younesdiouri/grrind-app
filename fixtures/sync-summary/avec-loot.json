@@ -1,20 +1,20 @@
 {
-  "syncedAt": "2026-08-30T22:15:55+00:00",
+  "syncedAt": "2026-10-17T08:00:12+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054be-5842-77bc-a0d8-45bf3df23e09",
+        "id": "01a148e0-291d-7ed2-b280-2b92d8c84da2",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-29T22:15:55+00:00",
-        "endedAt": "2026-08-29T22:45:55+00:00",
+        "startedAt": "2026-10-16T08:00:12+00:00",
+        "endedAt": "2026-10-16T08:30:12+00:00",
         "durationSeconds": 1800,
         "distanceMeters": 5000,
         "calories": null,
         "elevationGainMeters": null,
         "averageHeartRate": null,
-        "externalId": "loot-6"
+        "externalId": "loot-1"
       },
       "xp": {
         "awarded": 80,
@@ -73,7 +73,7 @@
           "name": "Premiers pas",
           "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:15:55+00:00",
+          "unlockedAt": "2026-10-17T08:00:12+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -84,6 +84,7 @@
       "loot": [
         {
           "key": "TRAVELERS_CLOAK",
+          "kind": "EQUIPMENT",
           "name": "Cape du voyageur",
           "rarity": "UNCOMMON",
           "slot": "CHEST",
@@ -99,17 +100,36 @@
               "discipline": null
             }
           ],
-          "priceCoins": 80
+          "priceCoins": 80,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
         }
       ],
       "coins": {
-        "gained": 7,
+        "gained": 13,
         "before": 0,
-        "after": 7
+        "after": 13
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-16",
+        "dayCounted": true,
+        "before": {
+          "startedOn": null,
+          "days": 0,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 0,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-16",
+          "days": 1,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 1,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     }
   ],
   "skipped": [],
@@ -121,5 +141,5 @@
     "xpAwarded": 80,
     "workoutCount": 1
   },
-  "rulesetVersion": "v1-067495ed37f5"
+  "rulesetVersion": "v1-038e963146f3"
 }

@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-08-30T22:15:51+00:00",
+  "syncedAt": "2026-10-17T08:00:10+00:00",
   "imported": [
     {
       "session": {
-        "id": "01a054be-4603-753e-996b-3b1d179bd181",
+        "id": "01a148e0-1f81-7a24-90f9-cd1e370cc3b6",
         "discipline": "RUNNING",
         "source": "APPLE_HEALTH",
         "trust": "PROVIDER_VERIFIED",
-        "startedAt": "2026-08-28T22:15:50+00:00",
-        "endedAt": "2026-08-28T23:25:50+00:00",
+        "startedAt": "2026-10-15T08:00:09+00:00",
+        "endedAt": "2026-10-15T09:10:09+00:00",
         "durationSeconds": 4200,
         "distanceMeters": 12000,
         "calories": null,
@@ -79,7 +79,7 @@
           "name": "Premiers pas",
           "hint": "Termine ta première séance",
           "unlocked": true,
-          "unlockedAt": "2026-08-30T22:15:51+00:00",
+          "unlockedAt": "2026-10-17T08:00:10+00:00",
           "progress": {
             "current": 1,
             "target": 1,
@@ -87,15 +87,55 @@
           }
         }
       ],
-      "loot": [],
+      "loot": [
+        {
+          "key": "IRON_GAUNTLETS",
+          "kind": "EQUIPMENT",
+          "name": "Gantelets de fer",
+          "rarity": "COMMON",
+          "slot": "HANDS",
+          "modifiers": [
+            {
+              "type": "XP_MULTIPLIER",
+              "value": 5,
+              "discipline": "STRENGTH"
+            },
+            {
+              "type": "STRENGTH_BONUS",
+              "value": 350,
+              "discipline": null
+            }
+          ],
+          "priceCoins": 30,
+          "imageUrl": "http://localhost:8080/game-images/placeholder.png"
+        }
+      ],
       "coins": {
-        "gained": 11,
+        "gained": 7,
         "before": 0,
-        "after": 11
+        "after": 7
       },
-      "streak": null,
+      "streak": {
+        "sportDay": "2026-10-15",
+        "dayCounted": true,
+        "before": {
+          "startedOn": null,
+          "days": 0,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 0,
+          "nextChestRarity": "COMMON"
+        },
+        "after": {
+          "startedOn": "2026-10-15",
+          "days": 1,
+          "weeksCompleted": 0,
+          "sportDaysInLast7": 1,
+          "nextChestRarity": "COMMON"
+        },
+        "chests": []
+      },
       "unlockableNodes": [],
-      "rulesetVersion": "v1-067495ed37f5"
+      "rulesetVersion": "v1-038e963146f3"
     }
   ],
   "skipped": [],
@@ -107,5 +147,5 @@
     "xpAwarded": 186,
     "workoutCount": 1
   },
-  "rulesetVersion": "v1-067495ed37f5"
+  "rulesetVersion": "v1-038e963146f3"
 }
