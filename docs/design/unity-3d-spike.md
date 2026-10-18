@@ -142,6 +142,36 @@ Ces constats décrivent la préparation avant acceptation de la licence ; l’é
 - Aucune animation de combat, prise d’arme, occlusion de lunettes, seconde morphologie ou
   performance mobile validée. Aucun asset IA généré à ce stade. Le spike reste incomplet.
 
+## Accord IA accepté — accès commercial absent
+
+- L’auteur confirme avoir accepté les conditions IA. L’écran d’accord a disparu.
+- L’Assistant affiche : organisation sans abonnement incluant l’IA et compte sans siège.
+  Le Dashboard confirme `No bundles or subscriptions`. Ce blocage est distinct de la licence
+  Personal et de l’acceptation des conditions.
+- Parcours ouvert jusqu’au récapitulatif de l’offre : essai 14 jours, 1 000 crédits,
+  0 $ au départ, puis 10 $/mois hors taxes, renouvellement mensuel, résiliation possible.
+  Le formulaire requiert un moyen de paiement. Aucun essai ni achat confirmé par l’agent.
+  Choix demandé à l’auteur ; le formulaire est laissé ouvert pour saisie personnelle.
+- En parallèle, `AgentScripts/InspectHead.cs` construit une monture technique temporaire
+  en primitives et l’attache au bone Head. Ce n’est ni un asset IA ni une proposition de DA.
+  Gros plans examinés à 35°, 90°, de dos et tête tournée de 60°. La première calibration
+  était trop haute et trop en avant ; correction de 15 mm vers le bas et 12 mm vers l’arrière.
+- Contrôle en Play après avance vérifiée des frames : la tête masque la branche opposée,
+  la monture suit la rotation et les lunettes disparaissent de la vue arrière. Cela démontre
+  l’occlusion géométrique de ce montage, pas la qualité finale d’un équipement ou son adaptation
+  à plusieurs visages. Les branches droites n’ont pas encore de crochet d’appui sur les oreilles.
+- Les premiers exports en édition pouvaient montrer le mesh skinné de la frame précédente.
+  Ils sont exclus des preuves de rotation. Le contrôle fiable utilise Play, le rendu des skins
+  hors champ et une avance de frame avant capture. L’exécution en arrière-plan a été rétablie
+  à sa valeur précédente après le test. La scène de base conserve le mannequin sans cette fixture.
+- Preuves locales retenues : `artifacts/unity-spike/head-play-turn-60-fixed.png`,
+  `head-play-back.png`, `head-fit-reviewed.png` et `unity-ai-trial.png`.
+  Les nombreuses primitives de la fixture ne représentent pas le budget de rendu final.
+
+Sources d’accès relues : [offre IA actuelle](https://unity.com/features/ai),
+[prix](https://unity.com/products) et formulaire Unity Store réellement affiché.
+Génération, rigging automatique et animations IA restent non testés tant que l’accès est absent.
+
 ## Sources officielles
 
 - [CLI : installation et pilotage](https://docs.unity.com/en-us/unity-cli/use-unity-cli).
