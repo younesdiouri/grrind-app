@@ -16,7 +16,13 @@ public static class MobileBuild
         PlayerSettings.iOS.targetOSVersionString="16.4";
         PlayerSettings.iOS.sdkVersion=simulator?iOSSdkVersion.SimulatorSDK:iOSSdkVersion.DeviceSDK;
         PlayerSettings.iOS.simulatorSdkArchitecture=AppleMobileArchitectureSimulator.ARM64;
-        PlayerSettings.defaultInterfaceOrientation=UIOrientation.LandscapeLeft;
+        // The host owns the orientation lock: portrait inspector, landscape battle.
+        // A landscape-only Unity controller crashes while Expo still requires portrait.
+        PlayerSettings.defaultInterfaceOrientation=UIOrientation.AutoRotation;
+        PlayerSettings.allowedAutorotateToPortrait=true;
+        PlayerSettings.allowedAutorotateToPortraitUpsideDown=false;
+        PlayerSettings.allowedAutorotateToLandscapeLeft=true;
+        PlayerSettings.allowedAutorotateToLandscapeRight=true;
         PlayerSettings.runInBackground=false;
         var path="Builds/"+(simulator?"iOSSimulator":"iOSDevice");
         var result=BuildPipeline.BuildPlayer(new BuildPlayerOptions{

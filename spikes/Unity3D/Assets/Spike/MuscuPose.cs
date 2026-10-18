@@ -56,7 +56,8 @@ public sealed class MuscuPose : MonoBehaviour
         for(int i=0;i<players.Length;i++)mixer.SetInputWeight(i,i==selected?blend:i==0?1-blend:0);
         players[0].SetTime(inspect?Time.time%clips[0].length:p*clips[0].length);
         if(selected!=0)players[selected].SetTime(ClipPhase(selected,p)*clips[selected].length);
-        actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));graph.Evaluate(0);
+        // HumanPoseHandler evaluates in world space. Apply arena placement after the pose solve.
+        actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);graph.Evaluate(0);
         if(grip||weapon.gameObject.activeSelf)
         {
             fingers.GetHumanPose(ref humanPose);
@@ -65,6 +66,7 @@ public sealed class MuscuPose : MonoBehaviour
             fingers.SetHumanPose(ref humanPose);
         }
         head.localScale=headScale;
+        actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));
         if(inspect&&inspectionCamera!=null)
         {
             var target=view==1?head.position+Vector3.up*.1f:view==2?actor.GetBoneTransform(HumanBodyBones.RightHand).position:placement+Vector3.up*.95f;

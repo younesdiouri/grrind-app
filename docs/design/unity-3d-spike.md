@@ -44,10 +44,10 @@ PixelLab MCP est également étudié : la documentation actuelle décrit des spr
 animations 2D, pas un modèle 3D riggé. Aucun outil PixelLab n’est connecté à cette session.
 Cette étude ne constitue ni un test de génération PixelLab ni un changement du choix 3D.
 
-État intermédiaire : les deux corps sont visibles dans `Assets/Spike/Arena.unity`, sans
-erreur de compilation/console sur cette exécution. La revue exhaustive des gestes, le
-verdict artistique et la validation iPhone restent à faire. Le pont natif et son export
-ne sont pas encore validés dans l’application.
+Les deux corps sont visibles dans `Assets/Spike/Arena.unity` et dans l’atelier natif de
+l’application sur Simulator. Le premier framework iPhone est compilé, signé et installé
+sur Dyoxel le 18 octobre. L’installation ne prouve pas encore l’ouverture ni la fluidité
+sur l’appareil : cette vérification reste distincte de la revue artistique.
 
 ### Intégration locale en cours
 
@@ -70,16 +70,52 @@ ne sont pas encore validés dans l’application.
   conservé une référence Burst disparue. DerivedData est conservé.
 - L’export simulateur est arm64 : le pod exclut x86_64 pour ce module et le target utilisateur
   lorsqu’un framework local est présent. Aucun support du simulateur Intel n’est revendiqué.
+- La présence du framework active une définition de compilation explicite du pont. Le premier
+  test de disponibilité par chemin pouvait annoncer Unity disponible alors qu’une ancienne
+  compilation conditionnelle avait conservé son implémentation vide.
+- Unity autorise portrait et paysage ; Expo conserve la responsabilité du verrouillage de
+  chaque écran. Un contrôleur Unity limité au paysage provoquait une exception iOS à l’entrée
+  de l’atelier portrait. Le framework est réexporté après correction.
+- L’atelier réserve la place des zones sûres et sépare Avatar, Gestes et Cadrage en panneaux.
+  L’ancien débordement des commandes pouvait déclencher le combat à la place du bouton visé.
+- La capture du combat révèle un trois-quarts arrière du joueur. Changer son angle seul ne
+  corrigeait rien : la résolution `HumanPoseHandler` réécrivait la pose après le placement.
+  Le rig est maintenant évalué à l’origine, puis placé/orienté dans l’arène après la correction
+  des doigts. Une capture Editor avec deux corps équipés confirme qu’ils se regardent.
+  [La documentation Unity 6.3](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/HumanPoseHandler.GetHumanPose.html)
+  précise que les coordonnées globales du corps sont exprimées dans l’espace monde.
+  `ReviewAvatars.VerifyPlacement` vérifie aussi qu’en garde tête/main gardent leur pose locale après
+  une translation de 30 cm et une rotation de 60°, avec l’arme équipée, sur les deux corps.
+  L’ennemi illustré reste un sprite, sans migration des monstres vers la 3D.
 
 Reproduction : `./scripts/unity-ios.sh`, puis développement iOS habituel. Une modification
 du C# ou des assets embarqués demande de réexporter Unity et de reconstruire le binaire de
 développement ; une modification JS seule reste sur Metro. Le flow autonome prévu est
 `E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/avatar-3d.yaml`.
 
-Limites à ce stade : le flow n’est pas encore validé ; aucun test iPhone/Android ; aucune
-persistance serveur des choix corps/peau. Les objets de combat proviennent du snapshot existant,
-et l’atelier transmet ses choix uniquement au combat de démonstration. Le backend n’a pas été
-modifié par cette tranche. Ne pas présenter cette intégration comme une livraison terminée.
+Le flow final du 18 octobre à 13 h 43 passe, avec le framework corrigeant le placement : configuration des deux corps et de la peau, gros plans,
+combat, bilan, retour automatique au portrait et changement de corps/peau après arrière-plan.
+Captures réellement inspectées. Le pilote doit être aligné en paysage après la rotation de
+l’app, puis en portrait après observation du retour ; sinon ses clics sont décalés.
+La capture du combat confirme maintenant que le joueur regarde l’adversaire. Les six captures
+retenues sont copiées dans `artifacts/unity-spike/unity-*-integration.png`, avec le rapport
+`avatar-3d-report.xml`. Les vérifications TypeScript, lint, 560 tests unitaires et 29 aperçus
+passent également sur le code final de cette tranche.
+
+La version corrigée est compilée, signée et installée sur l’iPhone. Le lancement reste refusé
+par iOS avec la raison `Locked` : l’installation est vérifiée, le rendu sur téléphone ne l’est pas.
+
+Limites à ce stade : ouverture de l’atelier sur l’iPhone encore en attente du déverrouillage ;
+aucun test Android ni mesure de performance sur téléphone ; aucune persistance serveur des choix corps/peau.
+Les objets de combat proviennent du snapshot existant, et l’atelier transmet ses choix uniquement
+au combat de démonstration. Le backend n’a pas été modifié par cette tranche.
+
+**Revue artistique négative sur la tenue actuelle.** La découpe automatique du mesh du corps
+produit encore des bords de débardeur irréguliers et des fragments près des épaules, surtout
+en gros plan et en flexion. Un offset plus grand ne règle pas la topologie du vêtement.
+Le geste critique rapproche aussi fortement l’haltère du visage : vérifier les contacts sur
+le mouvement entier avant de le retenir. Les captures prouvent l’intégration, pas une conformité
+à la maquette. Le spike et la migration artistique restent incomplets.
 
 ## Objectif approuvé
 
@@ -215,6 +251,11 @@ La création, l’ouverture et la liaison au projet Cloud propre au spike sont t
 Ne pas réutiliser un projet de production.
 
 ## Ce qui reste à mesurer
+
+Mesure locale du 18 octobre : dossier du development build iPhone **325 Mio**, dont **151 Mio**
+pour `UnityFramework.framework` embarqué. Le XCFramework local contenant les deux plateformes
+occupe 372 Mio. Ce sont des tailles de fichiers de développement sur disque, pas une taille de
+téléchargement App Store ni une mesure de mémoire vive ; aucune fluidité iPhone n’en est déduite.
 
 En scène : triangles, matériaux, textures, appels de rendu et complexité de l’animation.
 Sur appareil : temps de démarrage, taille du build, mémoire, fluidité, consommation perceptible

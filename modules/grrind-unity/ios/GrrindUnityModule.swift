@@ -40,6 +40,7 @@ final class GrrindUnityView: ExpoView {
       attached = true
       if GrrindUnityHost.isSceneReady() { ready() }
     } catch {
+      NSLog("GRRIND Unity attach failed: %@", error.localizedDescription)
       onFailure(["message": error.localizedDescription])
     }
   }

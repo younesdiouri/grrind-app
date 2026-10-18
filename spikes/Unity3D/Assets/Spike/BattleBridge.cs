@@ -58,7 +58,7 @@ public sealed class BattleBridge : MonoBehaviour
     {
         var obj=Instantiate(config.body=="female"?femalePrefab:malePrefab);
         var pose=obj.GetComponent<MuscuPose>();pose.inspect=false;pose.inspectionCamera=null;
-        pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-115:65;
+        pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
         pose.weapon.gameObject.SetActive(config.weapon);pose.glasses.gameObject.SetActive(config.glasses);
         if(!ColorUtility.TryParseHtmlString(config.skin,out var skin))skin=new Color(.86f,.72f,.58f);
         tint.Clear();tint.SetColor(BaseColor,skin);

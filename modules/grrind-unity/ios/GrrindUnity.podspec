@@ -15,7 +15,8 @@ Pod::Spec.new do |s|
   if File.exist?(File.join(__dir__, 'Frameworks/UnityFramework.xcframework'))
     s.vendored_frameworks = 'Frameworks/UnityFramework.xcframework'
     # Unity's simulator export targets Apple Silicon; the generic Expo build also requests Intel.
-    s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
+    s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'x86_64',
+      'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GRRIND_HAS_UNITY=1' }
     s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
   end
 end

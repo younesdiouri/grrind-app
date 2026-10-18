@@ -1,6 +1,18 @@
 appId: app.grrind.dev
 ---
 # Standalone presentation, run with E2E_OFFLINE=1. No account or reward mutation.
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
 - openLink: grrindapp-dev://avatar-3d
 - repeat:
     times: 2
@@ -14,23 +26,33 @@ appId: app.grrind.dev
     visible:
       id: avatar-3d-ready
     timeout: 30000
+- tapOn: Avatar
+- tapOn: Homme
+- tapOn: Peau dorée
+- tapOn: Gestes
+- tapOn: Garde
+- tapOn: Contact
+- tapOn: Cadrage
+- tapOn: Ensemble
 - takeScreenshot: unity-male-equipped
+- tapOn: Avatar
 - tapOn: Femme
 - tapOn: Peau brune
+- tapOn: Cadrage
 - tapOn: Visage
 - takeScreenshot: unity-female-goggles
+- tapOn: Gestes
 - tapOn: Critique
+- tapOn: Cadrage
 - tapOn: Prise
 - takeScreenshot: unity-female-grip
 - tapOn: Ensemble
-- scrollUntilVisible:
-    element: Tester dans le combat
-    direction: DOWN
 - tapOn: Tester dans le combat
 - extendedWaitUntil:
     visible:
       id: battle-dialogue
     timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
 - tapOn:
     id: battle-dialogue
 - extendedWaitUntil:
@@ -40,11 +62,13 @@ appId: app.grrind.dev
 - assertVisible:
     id: unity-renderer-ready
 - takeScreenshot: unity-in-battle
-- tapOn: Passer
+- tapOn:
+    id: battle-combat
+    optional: true
 - extendedWaitUntil:
     visible:
       id: battle-exit
-    timeout: 10000
+    timeout: 30000
 - tapOn:
     id: battle-exit
 - extendedWaitUntil:
@@ -52,3 +76,16 @@ appId: app.grrind.dev
       id: avatar-3d-ready
     timeout: 20000
 - takeScreenshot: unity-return-to-workshop
+- setOrientation: PORTRAIT
+- pressKey: Home
+- openLink: grrindapp-dev://avatar-3d
+- extendedWaitUntil:
+    visible:
+      id: avatar-3d-ready
+    timeout: 20000
+- tapOn: Avatar
+- tapOn: Homme
+- tapOn: Peau claire
+- tapOn: Cadrage
+- tapOn: Ensemble
+- takeScreenshot: unity-after-background

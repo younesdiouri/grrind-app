@@ -1,12 +1,13 @@
 import { Redirect, Stack, router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { color, control, frame, space, type } from '@/design/tokens';
 import { BattleView } from '@/features/combat/BattleView';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
+import { AL_KASAL } from '@/features/combat/FighterSprite';
 import { UnityAvatarInspector, unityCombatAvailable } from '@/features/combat/UnityCombatStage';
 import type { FighterPose } from '@/features/combat/fighterMotion';
 import type { UnityAvatar } from '@/features/combat/unityFrame';
@@ -32,22 +33,24 @@ function Workshop() {
   const [animated, setAnimated] = useState(false);
   const [view, setView] = useState(0);
   const [azimuth, setAzimuth] = useState(32);
+  const [panel, setPanel] = useState<'avatar' | 'gestures' | 'camera'>('avatar');
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(80);
   const [controlsHeight, setControlsHeight] = useState(300);
   const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const patch = (change: Partial<UnityAvatar>) => setAvatar((current) => ({ ...current, ...change }));
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
-    <BattleView battle={BATTLE_FIXTURES.defaiteBoss} demo unityPlayer={avatar} onDismiss={() => setPlaying(false)} />
+    <BattleView battle={BATTLE_FIXTURES.defaiteBoss} enemyArt={AL_KASAL} demo unityPlayer={avatar} onDismiss={() => setPlaying(false)} />
   </View>;
   return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     {unityCombatAvailable && !failed && <UnityAvatarInspector avatar={avatar} pose={pose} phase={phase} animated={animated}
-      view={view} azimuth={azimuth} viewport={{ x: 0, y: controlsHeight / window.height, width: 1,
-        height: Math.max(.1, (window.height - controlsHeight - headerHeight) / window.height) }}
+      view={view} azimuth={azimuth} viewport={{ x: 0, y: (controlsHeight + insets.bottom) / window.height, width: 1,
+        height: Math.max(.1, (window.height - controlsHeight - headerHeight - insets.top - insets.bottom) / window.height) }}
       onReady={() => setReady(true)} onError={() => setFailed(true)} />}
     <SafeAreaView style={styles.overlay} pointerEvents="box-none">
       <View style={styles.header} onLayout={({ nativeEvent }) => setHeaderHeight(nativeEvent.layout.height)}>
@@ -61,8 +64,13 @@ function Workshop() {
         }}><Text style={styles.link}>Fermer</Text></Pressable>
       </View>
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>
-        <ScrollView contentContainerStyle={styles.options}>
-          <View style={styles.row}>
+        <View style={styles.row}>
+          <Choice label="Avatar" selected={panel === 'avatar'} onPress={() => setPanel('avatar')} />
+          <Choice label="Gestes" selected={panel === 'gestures'} onPress={() => setPanel('gestures')} />
+          <Choice label="Cadrage" selected={panel === 'camera'} onPress={() => setPanel('camera')} />
+        </View>
+        <View style={styles.options}>
+          {panel === 'avatar' && <><View style={styles.row}>
             {(['male', 'female'] as const).map((body) => <Choice key={body} label={body === 'male' ? 'Homme' : 'Femme'}
               selected={avatar.body === body} onPress={() => patch({ body })} />)}
             {SKINS.map((skin) => <Pressable key={skin.value} testID={`avatar-skin-${skin.name}`} accessibilityRole="button"
@@ -73,19 +81,20 @@ function Workshop() {
           <View style={styles.row}>
             <Choice label="Haltère ego" selected={avatar.weapon} onPress={() => patch({ weapon: !avatar.weapon })} />
             <Choice label="Course-poursuite" selected={avatar.glasses} onPress={() => patch({ glasses: !avatar.glasses })} />
-          </View>
-          <View style={styles.row}>{POSES.map((entry) => <Choice key={entry.key} label={entry.label}
+          </View></>}
+          {panel === 'gestures' && <><View style={styles.row}>{POSES.map((entry) => <Choice key={entry.key} label={entry.label}
             selected={pose === entry.key} onPress={() => setPose(entry.key)} />)}</View>
-          <View style={styles.row}>
-            {['Ensemble', 'Visage', 'Prise'].map((label, index) => <Choice key={label} label={label} selected={view === index} onPress={() => setView(index)} />)}
-            <Choice label="Tourner" selected={azimuth < 0} onPress={() => setAzimuth((value) => value < 0 ? 32 : -148)} />
-            <Choice label="Animer" selected={animated} onPress={() => setAnimated(!animated)} />
-          </View>
           <View style={styles.row}>{[{ label: 'Début', value: .15 }, { label: 'Contact', value: .5 }, { label: 'Retour', value: .85 }]
             .map((entry) => <Choice key={entry.label} label={entry.label} selected={!animated && phase === entry.value}
-              onPress={() => { setAnimated(false); setPhase(entry.value); }} />)}</View>
-          <Button label="Tester dans le combat" disabled={!ready || failed} onPress={() => setPlaying(true)} />
-        </ScrollView>
+              onPress={() => { setAnimated(false); setPhase(entry.value); }} />)}
+            <Choice label="Animer" selected={animated} onPress={() => setAnimated(!animated)} />
+          </View></>}
+          {panel === 'camera' && <View style={styles.row}>
+            {['Ensemble', 'Visage', 'Prise'].map((label, index) => <Choice key={label} label={label} selected={view === index} onPress={() => setView(index)} />)}
+            <Choice label="Tourner" selected={azimuth < 0} onPress={() => setAzimuth((value) => value < 0 ? 32 : -148)} />
+          </View>}
+        </View>
+        <Button label="Tester dans le combat" disabled={!ready || failed} onPress={() => { setReady(false); setPlaying(true); }} />
       </View>
     </SafeAreaView>
   </View>;
@@ -101,8 +110,8 @@ const styles = StyleSheet.create({
   header: { padding: space.md, gap: space.xs },
   title: { ...type.title, color: color.text }, subtitle: { ...type.label, color: color.textMuted },
   link: { ...type.body, color: color.accent }, label: { ...type.label, color: color.text, letterSpacing: 0 },
-  controls: { maxHeight: '45%', backgroundColor: color.surface, padding: space.md },
-  options: { gap: space.sm }, row: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  controls: { height: '45%', backgroundColor: color.surface, padding: space.md, gap: space.sm },
+  options: { flex: 1, gap: space.sm }, row: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   choice: { minHeight: control.backSize, justifyContent: 'center', padding: space.sm, borderWidth: control.borderWidth, borderColor: color.border, borderRadius: frame.standard.radius },
   selected: { borderColor: color.accent },
   swatch: { width: control.backSize, height: control.backSize, borderWidth: control.borderWidth, borderColor: color.border, borderRadius: frame.standard.radius },

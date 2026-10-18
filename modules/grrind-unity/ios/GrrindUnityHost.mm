@@ -1,5 +1,5 @@
 #import "GrrindUnityHost.h"
-#if __has_include(<UnityFramework/UnityFramework.h>)
+#if GRRIND_HAS_UNITY
 #import <UnityFramework/UnityFramework.h>
 #import <mach-o/ldsyms.h>
 static UnityFramework *runtime;
@@ -9,18 +9,22 @@ static __weak UIView *activeHost;
 
 @implementation GrrindUnityHost
 + (BOOL)isSceneReady {
-#if __has_include(<UnityFramework/UnityFramework.h>)
+#if GRRIND_HAS_UNITY
   return sceneReady;
 #else
   return NO;
 #endif
 }
 + (BOOL)isAvailable {
+#if GRRIND_HAS_UNITY
   return [[NSFileManager defaultManager] fileExistsAtPath:[NSBundle.mainBundle.privateFrameworksPath stringByAppendingPathComponent:@"UnityFramework.framework"]];
+#else
+  return NO;
+#endif
 }
 + (BOOL)attachTo:(UIView *)view error:(NSError **)error {
   NSAssert(NSThread.isMainThread, @"Unity lifecycle must run on main");
-#if __has_include(<UnityFramework/UnityFramework.h>)
+#if GRRIND_HAS_UNITY
   if (!runtime) {
     [[NSNotificationCenter defaultCenter] addObserverForName:@"GrrindUnitySceneReady" object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *note) {
       sceneReady = YES;
@@ -63,7 +67,7 @@ static __weak UIView *activeHost;
 #endif
 }
 + (void)detachFrom:(UIView *)view {
-#if __has_include(<UnityFramework/UnityFramework.h>)
+#if GRRIND_HAS_UNITY
   if (runtime.appController.rootView.superview == view) {
     [runtime pause:YES];
     [runtime.appController.rootView removeFromSuperview];
@@ -72,7 +76,7 @@ static __weak UIView *activeHost;
 #endif
 }
 + (void)send:(NSString *)method payload:(NSString *)payload {
-#if __has_include(<UnityFramework/UnityFramework.h>)
+#if GRRIND_HAS_UNITY
   if (runtime.appController) [runtime sendMessageToGOWithName:"BattleBridge" functionName:method.UTF8String message:payload.UTF8String];
 #endif
 }
