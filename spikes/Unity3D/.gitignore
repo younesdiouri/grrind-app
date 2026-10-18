@@ -6,6 +6,8 @@
 /[Bb]uilds/
 /[Uu]ser[Ss]ettings/
 /[Rr]ecordings/
+/Assets/[Rr]ecordings/
+/Assets/[Rr]ecordings.meta
 .vs/
 *.csproj
 *.sln

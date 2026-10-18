@@ -57,9 +57,8 @@ rtk proxy unity open ./spikes/Unity3D
 rtk proxy unity status --json
 ```
 
-La création et l’ouverture restent à exécuter après installation et activation. Lier ensuite
-le projet Cloud du spike au compte autorisé pour les générateurs ; ne pas réutiliser un projet
-de production ni configurer une organisation à partir d’informations personnelles supposées.
+La création, l’ouverture et la liaison au projet Cloud propre au spike sont terminées.
+Ne pas réutiliser un projet de production.
 
 ## Ce qui reste à mesurer
 
@@ -89,7 +88,7 @@ sur le client.
 - Aucun personnage ni objet n’a encore été généré. Aucune qualité visuelle, performance ou
   compatibilité native n’est donc validée à ce stade. Le spike n’est pas terminé.
 
-## Reprise après connexion du 18 octobre
+## Reprise après connexion du 18 octobre — historique de préparation
 
 - Installation terminée : 6000.3.26f1 arm64 dans `/Applications/Unity/Hub/Editor/`.
 - La première connexion OAuth avait expiré. La nouvelle connexion est validée (`sessionState:
@@ -112,7 +111,36 @@ sur le client.
   marqués `prepared-not-generated`. Le package contient un mannequin humanoïde riggé pour ses
   aperçus d’animation ; il peut servir de banc technique, pas de validation de DA.
 
-À ce stade, aucun asset généré, aucune scène vérifiée et aucun verdict de qualité Unity.
+Ces constats décrivent la préparation avant acceptation de la licence ; l’état actuel suit.
+
+## État après acceptation de Personal
+
+- Accord explicite de l’auteur reçu ; Personal activé et état `active: true` vérifié.
+- Éditeur 6000.3.26f1 ouvert, compilation terminée sans erreur C#.
+- Assistant 2.20.0-pre.2 inclut déjà les générateurs. Le package Generators 1.7 séparé a été
+  retiré : leur installation simultanée créait des doublons de GUID et d’assemblies.
+- Input System du template mis à jour de 1.12 à 1.20.1 : la version initiale référençait une
+  cible supprimée dans cet éditeur. Migration URP 17.3 effectuée par Unity.
+- Projet Cloud créé et lié dans l’éditeur : `GRRIND Unity Spike`,
+  `0f197e79-1fb9-4578-800f-af10c5c6c7ab`, organisation `younesdiouri`.
+  Aucun achat ni abonnement payant.
+- L’activation IA présente un nouvel accord : conditions Unity et fournisseurs IA, crédits,
+  collecte des données d’usage, confidentialité des fonctionnalités bêta. Accord distinct
+  soumis à l’auteur ; ne pas assimiler l’acceptation de Personal à celle de l’IA.
+- Le code du package actuel expose des étapes de rigging et de remaillage après génération.
+  Elles restent à essayer avec le compte ; la documentation initiale sur les objets sans
+  squelette ne suffit donc pas à conclure sur les capacités du pipeline actuel.
+- Banc reproductible : `AgentScripts/BuildBench.cs`, entrée `BuildBench.Create`, exécutée
+  via la commande officielle `run_script`. Scène sauvegardée : `Assets/Spike/Bench.unity`.
+  Le FBX humanoïde fourni par Unity possède 5 renderers et des os tête/main droite reconnus.
+  Le prefab d’aperçu retire le mesh ; le banc utilise donc directement son FBX d’origine.
+- Mode Play vérifié : compteur de frames passé de 480 à 512, condition `changed` satisfaite,
+  puis sortie du mode Play. Rendu caméra 1000 × 1000 inspecté. Capture écran redimensionnée
+  déformée par son rapport d’aspect : ne pas la prendre pour une preuve de proportions.
+- La console signale aussi des échecs de rafraîchissement des conversations/modèles Assistant
+  avant activation IA. À réévaluer après l’accord ; le rendu local et la compilation fonctionnent.
+- Aucune animation de combat, prise d’arme, occlusion de lunettes, seconde morphologie ou
+  performance mobile validée. Aucun asset IA généré à ce stade. Le spike reste incomplet.
 
 ## Sources officielles
 
