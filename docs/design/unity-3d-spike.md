@@ -89,6 +89,31 @@ sur le client.
 - Aucun personnage ni objet n’a encore été généré. Aucune qualité visuelle, performance ou
   compatibilité native n’est donc validée à ce stade. Le spike n’est pas terminé.
 
+## Reprise après connexion du 18 octobre
+
+- Installation terminée : 6000.3.26f1 arm64 dans `/Applications/Unity/Hub/Editor/`.
+- La première connexion OAuth avait expiré. La nouvelle connexion est validée (`sessionState:
+  fresh`). Aucun identifiant ou jeton n’est conservé dans le dépôt.
+- La création a extrait le template Universal 3D, puis l’éditeur s’est arrêté avec le code 198
+  avant import faute de licence. Le squelette du projet ne constitue pas une exécution réussie.
+- L’activation des droits existants répond `activated: true, products: []`, mais la vérification
+  effective répond `active: false, licenses: []`. C’est cette dernière qui fait foi.
+- L’activation Personal exige `--accept-eula` : accord explicite demandé à l’auteur avant cette
+  étape, avec le lien des conditions Unity. Elle n’a pas encore été exécutée.
+- Projet enregistré localement. Version d’éditeur renseignée pour préparer le package Pipeline
+  officiel 0.8.0-exp.1 ; aucune instance de l’éditeur n’est active.
+- Versions IA lues dans le registre officiel : Assistant 2.20.0-pre.2 et Generators
+  1.7.0-pre.1, compatibles selon leurs métadonnées avec Unity 6000.0.60f1 et suivants.
+  Dépendances déclarées avant le premier import, donc non encore compilées ou testées.
+- La liaison Cloud via CLI a répondu HTTP 400 ; la lecture suivante ne montre aucun nouveau
+  projet. Reprendre la liaison dans l’éditeur une fois le projet initialisé, sans utiliser le
+  projet personnel préexistant de l’auteur.
+- Neuf briefs sont préparés dans `spikes/Unity3D/Assets/Spike/GenerationBriefs.json`, explicitement
+  marqués `prepared-not-generated`. Le package contient un mannequin humanoïde riggé pour ses
+  aperçus d’animation ; il peut servir de banc technique, pas de validation de DA.
+
+À ce stade, aucun asset généré, aucune scène vérifiée et aucun verdict de qualité Unity.
+
 ## Sources officielles
 
 - [CLI : installation et pilotage](https://docs.unity.com/en-us/unity-cli/use-unity-cli).
