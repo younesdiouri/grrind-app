@@ -1,0 +1,8 @@
+{
+  "author": "Quaternius",
+  "source": "https://quaternius.itch.io/universal-animation-library-2",
+  "license": "CC0-1.0",
+  "archiveSha256": "4008ea208a604773a2b2177d965f0f5d3195498b5bf838c3f5785d68e95f2a68",
+  "file": "Unity/UAL2_Standard.fbx",
+  "changes": "Humanoid import, selected combat clips used in project."
+}

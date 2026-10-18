@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   type SharedValue,
@@ -51,6 +51,8 @@ import { equippedArtwork } from './equippedArtwork';
 import { appearanceArtwork } from './appearances';
 import { useAppearances } from './useAppearances';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
+import { UnityCombatStage, unityCombatAvailable } from './UnityCombatStage';
+import { unityAvatarOf, type UnityAvatar, type UnityViewport } from './unityFrame';
 import {
   buildBattleTimeline,
   sampleRamp,
@@ -102,6 +104,7 @@ export function BattleView({ battle, enemyArt, heroArt, heroEquipment, opponentE
   heroArt?: FighterArtwork;
   heroEquipment?: EquipmentArtwork[];
   opponentEquipment?: EquipmentArtwork[];
+  unityPlayer?: UnityAvatar;
   demo?: boolean;
   demoTime?: number;
   onDismiss?: () => void;
@@ -140,6 +143,7 @@ function PresentedBattle({ artwork, ...props }: {
   introduction?: string;
   heroEquipment?: EquipmentArtwork[];
   opponentEquipment?: EquipmentArtwork[];
+  unityPlayer?: UnityAvatar;
   demo?: boolean;
   demoTime?: number;
   onDismiss?: () => void;
@@ -162,12 +166,14 @@ function BattleScene({
   onArtworkError,
   demo = false,
   demoTime,
+  unityPlayer,
 }: {
   battle: Battle;
   enemyArt?: FighterArtwork;
   hero: FighterArtwork;
   heroEquipment?: EquipmentArtwork[];
   opponentEquipment?: EquipmentArtwork[];
+  unityPlayer?: UnityAvatar;
   introduction?: string;
   onArtworkError: () => void;
   demo?: boolean;
@@ -186,6 +192,11 @@ function BattleScene({
   const started = useRef(false);
   const loaded = useRef(new Set<string>());
   const [heroFailed, setHeroFailed] = useState(false);
+  const [unityFailed, setUnityFailed] = useState(false);
+  const useUnity = unityCombatAvailable && !unityFailed;
+  const window = useWindowDimensions();
+  const [unityViewport, setUnityViewport] = useState<UnityViewport>({ x: 0, y: 0, width: 1, height: 1 });
+  const nativeEnemy = useUnity && !!battle.enemy.appearance;
   const clock = useSharedValue(0);
   const skipping = useSharedValue(false);
   const reducedMotion = useReducedMotion();
@@ -380,6 +391,11 @@ function BattleScene({
     // Les poses de chaque combattant doivent être prêtes avant le premier coup.
     <View style={styles.screen} testID={done ? `battle-${entrance}` : undefined}>
       <Image source={require('../../../assets/images/arenas/duel.png')} style={StyleSheet.absoluteFill} contentFit="cover" />
+      {useUnity && <UnityCombatStage clock={clock} timeline={timeline}
+        player={unityPlayer ?? unityAvatarOf(battle.player)} enemy={{ ...unityAvatarOf(battle.enemy), visible: nativeEnemy }}
+        viewport={unityViewport} width={unityViewport.width * window.width} playing={entrance === 'combat'} done={done}
+        onReady={() => { fighterReady('player'); if (nativeEnemy) fighterReady('enemy'); }}
+        onError={() => setUnityFailed(true)} />}
       <SafeAreaView style={styles.safe}>
       <Animated.View style={[styles.eventFrame, frameEntryStyle]} pointerEvents="box-none">
         <View style={styles.eventContent}>
@@ -390,27 +406,32 @@ function BattleScene({
           </View>
 
           <Stage style={styles.stage} clock={clock} impacts={timeline.impacts} points={arena.impactPoint}
+            onMeasure={useUnity ? ({ x, y, width, height }) => {
+              const next = { x: x / window.width, y: 1 - (y + height) / window.height,
+                width: width / window.width, height: height / window.height };
+              setUnityViewport((previous) => JSON.stringify(previous) === JSON.stringify(next) ? previous : next);
+            } : undefined}
             effects={entrance === 'combat' && !done}
             combos={{ PLAYER: timeline.player.comboFlash, ENEMY: timeline.enemy.comboFlash }}>
             {enemyArt && (
               <Animated.View style={[styles.spriteStage, actionsStyle, spriteEntranceStyle]}>
-                <FighterSprite artwork={enemyArt} clock={clock} beats={timeline.beats} lateral
+                {!nativeEnemy && <FighterSprite artwork={enemyArt} clock={clock} beats={timeline.beats} lateral
                   equipment={opponentEquipment}
                   signals={{ critical: timeline.player.criticalFlash, dodge: timeline.enemy.dodgeFlash,
                     combo: timeline.enemy.comboFlash, replay: timeline.enemy.replayFlash }}
-                  pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('enemy')} onError={onArtworkError} />
+                  pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('enemy')} onError={onArtworkError} />}
                 <DamagePop clock={clock} ramps={timeline.enemy} tone={styles.dealt} />
                 <FighterEffects clock={clock} ramps={timeline.enemy} />
               </Animated.View>
             )}
             {(
               <Animated.View style={[styles.heroStage, heroStyle]} pointerEvents="none">
-                <FighterSprite key={heroFailed ? 'fallback' : 'hero'} artwork={heroFailed ? DEFAULT_HERO : hero} side="PLAYER" clock={clock} beats={timeline.beats} lateral
+                {!useUnity && <FighterSprite key={heroFailed ? 'fallback' : 'hero'} artwork={heroFailed ? DEFAULT_HERO : hero} side="PLAYER" clock={clock} beats={timeline.beats} lateral
                   equipment={heroEquipment}
                   signals={{ critical: timeline.enemy.criticalFlash, dodge: timeline.player.dodgeFlash,
                     combo: timeline.player.comboFlash, replay: timeline.player.replayFlash }}
                   pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('player')}
-                  onError={() => { if (heroFailed) fighterReady('player'); else setHeroFailed(true); }} />
+                  onError={() => { if (heroFailed) fighterReady('player'); else setHeroFailed(true); }} />}
                 <DamagePop clock={clock} ramps={timeline.player} tone={styles.taken} />
                 <FighterEffects clock={clock} ramps={timeline.player} />
               </Animated.View>

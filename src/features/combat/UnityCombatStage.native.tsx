@@ -1,0 +1,92 @@
+import { requireNativeView, requireOptionalNativeModule } from 'expo';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, type ViewProps } from 'react-native';
+import { cancelAnimation, Easing, useAnimatedReaction, useSharedValue, withRepeat, withTiming, type SharedValue } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
+import { useReducedMotion } from '@/design/useReducedMotion';
+import { UNITY_POSES, unityActorFrame, type UnityAvatar, type UnityInspectorProps, type UnityViewport } from './unityFrame';
+import type { BattleTimeline } from './timeline';
+
+type UnityModule = { isAvailable(): boolean; setFrame(frame: string): Promise<void> };
+const bridge = requireOptionalNativeModule<UnityModule>('GrrindUnity');
+export const unityCombatAvailable = __DEV__ && bridge?.isAvailable() === true;
+type NativeProps = ViewProps & { configuration: string; onReady(): void; onFailure(): void };
+const UnityView = bridge ? requireNativeView<NativeProps>('GrrindUnity') : null;
+
+export type UnityCombatProps = {
+  clock: SharedValue<number>; timeline: BattleTimeline; player: UnityAvatar; enemy: UnityAvatar;
+  viewport: UnityViewport; width: number; playing: boolean; done: boolean;
+  onReady(): void; onError(): void;
+};
+
+/** One fullscreen Unity runtime underneath the existing RN HUD, never one instance per fighter. */
+export function UnityCombatStage({ clock, timeline, player, enemy, viewport, width, playing, done, onReady, onError }: UnityCombatProps) {
+  const [ready, setReady] = useState(false);
+  const onErrorRef = useRef(onError);
+  useEffect(() => { onErrorRef.current = onError; }, [onError]);
+  const reduced = useReducedMotion() !== false;
+  const configuration = JSON.stringify({ player, enemy, viewport });
+  const send = useCallback((frame: string) => {
+    void bridge?.setFrame(frame).catch(() => onErrorRef.current());
+  }, []);
+  useEffect(() => {
+    if (ready) return;
+    const timeout = setTimeout(() => onErrorRef.current(), 15_000);
+    return () => clearTimeout(timeout);
+  }, [ready]);
+  useAnimatedReaction(
+    () => ({ bucket: ready ? Math.floor(clock.get() / 33) : -1,
+      playerVisible: playing && !done && player.visible, enemyVisible: !done && enemy.visible }),
+    (state, previous) => {
+      if (state.bucket < 0 || (state.bucket === previous?.bucket && state.playerVisible === previous.playerVisible
+        && state.enemyVisible === previous.enemyVisible)) return;
+      const time = clock.get();
+      scheduleOnRN(send, JSON.stringify({
+        player: unityActorFrame(timeline.beats, 'PLAYER', time, {
+          critical: timeline.enemy.criticalFlash, dodge: timeline.player.dodgeFlash,
+          combo: timeline.player.comboFlash, replay: timeline.player.replayFlash,
+        }, width, state.playerVisible, reduced),
+        enemy: unityActorFrame(timeline.beats, 'ENEMY', time, {
+          critical: timeline.player.criticalFlash, dodge: timeline.enemy.dodgeFlash,
+          combo: timeline.enemy.comboFlash, replay: timeline.enemy.replayFlash,
+        }, width, state.enemyVisible, reduced),
+      }));
+    },
+  );
+  return UnityView ? <UnityView style={StyleSheet.absoluteFill} pointerEvents="none" accessible={false}
+    configuration={configuration} testID={ready ? 'unity-renderer-ready' : 'unity-renderer-loading'}
+    onReady={() => { setReady(true); onReady(); }} onFailure={onError} /> : null;
+}
+
+export function UnityAvatarInspector({ avatar, pose, phase, animated, view, azimuth, viewport, onReady, onError }: UnityInspectorProps) {
+  const [ready, setReady] = useState(false);
+  const clock = useSharedValue(phase);
+  const error = useRef(onError);
+  useEffect(() => { error.current = onError; }, [onError]);
+  const reduced = useReducedMotion() !== false;
+  const configuration = JSON.stringify({ player: avatar, enemy: { ...avatar, visible: false }, viewport,
+    inspection: true, view, azimuth });
+  const send = useCallback((value: number, selected: number) => {
+    void bridge?.setFrame(JSON.stringify({ player: { pose: selected, phase: value, x: 0, visible: true },
+      enemy: { pose: 0, phase: 0, x: 0, visible: false } })).catch(() => error.current());
+  }, []);
+  useEffect(() => {
+    clock.set(animated && !reduced ? 0 : phase);
+    if (animated && !reduced) clock.set(withRepeat(withTiming(1, { duration: 1800, easing: Easing.linear }), -1));
+    return () => cancelAnimation(clock);
+  }, [animated, reduced, phase, pose, clock]);
+  useEffect(() => {
+    if (ready) send(phase, UNITY_POSES[pose]);
+  }, [ready, configuration, phase, pose, send]);
+  useEffect(() => {
+    if (ready) return;
+    const timeout = setTimeout(() => error.current(), 15_000);
+    return () => clearTimeout(timeout);
+  }, [ready]);
+  useAnimatedReaction(() => ready ? Math.floor(clock.get() * 60) : -1, (value, previous) => {
+    if (value >= 0 && value !== previous) scheduleOnRN(send, clock.get(), UNITY_POSES[pose]);
+  });
+  return UnityView ? <UnityView style={StyleSheet.absoluteFill} pointerEvents="none" accessible={false}
+    configuration={configuration} testID={ready ? 'unity-inspector-ready' : 'unity-inspector-loading'}
+    onReady={() => { setReady(true); onReady(); }} onFailure={onError} /> : null;
+}

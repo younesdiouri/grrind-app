@@ -2,6 +2,85 @@
 
 Ticket : https://github.com/younesdiouri/grrind-app/issues/213.
 
+## Extension autorisée : intégration dans le combat de l’app
+
+Le 18 octobre, l’auteur demande de poursuivre jusqu’à un premier personnage proche de la
+maquette approuvée, équipé et animé dans le combat du front. Un banc dans l’Editor ne suffit
+plus à terminer le spike : l’auteur doit pouvoir le tester dans l’application sur iPhone.
+Les adaptations natives de développement nécessaires à cette intégration sont incluses.
+Pas de publication EAS/TestFlight ni de changement des règles de combat serveur.
+
+Première tranche : Muscu, tenue neutre et pieds nus, Haltère ego et Course-poursuite ;
+sept gestes lisibles reliés à la chronologie existante. Contrôler le corps entier et les
+gros plans tête/main, dans les deux orientations, avec et sans objets. Distinguer un geste
+fonctionnel d’une animation finalisée et documenter les limites observées.
+
+L’intégration évaluée est Unity as a Library : une seule scène plein écran de combat,
+avec le HUD React Native conservé au-dessus. Unity documente uniquement le rendu plein
+écran sur iOS/Android ; ne pas multiplier des vues Unity par personnage. Tester le cycle
+ouvrir/quitter/rejouer, la mise en arrière-plan et la synchronisation avec l’horloge du front.
+Les binaires Unity exportés sont des produits de build reproductibles, pas des sources Git.
+
+### Personnalisation et reprise visuelle
+
+L’auteur retient ensuite deux corps, homme/femme, de taille fixe et une couleur de peau
+personnalisable. Les quatre sports ne doivent plus imposer quatre identités séparées.
+Le premier rendu fabriqué par l’agent (shader en bandes, vêtement triangulé et poses
+procédurales) est explicitement rejeté : trop éloigné des maquettes. Ne pas le reprendre
+comme référence positive et ne pas présenter ce candidat comme une DA approuvée.
+
+La reprise utilise les corps, textures et coiffures riggées **Universal Base Characters**
+de Quaternius et les clips **Universal Animation Library 2**, licences CC0 présentes dans
+les dossiers importés. La tenue et les deux objets sont séparés du corps. Les sources et
+SHA des archives sont conservés ; aucune génération Unity AI n’est impliquée.
+Le transfert d’animations est vérifié sur une scène isolée avec le mannequin du pack et
+le corps cible. Un premier import configuré avec des métadonnées recopiées et un nœud
+de mouvement modifié donnait des déformations sur les deux rigs ; il est supprimé.
+L’import propre Humanoid de `UAL2Clean.fbx`, avec Bake Axis Conversion et les clips
+automatiques, fonctionne. Ne pas réintroduire les métadonnées du fichier rejeté.
+
+Les skills officiels Unity CLI/Pipeline du dépôt Unity-Technologies/skills sont consultés.
+PixelLab MCP est également étudié : la documentation actuelle décrit des sprites et
+animations 2D, pas un modèle 3D riggé. Aucun outil PixelLab n’est connecté à cette session.
+Cette étude ne constitue ni un test de génération PixelLab ni un changement du choix 3D.
+
+État intermédiaire : les deux corps sont visibles dans `Assets/Spike/Arena.unity`, sans
+erreur de compilation/console sur cette exécution. La revue exhaustive des gestes, le
+verdict artistique et la validation iPhone restent à faire. Le pont natif et son export
+ne sont pas encore validés dans l’application.
+
+### Intégration locale en cours
+
+- `modules/grrind-unity` embarque un seul runtime, réutilisé entre atelier et combat.
+  L’atelier de développement `/avatar-3d` propose corps, peau, deux objets, sept gestes,
+  trois cadrages et un combat de démonstration dans `BattleView`.
+- Les frames viennent de l’horloge Reanimated du combat ; Unity échantillonne les clips.
+  Chaque geste possède un temps de contact mesuré dans le clip source. Les premiers clips
+  `Hit_Knockback` et `Slide_Start` sont rejetés après capture : chute/glissade excessives.
+- Les objets suivent tête/main, avec fermeture des doigts de la main porteuse quand l’arme
+  est équipée. Le vêtement est skinné ; ses bords et les proportions restent un point de DA
+  à améliorer. Ces rendus ne sont pas approuvés artistiquement.
+- La capture avec SRP Batcher donnait des matériaux blancs hors peau ; désactiver le batcher
+  dans le pipeline mobile rétablit la palette sur cette exécution. Mesurer les performances
+  dans l’app avant de conclure sur le coût ou sur la cause exacte de ce défaut.
+- `AgentScripts/ReviewAvatars.cs` capture corps/visage/prise pour les deux corps et sept gestes.
+  Attendre des frames de jeu réelles évite des captures mélangeant des acteurs à destruction différée.
+- `scripts/unity-ios.sh` exporte puis compile les frameworks arm64 simulateur et iPhone.
+  Les produits sont ignorés par Git. L’export recrée le projet Xcode généré ; l’append avait
+  conservé une référence Burst disparue. DerivedData est conservé.
+- L’export simulateur est arm64 : le pod exclut x86_64 pour ce module et le target utilisateur
+  lorsqu’un framework local est présent. Aucun support du simulateur Intel n’est revendiqué.
+
+Reproduction : `./scripts/unity-ios.sh`, puis développement iOS habituel. Une modification
+du C# ou des assets embarqués demande de réexporter Unity et de reconstruire le binaire de
+développement ; une modification JS seule reste sur Metro. Le flow autonome prévu est
+`E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/avatar-3d.yaml`.
+
+Limites à ce stade : le flow n’est pas encore validé ; aucun test iPhone/Android ; aucune
+persistance serveur des choix corps/peau. Les objets de combat proviennent du snapshot existant,
+et l’atelier transmet ses choix uniquement au combat de démonstration. Le backend n’a pas été
+modifié par cette tranche. Ne pas présenter cette intégration comme une livraison terminée.
+
 ## Objectif approuvé
 
 Le 18 octobre 2026, l’auteur autorise un prototype Unity 3D avec les outils IA officiels.

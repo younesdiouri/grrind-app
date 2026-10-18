@@ -1,0 +1,54 @@
+appId: app.grrind.dev
+---
+# Standalone presentation, run with E2E_OFFLINE=1. No account or reward mutation.
+- openLink: grrindapp-dev://avatar-3d
+- repeat:
+    times: 2
+    commands:
+      - runFlow:
+          when:
+            visible: "Ouvrir dans.*"
+          commands:
+            - tapOn: "Ouvrir"
+- extendedWaitUntil:
+    visible:
+      id: avatar-3d-ready
+    timeout: 30000
+- takeScreenshot: unity-male-equipped
+- tapOn: Femme
+- tapOn: Peau brune
+- tapOn: Visage
+- takeScreenshot: unity-female-goggles
+- tapOn: Critique
+- tapOn: Prise
+- takeScreenshot: unity-female-grip
+- tapOn: Ensemble
+- scrollUntilVisible:
+    element: Tester dans le combat
+    direction: DOWN
+- tapOn: Tester dans le combat
+- extendedWaitUntil:
+    visible:
+      id: battle-dialogue
+    timeout: 20000
+- tapOn:
+    id: battle-dialogue
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 10000
+- assertVisible:
+    id: unity-renderer-ready
+- takeScreenshot: unity-in-battle
+- tapOn: Passer
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 10000
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: avatar-3d-ready
+    timeout: 20000
+- takeScreenshot: unity-return-to-workshop
