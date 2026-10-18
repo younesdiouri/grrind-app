@@ -49,6 +49,41 @@ Les exemples historiques ne sont pas importés automatiquement dans le projet 6.
 - Aucune performance iPhone/Android, seconde morphologie, chaussure ou DA finale validée.
   La suite du prototype n’attend plus les crédits des générateurs Unity.
 
+## Cible visuelle pour la prochaine passe
+
+Référence relue : `docs/design/references/retro-avatars-approved.png`, planche D validée.
+La migration 3D est autorisée ; cette référence guide les proportions, couleurs, silhouettes
+et le plaisir du loot. Elle ne valide pas les erreurs de raccords des anciens packs.
+
+Premier sujet : **Muscu**, base pieds nus, débardeur gris, short anthracite, cheveux courts,
+peau chaude. Puis **Haltère ego** (masses bleu acier, prise et accents dorés) et **Course-poursuite**
+(monture ivoire, verres ambrés, petites ailes dorées). Aucun accessoire peint dans le corps.
+Ne pas multiplier les avatars avant d’obtenir un premier personnage équipé convaincant.
+
+| Travail | Cible | Preuve attendue |
+| --- | --- | --- |
+| Modèle | Proportions compactes proches des cinq têtes de la planche, épaules et mains lisibles, visage sobre ; vraie tenue neutre | Même cadrage que la référence, base seule puis équipée |
+| Matières | Aplats chauds, quelques niveaux d’ombre, peu de plis, surfaces mates ; supprimer l’effet mannequin bleu brillant | Rendu dans Unity sur fond GRRIND, et détail de peau/tissu/métal |
+| Caméra | Vue de trois quarts peu déformée, cadrage stable | Comparaison à 128 px et en grand |
+| Objets | Volumes autonomes, silhouette et contrastes visibles ; une prise calibrée, doigts ajustés | Vue entière et détails dans les deux orientations et aux transitions |
+| Mouvement | Animations adaptées à la masse du personnage et à l’objet ; contrôler les membres par des cibles quand nécessaire | Main, pieds, visage et contacts examinés en mouvement |
+
+Le rendu rétro doit résulter d’abord des formes, de la palette et des ombres. Une réduction
+de résolution peut être essayée ensuite ; elle ne remplace pas un modèle ou une animation soignés.
+Garder les textes et cadres de l’interface nets. Ce premier essai ne demande aucune refonte Expo.
+
+Documentation technique vérifiée pour préparer cette passe :
+- [Caméra orthographique, Unity 6.3](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Camera-orthographic.html).
+- [Shader Graph 17.3, seuil Step](https://docs.unity3d.com/Packages/com.unity.shadergraph@17.3/manual/Step-Node.html),
+  brique pour construire des ombres en niveaux plutôt qu’un dégradé réaliste.
+- [Animation Rigging 1.4, Two Bone IK](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/constraints/TwoBoneIKConstraint.html)
+  pour diriger les membres vers des cibles ; la pose des doigts et l’ajustement des chaussures
+  restent des travaux distincts, non résolus automatiquement par cette contrainte.
+
+Faisabilité : les mécanismes de rendu et de rig sont disponibles. La qualité comparable à
+la maquette reste à démontrer sur un vrai modèle adapté ; le mannequin technique actuel et
+les images générées d’un personnage équipé ne constituent pas cette preuve.
+
 ## Essai minimal
 
 1. Un humanoïde sportif sans équipement intégré, riggé et animé ; une seconde morphologie
