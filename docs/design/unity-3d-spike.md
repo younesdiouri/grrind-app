@@ -172,6 +172,35 @@ Sources d’accès relues : [offre IA actuelle](https://unity.com/features/ai),
 [prix](https://unity.com/products) et formulaire Unity Store réellement affiché.
 Génération, rigging automatique et animations IA restent non testés tant que l’accès est absent.
 
+## Essai activé par l’auteur — crédits non provisionnés
+
+- Le Dashboard confirme l’abonnement AI actif en essai du 18 octobre au 1er novembre 2026,
+  avec le siège de l’auteur attribué (1/1). Ne plus demander d’activation ou d’achat.
+- Après rafraîchissement réel auprès des services, `AiGeneratorsEnabled` et `CanSpendPoints`
+  valent true. L’organisation du projet, celle de facturation et celle du solde sont toutes
+  `9071006223181`. Le service renvoie pourtant `PointsAllocated: 0, PointsAvailable: 0`.
+  Le Dashboard affiche également `No bundles or subscriptions` dans Manage credits, tandis
+  que My Products affiche l’essai actif. Cette incohérence empêche la génération.
+- Le catalogue des modèles est accessible : Tripo 3.1/P2, Hunyuan 3.1, rigging bipède Tripo,
+  Unity Text to Motion et Uthana sont notamment listés. Leur présence ne prouve pas une
+  génération réussie ou la qualité de leurs résultats.
+- Sonde reproductible `AgentScripts/GeneratorProbe.cs` : `RefreshAccess`, `Models`,
+  `QuoteReference`. Elle lit l’API interne de la façade Assistant 2.20 via réflexion dans ce
+  spike isolé ; aucun changement des droits, du solde ou du package installé. Cette liaison
+  n’est pas un contrat d’intégration de production.
+- Un essai de devis 3D Tripo 3.1 à partir du texte du brief est refusé avant génération :
+  image de référence requise, malgré `SupportsTextPrompt` dans la description du catalogue.
+  Un devis d’image Gemini 3.1 Flash 1024 × 1024 avec suppression du fond aboutit : 5 crédits.
+  Le callback annule avant création d’asset et avant génération. Aucune dépense ni asset IA.
+- L’incident de crédit reste externe et non résolu. Des témoignages sur le forum Unity
+  décrivent une arrivée des crédits différée ; il s’agit d’un indice, pas d’une cause
+  démontrée ni d’une garantie de délai pour ce compte.
+- Preuve locale : `artifacts/unity-spike/unity-ai-empty-balance.png`.
+  Brouillon de demande au support préparé localement, non envoyé.
+
+Sources : [crédits indisponibles](https://docs.unity.com/en-us/ai/credits/credits-troubleshoot),
+[témoignages sur l’essai](https://discussions.unity.com/t/ai-free-trial-isnt-working/1721860).
+
 ## Sources officielles
 
 - [CLI : installation et pilotage](https://docs.unity.com/en-us/unity-cli/use-unity-cli).
