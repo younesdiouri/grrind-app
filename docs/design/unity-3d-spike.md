@@ -9,6 +9,46 @@ Les personnages, objets et le pixel art précédents peuvent être remplacés. L
 et le plaisir de s’équiper restent l’intention ; aucune migration de production n’est autorisée
 par ce spike. Le verdict doit reposer sur des captures réelles et des mesures disponibles.
 
+## Correction de méthode : développer sans l’Assistant Unity
+
+La génération d’assets par Unity AI est une option du spike, pas un préalable à son développement.
+Le blocage de crédits décrit ci-dessous concerne uniquement ce service. L’agent peut écrire le C#,
+construire les scènes, fabriquer des équipements simples, piloter les rigs et vérifier les rendus
+avec la CLI et Pipeline déjà opérationnelles. Les skills sont des instructions techniques, pas
+un service de génération. L’assimilation précédente « pas de crédits = spike bloqué » était erronée.
+
+La reprise utilise le mannequin riggé déjà installé et une haltère construite par code. Il reste
+un support technique, sans validation de DA. Une base de personnage adaptée et des animations
+soignées restent nécessaires pour un résultat final : le moteur ne les fournit pas par défaut.
+
+Références : [CLI indépendante de Unity AI](https://docs.unity.com/en-us/unity-cli/replace-mcp-server-unity-cli),
+[exemple Codex présenté par Unity](https://unity.com/blog/unity-plugin-codex),
+[exemples C# d’animation et IK](https://github.com/Unity-Technologies/animation-jobs-samples).
+Les exemples historiques ne sont pas importés automatiquement dans le projet 6.3.
+
+### Premier banc C# exécutable
+
+- `Assets/Spike/CombatBench.unity`, construit avec `AgentScripts/BuildCombatBench.cs`.
+- `Assets/Spike/CombatBench.cs` pilote les muscles humanoïdes, la caméra et des commandes de
+  contrôle : garde, extension du bras, recul du buste, flexion, phase, rotation de caméra,
+  vues entier/tête/main et affichage de l’haltère. Ce sont des poses de test, pas des clips
+  de combat validés ni une attaque avec fente.
+- Haltère fabriquée en cinq volumes, deux matériaux, sans collision physique. Un seul repère
+  local sur RightHand, calibré pour ce mannequin ; aucun repositionnement propre à une pose.
+  Le mannequin vient du FBX déjà installé avec le package Unity, sans appel à ses services IA.
+- Itération visuelle : fermeture des doigts, centrage du manche, dégagement du visage et de
+  la main opposée, correction du sens des articulations et de la hauteur du bassin en flexion.
+  La correction de hauteur n’est pas un solveur de contacts au sol : déplacement des pieds,
+  pouce et prise exacte doivent encore être travaillés pour des animations finales.
+- Vérification finale : compilation sans erreur, quatre poses capturées en Play après avance
+  des frames, gros plan de main inspecté. Mouvement réel de la main vérifié en lecture automatique
+  par attente de changement de sa position (condition satisfaite en 112 ms, deux frames observées).
+  Console Unity courante sans erreur/avertissement.
+  Captures : `artifacts/unity-spike/bench-reviewed-0.png` à `bench-reviewed-3.png`,
+  `bench-reviewed-hand.png`. Valeur d’exécution en arrière-plan rétablie, Play arrêté.
+- Aucune performance iPhone/Android, seconde morphologie, chaussure ou DA finale validée.
+  La suite du prototype n’attend plus les crédits des générateurs Unity.
+
 ## Essai minimal
 
 1. Un humanoïde sportif sans équipement intégré, riggé et animé ; une seconde morphologie
