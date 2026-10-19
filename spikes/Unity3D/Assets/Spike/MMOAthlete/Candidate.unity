@@ -511,6 +511,7 @@ MonoBehaviour:
   malePrefab: {fileID: 7902543644643404134, guid: a558438dd2cfd4f68bab3bdc994dcf2c, type: 3}
   femalePrefab: {fileID: 7902543644643404134, guid: a558438dd2cfd4f68bab3bdc994dcf2c, type: 3}
   arenaCamera: {fileID: 1667685963}
+  contactShadow: {fileID: 0}
 --- !u!4 &2113521849
 Transform:
   m_ObjectHideFlags: 0

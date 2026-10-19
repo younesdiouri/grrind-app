@@ -12,6 +12,7 @@ public sealed class MuscuPose : MonoBehaviour
     public Transform weapon,glasses;
     public Transform[] shoes=Array.Empty<Transform>();
     public GameObject bareFeet;
+    public Transform contactShadow;
     public int stance,view;
     public float phase=.45f,azimuth=32,headViewOffset=.1f,headViewSize=.23f,gripCurl=-.72f,thumbBase=-.2f,thumbSpread;
     public bool inspect=true,debugControls=true,autoplay,grip;
@@ -77,6 +78,11 @@ public sealed class MuscuPose : MonoBehaviour
         }
         head.localScale=headScale;
         actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));
+        if(contactShadow!=null)
+        {
+            var hips=actor.GetBoneTransform(HumanBodyBones.Hips).position;
+            contactShadow.position=new Vector3(hips.x,.004f,hips.z);
+        }
         if(inspect&&inspectionCamera!=null)
         {
             var target=view==1?head.position+Vector3.up*headViewOffset:view==2?actor.GetBoneTransform(HumanBodyBones.RightHand).position:view==3?(actor.GetBoneTransform(HumanBodyBones.LeftFoot).position+actor.GetBoneTransform(HumanBodyBones.RightFoot).position)*.5f:placement+Vector3.up*.95f;

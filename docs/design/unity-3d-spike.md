@@ -68,6 +68,21 @@ Les très gros plans montrent encore la topologie stylisée et les textures gén
 personnage n’est pas présenté comme une sculpture retopologisée manuellement au niveau AAA.
 Les animations du pack sont adaptées à la présentation du combat, pas une nouvelle chorégraphie.
 
+## Rendu stylisé (#217)
+
+`GRRIND/Painted Toon` remplace `URP/Lit` sur le corps et les objets : la texture porte sa
+lumière peinte, le shader n'ajoute qu'une rampe douce à deux tons depuis la lumière principale,
+un rim et un contour inverted hull. Les verres ambre restent transparents en `URP/Lit`.
+L'arène (`BuildArena.Create`) a une seule lumière clé latérale, un halo de sol et une ombre de
+contact sous chaque combattant (`GRRIND/Contact Shadow`, sans shadow map). Le combat passe en
+caméra perspective (30°, légèrement plongeante, même cadrage que l'ancien ortho 1,15) ;
+l'inspecteur garde ses gros plans orthographiques calibrés.
+
+`BuildMMO.CaptureCombat` capture le cadrage du combat, `BuildMMO.Board` compose la planche G4.
+Planche actuelle : `references/flyff-3d-proposal/actual-unity/g4-toon-board.png`. **G4 ne
+passe pas encore** : l'ombrage se rapproche du concept, mais les lunettes ont perdu leurs ailes,
+les objets restent en aplats et le visage se lit mal. C'est le périmètre de #219, pas du rendu.
+
 ## Outils, sources et reconstruction
 
 Workflow et provenance détaillés : `spikes/art-source/README.md`.

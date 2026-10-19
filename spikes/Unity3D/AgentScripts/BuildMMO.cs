@@ -14,9 +14,12 @@ public static class BuildMMO
     {
         string path=Folder+"/"+name+".mat";
         var mat=AssetDatabase.LoadAssetAtPath<Material>(path);
-        if(mat==null){mat=new Material(Shader.Find("Universal Render Pipeline/Lit"));AssetDatabase.CreateAsset(mat,path);}
-        mat.shader=Shader.Find("Universal Render Pipeline/Lit");mat.SetColor("_BaseColor",color);
-        mat.SetFloat("_Cull",2);mat.SetFloat("_Smoothness",.12f);mat.SetTexture("_BaseMap",texture);EditorUtility.SetDirty(mat);return mat;
+        var shader=Shader.Find("GRRIND/Painted Toon");
+        if(mat==null){mat=new Material(shader);AssetDatabase.CreateAsset(mat,path);}
+        mat.shader=shader;
+        mat.SetColor("_BaseColor",color);
+        mat.SetTexture("_BaseMap",texture);
+        EditorUtility.SetDirty(mat);return mat;
     }
     public static string Create()
     {
@@ -109,6 +112,8 @@ public static class BuildMMO
             var mat=Material("Gear-"+(imported!=null?imported.name:"Default"),color);
             if(imported!=null&&imported.name.Contains("Amber"))
             {
+                mat.shader=Shader.Find("Universal Render Pipeline/Lit");
+                mat.SetFloat("_Smoothness",.6f);
                 color.a=.24f;mat.SetColor("_BaseColor",color);mat.SetFloat("_Surface",1);mat.SetFloat("_SrcBlend",5);mat.SetFloat("_DstBlend",10);mat.SetFloat("_ZWrite",0);mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");mat.renderQueue=3000;EditorUtility.SetDirty(mat);
             }
             renderer.sharedMaterial=mat;
@@ -129,6 +134,46 @@ public static class BuildMMO
         string path=Path.GetFullPath("../../artifacts/unity-spike/mmo-v1/"+name+".png");Directory.CreateDirectory(Path.GetDirectoryName(path));
         try{camera.targetTexture=rt;camera.Render();RenderTexture.active=rt;pixels.ReadPixels(new Rect(0,0,640,900),0,0);pixels.Apply();File.WriteAllBytes(path,pixels.EncodeToPNG());}
         finally{camera.targetTexture=old;RenderTexture.active=prev;UnityEngine.Object.DestroyImmediate(pixels);rt.Release();UnityEngine.Object.DestroyImmediate(rt);}
+        return path;
+    }
+    // Combat framing (perspective, both fighters) for the G4 board; inspection captures stay orthographic.
+    public static async Task<string> CaptureCombat(string name,int playerStance=1,int enemyStance=2,float phase=.5f,bool equipment=true)
+    {
+        if(!Application.isPlaying)throw new Exception("Enter Play first");
+        Application.runInBackground=true;
+        var bridge=UnityEngine.Object.FindFirstObjectByType<BattleBridge>();
+        var gear=new BattleBridge.AvatarConfig{weapon=equipment,glasses=equipment,boots=equipment};
+        bridge.Configure(JsonUtility.ToJson(new BattleBridge.Configuration{player=gear,enemy=gear}));
+        bridge.Present(JsonUtility.ToJson(new BattleBridge.Frame{
+            player=new BattleBridge.ActorFrame{pose=playerStance,phase=phase},
+            enemy=new BattleBridge.ActorFrame{pose=enemyStance,phase=phase}}));
+        int target=Time.frameCount+4;float deadline=Time.realtimeSinceStartup+10;
+        while(Time.frameCount<target){if(Time.realtimeSinceStartup>deadline)throw new Exception("Frames stalled");await Task.Yield();}
+        const int width=1600,height=740;
+        var camera=bridge.arenaCamera;var rt=new RenderTexture(width,height,24){antiAliasing=4};
+        var prev=RenderTexture.active;var old=camera.targetTexture;var pixels=new Texture2D(width,height,TextureFormat.RGB24,false);
+        string path=Path.GetFullPath("../../artifacts/unity-spike/mmo-v1/"+name+".png");Directory.CreateDirectory(Path.GetDirectoryName(path));
+        try{camera.targetTexture=rt;camera.Render();RenderTexture.active=rt;pixels.ReadPixels(new Rect(0,0,width,height),0,0);pixels.Apply();File.WriteAllBytes(path,pixels.EncodeToPNG());}
+        finally{camera.targetTexture=old;RenderTexture.active=prev;UnityEngine.Object.DestroyImmediate(pixels);rt.Release();UnityEngine.Object.DestroyImmediate(rt);}
+        return path;
+    }
+    // G4 board: images side by side at a common height, concept first. Paths are relative to the repository.
+    public static string Board(string name,string[] images,int height=900)
+    {
+        var sources=images.Select(file=>{var t=new Texture2D(2,2);t.LoadImage(File.ReadAllBytes(Path.GetFullPath("../../"+file)));return t;}).ToArray();
+        var widths=sources.Select(t=>Mathf.RoundToInt(t.width*(float)height/t.height)).ToArray();
+        const int gap=24;
+        var board=new Texture2D(widths.Sum()+gap*(sources.Length-1),height,TextureFormat.RGB24,false);
+        board.SetPixels(Enumerable.Repeat(new Color(.0196f,.0314f,.0863f),board.width*height).ToArray());
+        int x=0;
+        for(int i=0;i<sources.Length;i++)
+        {
+            for(int px=0;px<widths[i];px++)for(int py=0;py<height;py++)
+                board.SetPixel(x+px,py,sources[i].GetPixelBilinear((px+.5f)/widths[i],(py+.5f)/height));
+            x+=widths[i]+gap;UnityEngine.Object.DestroyImmediate(sources[i]);
+        }
+        string path=Path.GetFullPath("../../"+name);Directory.CreateDirectory(Path.GetDirectoryName(path));
+        File.WriteAllBytes(path,board.EncodeToPNG());UnityEngine.Object.DestroyImmediate(board);
         return path;
     }
     public static async Task<string> Review()
