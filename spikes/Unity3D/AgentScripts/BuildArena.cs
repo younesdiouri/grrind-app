@@ -33,15 +33,25 @@ public static class BuildArena
         background.clearFlags = CameraClearFlags.SolidColor;
         background.backgroundColor = night;
 
-        // The toon shader reads the main light only: one key from above and to the side, so the ramp shows.
+        // Key from above and to the side; the toon shader of the former MMO avatar reads only this one.
         var key = new GameObject("Key", typeof(Light)).GetComponent<Light>();
         key.type = LightType.Directional;
         key.transform.rotation = Quaternion.Euler(40, 125, 0);
-        key.intensity = 1;
         key.color = new Color(1, .98f, .95f);
         key.shadows = LightShadows.None;
-        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-        RenderSettings.ambientLight = new Color(.5f, .52f, .57f);
+        key.intensity = 1.25f;
+        // Back light towards the camera: the satin rim of the concept.
+        var rim = new GameObject("Rim", typeof(Light)).GetComponent<Light>();
+        rim.type = LightType.Directional;
+        rim.transform.rotation = Quaternion.Euler(25, 30, 0);
+        rim.intensity = 1.1f;
+        rim.color = new Color(.62f, .85f, 1);
+        rim.shadows = LightShadows.None;
+        // Three-tone sky: cool from above, warm bounce from the floor, as on the concept board.
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+        RenderSettings.ambientSkyColor = new Color(.56f, .63f, .86f);
+        RenderSettings.ambientEquatorColor = new Color(.42f, .41f, .5f);
+        RenderSettings.ambientGroundColor = new Color(.3f, .24f, .22f);
 
         var shadow = Blob(ShadowMaterial, new Color(0, 0, .02f, .6f), 3000);
         // A soft lit floor behind the fighters, so their contact shadows read on the night background.

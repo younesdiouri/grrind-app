@@ -55,9 +55,10 @@ n'existe pas, G1 et G4 ne peuvent pas passer et aucune génération payante ne p
   poignée laiton, Sprint-semelle son volume de basket marine/crème/or. Un objet qui a perdu
   ses traits est faux, même bien ajusté.
 - Corps et objets ont le **même traitement** : même shader, même saturation, même contour.
-- Rendu cible en moteur : ombrage stylisé net et lumineux, rim, contour léger, ombre de
-  contact, caméra perspective de trois quarts. L'arène de #217 en fournit la base ; ses
-  réglages (teinte d'ombre, contour) se reprennent sur le nouveau concept.
+- Rendu cible en moteur : URP Lit satiné (lissé .38, sans métal ni reflets d'environnement),
+  ciel ambiant à trois tons, lumière clé et contre-jour cyan pour le liseré, ombre de contact,
+  caméra perspective de trois quarts (`BuildChunky`, `BuildArena`). Le shader toon de #217
+  ne sert plus qu'à l'ancien avatar MMO.
 
 ## Rôles et budgets
 
@@ -89,6 +90,23 @@ Interdits, tous observés dans #214 :
   demander la pièce, pas le tout amputé.
 - Écrire du C# ou du Python compacté sur une ligne. Ces scripts se relisent en revue.
 
+## Meshy : ce qui a été mesuré (#219)
+
+`spikes/art-source/meshy.py` (clé dans `~/.config/grrind/meshy.key`, jamais dans le dépôt)
+consigne chaque tâche et ses crédits dans `tasks.json`. Réglages retenus et pourquoi :
+
+- `meshy-7.1`, `geometry_resolution: 2k`, remesh à 30 000 triangles, texture 2K : budget
+  fixé à la génération.
+- `pose_mode` vide et `image_enhancement: false` : une T-pose forcée rouvre les poings, et
+  l'amélioration redessine le visage.
+- L'auto-rig Meshy n'a **aucun os de doigt** : les poings sont sculptés fermés dans l'image
+  d'entrée, les objets tenus s'attachent à l'os de la main.
+- Le FBX riggé est en centimètres sous une armature à 0,01 : le réexporter avec
+  `normalize_meshy_rig.py` (Blender) avant Unity, sinon le Humanoid s'anime cent fois trop
+  grand. Supprimer l'ancien `.meta` du FBX à chaque nouveau rig.
+- Un prompt d'édition ne doit pas décrire de « creux » ou de « prise » : le modèle ajoute
+  l'objet suggéré. Demander des poings vides.
+
 ## Postures
 
 Sept gestes, indexés par `UNITY_POSES` dans `unityFrame.ts` : `idle` (garde) 0, `attack` 1,
@@ -105,10 +123,15 @@ ou keys Unity), il n'est pas « adapté à la présentation ».
 Chaque barrière bloque la suivante. Un échec renvoie à l'étape qui l'a produit : une image
 fausse se régénère en image, pas en mesh.
 
-1. **G1 — Image.** Un seul sujet en T ou A-pose, fond uni, membres entiers, doigts séparés,
-   pas de planche multi-vues. Proportions et traits comparés au concept approuvé.
+1. **G1 — Image.** Un seul sujet en T-pose, fond uni, membres entiers, pas de planche
+   multi-vues. Dériver l'image **du concept lui-même** (pas d'une image intermédiaire) et
+   **mesurer** les proportions : `python3 -I spikes/art-source/heads_tall.py <image>` doit
+   donner celles du concept (≈ 3,3–3,5 têtes). Une T-pose à 4 têtes a déjà perdu la DA
+   (#219) ; l'œil ne l'a pas vu, la mesure si.
 2. **G2 — Mesh brut.** Les cinq contrôles GameFactory (bon objet, dos, complet et debout,
-   pas de sol, budget), plus l'échelle à 1,70 m. Rejet : changer prompt, seed ou budget et
+   pas de sol, budget), plus l'échelle à 1,70 m. Les miniatures Meshy sont en perspective :
+   mesurer les proportions sur `BuildChunky.Silhouette` (bind pose orthographique) avec le
+   même `heads_tall.py` qu'en G1. Rejet : changer prompt, seed ou budget et
    noter lequel, puis régénérer.
 3. **G3 — Rig et postures.** Planche des sept gestes au contact, de face et de trois quarts,
    avec et sans chaque objet : aucune interpénétration, poignets, chevilles et prise propres.

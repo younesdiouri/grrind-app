@@ -121,5 +121,51 @@
     "status": "SUCCEEDED",
     "credits": 5,
     "error": null
+  },
+  {
+    "task": "01a1554d-218c-75f6-ac26-23f50250afc2",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/concept.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Reference image: a character concept board. Redraw ONLY the BASE character shown on the far left (barefoot, grey tank top, navy shorts with ivory side stripes), keeping his exact chunky cartoon proportions from the board: a very big head (including hair the head is about 30 percent of total body height, the figure is only about 3.3 heads tall), large round eyes, thick eyebrows, round friendly face with a small smile, short stubby legs, very big hands and feet, broad shoulders. Do NOT make him taller, slimmer or more realistic than on the board. New pose: strict front view T-pose, both arms straight out horizontally at shoulder height, both hands closed into big empty fists holding nothing, legs slightly apart, feet pointing forward. Same smooth saturated 3D mobile game rendering, neutral even lighting with no coloured rim light. Flat plain light grey background, no floor, no shadow, no text, no items, single character, full body visible from top of hair to toes with margin.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a1554d-e195-7275-b547-185cfd21d2eb",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "",
+      "image_enhancement": false,
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1554e-e6ab-7429-b093-8aebdf174f98",
+    "kind": "rigging",
+    "input": "01a1554d-e195-7275-b547-185cfd21d2eb",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
   }
 ]

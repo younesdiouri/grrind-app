@@ -43,7 +43,7 @@ public static class BuildChunky
 
         if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Spike", "ChunkyAthlete");
         var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(Source + "/athlete-basecolor.png");
-        var body = ToonMaterial(Folder + "/Body.mat", texture);
+        var body = SoftMaterial(Folder + "/Body.mat", texture);
         foreach (var renderer in actor.GetComponentsInChildren<SkinnedMeshRenderer>())
         {
             renderer.sharedMaterials = new[] { body };
@@ -66,6 +66,37 @@ public static class BuildChunky
         return $"Chunky avatar saved, measured {measured:F3} m before normalisation.";
     }
 
+    // G2: the bind pose seen from the front, orthographic on flat grey, measured by heads_tall.py
+    // exactly like the input image.
+    public static string Silhouette(string name)
+    {
+        var actor = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Source + "/Athlete.fbx"));
+        var bounds = Bounds(actor);
+        var camera = new GameObject("Silhouette camera").AddComponent<Camera>();
+        camera.orthographic = true;
+        camera.orthographicSize = bounds.size.y * .6f;
+        camera.transform.position = bounds.center + Vector3.back * 5;  // the model faces -Z
+        camera.transform.LookAt(bounds.center);
+        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.backgroundColor = new Color(.78f, .78f, .78f);
+        const int width = 1200, height = 1000;
+        var target = new RenderTexture(width, height, 24);
+        var pixels = new Texture2D(width, height, TextureFormat.RGB24, false);
+        camera.targetTexture = target;
+        camera.Render();
+        RenderTexture.active = target;
+        pixels.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+        RenderTexture.active = null;
+        var path = System.IO.Path.GetFullPath("../../artifacts/unity-spike/chunky/" + name + ".png");
+        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
+        System.IO.File.WriteAllBytes(path, pixels.EncodeToPNG());
+        UnityEngine.Object.DestroyImmediate(camera.gameObject);
+        UnityEngine.Object.DestroyImmediate(actor);
+        UnityEngine.Object.DestroyImmediate(pixels);
+        target.Release();
+        return path;
+    }
+
     static Bounds Bounds(GameObject obj)
     {
         var renderers = obj.GetComponentsInChildren<Renderer>();
@@ -74,19 +105,23 @@ public static class BuildChunky
         return bounds;
     }
 
-    static Material ToonMaterial(string path, Texture texture)
+    // Modern mobile look: soft satin Lit shading under the arena's sky light and back rim light.
+    static Material SoftMaterial(string path, Texture texture)
     {
         var material = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (material == null)
         {
-            material = new Material(Shader.Find("GRRIND/Painted Toon"));
+            material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             AssetDatabase.CreateAsset(material, path);
         }
+        material.shader = Shader.Find("Universal Render Pipeline/Lit");
         material.SetTexture("_BaseMap", texture);
-        // Saturated chunky style: neutral shadow (no lavender on white cloth), lighter outline.
-        material.SetColor("_ShadowTint", new Color(.72f, .7f, .74f));
-        material.SetFloat("_OutlineWidth", .0012f);
-        material.SetFloat("_RimStrength", .18f);
+        material.SetColor("_BaseColor", Color.white);
+        material.SetFloat("_Metallic", 0);
+        material.SetFloat("_Smoothness", .38f);
+        // No skybox in the arena: environment reflections would only grey the colours.
+        material.SetFloat("_EnvironmentReflections", 0);
+        material.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
         EditorUtility.SetDirty(material);
         return material;
     }
