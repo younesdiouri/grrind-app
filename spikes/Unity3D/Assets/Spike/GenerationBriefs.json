@@ -1,0 +1,53 @@
+{
+  "status": "prepared-not-generated",
+  "style": "Stylized 3D RPG for a sports app. Human proportions, simple readable shapes, restrained surface detail, matte materials, appealing game characters. No photorealism, chibi proportions, painted-on equipment or pixel filter. Preserve separation between body and wearable items.",
+  "requests": [
+    {
+      "id": "athlete-lean",
+      "kind": "3d-object",
+      "purpose": "Visual prototype only. Generated mesh is not assumed rigged.",
+      "prompt": "A complete lean athletic adult human game character in a neutral A pose, arms slightly away from torso, fingers and legs separated. Short dark hair, neutral grey sleeveless training top and plain charcoal shorts. Bare feet, bare head, no glasses, weapon, jewellery, backpack, hood or shoes. Stylized RPG character, clean anatomical masses, matte colours, restrained detail, no scenery or text. Symmetric neutral pose suitable for subsequent rigging."
+    },
+    {
+      "id": "athlete-broad",
+      "kind": "3d-object",
+      "purpose": "Second morphology; verify equipment fitting independently.",
+      "prompt": "A complete broad athletic adult human game character with a wider face and shoulders, in a neutral A pose, arms slightly away from torso, fingers and legs separated. Short auburn hair, neutral grey sleeveless training top and plain charcoal shorts. Bare feet, bare head, no glasses, weapon, jewellery, backpack, hood or shoes. Same restrained stylized RPG rendering as the lean athlete, clean anatomical masses and matte colours. No scenery or text."
+    },
+    {
+      "id": "pursuit-goggles",
+      "kind": "3d-object",
+      "prompt": "One isolated wearable pair of sporty RPG speed goggles, thick ivory frames, warm copper lenses and short swept-back gold side arms. A real three-dimensional wearable object with a clear nose bridge and two arms extending behind the lenses toward the ears. Hollow space for the wearer's face, no head, skin, hair, mannequin, stand, lettering or decorative rear arch above the lenses. Simple solid construction, restrained detail and matte materials."
+    },
+    {
+      "id": "training-dumbbell",
+      "kind": "3d-object",
+      "prompt": "One isolated single-hand training dumbbell for a stylized sports RPG. Two compact navy octagonal weight heads and a straight exposed metallic grip in the centre. Clearly separated handle and heads, room for a closed human fist around the grip. Small warm brass end caps, matte finish, clean simple silhouette. No hand, body, stand, floating particles or lettering."
+    },
+    {
+      "id": "training-shoe",
+      "kind": "3d-object",
+      "prompt": "One isolated LEFT training shoe for a stylized sports RPG character, charcoal upper with warm yellow accents and a thick rubber sole. Enclosed toe and heel, raised ankle collar, hollow opening for the ankle, anatomically plausible shoe volume. Clean simple shape, matte finish, limited details. No foot, leg, body, second shoe, stand or lettering."
+    },
+    {
+      "id": "guard",
+      "kind": "humanoid-animation",
+      "prompt": "An athletic person in a balanced combat guard, feet planted shoulder width apart, knees soft, right hand holding a short vertical grip, left hand guarding the torso. Subtle breathing. No locomotion or head spin."
+    },
+    {
+      "id": "attack",
+      "kind": "humanoid-animation",
+      "prompt": "From a balanced guard, an athletic person makes one controlled forward lunge and extends the right arm in a short straight strike, keeping the right fist closed around a vertical handle. Left hand stays in guard. Return to the starting stance. No weapon switching, somersault or large body turn."
+    },
+    {
+      "id": "recoil",
+      "kind": "humanoid-animation",
+      "prompt": "An athletic person in combat guard reacts to one impact with a short backward torso recoil, keeping balance and both feet in contact with the ground. Right hand remains closed around a vertical handle; left hand protects the chest. Recover to guard without turning around."
+    },
+    {
+      "id": "dodge",
+      "kind": "humanoid-animation",
+      "prompt": "An athletic person makes one low defensive duck from combat guard, bending knees and hips while keeping balance, then returns to guard. Right hand holds a short vertical grip away from the torso, left hand guards the face. Feet remain planted. No roll, jump or change of weapon hand."
+    }
+  ]
+}

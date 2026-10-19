@@ -49,3 +49,9 @@ example
 # chaque `expo prebuild` — même raison que `/ios` plus haut : un artefact généré qui
 # traîne en versionné finit par décrire une couleur qui n'existe plus.
 /targets/*/Assets.xcassets
+
+# Local Blender working scenes; source GLB, scripts and Unity exports are versioned.
+/spikes/art-source/**/*.blend*
+/spikes/art-source/mmo-athlete-v1/athlete-basecolor.*
+/spikes/art-source/mmo-athlete-v1/gear/*.fbx
+/spikes/art-source/mmo-athlete-v1/gear/*.glb

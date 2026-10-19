@@ -1,0 +1,19 @@
+{
+  "author": "Quaternius",
+  "source": "https://quaternius.com/packs/universalbasecharacters.html",
+  "download": "https://quaternius.itch.io/universal-base-characters",
+  "license": "CC0-1.0",
+  "archiveSha256": "fdbf1804c90dfc1ea03e992bff7da2dfd1a79318e13270a660180f9308455f40",
+  "selectedFiles": [
+    "Base Characters/Unity/Superhero_Male_FullBody.fbx",
+    "Base Characters/Unity/Superhero_Female_FullBody.fbx",
+    "Base Characters/Textures/T_Superhero_Male_Ligh.png",
+    "Base Characters/Textures/T_Superhero_Male_Dark.png",
+    "Base Characters/Textures/T_Superhero_Female_Light_BaseColor.png",
+    "Base Characters/Textures/T_Eye_Brown.png",
+    "Hairstyles/Rigged to Head Bone/FBX (Unity)/Hair_SimpleParted.fbx",
+    "Hairstyles/Rigged to Head Bone/FBX (Unity)/Hair_Buns.fbx",
+    "License_Standard.txt"
+  ],
+  "changes": "Clothing, proportions, materials and equipment authored in this project."
+}
