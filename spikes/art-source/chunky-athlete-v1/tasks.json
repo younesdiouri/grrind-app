@@ -1,0 +1,125 @@
+[
+  {
+    "task": "01a15538-7009-70bc-bb41-57c54fe1cf9e",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "t-pose",
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1553a-8fa2-777a-b490-904d247dab38",
+    "kind": "rigging",
+    "input": "01a15538-7009-70bc-bb41-57c54fe1cf9e",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a1553b-5fc0-7303-bbc3-32d91b48bb2b",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/tpose.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Edit only two things on this character, keep everything else identical (identity, proportions, big head, hair, skin, grey tank top, navy shorts with ivory stripes, bare feet, rendering style, flat light grey background, strict front view T-pose with arms horizontal). 1) Both hands are now closed into firm fists, knuckles facing forward, thumbs wrapped over the fingers, with a clear round hollow through each fist as if gripping a horizontal bar. 2) The face has the friendly confident small smile of a mobile game hero, relaxed eyebrows. Keep the head large relative to the body. Single character, full body from hair to toes, no shadow, no floor, no text.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a1553c-0b9c-752d-916d-658b156753ba",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/tpose.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Edit only two things on this character, keep everything else identical (identity, proportions, big head, hair, skin, grey tank top, navy shorts with ivory stripes, bare feet, rendering style, flat light grey background, strict front view T-pose with arms horizontal). 1) Both hands are closed into big empty fists, fingers curled into the palm, thumbs wrapped over the fingers. The hands hold nothing at all. 2) The face has the friendly confident small smile of a mobile game hero, relaxed eyebrows. Keep the head large relative to the body. Single character, full body from hair to toes, no objects, no shadow, no floor, no text.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a1553c-b7cc-70e4-9c21-d6befcb27da7",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "t-pose",
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1553e-b475-776e-ac08-6224fb59cc56",
+    "kind": "rigging",
+    "input": "01a1553c-b7cc-70e4-9c21-d6befcb27da7",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a1553f-5739-755f-86b8-82d60cca4202",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "",
+      "image_enhancement": false,
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a15540-e483-759d-946d-4d7dbe938dd9",
+    "kind": "rigging",
+    "input": "01a1553f-5739-755f-86b8-82d60cca4202",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  }
+]
