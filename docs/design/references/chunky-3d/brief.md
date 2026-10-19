@@ -33,3 +33,32 @@ background, no floor, no shadow, no text, single character only.
 ```
 
 Les objets ne se génèrent pas sur le corps : suivre les routes du skill `grrind-character-art`.
+
+## Style peint main (19 octobre 2026, deuxième passe)
+
+Cible : rendu 3D de jeu peint main (référence de style : Waven, jamais reproduite). Le
+générateur reprend le style de son entrée : l'image doit déjà ressembler à un modèle 3D peint.
+
+### Planche de style → `concept.png`
+
+```text
+Two full-body views (three-quarter front, and three-quarter back) of the same original young
+adult athlete character for a mobile 3D tactics game, rendered as a real-time 3D game model with
+hand-painted textures: stylized low-poly forms with clean simple planes, chunky proportions about
+3.5 heads tall, large head, oversized mitten-like hands, big boots-like feet, short legs, broad
+shoulders. Soft painted lighting from above, painted ambient occlusion in creases, soft warm
+highlights, almost no outlines, no coloured rim light, no gloss. Simple sporty outfit with clear
+colour blocks: grey sleeveless training top with an orange trim, navy shorts with ivory side
+stripes, wrist bands, chunky navy and cream sneakers. Short dark brown hair in a few big sculpted
+locks, friendly confident face with large expressive eyes. Plain white background, soft round
+contact shadow under each figure. No text, no logo, no realistic anatomy or muscle striation.
+```
+
+### Entrée image-vers-3D → `tpose.png` (planche en référence)
+
+```text
+The same character from the reference image, front view, strict symmetrical T-pose, arms
+horizontal, both hands closed into big empty fists holding nothing, legs slightly apart, full
+body from hair to shoes, same hand-painted 3D game model rendering and soft top lighting, no
+rim light, flat plain light grey background, no floor, no shadow, no text, single character.
+```

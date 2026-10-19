@@ -190,9 +190,10 @@ public static class BuildChunky
         }
         material.shader = Shader.Find("GRRIND/Painted Toon");
         material.SetTexture("_BaseMap", texture);
-        material.SetColor("_ShadowTint", new Color(.88f, .86f, .92f));
+        // Neutral: a coloured rim or shadow tint washes out the painted detail (#219, blue cast).
+        material.SetColor("_ShadowTint", new Color(.92f, .9f, .88f));
         material.SetFloat("_RampSoftness", .35f);
-        material.SetFloat("_RimStrength", .12f);
+        material.SetFloat("_RimStrength", 0);
         material.SetColor("_OutlineColor", new Color(.12f, .07f, .06f));
         material.SetFloat("_OutlineWidth", .0016f);
         EditorUtility.SetDirty(material);
