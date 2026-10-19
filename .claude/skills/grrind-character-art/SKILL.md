@@ -53,8 +53,8 @@ Elle se lit sur `concept-v2.png` ; ce qui suit est ce qu'un rendu doit reproduir
 - Corps et objets ont le **même traitement** : un objet en aplat de couleur à côté d'un corps
   peint est un défaut, pas une étape.
 - Rendu cible en moteur : ombrage toon ou unlit sur la texture peinte, rim light, contour,
-  ombre de contact au sol, caméra perspective de trois quarts. Tant que ce rendu n'existe
-  pas dans `Arena.unity`, la barrière G4 ne peut pas passer.
+  ombre de contact au sol, caméra perspective de trois quarts. C'est en place depuis #217
+  (`GRRIND/Painted Toon`, `BuildArena.Create`) : tout nouveau matériau d'avatar l'utilise.
 
 ## Rôles et budgets
 
@@ -112,6 +112,7 @@ fausse se régénère en image, pas en mesh.
    `AgentScripts/BuildMMO.cs`, entrée `Review`, produit la base de cette planche.
 4. **G4 — DA, validée par l'auteur.** Image côte à côte : `concept-v2.png` à gauche, rendu
    Unity de `Arena.unity` au cadrage et à l'éclairage du combat à droite, base et équipé.
+   `BuildMMO.CaptureCombat` et `BuildMMO.Board` (via `unity command run_script`) la produisent.
    La montrer à l'auteur et consigner sa réponse mot pour mot dans la doc du lot. Pas
    d'intégration dans l'app sans ce verdict.
 5. **G5 — App.** Flow `.maestro/avatar-3d.yaml` via Metro, captures inspectées, selon
