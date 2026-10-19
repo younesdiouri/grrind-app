@@ -96,12 +96,13 @@ Le générateur reproduit le **style de l'image d'entrée** : un rendu 3D satin�
 un personnage satiné, aucun prompt de texture ni réglage de shader ne le rattrape (#219,
 mesuré). La recette qui a fonctionné :
 
-1. T-pose mesurée en G1, puis **repeinte en illustration peinte main** (`meshy.py edit`) :
-   aplats, ombres franches, tracé sombre, lumière peinte. Re-mesurer les proportions.
-2. Mesh `meshy.py painted` : `smart-topology` / `meshy-t2.5`, 15 000 triangles, topologie
-   propre et formes plus taillées.
-3. `meshy.py retexture` du mesh avec la T-pose peinte en `image_style_url`, `meshy-6`,
-   `remove_lighting: false` (garder la lumière peinte), `enable_original_uv: true`.
+1. Entrée **déjà peinte main** : planche de style puis vues face, dos et profil
+   (`docs/design/references/chunky-3d/brief.md`), proportions mesurées en G1.
+2. Mesh multi-vues (`multi-image-to-3d` du MCP Meshy), `smart-topology` / `meshy-t2.5`,
+   environ 15 000 triangles : topologie propre, côtés et dos tirés de vraies vues.
+3. `meshy_retexture` avec la vue de face en image de style, `meshy-6`,
+   `remove_lighting: false` (garder la lumière peinte), `enable_original_uv: true` ;
+   `meshy_uv_unwrap` si les UV doivent être retouchées.
 4. Rig Meshy, `normalize_meshy_rig.py`, `BuildChunky.Create("PaintedAthlete", true)` :
    `GRRIND/Painted Toon` quasi unlit (rampe faible, rim .12, contour brun).
 
@@ -112,11 +113,14 @@ appoint : seul, il donne des dégradés doux, pas des ombres peintes.
 
 ## Meshy : ce qui a été mesuré (#219)
 
-`spikes/art-source/meshy.py` (clé dans `~/.config/grrind/meshy.key`, jamais dans le dépôt)
-consigne chaque tâche et ses crédits dans `tasks.json`. Réglages retenus et pourquoi :
+Tout passe par le **MCP Meshy** (`@meshy-ai/meshy-mcp-server`, enregistré en local par
+`claude mcp add-json meshy …`) : génération, édition d'image, multi-vues, retexture, UV,
+rig, animations et `text-to-motion`. Aucun client maison. La clé vit dans la config locale de
+Claude, jamais dans le dépôt. Après chaque tâche payante, ajouter son id, ses paramètres et
+ses crédits au `tasks.json` du personnage (l'historique de #219 y est). Réglages retenus :
 
-- `meshy-7.1`, `geometry_resolution: 2k`, remesh à 30 000 triangles, texture 2K : budget
-  fixé à la génération.
+- Satiné (abandonné) : `meshy-7.1`, `geometry_resolution: 2k`, remesh à 30 000 triangles,
+  texture 4K avec cartes PBR. Peint main : voir la recette ci-dessus.
 - `pose_mode` vide et `image_enhancement: false` : une T-pose forcée rouvre les poings, et
   l'amélioration redessine le visage.
 - L'auto-rig Meshy n'a **aucun os de doigt** : les poings sont sculptés fermés dans l'image

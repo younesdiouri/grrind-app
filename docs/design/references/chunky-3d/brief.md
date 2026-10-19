@@ -54,11 +54,21 @@ locks, friendly confident face with large expressive eyes. Plain white backgroun
 contact shadow under each figure. No text, no logo, no realistic anatomy or muscle striation.
 ```
 
-### Entrée image-vers-3D → `tpose.png` (planche en référence)
+### Entrées multi-vues → `view-front.png`, `view-back.png`, `view-side.png`
+
+Trois images séparées, générées avec la planche `concept.png` en image de référence, pour
+`multi-image-to-3d`. Même personnage, même pose, même cadrage et même échelle dans les trois ;
+seule la caméra tourne autour de lui. Remplacer `<VIEW>` par la vue voulue :
+
+- front : `strict front view, facing the camera`
+- back : `strict back view, the character facing away from the camera`
+- side : `strict left side profile view, the character facing left`
 
 ```text
-The same character from the reference image, front view, strict symmetrical T-pose, arms
-horizontal, both hands closed into big empty fists holding nothing, legs slightly apart, full
-body from hair to shoes, same hand-painted 3D game model rendering and soft top lighting, no
-rim light, flat plain light grey background, no floor, no shadow, no text, single character.
+The same character from the reference image, <VIEW>, orthographic camera at chest height,
+neutral symmetrical T-pose with arms horizontal, both hands closed into big empty fists holding
+nothing, legs slightly apart, full body from top of hair to shoes, identical scale and framing
+in every view, centred with margin. Same hand-painted 3D game model rendering, soft neutral
+painted light from above, painted ambient occlusion, no rim light, no coloured shadows.
+Flat plain light grey background, no floor, no cast shadow, no text, single character.
 ```
