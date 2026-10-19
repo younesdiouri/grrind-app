@@ -200,5 +200,68 @@
     "status": "SUCCEEDED",
     "credits": 5,
     "error": null
+  },
+  {
+    "task": "01a15566-b59c-779f-af22-c4c81bc4b8de",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 15000,
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "4k",
+      "texture_prompt": "Hand-painted stylized game texture: flat saturated colour areas, painted soft ambient occlusion in every crease, painted warm top light and cool shadows, thin dark painted outlines along edges, folds and between fingers, crisp painted highlights on hair locks, nose and knuckles. No photographic detail, no noise, no realistic skin pores, no PBR gloss.",
+      "pose_mode": "",
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 15,
+    "error": null
+  },
+  {
+    "task": "01a15568-64ab-725a-8af3-bd20de86f8f0",
+    "kind": "rigging",
+    "input": "01a15566-b59c-779f-af22-c4c81bc4b8de",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a15571-7d84-7203-b230-e1a3307de3ab",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Repaint this exact character in a hand-painted stylized game art style, keeping identity, proportions, pose, clothes, colours, framing and the flat light grey background identical. Hand-painted texture look: flat saturated colour areas, crisp painted cel shadows with clean hard edges in cool purple-brown tones, warm painted top light, painted ambient occlusion in creases, thin dark brown painted linework along contours, folds, between fingers and around the eyes, crisp painted highlights on hair locks, nose, knuckles. Clean graphic shapes, sharp angular hair locks. No photorealism, no soft 3D render look, no gloss, no noise. Single character, front T-pose, full body, no text.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a15573-2242-71fa-a913-3d3535d88991",
+    "kind": "retexture",
+    "input": "01a15566-b59c-779f-af22-c4c81bc4b8de",
+    "style": "docs/design/references/chunky-3d/tpose-painted.png",
+    "params": {
+      "ai_model": "meshy-6",
+      "enable_original_uv": true,
+      "enable_pbr": false,
+      "texture_resolution": "4k",
+      "remove_lighting": false,
+      "target_formats": [
+        "glb"
+      ]
+    },
+    "status": "SUCCEEDED",
+    "credits": 10,
+    "error": null
   }
 ]

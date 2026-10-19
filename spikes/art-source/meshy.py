@@ -7,6 +7,8 @@ Every paid task appends its parameters and consumed credits to <out>/tasks.json.
     python3 -I spikes/art-source/meshy.py prop <image.png> <out-dir> <polycount>
     python3 -I spikes/art-source/meshy.py rig <image-to-3d-task-id> <out-dir>
     python3 -I spikes/art-source/meshy.py edit <image.png> <out-dir> <prompt>
+    python3 -I spikes/art-source/meshy.py painted <image.png> <out-dir>
+    python3 -I spikes/art-source/meshy.py retexture <image-to-3d-task-id> <out-dir> <style.png>
 """
 import base64
 import json
@@ -83,6 +85,10 @@ def generate(image, out, polycount, pose):
         "target_formats": ["glb", "fbx"],
         "multi_view_thumbnails": True,
     }
+    run_task(image, out, params)
+
+
+def run_task(image, out, params):
     task_id = call("POST", "/image-to-3d", {**params, "image_url": data_uri(image)})["result"]
     task = wait("image-to-3d", task_id)
     record(out, {"task": task_id, "kind": "image-to-3d", "input": str(image), "params": params,
@@ -97,6 +103,48 @@ def generate(image, out, polycount, pose):
         download(url, run / f"{channel}.png")
     for view, url in (task.get("thumbnail_urls") or {}).items():
         download(url, run / f"view-{view}.png")
+
+
+# Hand-painted target (Waven-like): clean low-poly topology and a texture that carries its own
+# painted light, occlusion and edge lines, rendered almost unlit in Unity.
+PAINTED_TEXTURE = (
+    "Hand-painted stylized game texture: flat saturated colour areas, painted soft ambient "
+    "occlusion in every crease, painted warm top light and cool shadows, thin dark painted "
+    "outlines along edges, folds and between fingers, crisp painted highlights on hair locks, "
+    "nose and knuckles. No photographic detail, no noise, no realistic skin pores, no PBR gloss."
+)
+
+
+def painted(image, out):
+    params = {
+        "model_type": "smart-topology",
+        "ai_model": "meshy-t2.5",
+        "target_polycount": 15000,
+        "should_texture": True,
+        "enable_pbr": False,
+        "texture_resolution": "4k",
+        "texture_prompt": PAINTED_TEXTURE,
+        "pose_mode": "",
+        "target_formats": ["glb", "fbx"],
+        "multi_view_thumbnails": True,
+    }
+    run_task(image, out, params)
+
+
+def retexture(task_id, out, style):
+    # Keep the painted light of the style image (remove_lighting false needs meshy-6) and the
+    # original UVs, so the rigged mesh can wear the new texture as is.
+    params = {"ai_model": "meshy-6", "enable_original_uv": True, "enable_pbr": False,
+              "texture_resolution": "4k", "remove_lighting": False, "target_formats": ["glb"]}
+    body = {**params, "input_task_id": task_id, "image_style_url": data_uri(style)}
+    retexture_id = call("POST", "/retexture", body)["result"]
+    task = wait("retexture", retexture_id)
+    record(out, {"task": retexture_id, "kind": "retexture", "input": task_id, "style": str(style),
+                 "params": params, "status": task["status"], "credits": task.get("consumed_credits"),
+                 "error": (task.get("task_error") or {}).get("message")})
+    if task["status"] != "SUCCEEDED":
+        sys.exit(f"retexture failed: {task.get('task_error')}")
+    download(task["texture_urls"][0]["base_color"], out / task_id / f"retexture-{retexture_id}.png")
 
 
 def rig(task_id, out):
@@ -131,6 +179,10 @@ if __name__ == "__main__":
         generate(source, out, 30000, "")  # input is already a T-pose; forcing one reopens the fists
     elif command == "prop":
         generate(source, out, int(sys.argv[4]), "")
+    elif command == "retexture":
+        retexture(source, out, sys.argv[4])
+    elif command == "painted":
+        painted(source, out)
     elif command == "edit":
         edit(source, out, sys.argv[4])
     elif command == "rig":

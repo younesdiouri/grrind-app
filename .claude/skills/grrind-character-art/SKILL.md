@@ -90,6 +90,26 @@ Interdits, tous observés dans #214 :
   demander la pièce, pas le tout amputé.
 - Écrire du C# ou du Python compacté sur une ligne. Ces scripts se relisent en revue.
 
+## Rendu peint main (cible depuis le 19 octobre 2026, référence de style : Waven)
+
+Le générateur reproduit le **style de l'image d'entrée** : un rendu 3D satiné en entrée donne
+un personnage satiné, aucun prompt de texture ni réglage de shader ne le rattrape (#219,
+mesuré). La recette qui a fonctionné :
+
+1. T-pose mesurée en G1, puis **repeinte en illustration peinte main** (`meshy.py edit`) :
+   aplats, ombres franches, tracé sombre, lumière peinte. Re-mesurer les proportions.
+2. Mesh `meshy.py painted` : `smart-topology` / `meshy-t2.5`, 15 000 triangles, topologie
+   propre et formes plus taillées.
+3. `meshy.py retexture` du mesh avec la T-pose peinte en `image_style_url`, `meshy-6`,
+   `remove_lighting: false` (garder la lumière peinte), `enable_original_uv: true`.
+4. Rig Meshy, `normalize_meshy_rig.py`, `BuildChunky.Create("PaintedAthlete", true)` :
+   `GRRIND/Painted Toon` quasi unlit (rampe faible, rim .12, contour brun).
+
+Limite connue : une seule image de face se projette mal sur les côtés (traînées sur les
+tibias, bandes du short doublées). Prochaine étape : `multiview_image_urls` (meshy-7) avec
+face, dos et profils peints. `bake_painted.py` (occlusion et lumière cuites) reste un
+appoint : seul, il donne des dégradés doux, pas des ombres peintes.
+
 ## Meshy : ce qui a été mesuré (#219)
 
 `spikes/art-source/meshy.py` (clé dans `~/.config/grrind/meshy.key`, jamais dans le dépôt)

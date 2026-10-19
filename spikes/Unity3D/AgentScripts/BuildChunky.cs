@@ -6,12 +6,15 @@ using UnityEngine;
 // no decimation; the closed fists are part of the generated mesh.
 public static class BuildChunky
 {
-    const string Source = "Assets/Characters/ChunkyAthlete";
-    const string Folder = "Assets/Spike/ChunkyAthlete";
     const float Height = 1.7f;
+    static string Source = "Assets/Characters/ChunkyAthlete";
+    static string Folder = "Assets/Spike/ChunkyAthlete";
 
-    public static string Create()
+    // painted: the Waven-like variant (bake_painted.py texture, almost unlit toon, outline).
+    public static string Create(string name = "ChunkyAthlete", bool painted = false)
     {
+        Source = "Assets/Characters/" + name;
+        Folder = "Assets/Spike/" + name;
         if (Application.isPlaying) throw new Exception("Stop Play before rebuilding the avatar.");
         var model = Source + "/Athlete.fbx";
         var importer = (ModelImporter)AssetImporter.GetAtPath(model);
@@ -41,10 +44,11 @@ public static class BuildChunky
         var animator = actor.GetComponent<Animator>();
         if (animator == null || !animator.isHuman || !animator.avatar.isValid) throw new Exception("Invalid Humanoid");
 
-        if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Spike", "ChunkyAthlete");
-        var texture = Texture(Source + "/athlete-basecolor.png", false);
-        var normal = Texture(Source + "/athlete-normal.png", true);
-        var body = SoftMaterial(Folder + "/Body.mat", texture, normal, MetallicSmoothness());
+        if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Spike", name);
+        var body = painted
+            ? PaintedMaterial(Folder + "/Body.mat", Texture(Source + "/athlete-painted.png", false))
+            : SoftMaterial(Folder + "/Body.mat", Texture(Source + "/athlete-basecolor.png", false),
+                Texture(Source + "/athlete-normal.png", true), MetallicSmoothness());
         foreach (var renderer in actor.GetComponentsInChildren<SkinnedMeshRenderer>())
         {
             renderer.sharedMaterials = new[] { body };
@@ -171,6 +175,26 @@ public static class BuildChunky
         // No skybox in the arena: environment reflections would only grey the colours.
         material.SetFloat("_EnvironmentReflections", 0);
         material.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+        EditorUtility.SetDirty(material);
+        return material;
+    }
+
+    // The light is in the texture: the shader only adds a faint ramp, a rim and the outline.
+    static Material PaintedMaterial(string path, Texture texture)
+    {
+        var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (material == null)
+        {
+            material = new Material(Shader.Find("GRRIND/Painted Toon"));
+            AssetDatabase.CreateAsset(material, path);
+        }
+        material.shader = Shader.Find("GRRIND/Painted Toon");
+        material.SetTexture("_BaseMap", texture);
+        material.SetColor("_ShadowTint", new Color(.88f, .86f, .92f));
+        material.SetFloat("_RampSoftness", .35f);
+        material.SetFloat("_RimStrength", .12f);
+        material.SetColor("_OutlineColor", new Color(.12f, .07f, .06f));
+        material.SetFloat("_OutlineWidth", .0016f);
         EditorUtility.SetDirty(material);
         return material;
     }

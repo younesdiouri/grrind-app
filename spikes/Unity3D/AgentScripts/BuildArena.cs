@@ -4,13 +4,12 @@ using UnityEngine;
 
 public static class BuildArena
 {
-    const string Prefab = "Assets/Spike/ChunkyAthlete/Avatar.prefab";
     const string ShadowMaterial = "Assets/Spike/Shaders/ContactShadow.mat";
     const string FloorMaterial = "Assets/Spike/Shaders/FloorGlow.mat";
 
-    public static string Create()
+    public static string Create(string avatarName = "PaintedAthlete")
     {
-        var avatar = AssetDatabase.LoadAssetAtPath<GameObject>(Prefab);
+        var avatar = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Spike/" + avatarName + "/Avatar.prefab");
         if (avatar == null) throw new System.Exception("Run BuildChunky.Create first");
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         var night = new Color(.0196f, .0314f, .0863f);
