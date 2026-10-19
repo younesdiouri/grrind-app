@@ -10,8 +10,10 @@ public sealed class MuscuPose : MonoBehaviour
     public AnimationClip[] clips;
     public Camera inspectionCamera;
     public Transform weapon,glasses;
+    public Transform[] shoes=Array.Empty<Transform>();
+    public GameObject bareFeet;
     public int stance,view;
-    public float phase=.45f,azimuth=32;
+    public float phase=.45f,azimuth=32,headViewOffset=.1f,headViewSize=.23f,gripCurl=-.72f,thumbBase=-.2f,thumbSpread;
     public bool inspect=true,debugControls=true,autoplay,grip;
     public Vector3 placement;
     public float facing;
@@ -21,9 +23,15 @@ public sealed class MuscuPose : MonoBehaviour
     HumanPoseHandler fingers;
     HumanPose humanPose;
     int[] curled,thumbs;
+    int thumbSpreadIndex;
     Transform head;
     Vector3 headScale;
 
+    public void SetShoes(bool visible)
+    {
+        foreach(var shoe in shoes)shoe.gameObject.SetActive(visible);
+        if(bareFeet!=null)bareFeet.SetActive(!visible);
+    }
     void Awake()
     {
         actor.cullingMode=AnimatorCullingMode.AlwaysAnimate;actor.applyRootMotion=false;
@@ -46,6 +54,7 @@ public sealed class MuscuPose : MonoBehaviour
             if(HumanTrait.MuscleName[i].Contains("Thumb 1 Stretched"))thumbList.Add(i);
         }
         curled=list.ToArray();thumbs=thumbList.ToArray();
+        thumbSpreadIndex=Array.IndexOf(HumanTrait.MuscleName,"Right Thumb Spread");
     }
     void LateUpdate()
     {
@@ -61,17 +70,18 @@ public sealed class MuscuPose : MonoBehaviour
         if(grip||weapon.gameObject.activeSelf)
         {
             fingers.GetHumanPose(ref humanPose);
-            foreach(int i in curled)humanPose.muscles[i]=-.72f;
-            foreach(int i in thumbs)humanPose.muscles[i]=-.2f;
+            foreach(int i in curled)humanPose.muscles[i]=gripCurl;
+            foreach(int i in thumbs)humanPose.muscles[i]=thumbBase;
+            humanPose.muscles[thumbSpreadIndex]=thumbSpread;
             fingers.SetHumanPose(ref humanPose);
         }
         head.localScale=headScale;
         actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));
         if(inspect&&inspectionCamera!=null)
         {
-            var target=view==1?head.position+Vector3.up*.1f:view==2?actor.GetBoneTransform(HumanBodyBones.RightHand).position:placement+Vector3.up*.95f;
+            var target=view==1?head.position+Vector3.up*headViewOffset:view==2?actor.GetBoneTransform(HumanBodyBones.RightHand).position:view==3?(actor.GetBoneTransform(HumanBodyBones.LeftFoot).position+actor.GetBoneTransform(HumanBodyBones.RightFoot).position)*.5f:placement+Vector3.up*.95f;
             inspectionCamera.transform.position=target+Quaternion.Euler(0,azimuth,0)*new Vector3(0,view==0?.6f:.10f,5);
-            inspectionCamera.transform.LookAt(target);inspectionCamera.orthographicSize=view==0?1.1f:.23f;
+            inspectionCamera.transform.LookAt(target);inspectionCamera.orthographicSize=view==0?1.1f:view==1?headViewSize:view==3?.35f:.23f;
         }
     }
     // Canonical phase .5 is the visible contact/reaction peak, not the middle of the source file.

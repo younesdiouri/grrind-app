@@ -12,10 +12,6 @@ import { UnityAvatarInspector, unityCombatAvailable } from '@/features/combat/Un
 import type { FighterPose } from '@/features/combat/fighterMotion';
 import type { UnityAvatar } from '@/features/combat/unityFrame';
 
-const SKINS = [
-  { name: 'Claire', value: '#F2D8BF' }, { name: 'Dorée', value: '#DBB894' },
-  { name: 'Cuivrée', value: '#B98459' }, { name: 'Brune', value: '#8C593A' }, { name: 'Sombre', value: '#5A3527' },
-];
 const POSES: { key: FighterPose; label: string }[] = [
   { key: 'idle', label: 'Garde' }, { key: 'attack', label: 'Attaque' }, { key: 'hit', label: 'Coup reçu' },
   { key: 'critical', label: 'Critique' }, { key: 'dodge', label: 'Esquive' }, { key: 'combo', label: 'Combo' }, { key: 'replay', label: 'Relance' },
@@ -27,7 +23,7 @@ export default function Avatar3dScreen() {
 }
 
 function Workshop() {
-  const [avatar, setAvatar] = useState<UnityAvatar>({ body: 'male', skin: '#DBB894', weapon: true, glasses: true, visible: true });
+  const [avatar, setAvatar] = useState<UnityAvatar>({ body: 'male', skin: '#DBB894', weapon: true, glasses: true, boots: true, visible: true });
   const [pose, setPose] = useState<FighterPose>('idle');
   const [phase, setPhase] = useState(.5);
   const [animated, setAnimated] = useState(false);
@@ -57,7 +53,7 @@ function Workshop() {
         <Text style={styles.title}>ATELIER AVATAR</Text>
         <Text style={styles.subtitle} testID={ready && !failed ? 'avatar-3d-ready' : undefined}>
           {!unityCombatAvailable ? 'Le module Unity doit être inclus dans le build de développement.'
-            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'UNITY 3D · PROTOTYPE' : 'Chargement du personnage…'}
+            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'PERSONNAGE PILOTE · 3D PEINTE' : 'Chargement du personnage…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer l’atelier" onPress={() => {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo');
@@ -70,17 +66,12 @@ function Workshop() {
           <Choice label="Cadrage" selected={panel === 'camera'} onPress={() => setPanel('camera')} />
         </View>
         <View style={styles.options}>
-          {panel === 'avatar' && <><View style={styles.row}>
-            {(['male', 'female'] as const).map((body) => <Choice key={body} label={body === 'male' ? 'Homme' : 'Femme'}
-              selected={avatar.body === body} onPress={() => patch({ body })} />)}
-            {SKINS.map((skin) => <Pressable key={skin.value} testID={`avatar-skin-${skin.name}`} accessibilityRole="button"
-              accessibilityLabel={`Peau ${skin.name.toLowerCase()}`} accessibilityState={{ selected: avatar.skin === skin.value }}
-              onPress={() => patch({ skin: skin.value })} style={[styles.swatch, { backgroundColor: skin.value },
-                avatar.skin === skin.value && styles.selected]} />)}
-          </View>
+          {panel === 'avatar' && <>
+          <Text style={styles.subtitle}>Modèle V2 · Un personnage pour valider le rendu en combat.</Text>
           <View style={styles.row}>
             <Choice label="Haltère ego" selected={avatar.weapon} onPress={() => patch({ weapon: !avatar.weapon })} />
             <Choice label="Course-poursuite" selected={avatar.glasses} onPress={() => patch({ glasses: !avatar.glasses })} />
+            <Choice label="Sprint-semelle" selected={!!avatar.boots} onPress={() => patch({ boots: !avatar.boots })} />
           </View></>}
           {panel === 'gestures' && <><View style={styles.row}>{POSES.map((entry) => <Choice key={entry.key} label={entry.label}
             selected={pose === entry.key} onPress={() => setPose(entry.key)} />)}</View>
@@ -90,7 +81,7 @@ function Workshop() {
             <Choice label="Animer" selected={animated} onPress={() => setAnimated(!animated)} />
           </View></>}
           {panel === 'camera' && <View style={styles.row}>
-            {['Ensemble', 'Visage', 'Prise'].map((label, index) => <Choice key={label} label={label} selected={view === index} onPress={() => setView(index)} />)}
+            {['Ensemble', 'Visage', 'Prise', 'Chaussures'].map((label, index) => <Choice key={label} label={label} selected={view === index} onPress={() => setView(index)} />)}
             <Choice label="Tourner" selected={azimuth < 0} onPress={() => setAzimuth((value) => value < 0 ? 32 : -148)} />
           </View>}
         </View>
@@ -114,5 +105,4 @@ const styles = StyleSheet.create({
   options: { flex: 1, gap: space.sm }, row: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   choice: { minHeight: control.backSize, justifyContent: 'center', padding: space.sm, borderWidth: control.borderWidth, borderColor: color.border, borderRadius: frame.standard.radius },
   selected: { borderColor: color.accent },
-  swatch: { width: control.backSize, height: control.backSize, borderWidth: control.borderWidth, borderColor: color.border, borderRadius: frame.standard.radius },
 });

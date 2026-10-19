@@ -1,0 +1,17 @@
+{
+  "direction": "Painted 3D MMO V2 approved 2026-10-19",
+  "concept": "docs/design/references/flyff-3d-proposal/concept-v2.png",
+  "reference": "front-apose-reference.png",
+  "image_tool": "built-in imagegen",
+  "purpose": "barefoot base identity and neutral A-pose for 3D reconstruction",
+  "model_generation": "Meshy 6 Lite web, image to 3D + image texture",
+  "credits_used": 20,
+  "raw_triangles": 87818,
+  "rig": "Blender 4.5.14 via MCP 2.2.0; fitted Quaternius CC0 Humanoid skeleton and articulated hands",
+  "licence": "CC BY 4.0 \u2014 credit Meshy when distributed",
+  "changes": [
+    "Wrist seam closure and shared skin texture",
+    "32k mobile topology",
+    "Clean ankle cut and calf/foot weights matching skinned shoe collars"
+  ]
+}

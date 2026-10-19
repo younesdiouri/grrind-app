@@ -508,8 +508,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495e4ffe1d712457797ffcceef7e4cba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleBridge
-  malePrefab: {fileID: 1508505355445291048, guid: c6b80aedd0ce74d5081489fe852feadf, type: 3}
-  femalePrefab: {fileID: 7291085854023849512, guid: 56d74d013cb484092a730a174dd16fe6, type: 3}
+  malePrefab: {fileID: 7902543644643404134, guid: a558438dd2cfd4f68bab3bdc994dcf2c, type: 3}
+  femalePrefab: {fileID: 7902543644643404134, guid: a558438dd2cfd4f68bab3bdc994dcf2c, type: 3}
   arenaCamera: {fileID: 1667685963}
 --- !u!4 &2113521849
 Transform:

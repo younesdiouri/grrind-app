@@ -1,0 +1,7 @@
+{
+  "item": "HaltereEgo",
+  "triangles": 3792,
+  "units": "metres",
+  "attachment": "origin at grip centre, handle along local X",
+  "status": "Rigid asset only; character grip and all poses still require review."
+}

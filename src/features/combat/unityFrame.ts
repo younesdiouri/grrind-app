@@ -4,7 +4,7 @@ import { beatAt, sampleRamp } from './sampling.ts';
 import type { Actor, BattleBeat } from './timeline.ts';
 import type { components } from '@/api/schema';
 
-export type UnityAvatar = { body: 'male' | 'female'; skin: string; weapon: boolean; glasses: boolean; visible: boolean };
+export type UnityAvatar = { body: 'male' | 'female'; skin: string; weapon: boolean; glasses: boolean; boots?: boolean; visible: boolean };
 export type UnityViewport = { x: number; y: number; width: number; height: number };
 export type UnityActorFrame = { pose: number; phase: number; x: number; visible: boolean };
 export type UnityInspectorProps = {

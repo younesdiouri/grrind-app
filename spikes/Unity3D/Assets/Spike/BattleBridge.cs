@@ -10,7 +10,7 @@ public sealed class BattleBridge : MonoBehaviour
     MaterialPropertyBlock tint;
     static readonly int BaseColor=Shader.PropertyToID("_BaseColor");
 
-    [Serializable] public class AvatarConfig {public string body="male",skin="#DBB894";public bool weapon,glasses,visible=true;}
+    [Serializable] public class AvatarConfig {public string body="male",skin="#DBB894";public bool weapon,glasses,boots,visible=true;}
     [Serializable] public class Configuration
     {
         public AvatarConfig player=new AvatarConfig(),enemy=new AvatarConfig();
@@ -47,7 +47,7 @@ public sealed class BattleBridge : MonoBehaviour
             player=Create(config.player,true);enemy=Create(config.enemy,false);
             player.inspect=inspection;player.debugControls=false;
             player.inspectionCamera=inspection?arenaCamera:null;
-            player.view=Mathf.Clamp(config.view,0,2);player.azimuth=config.azimuth;
+            player.view=Mathf.Clamp(config.view,0,3);player.azimuth=config.azimuth;
             if(inspection){player.placement=Vector3.zero;player.facing=0;}
             else {arenaCamera.transform.position=new Vector3(0,1.25f,6);arenaCamera.transform.LookAt(new Vector3(0,.95f,0));arenaCamera.orthographicSize=1.15f;}
             if(lastFrame!=null){Apply(player,lastFrame.player,true);Apply(enemy,lastFrame.enemy,false);}
@@ -59,7 +59,7 @@ public sealed class BattleBridge : MonoBehaviour
         var obj=Instantiate(config.body=="female"?femalePrefab:malePrefab);
         var pose=obj.GetComponent<MuscuPose>();pose.inspect=false;pose.inspectionCamera=null;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
-        pose.weapon.gameObject.SetActive(config.weapon);pose.glasses.gameObject.SetActive(config.glasses);
+        pose.weapon.gameObject.SetActive(config.weapon);pose.glasses.gameObject.SetActive(config.glasses);pose.SetShoes(config.boots);
         if(!ColorUtility.TryParseHtmlString(config.skin,out var skin))skin=new Color(.86f,.72f,.58f);
         tint.Clear();tint.SetColor(BaseColor,skin);
         foreach(var renderer in obj.GetComponentsInChildren<Renderer>())

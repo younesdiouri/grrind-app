@@ -27,25 +27,21 @@ appId: app.grrind.dev
       id: avatar-3d-ready
     timeout: 30000
 - tapOn: Avatar
-- tapOn: Homme
-- tapOn: Peau dorée
 - tapOn: Gestes
 - tapOn: Garde
 - tapOn: Contact
 - tapOn: Cadrage
 - tapOn: Ensemble
 - takeScreenshot: unity-male-equipped
-- tapOn: Avatar
-- tapOn: Femme
-- tapOn: Peau brune
-- tapOn: Cadrage
 - tapOn: Visage
-- takeScreenshot: unity-female-goggles
+- takeScreenshot: unity-mmo-goggles
 - tapOn: Gestes
-- tapOn: Critique
+- tapOn: Attaque
 - tapOn: Cadrage
 - tapOn: Prise
-- takeScreenshot: unity-female-grip
+- takeScreenshot: unity-mmo-grip
+- tapOn: Chaussures
+- takeScreenshot: unity-mmo-shoes
 - tapOn: Ensemble
 - tapOn: Tester dans le combat
 - extendedWaitUntil:
@@ -84,8 +80,6 @@ appId: app.grrind.dev
       id: avatar-3d-ready
     timeout: 20000
 - tapOn: Avatar
-- tapOn: Homme
-- tapOn: Peau claire
 - tapOn: Cadrage
 - tapOn: Ensemble
 - takeScreenshot: unity-after-background
