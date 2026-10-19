@@ -2,6 +2,10 @@
 
 Ticket : https://github.com/younesdiouri/grrind-app/issues/213.
 
+Toute nouvelle génération, posture ou intégration d’avatar suit le skill
+`.claude/skills/grrind-character-art/SKILL.md` (#215) et ses barrières G1–G5. Le rendu
+livré ici n’a pas passé la barrière DA G4 : il reste une preuve d’intégration, pas une cible.
+
 ## Cible et périmètre actuels — 19 octobre 2026
 
 La référence active est la **planche MMO 3D peinte V2** dans
