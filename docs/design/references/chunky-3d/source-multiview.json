@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-19",
+  "tool": "Built-in image_gen.imagegen",
+  "tool_version": null,
+  "seed": null,
+  "credits_spent": null,
+  "license": "Not reported by the built-in tool.",
+  "brief": "brief.md — Style peint main / Entrées multi-vues",
+  "pack": [
+    "concept.png",
+    "view-front.png",
+    "view-back.png",
+    "view-side.png"
+  ],
+  "canvas": {
+    "width": 1536,
+    "height": 1024
+  },
+  "assets": [
+    {
+      "file": "concept.png",
+      "action": "Preserved latest hand-painted concept selected in this conversation.",
+      "provenance": "source-painted-v2.json"
+    },
+    {
+      "file": "view-front.png",
+      "action": "Exact copy of tpose.png; no regeneration to preserve existing measured identity and pose.",
+      "provenance": "source-painted-v2.json",
+      "heads_tall": 3.42,
+      "head_pixels": 278,
+      "figure_pixels": 951
+    },
+    {
+      "file": "view-back.png",
+      "action": "Generated directly with concept.png as identity reference and view-front.png as pose/framing reference.",
+      "prompt": "Use case: stylized-concept.\nAsset type: GRRIND single-subject orthographic multiview image-to-3D input.\nReference roles: image 1 (concept.png) is the DIRECT character identity, clothing construction, hand-painted style and front/rear design reference. Image 2 (view-front.png) is the precise orthographic T-pose, compact body proportions, framing, scale and plain grey background reference. Preserve this one individual; only rotate the camera around him. This is not a new character.\nSame original young adult male athlete: warm tan skin, large head, short dark brown sculpted chunky hair locks, huge closed empty fists, dark navy wrist bands, grey sleeveless training top with orange neckline and armhole trim, navy shorts with ivory side stripes, chunky navy/cream sneakers with orange heel insert. Same low-poly broad color planes, hand-painted textures, matte diffuse surfaces, painted soft overhead warm highlights and crease ambient occlusion. No gloss, no realistic muscle anatomy, no strong outlines, no colored rim light, no colored shadows, no fabric weave or pores.\nMaintain about 3.4 heads tall, including sculpted hair and neck, short legs, broad shoulders. Exact same body pose: neutral symmetrical T-pose, both arms straight horizontal at shoulder height, both hands closed into big empty fists holding absolutely nothing, legs slightly apart. Single full figure only.\nLandscape canvas 1536x1024, orthographic camera at chest height; exactly match image 2 framing. Crown of hair approximately y=27px; bottom of shoe soles approximately y=977px, centered at x=768px. Same world scale as image 2. Do not scale the character to fill width when switching camera angles. Full hair, fists, shoes entirely visible, margins all around. Flat plain light grey background, no floor, no cast shadow, no text, no UI, no logo, no second figure.\nRequired VIEW: STRICT BACK VIEW, character facing directly away from camera, camera rotated 180 degrees from image 2. We see the back of his hair, both ears symmetrically, nape, back of the tank top and shorts, and the BACK heels of both sneakers. NO visible face, eyes, nose or front chest. Hair back silhouette and rear orange neckline must match image 1's right figure. At the feet, show the orange heel accents seen in the reference, cream lower heel/sole and navy ankle uppers, no front cream toe caps presented toward camera. Arms still stretch horizontally left and right; show backs of arms, wristbands and closed fists from rear. Symmetrical straight back orthographic view, no three-quarter yaw or tilt.",
+      "heads_tall": 3.43,
+      "head_pixels": 276,
+      "figure_pixels": 946
+    },
+    {
+      "file": "view-side.png",
+      "action": "Generated directly with concept.png as identity reference and view-front.png as pose/framing reference.",
+      "prompt": "Use case: stylized-concept.\nAsset type: GRRIND single-subject orthographic multiview image-to-3D input.\nReference roles: image 1 (concept.png) is the DIRECT character identity, clothing construction, hand-painted style and front/rear design reference. Image 2 (view-front.png) is the precise orthographic T-pose, compact body proportions, framing, scale and plain grey background reference. Preserve this one individual; only rotate the camera around him. This is not a new character.\nSame original young adult male athlete: warm tan skin, large head, short dark brown sculpted chunky hair locks, huge closed empty fists, dark navy wrist bands, grey sleeveless training top with orange neckline and armhole trim, navy shorts with ivory side stripes, chunky navy/cream sneakers with orange heel insert. Same low-poly broad color planes, hand-painted textures, matte diffuse surfaces, painted soft overhead warm highlights and crease ambient occlusion. No gloss, no realistic muscle anatomy, no strong outlines, no colored rim light, no colored shadows, no fabric weave or pores.\nMaintain about 3.4 heads tall, including sculpted hair and neck, short legs, broad shoulders. Exact same body pose: neutral symmetrical T-pose, both arms straight horizontal at shoulder height, both hands closed into big empty fists holding absolutely nothing, legs slightly apart. Single full figure only.\nLandscape canvas 1536x1024, orthographic camera at chest height; exactly match image 2 framing. Crown of hair approximately y=27px; bottom of shoe soles approximately y=977px, centered at x=768px. Same world scale as image 2. Do not scale the character to fill width when switching camera angles. Full hair, fists, shoes entirely visible, margins all around. Flat plain light grey background, no floor, no cast shadow, no text, no UI, no logo, no second figure.\nRequired VIEW: STRICT LEFT SIDE PROFILE VIEW, the character faces LEFT on the page. Camera rotates exactly 90 degrees around the unchanged T-posed character. Nose and both sneaker toes point to the LEFT edge. Show ONE eye only, one visible ear, a pure profile of nose, chin and hair, and the near left side ivory shorts stripe. No three-quarter view, no visible front chest plane, no rear view.\nIMPORTANT 3D POSE PROJECTION: the body remains in the SAME T-pose as image 2; because the camera is now at the left side, the near arm points straight toward the camera and is naturally foreshortened. The near large closed empty fist is seen end-on in front of the near shoulder, at shoulder height; most of its forearm and upper arm are hidden behind that fist. The far arm points straight away and is occluded by the torso. Do NOT lay the arms down alongside the torso, do NOT bend elbows, do NOT spread the arms sideways in the image as if it were still a frontal view. The camera rotates, the skeleton does not. This correct side projection is essential for multi-view reconstruction.\nLegs remain slightly apart sideways in world coordinates, so both legs and shoes overlap in the strict orthographic side projection: show a coherent near leg profile, without inventing a walking stride or staggering the feet. Vertical silhouette crown and sole remain at precisely the same heights as image 2: crown y27, soles y977 on a 1536x1024 canvas. Retain generous empty space to the left and right instead of zooming in to fill horizontal width.",
+      "view": "Strict left-facing profile, near arm foreshortened toward camera, far arm occluded."
+    }
+  ],
+  "review": {
+    "method": "Visual inspection of every image at full displayed resolution; sips confirms all canvases 1536x1024. Existing heads_tall.py run on front and back views.",
+    "observed": [
+      "Front and back have matching T-pose, closed empty fists, clothing color blocks and compact proportions.",
+      "Back shows rear hair, neckline, shorts and sneaker heels with orange inserts.",
+      "Side faces left with one eye visible and consistent camera-relative T-pose projection, no invented stride.",
+      "Complete hair, hands and shoes stay within each canvas; no props or cast floor shadow."
+    ],
+    "limits": [
+      "Generated views are approximately aligned, not pixel-registered orthographic renders: rear figure height 946px versus 951px front; profile soles are visually about 20px higher than front.",
+      "The front-T-pose head measurement script is not applied to the profile because its algorithm depends on horizontally spread arms.",
+      "Individual painted hair and fold facets vary across generated views; a consistent production mesh is not established by this image pack.",
+      "Artistic approval and reconstruction validation remain with the subsequent 3D workflow. No paid Meshy task, mesh, rig, or Unity integration performed."
+    ]
+  }
+}

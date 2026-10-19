@@ -94,22 +94,23 @@ Interdits, tous observés dans #214 :
 
 Le générateur reproduit le **style de l'image d'entrée** : un rendu 3D satiné en entrée donne
 un personnage satiné, aucun prompt de texture ni réglage de shader ne le rattrape (#219,
-mesuré). La recette qui a fonctionné :
+mesuré). La chaîne qui a donné le bon rendu, entièrement par le MCP Meshy :
 
-1. Entrée **déjà peinte main** : planche de style puis vues face, dos et profil
-   (`docs/design/references/chunky-3d/brief.md`), proportions mesurées en G1.
-2. Mesh multi-vues (`multi-image-to-3d` du MCP Meshy), `smart-topology` / `meshy-t2.5`,
-   environ 15 000 triangles : topologie propre, côtés et dos tirés de vraies vues.
-3. `meshy_retexture` avec la vue de face en image de style, `meshy-6`,
-   `remove_lighting: false` (garder la lumière peinte), `enable_original_uv: true` ;
-   `meshy_uv_unwrap` si les UV doivent être retouchées.
-4. Rig Meshy, `normalize_meshy_rig.py`, `BuildChunky.Create("PaintedAthlete", true)` :
-   `GRRIND/Painted Toon` quasi unlit (rampe faible, rim .12, contour brun).
+1. Entrées **déjà peintes main** : planche de style puis vues face, profil et dos
+   (`docs/design/references/chunky-3d/brief.md`). G1 : `heads_tall.py` sur face et dos,
+   hauteurs des trois vues à quelques pour cent près.
+2. `meshy_multi_image_to_3d` : `meshy-7.1`, `geometry_resolution: 2k`, `remove_lighting:
+   false` (garder la lumière peinte), `image_enhancement: false`, texture 4K, remesh à
+   20 000 triangles. Le dos et les côtés viennent de vraies vues : plus de traînées.
+3. `meshy_rig` puis `meshy_animate` avec les sept actions dans l'ordre de `UNITY_POSES`
+   (89, 192, 178, 194, 156, 198, 90), 30 i/s, **un seul FBX** corps + clips.
+4. `BuildMeshy.Create` : import **Generic** (les clips sont faits pour ce squelette, rien à
+   recibler, donc pas de problème d'échelle en centimètres), hanches comme nœud de
+   mouvement pour garder les gestes sur place, contact de chaque clip mesuré, `GRRIND/Painted
+   Toon` sans rim ni teinte colorée. `BuildArena.Create("MeshyAthlete")`.
 
-Limite connue : une seule image de face se projette mal sur les côtés (traînées sur les
-tibias, bandes du short doublées). Prochaine étape : `multiview_image_urls` (meshy-7) avec
-face, dos et profils peints. `bake_painted.py` (occlusion et lumière cuites) reste un
-appoint : seul, il donne des dégradés doux, pas des ombres peintes.
+`normalize_meshy_rig.py`, `BuildChunky` et `bake_painted.py` ne servent qu'aux essais
+précédents (Humanoid, Quaternius) et partent avec #221.
 
 ## Meshy : ce qui a été mesuré (#219)
 
