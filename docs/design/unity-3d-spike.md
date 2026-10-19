@@ -8,6 +8,10 @@ livré ici n’a pas passé la barrière DA G4 : il reste une preuve d’intégr
 
 ## Cible et périmètre actuels — 19 octobre 2026
 
+> **Direction remplacée le 19 octobre 2026** : le MMO peint ci-dessous est abandonné au profit
+> d'une 3D trapue de jeu mobile récent (esprit Brawl Stars). Brief du nouveau concept :
+> `references/chunky-3d/brief.md`. Ce qui suit décrit le spike tel qu'il a été livré.
+
 La référence active est la **planche MMO 3D peinte V2** dans
 `references/flyff-3d-proposal/concept-v2.png`, approuvée le 19 octobre.
 Proportions compactes, textures mates, tenue neutre et loot sportif distinct.

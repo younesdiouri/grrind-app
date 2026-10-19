@@ -21,7 +21,7 @@ joue la chronologie qu'il a décidée, il ne calcule rien du jeu.
 
 ## Sources de vérité
 
-- Concept approuvé : `docs/design/references/flyff-3d-proposal/concept-v2.png`.
+- Concept approuvé : `docs/design/references/chunky-3d/concept.png` (à produire, voir la bible).
 - Projet Unity : `spikes/Unity3D` ; scripts Blender : `spikes/art-source` (voir son README).
 - Intégration et contrat d'horloge : `src/features/combat/unityFrame.ts`.
 - Règles génériques : [GameFactory-3A](https://github.com/OpenDCAI/GameFactory-3A), révision
@@ -40,21 +40,24 @@ joue la chronologie qu'il a décidée, il ne calcule rien du jeu.
 
 ## Bible DA verrouillée
 
-Elle se lit sur `concept-v2.png` ; ce qui suit est ce qu'un rendu doit reproduire.
+Direction choisie le 19 octobre 2026 : **3D trapue de jeu mobile récent**, dans l'esprit de
+Brawl Stars. Elle remplace le MMO peint de `concept-v2.png`, abandonné. Le nouveau concept
+s'écrit dans `docs/design/references/chunky-3d/concept.png` une fois approuvé ; tant qu'il
+n'existe pas, G1 et G4 ne peuvent pas passer et aucune génération payante ne part.
 
-- MMO 3D peint compact : 5,5 têtes, tête large, jambes et buste courts, volumes simples.
-- Cheveux en 6 à 8 grandes mèches, vêtements en 3 ou 4 grands plis, peau mate.
-- Lumière peinte dans la texture, ombres douces chaudes, reflets retenus. Pas de PBR
-  brillant, pas de pixel, pas de photoréalisme, pas de chibi.
-- Chaque objet garde **ses traits d'identité** : les lunettes Course-poursuite ont leurs ailes
-  dorées et leurs verres ambre, Haltère ego ses têtes octogonales marine et sa poignée laiton,
-  Sprint-semelle son volume de basket marine/crème/or. Un objet qui a perdu ses traits est faux,
-  même bien ajusté.
-- Corps et objets ont le **même traitement** : un objet en aplat de couleur à côté d'un corps
-  peint est un défaut, pas une étape.
-- Rendu cible en moteur : ombrage toon ou unlit sur la texture peinte, rim light, contour,
-  ombre de contact au sol, caméra perspective de trois quarts. C'est en place depuis #217
-  (`GRRIND/Painted Toon`, `BuildArena.Create`) : tout nouveau matériau d'avatar l'utilise.
+- Proportions trapues : 3 à 4 têtes, tête et mains grosses, jambes courtes, épaules larges.
+  Silhouette lisible à la taille du combat sur un téléphone, avant tout détail.
+- Formes simples et arrondies, gros volumes, peu de plis. Matières lisses et saturées,
+  rugosité uniforme : pas de texture peinte de lumière, pas de microdétail, pas de
+  photoréalisme, pas de pixel.
+- L'objet est **surdimensionné** et porte l'identité du loot : les lunettes Course-poursuite
+  ont leurs ailes dorées et leurs verres ambre, Haltère ego ses têtes octogonales marine et sa
+  poignée laiton, Sprint-semelle son volume de basket marine/crème/or. Un objet qui a perdu
+  ses traits est faux, même bien ajusté.
+- Corps et objets ont le **même traitement** : même shader, même saturation, même contour.
+- Rendu cible en moteur : ombrage stylisé net et lumineux, rim, contour léger, ombre de
+  contact, caméra perspective de trois quarts. L'arène de #217 en fournit la base ; ses
+  réglages (teinte d'ombre, contour) se reprennent sur le nouveau concept.
 
 ## Rôles et budgets
 
@@ -103,14 +106,14 @@ Chaque barrière bloque la suivante. Un échec renvoie à l'étape qui l'a produ
 fausse se régénère en image, pas en mesh.
 
 1. **G1 — Image.** Un seul sujet en T ou A-pose, fond uni, membres entiers, doigts séparés,
-   pas de planche multi-vues. Proportions et traits comparés à `concept-v2.png`.
+   pas de planche multi-vues. Proportions et traits comparés au concept approuvé.
 2. **G2 — Mesh brut.** Les cinq contrôles GameFactory (bon objet, dos, complet et debout,
    pas de sol, budget), plus l'échelle à 1,70 m. Rejet : changer prompt, seed ou budget et
    noter lequel, puis régénérer.
 3. **G3 — Rig et postures.** Planche des sept gestes au contact, de face et de trois quarts,
    avec et sans chaque objet : aucune interpénétration, poignets, chevilles et prise propres.
    `AgentScripts/BuildMMO.cs`, entrée `Review`, produit la base de cette planche.
-4. **G4 — DA, validée par l'auteur.** Image côte à côte : `concept-v2.png` à gauche, rendu
+4. **G4 — DA, validée par l'auteur.** Image côte à côte : le concept approuvé à gauche, rendu
    Unity de `Arena.unity` au cadrage et à l'éclairage du combat à droite, base et équipé.
    `BuildMMO.CaptureCombat` et `BuildMMO.Board` (via `unity command run_script`) la produisent.
    La montrer à l'auteur et consigner sa réponse mot pour mot dans la doc du lot. Pas
