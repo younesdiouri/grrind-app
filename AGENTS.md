@@ -7,6 +7,25 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 `AGENTS.md` contains the rules shared by every coding agent. `CLAUDE.md` keeps the product
 architecture, invariants, and Claude-specific delegation notes; it imports this file first.
 
+# Working with the agent (Claude Code best practices)
+
+Source: https://code.claude.com/docs/en/best-practices. These are the rules #219 broke.
+
+- **Shipped tools before custom code.** Use the installed plugins, MCP servers and skills
+  (`unity@claude-plugins-official` and the `unity` MCP, the `meshy` MCP,
+  `blender-image-to-3d`, `grrind-character-art`) before writing a client, builder or capture
+  script. Check `claude mcp list` and the skill list first; write code only for a real gap.
+- **Every task carries a check the agent can run** and the evidence it produced: test output,
+  build exit code, or a screenshot compared side by side with the reference at the size the
+  player sees. Measure proportions and dimensions; do not judge them by eye.
+- **Explore, then plan, then code** when the approach is uncertain or several files change;
+  for larger features, interview the author (AskUserQuestion) and write the spec first. If the
+  diff fits in one sentence, just do it.
+- **Course-correct early.** After two failed corrections of the same thing, stop, state what
+  was learned, and restart from a sharper prompt instead of stacking fixes.
+- **Keep instruction files short.** Domain workflows live in skills, loaded on demand; a line in
+  this file or `CLAUDE.md` stays only if removing it would cause a mistake.
+
 # Proportionate validation and iOS development
 
 Choose checks from the changed behavior; generic skill checklists do not justify additional
