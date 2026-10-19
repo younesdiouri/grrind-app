@@ -1,0 +1,267 @@
+[
+  {
+    "task": "01a15538-7009-70bc-bb41-57c54fe1cf9e",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "t-pose",
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1553a-8fa2-777a-b490-904d247dab38",
+    "kind": "rigging",
+    "input": "01a15538-7009-70bc-bb41-57c54fe1cf9e",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a1553b-5fc0-7303-bbc3-32d91b48bb2b",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/tpose.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Edit only two things on this character, keep everything else identical (identity, proportions, big head, hair, skin, grey tank top, navy shorts with ivory stripes, bare feet, rendering style, flat light grey background, strict front view T-pose with arms horizontal). 1) Both hands are now closed into firm fists, knuckles facing forward, thumbs wrapped over the fingers, with a clear round hollow through each fist as if gripping a horizontal bar. 2) The face has the friendly confident small smile of a mobile game hero, relaxed eyebrows. Keep the head large relative to the body. Single character, full body from hair to toes, no shadow, no floor, no text.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a1553c-0b9c-752d-916d-658b156753ba",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/tpose.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Edit only two things on this character, keep everything else identical (identity, proportions, big head, hair, skin, grey tank top, navy shorts with ivory stripes, bare feet, rendering style, flat light grey background, strict front view T-pose with arms horizontal). 1) Both hands are closed into big empty fists, fingers curled into the palm, thumbs wrapped over the fingers. The hands hold nothing at all. 2) The face has the friendly confident small smile of a mobile game hero, relaxed eyebrows. Keep the head large relative to the body. Single character, full body from hair to toes, no objects, no shadow, no floor, no text.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a1553c-b7cc-70e4-9c21-d6befcb27da7",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "t-pose",
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1553e-b475-776e-ac08-6224fb59cc56",
+    "kind": "rigging",
+    "input": "01a1553c-b7cc-70e4-9c21-d6befcb27da7",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a1553f-5739-755f-86b8-82d60cca4202",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "",
+      "image_enhancement": false,
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a15540-e483-759d-946d-4d7dbe938dd9",
+    "kind": "rigging",
+    "input": "01a1553f-5739-755f-86b8-82d60cca4202",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a1554d-218c-75f6-ac26-23f50250afc2",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/concept.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Reference image: a character concept board. Redraw ONLY the BASE character shown on the far left (barefoot, grey tank top, navy shorts with ivory side stripes), keeping his exact chunky cartoon proportions from the board: a very big head (including hair the head is about 30 percent of total body height, the figure is only about 3.3 heads tall), large round eyes, thick eyebrows, round friendly face with a small smile, short stubby legs, very big hands and feet, broad shoulders. Do NOT make him taller, slimmer or more realistic than on the board. New pose: strict front view T-pose, both arms straight out horizontally at shoulder height, both hands closed into big empty fists holding nothing, legs slightly apart, feet pointing forward. Same smooth saturated 3D mobile game rendering, neutral even lighting with no coloured rim light. Flat plain light grey background, no floor, no shadow, no text, no items, single character, full body visible from top of hair to toes with margin.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a1554d-e195-7275-b547-185cfd21d2eb",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "2k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "",
+      "image_enhancement": false,
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1554e-e6ab-7429-b093-8aebdf174f98",
+    "kind": "rigging",
+    "input": "01a1554d-e195-7275-b547-185cfd21d2eb",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a1555b-ed7c-7720-ab5a-447b9bf3a4da",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": true,
+      "texture_resolution": "4k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "",
+      "image_enhancement": false,
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1555d-7607-7285-ac43-eb5eb85484ea",
+    "kind": "rigging",
+    "input": "01a1555b-ed7c-7720-ab5a-447b9bf3a4da",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a15566-b59c-779f-af22-c4c81bc4b8de",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 15000,
+      "should_texture": true,
+      "enable_pbr": false,
+      "texture_resolution": "4k",
+      "texture_prompt": "Hand-painted stylized game texture: flat saturated colour areas, painted soft ambient occlusion in every crease, painted warm top light and cool shadows, thin dark painted outlines along edges, folds and between fingers, crisp painted highlights on hair locks, nose and knuckles. No photographic detail, no noise, no realistic skin pores, no PBR gloss.",
+      "pose_mode": "",
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 15,
+    "error": null
+  },
+  {
+    "task": "01a15568-64ab-725a-8af3-bd20de86f8f0",
+    "kind": "rigging",
+    "input": "01a15566-b59c-779f-af22-c4c81bc4b8de",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
+  },
+  {
+    "task": "01a15571-7d84-7203-b230-e1a3307de3ab",
+    "kind": "image-to-image",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "nano-banana-pro",
+      "prompt": "Repaint this exact character in a hand-painted stylized game art style, keeping identity, proportions, pose, clothes, colours, framing and the flat light grey background identical. Hand-painted texture look: flat saturated colour areas, crisp painted cel shadows with clean hard edges in cool purple-brown tones, warm painted top light, painted ambient occlusion in creases, thin dark brown painted linework along contours, folds, between fingers and around the eyes, crisp painted highlights on hair locks, nose, knuckles. Clean graphic shapes, sharp angular hair locks. No photorealism, no soft 3D render look, no gloss, no noise. Single character, front T-pose, full body, no text.",
+      "aspect_ratio": "4:3"
+    },
+    "status": "SUCCEEDED",
+    "credits": 9,
+    "error": null
+  },
+  {
+    "task": "01a15573-2242-71fa-a913-3d3535d88991",
+    "kind": "retexture",
+    "input": "01a15566-b59c-779f-af22-c4c81bc4b8de",
+    "style": "docs/design/references/chunky-3d/tpose-painted.png",
+    "params": {
+      "ai_model": "meshy-6",
+      "enable_original_uv": true,
+      "enable_pbr": false,
+      "texture_resolution": "4k",
+      "remove_lighting": false,
+      "target_formats": [
+        "glb"
+      ]
+    },
+    "status": "SUCCEEDED",
+    "credits": 10,
+    "error": null
+  }
+]

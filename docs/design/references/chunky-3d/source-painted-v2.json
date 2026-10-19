@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-19",
+  "tool": "Built-in image_gen.imagegen",
+  "tool_version": null,
+  "seed": null,
+  "credits_spent": null,
+  "license": "Not reported by the built-in tool.",
+  "brief": "brief.md, section Style peint main (19 octobre 2026, deuxième passe)",
+  "status": "New exploration candidates; user artistic approval pending. Existing images preserved.",
+  "assets": [
+    {
+      "file": "concept-painted-v2.png",
+      "references": [],
+      "prompt": "Use case: stylized-concept.\nAsset type: GRRIND hand-painted 3D character reference board, latest \"Style peint main\" section of brief.md.\nPrimary request:\nTwo full-body views (three-quarter front, and three-quarter back) of the same original young\nadult athlete character for a mobile 3D tactics game, rendered as a real-time 3D game model with\nhand-painted textures: stylized low-poly forms with clean simple planes, chunky proportions about\n3.5 heads tall, large head, oversized mitten-like hands, big boots-like feet, short legs, broad\nshoulders. Soft painted lighting from above, painted ambient occlusion in creases, soft warm\nhighlights, almost no outlines, no coloured rim light, no gloss. Simple sporty outfit with clear\ncolour blocks: grey sleeveless training top with an orange trim, navy shorts with ivory side\nstripes, wrist bands, chunky navy and cream sneakers. Short dark brown hair in a few big sculpted\nlocks, friendly confident face with large expressive eyes. Plain white background, soft round\ncontact shadow under each figure. No text, no logo, no realistic anatomy or muscle striation.\nComposition: front three-quarter on the left, rear three-quarter on the right, same scale, same outfit, same proportions and same individual in both views. Entire hair, hands and shoes visible with ample margin. One character identity, two views only.\nStyle precision: original design with the broad hand-painted low-poly game-art sensibility of Waven, without reproducing any existing character. Visible broad brush-shaped color planes and painted warm highlights, economical angular geometry, matte diffuse hand-painted texture. Head from crown to chin should occupy about 29 percent of full standing height, for a total of about 3.5 heads. Short stout legs and enormous blocky empty fists. Adult athlete, no baby face. No realistic deltoid/biceps anatomy, no veins, no skin pores, no fabric weave or fine folds, no glossy Pixar-like smooth plastic shading, no cyan accents. Do not turn this into a 2D illustration; it should look like a hand-painted textured low-poly 3D game model.",
+      "role": "Two views of same hand-painted low-poly athlete, three-quarter front and rear"
+    },
+    {
+      "file": "tpose-painted-v2.png",
+      "references": [
+        {
+          "file": "concept-painted-v2.png",
+          "role": "Direct identity, proportions, costume, style reference"
+        }
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: GRRIND single-subject T-pose input for image-to-3D, latest hand-painted brief.\nInput image 1 role: exact CHARACTER IDENTITY, PROPORTIONS, COSTUME and HAND-PAINTED STYLE reference. Use the front-facing figure on the left as the identity anchor, and the rear view only as costume context.\nPrimary request:\nThe same character from the reference image, front view, strict symmetrical T-pose, arms\nhorizontal, both hands closed into big empty fists holding nothing, legs slightly apart, full\nbody from hair to shoes, same hand-painted 3D game model rendering and soft top lighting, no\nrim light, flat plain light grey background, no floor, no shadow, no text, single character.\nPreserve his exact face, large eyes, brown sculpted hair locks, warm tan skin, grey sleeveless training top with orange neckline and armhole trim, navy shorts with ivory side stripes, navy wristbands and chunky navy/cream sneakers with the small orange heel insert. Preserve chunky very compact proportions from the concept: about 3.3 to 3.5 heads tall, head including hair through neck about 29 to 30 percent of full standing height, short legs, broad shoulders and enormous closed empty mitten-like fists. Do not elongate the body for T-pose.\nDirect orthographic frontal camera, left-right symmetric placement, both shoulders level, upper arms and forearms straight in one horizontal line at shoulder height, hands in CLOSED fists with folded fingers and thumbs resting across them. Nothing held; no handles, cylinders, objects or openings in fists. Both shoes pointing forward, legs slightly apart. Entire figure and fists inside the image, generous padding on all sides. One subject, no contact shadow, no gradient background, no multiview or duplicate. Hand-painted broad warm light/shadow patches on simple low-poly surfaces, angular clean planes and minimal outlines, no gloss, no realistic anatomy or muscle striation, no skin pores, no cloth weave, no colored rim lighting. Match the actual reference rather than restyling it.\nCRITICAL PROPORTION REQUIREMENT: make this a distinctly more compact athlete, EXACTLY 3.4 heads tall, not 3.7 or 4. The whole head INCLUDING HAIR from crown to bottom of chin occupies a full 30 percent of the character's standing height. Increase the head size relative to torso and legs by about 12 percent compared to a normal compact hero; make torso shorter and legs very stubby. Shoulder-to-sole distance is only about 2.4 head heights. Keep an adult confident face, not infant proportions. Prioritize these measured short proportions while matching the reference's character identity, colors, hairstyle, hand-painted texture and outfit. Recenter the complete compact figure with generous white-grey margins so hair and shoes stay well inside frame. Closed fists, strict horizontal T-pose, no shadow.",
+      "role": "Single frontal T-pose, empty closed fists, sneakers"
+    }
+  ],
+  "review": {
+    "visual": "Inspected both images as generated at full displayed resolution. Full figures, matched outfit colors and identity, painted low-poly planes and no colored rim light. T-pose: one frontal subject, complete hair/fists/shoes, horizontal arms, closed empty fists, plain grey background and no floor shadow.",
+    "measurement": {
+      "command": "python3 -I spikes/art-source/heads_tall.py docs/design/references/chunky-3d/tpose-painted-v2.png",
+      "result": "3.42 heads tall (head 278px, figure 951px)",
+      "note": "Heuristic crown-to-neck silhouette measurement; does not imply artistic approval."
+    },
+    "retry": {
+      "initial_prompt": "Use case: stylized-concept.\nAsset type: GRRIND single-subject T-pose input for image-to-3D, latest hand-painted brief.\nInput image 1 role: exact CHARACTER IDENTITY, PROPORTIONS, COSTUME and HAND-PAINTED STYLE reference. Use the front-facing figure on the left as the identity anchor, and the rear view only as costume context.\nPrimary request:\nThe same character from the reference image, front view, strict symmetrical T-pose, arms\nhorizontal, both hands closed into big empty fists holding nothing, legs slightly apart, full\nbody from hair to shoes, same hand-painted 3D game model rendering and soft top lighting, no\nrim light, flat plain light grey background, no floor, no shadow, no text, single character.\nPreserve his exact face, large eyes, brown sculpted hair locks, warm tan skin, grey sleeveless training top with orange neckline and armhole trim, navy shorts with ivory side stripes, navy wristbands and chunky navy/cream sneakers with the small orange heel insert. Preserve chunky very compact proportions from the concept: about 3.3 to 3.5 heads tall, head including hair through neck about 29 to 30 percent of full standing height, short legs, broad shoulders and enormous closed empty mitten-like fists. Do not elongate the body for T-pose.\nDirect orthographic frontal camera, left-right symmetric placement, both shoulders level, upper arms and forearms straight in one horizontal line at shoulder height, hands in CLOSED fists with folded fingers and thumbs resting across them. Nothing held; no handles, cylinders, objects or openings in fists. Both shoes pointing forward, legs slightly apart. Entire figure and fists inside the image, generous padding on all sides. One subject, no contact shadow, no gradient background, no multiview or duplicate. Hand-painted broad warm light/shadow patches on simple low-poly surfaces, angular clean planes and minimal outlines, no gloss, no realistic anatomy or muscle striation, no skin pores, no cloth weave, no colored rim lighting. Match the actual reference rather than restyling it.",
+      "initial_result": "3.72 heads tall (head 257px, figure 955px)",
+      "action": "Regenerated directly from concept with larger head and shorter body requirement; only corrected T-pose saved in workspace."
+    },
+    "limits": [
+      "Concept view shoes differ slightly with perspective; these remain illustrative references, not fitted equipment.",
+      "No mesh, rig, animation, Unity comparison or G4 approval produced."
+    ]
+  }
+}

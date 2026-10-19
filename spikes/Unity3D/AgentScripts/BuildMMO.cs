@@ -137,7 +137,7 @@ public static class BuildMMO
         return path;
     }
     // Combat framing (perspective, both fighters) for the G4 board; inspection captures stay orthographic.
-    public static async Task<string> CaptureCombat(string name,int playerStance=1,int enemyStance=2,float phase=.5f,bool equipment=true)
+    public static async Task<string> CaptureCombat(string name,int playerStance=1,int enemyStance=2,float phase=.5f,bool equipment=true,int width=2556,int height=1179)
     {
         if(!Application.isPlaying)throw new Exception("Enter Play first");
         Application.runInBackground=true;
@@ -149,7 +149,7 @@ public static class BuildMMO
             enemy=new BattleBridge.ActorFrame{pose=enemyStance,phase=phase}}));
         int target=Time.frameCount+4;float deadline=Time.realtimeSinceStartup+10;
         while(Time.frameCount<target){if(Time.realtimeSinceStartup>deadline)throw new Exception("Frames stalled");await Task.Yield();}
-        const int width=1600,height=740;
+        // Default: iPhone 16 Pro landscape pixels, to judge detail at the size the player sees.
         var camera=bridge.arenaCamera;var rt=new RenderTexture(width,height,24){antiAliasing=4};
         var prev=RenderTexture.active;var old=camera.targetTexture;var pixels=new Texture2D(width,height,TextureFormat.RGB24,false);
         string path=Path.GetFullPath("../../artifacts/unity-spike/mmo-v1/"+name+".png");Directory.CreateDirectory(Path.GetDirectoryName(path));

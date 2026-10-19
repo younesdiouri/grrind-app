@@ -55,9 +55,10 @@ n'existe pas, G1 et G4 ne peuvent pas passer et aucune génération payante ne p
   poignée laiton, Sprint-semelle son volume de basket marine/crème/or. Un objet qui a perdu
   ses traits est faux, même bien ajusté.
 - Corps et objets ont le **même traitement** : même shader, même saturation, même contour.
-- Rendu cible en moteur : ombrage stylisé net et lumineux, rim, contour léger, ombre de
-  contact, caméra perspective de trois quarts. L'arène de #217 en fournit la base ; ses
-  réglages (teinte d'ombre, contour) se reprennent sur le nouveau concept.
+- Rendu cible en moteur : URP Lit satiné (lissé .38, sans métal ni reflets d'environnement),
+  ciel ambiant à trois tons, lumière clé et contre-jour cyan pour le liseré, ombre de contact,
+  caméra perspective de trois quarts (`BuildChunky`, `BuildArena`). Le shader toon de #217
+  ne sert plus qu'à l'ancien avatar MMO.
 
 ## Rôles et budgets
 
@@ -89,6 +90,48 @@ Interdits, tous observés dans #214 :
   demander la pièce, pas le tout amputé.
 - Écrire du C# ou du Python compacté sur une ligne. Ces scripts se relisent en revue.
 
+## Rendu peint main (cible depuis le 19 octobre 2026, référence de style : Waven)
+
+Le générateur reproduit le **style de l'image d'entrée** : un rendu 3D satiné en entrée donne
+un personnage satiné, aucun prompt de texture ni réglage de shader ne le rattrape (#219,
+mesuré). La chaîne qui a donné le bon rendu, entièrement par le MCP Meshy :
+
+1. Entrées **déjà peintes main** : planche de style puis vues face, profil et dos
+   (`docs/design/references/chunky-3d/brief.md`). G1 : `heads_tall.py` sur face et dos,
+   hauteurs des trois vues à quelques pour cent près.
+2. `meshy_multi_image_to_3d` : `meshy-7.1`, `geometry_resolution: 2k`, `remove_lighting:
+   false` (garder la lumière peinte), `image_enhancement: false`, texture 4K, remesh à
+   20 000 triangles. Le dos et les côtés viennent de vraies vues : plus de traînées.
+3. `meshy_rig` puis `meshy_animate` avec les sept actions dans l'ordre de `UNITY_POSES`
+   (89, 192, 178, 194, 156, 198, 90), 30 i/s, **un seul FBX** corps + clips.
+4. `BuildMeshy.Create` : import **Generic** (les clips sont faits pour ce squelette, rien à
+   recibler, donc pas de problème d'échelle en centimètres), hanches comme nœud de
+   mouvement pour garder les gestes sur place, contact de chaque clip mesuré, `GRRIND/Painted
+   Toon` sans rim ni teinte colorée. `BuildArena.Create("MeshyAthlete")`.
+
+`normalize_meshy_rig.py`, `BuildChunky` et `bake_painted.py` ne servent qu'aux essais
+précédents (Humanoid, Quaternius) et partent avec #221.
+
+## Meshy : ce qui a été mesuré (#219)
+
+Tout passe par le **MCP Meshy** (`@meshy-ai/meshy-mcp-server`, enregistré en local par
+`claude mcp add-json meshy …`) : génération, édition d'image, multi-vues, retexture, UV,
+rig, animations et `text-to-motion`. Aucun client maison. La clé vit dans la config locale de
+Claude, jamais dans le dépôt. Après chaque tâche payante, ajouter son id, ses paramètres et
+ses crédits au `tasks.json` du personnage (l'historique de #219 y est). Réglages retenus :
+
+- Satiné (abandonné) : `meshy-7.1`, `geometry_resolution: 2k`, remesh à 30 000 triangles,
+  texture 4K avec cartes PBR. Peint main : voir la recette ci-dessus.
+- `pose_mode` vide et `image_enhancement: false` : une T-pose forcée rouvre les poings, et
+  l'amélioration redessine le visage.
+- L'auto-rig Meshy n'a **aucun os de doigt** : les poings sont sculptés fermés dans l'image
+  d'entrée, les objets tenus s'attachent à l'os de la main.
+- Le FBX riggé est en centimètres sous une armature à 0,01 : le réexporter avec
+  `normalize_meshy_rig.py` (Blender) avant Unity, sinon le Humanoid s'anime cent fois trop
+  grand. Supprimer l'ancien `.meta` du FBX à chaque nouveau rig.
+- Un prompt d'édition ne doit pas décrire de « creux » ou de « prise » : le modèle ajoute
+  l'objet suggéré. Demander des poings vides.
+
 ## Postures
 
 Sept gestes, indexés par `UNITY_POSES` dans `unityFrame.ts` : `idle` (garde) 0, `attack` 1,
@@ -96,19 +139,30 @@ Sept gestes, indexés par `UNITY_POSES` dans `unityFrame.ts` : `idle` (garde) 0,
 contact**, que l'horloge serveur place. Une posture ne change jamais un timing : elle remplit
 celui que le combat impose.
 
-Chaque geste se lit en silhouette à la taille du combat : anticipation, contact, retour. Un
-clip générique de pack qui ne se lit pas ainsi est retravaillé ou remplacé (Tripo, retarget,
-ou keys Unity), il n'est pas « adapté à la présentation ».
+**Source unique : Meshy** (décision de l'auteur, 19 octobre 2026). Les gestes viennent de sa
+bibliothèque d'actions (`meshy_list_animations`, `meshy_animate`) ou de `text-to-motion`, sur
+le rig Meshy du personnage. Aucun clip Quaternius, Mixamo ou autre pack ; les clips Quaternius
+encore branchés via `Muscu/Avatar.prefab` sont un reste de #214 à retirer (#224).
+
+Chaque geste se lit en silhouette à la taille du combat : anticipation, contact, retour. Le
+contact de chaque clip se mesure et se reporte dans `MuscuPose.ClipPhase`, pour qu'il tombe à
+la phase 0,5. Un geste Meshy qui ne se lit pas ainsi se régénère (autre action, autre prompt
+`text-to-motion`), il ne se compense pas par du code.
 
 ## Barrières, dans l'ordre
 
 Chaque barrière bloque la suivante. Un échec renvoie à l'étape qui l'a produit : une image
 fausse se régénère en image, pas en mesh.
 
-1. **G1 — Image.** Un seul sujet en T ou A-pose, fond uni, membres entiers, doigts séparés,
-   pas de planche multi-vues. Proportions et traits comparés au concept approuvé.
+1. **G1 — Image.** Un seul sujet en T-pose, fond uni, membres entiers, pas de planche
+   multi-vues. Dériver l'image **du concept lui-même** (pas d'une image intermédiaire) et
+   **mesurer** les proportions : `python3 -I spikes/art-source/heads_tall.py <image>` doit
+   donner celles du concept (≈ 3,3–3,5 têtes). Une T-pose à 4 têtes a déjà perdu la DA
+   (#219) ; l'œil ne l'a pas vu, la mesure si.
 2. **G2 — Mesh brut.** Les cinq contrôles GameFactory (bon objet, dos, complet et debout,
-   pas de sol, budget), plus l'échelle à 1,70 m. Rejet : changer prompt, seed ou budget et
+   pas de sol, budget), plus l'échelle à 1,70 m. Les miniatures Meshy sont en perspective :
+   mesurer les proportions sur `BuildChunky.Silhouette` (bind pose orthographique) avec le
+   même `heads_tall.py` qu'en G1. Rejet : changer prompt, seed ou budget et
    noter lequel, puis régénérer.
 3. **G3 — Rig et postures.** Planche des sept gestes au contact, de face et de trois quarts,
    avec et sans chaque objet : aucune interpénétration, poignets, chevilles et prise propres.

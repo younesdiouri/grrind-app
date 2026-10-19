@@ -55,3 +55,8 @@ example
 /spikes/art-source/mmo-athlete-v1/athlete-basecolor.*
 /spikes/art-source/mmo-athlete-v1/gear/*.fbx
 /spikes/art-source/mmo-athlete-v1/gear/*.glb
+/spikes/art-source/chunky-athlete-v1/*/
+/spikes/art-source/chunky-athlete-v1/*.png
+/spikes/art-source/painted-athlete-v2/*.fbx
+/spikes/art-source/painted-athlete-v2/*.glb
+/spikes/art-source/painted-athlete-v2/*.png
