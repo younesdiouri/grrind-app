@@ -70,8 +70,10 @@ def generate(image, out, polycount, pose):
         "ai_model": "meshy-7.1",
         "geometry_resolution": "2k",
         "should_texture": True,
-        "enable_pbr": False,
-        "texture_resolution": "2k",
+        # The normal map carries the high-definition detail (eyelids, knuckles, locks) onto the
+        # 30 k remeshed body; 4K costs the same credits and gives the face enough texels.
+        "enable_pbr": True,
+        "texture_resolution": "4k",
         "should_remesh": True,
         "topology": "triangle",
         "target_polycount": polycount,
@@ -91,7 +93,8 @@ def generate(image, out, polycount, pose):
     run = out / task_id
     for fmt in ("glb", "fbx"):
         download(task["model_urls"][fmt], run / f"model.{fmt}")
-    download(task["texture_urls"][0]["base_color"], run / "basecolor.png")
+    for channel, url in task["texture_urls"][0].items():
+        download(url, run / f"{channel}.png")
     for view, url in (task.get("thumbnail_urls") or {}).items():
         download(url, run / f"view-{view}.png")
 

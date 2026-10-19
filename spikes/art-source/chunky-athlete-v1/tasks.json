@@ -167,5 +167,38 @@
     "status": "SUCCEEDED",
     "credits": 5,
     "error": null
+  },
+  {
+    "task": "01a1555b-ed7c-7720-ab5a-447b9bf3a4da",
+    "kind": "image-to-3d",
+    "input": "docs/design/references/chunky-3d/tpose-fists.png",
+    "params": {
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "should_texture": true,
+      "enable_pbr": true,
+      "texture_resolution": "4k",
+      "should_remesh": true,
+      "topology": "triangle",
+      "target_polycount": 30000,
+      "pose_mode": "",
+      "image_enhancement": false,
+      "target_formats": [
+        "glb",
+        "fbx"
+      ],
+      "multi_view_thumbnails": true
+    },
+    "status": "SUCCEEDED",
+    "credits": 35,
+    "error": null
+  },
+  {
+    "task": "01a1555d-7607-7285-ac43-eb5eb85484ea",
+    "kind": "rigging",
+    "input": "01a1555b-ed7c-7720-ab5a-447b9bf3a4da",
+    "status": "SUCCEEDED",
+    "credits": 5,
+    "error": null
   }
 ]

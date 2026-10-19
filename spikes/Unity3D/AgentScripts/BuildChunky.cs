@@ -42,8 +42,9 @@ public static class BuildChunky
         if (animator == null || !animator.isHuman || !animator.avatar.isValid) throw new Exception("Invalid Humanoid");
 
         if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Spike", "ChunkyAthlete");
-        var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(Source + "/athlete-basecolor.png");
-        var body = SoftMaterial(Folder + "/Body.mat", texture);
+        var texture = Texture(Source + "/athlete-basecolor.png", false);
+        var normal = Texture(Source + "/athlete-normal.png", true);
+        var body = SoftMaterial(Folder + "/Body.mat", texture, normal, MetallicSmoothness());
         foreach (var renderer in actor.GetComponentsInChildren<SkinnedMeshRenderer>())
         {
             renderer.sharedMaterials = new[] { body };
@@ -105,8 +106,52 @@ public static class BuildChunky
         return bounds;
     }
 
-    // Modern mobile look: soft satin Lit shading under the arena's sky light and back rim light.
-    static Material SoftMaterial(string path, Texture texture)
+    // Modern mobile look: satin Lit shading with Meshy's normal and roughness maps.
+    // 4K maps: the face only gets enough texels at full size (the default import caps at 2048).
+    static Texture2D Texture(string path, bool normal)
+    {
+        var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+        importer.maxTextureSize = 4096;
+        importer.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
+        importer.sRGBTexture = !normal;
+        importer.isReadable = false;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+    }
+
+    // URP Lit wants metallic in R and smoothness in A; Meshy gives two greyscale maps.
+    static Texture2D MetallicSmoothness()
+    {
+        var path = Source + "/athlete-metallic-smoothness.png";
+        var metallic = Readable(Source + "/athlete-metallic.png");
+        var roughness = Readable(Source + "/athlete-roughness.png");
+        var pixels = metallic.GetPixels();
+        var rough = roughness.GetPixels();
+        for (int i = 0; i < pixels.Length; i++) pixels[i] = new Color(pixels[i].r, 0, 0, 1 - rough[i].r);
+        var packed = new Texture2D(metallic.width, metallic.height, TextureFormat.RGBA32, false, true);
+        packed.SetPixels(pixels);
+        System.IO.File.WriteAllBytes(path, packed.EncodeToPNG());
+        UnityEngine.Object.DestroyImmediate(packed);
+        AssetDatabase.ImportAsset(path);
+        var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+        importer.sRGBTexture = false;
+        importer.maxTextureSize = 4096;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+    }
+
+    static Texture2D Readable(string path)
+    {
+        var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+        importer.isReadable = true;
+        importer.sRGBTexture = false;
+        importer.maxTextureSize = 4096;
+        importer.textureCompression = TextureImporterCompression.Uncompressed;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+    }
+
+    static Material SoftMaterial(string path, Texture texture, Texture normal, Texture metallicSmoothness)
     {
         var material = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (material == null)
@@ -117,8 +162,12 @@ public static class BuildChunky
         material.shader = Shader.Find("Universal Render Pipeline/Lit");
         material.SetTexture("_BaseMap", texture);
         material.SetColor("_BaseColor", Color.white);
-        material.SetFloat("_Metallic", 0);
-        material.SetFloat("_Smoothness", .38f);
+        material.SetTexture("_BumpMap", normal);
+        material.EnableKeyword("_NORMALMAP");
+        material.SetTexture("_MetallicGlossMap", metallicSmoothness);
+        material.EnableKeyword("_METALLICSPECGLOSSMAP");
+        // Meshy's roughness reads too glossy on skin under the rim: keep its pattern, scale it down.
+        material.SetFloat("_Smoothness", .6f);
         // No skybox in the arena: environment reflections would only grey the colours.
         material.SetFloat("_EnvironmentReflections", 0);
         material.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
