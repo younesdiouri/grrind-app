@@ -28,3 +28,13 @@ jambes et buste raccourcis, musculature réduite, visage adulte simplifié,
 6–8 grandes mèches et 3–4 grands plis. Conserver les mêmes objets et la mise
 en page, contrôler doigts/prise et occultation des lunettes. Le résultat devra
 être revu à l’image puis reproduit et contrôlé séparément sur le vrai rig.
+
+## Résultat exécuté
+
+- `actual-unity/` : exports réels du personnage dans Unity, base et équipé, avec détails.
+- `actual-app/` : captures natives du Simulator après intégration : `combat.png`,
+  `workshop.png`, `grip.png` et `shoes.png`. Ce sont des preuves du rendu exécuté,
+  distinctes des concepts ci-dessus.
+- Le flow ciblé atelier → combat → retour → arrière-plan passe. Le même build
+  développement est installé et lancé sur l’iPhone Dyoxel ; la revue photographique
+  conservée ici provient du Simulator.

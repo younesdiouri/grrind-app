@@ -54,6 +54,13 @@ for side in ['Left','Right']:
   if o.type=='MESH':
    bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
  ns['combine_materials'](root)
+ total=0
+ for obj in root.children_recursive:
+  if obj.type!='MESH':continue
+  bm=bmesh.new();bm.from_mesh(obj.data)
+  assert all(e.is_manifold for e in bm.edges),f'Open shoe shell: {obj.name}'
+  bm.free();obj.data.calc_loop_triangles();total+=len(obj.data.loop_triangles)
+ assert 0<total<2000,'Shoe exceeds the mobile geometry budget'
  bpy.ops.object.select_all(action='DESELECT');root.select_set(True)
  for o in root.children_recursive:o.select_set(True)
  bpy.context.view_layer.objects.active=root

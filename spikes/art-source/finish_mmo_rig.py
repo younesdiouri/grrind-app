@@ -28,7 +28,7 @@ handmat=hands[0].data.materials[0]
 nearest=min(body.data.loops,key=lambda l:(body.data.vertices[l.vertex_index].co-Vector((.35,-.025,.85))).length)
 hand_uv=uv[nearest.index].uv.copy()
 tex=handmat.node_tree.nodes.new('ShaderNodeTexImage');tex.image=image
-handmat.node_tree.links.new(tex.outputs['Color'],handmat.node_tree.nodes.get('Principled BSDF').inputs['Base Color'])
+handmat.node_tree.links.new(tex.outputs['Color'],next(n for n in handmat.node_tree.nodes if n.type=='BSDF_PRINCIPLED').inputs['Base Color'])
 for hand in hands:
  for loop in hand.data.uv_layers.active.data:loop.uv=hand_uv
 bpy.ops.object.select_all(action='DESELECT');body.select_set(True)

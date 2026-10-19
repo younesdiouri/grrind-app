@@ -91,9 +91,11 @@ bpy.ops.object.mode_set(mode='OBJECT')
 for o in list(bpy.data.objects):
     if o not in [body,rig,*hands]:bpy.data.objects.remove(o,do_unlink=True)
 mat=bpy.data.materials.new('HandsSkin');mat.diffuse_color=(.56,.32,.17,1);mat.use_nodes=True
-mat.node_tree.nodes.get('Principled BSDF').inputs['Base Color'].default_value=(.56,.32,.17,1)
-mat.node_tree.nodes.get('Principled BSDF').inputs['Roughness'].default_value=.85
+next(n for n in mat.node_tree.nodes if n.type=='BSDF_PRINCIPLED').inputs['Base Color'].default_value=(.56,.32,.17,1)
+next(n for n in mat.node_tree.nodes if n.type=='BSDF_PRINCIPLED').inputs['Roughness'].default_value=.85
 for h in hands:
     h.data.materials.append(mat);h.parent=rig;m=h.modifiers.new('HumanoidSkin','ARMATURE');m.object=rig
+for hand in hands:
+    assert max(max(v.co[i] for v in hand.data.vertices)-min(v.co[i] for v in hand.data.vertices) for i in range(3))<.30,'Donor cut retained geometry outside the hand'
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'fitted-rig.blend'))
 print(json.dumps({'bones':len(rig.data.bones),'body_vertices':len(body.data.vertices),'hands':[(h.name,len(h.data.vertices)) for h in hands]}))

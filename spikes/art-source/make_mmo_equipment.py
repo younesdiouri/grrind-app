@@ -15,7 +15,7 @@ def material(name, colour, metal=0.0):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.diffuse_color = (*colour, 1)
     mat.use_nodes = True
-    shader = mat.node_tree.nodes['Principled BSDF']
+    shader = next(n for n in mat.node_tree.nodes if n.type=='BSDF_PRINCIPLED')
     shader.inputs['Base Color'].default_value = (*colour, 1)
     shader.inputs['Metallic'].default_value = metal
     shader.inputs['Roughness'].default_value = 0.48 if metal else 0.78
@@ -72,7 +72,7 @@ def goggles():
     ivory = material('Ivory', (0.78, 0.70, 0.48))
     gold = material('Gold', (0.72, 0.39, 0.055), 0.38)
     amber = material('Amber', (0.48, 0.16, 0.018), 0.15)
-    amber.node_tree.nodes['Principled BSDF'].inputs['Roughness'].default_value = 0.25
+    next(n for n in amber.node_tree.nodes if n.type=='BSDF_PRINCIPLED').inputs['Roughness'].default_value = 0.25
     root = bpy.data.objects.new('CoursePoursuite', None)
     bpy.context.collection.objects.link(root)
     root['forward'] = '-Y'
@@ -165,8 +165,8 @@ def export_and_render(root):
     scene.render.resolution_y = 700
     scene.render.resolution_percentage = 100
     scene.world.use_nodes = True
-    scene.world.node_tree.nodes['Background'].inputs[0].default_value = (0.025, 0.035, 0.07, 1)
-    scene.world.node_tree.nodes['Background'].inputs[1].default_value = 0.45
+    next(n for n in scene.world.node_tree.nodes if n.type=='BACKGROUND').inputs[0].default_value = (0.025, 0.035, 0.07, 1)
+    next(n for n in scene.world.node_tree.nodes if n.type=='BACKGROUND').inputs[1].default_value = 0.45
     scene.view_settings.view_transform = 'AgX'
     camera = bpy.data.objects.new('Gear camera', bpy.data.cameras.new('Gear camera'))
     scene.collection.objects.link(camera)

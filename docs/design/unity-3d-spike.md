@@ -93,8 +93,15 @@ une translation de 30 cm et une rotation de 60°. Ce contrôle géométrique com
 visuelle, sans la remplacer. Un ennemi illustré reste un sprite ; les monstres ne sont pas migrés.
 
 Validation du code final : typecheck et lint passent ; 560 tests passent ; 29 previews passent.
-L’export/rebuild natif iOS et le flow `.maestro/avatar-3d.yaml` sont en cours de validation.
-L’installation et l’ouverture sur iPhone seront distinguées du passage Simulator.
+Les exports Unity iOS arm64 Simulator et appareil, leurs frameworks et les deux development
+builds natifs passent. Le flow ciblé `.maestro/avatar-3d.yaml` passe : atelier, équipements,
+vrai écran de combat, retour et reprise après arrière-plan. Ses captures ont été inspectées.
+Quatre preuves natives sont conservées dans `references/flyff-3d-proposal/actual-app/`.
+
+Le build appareil est installé sur l’iPhone Dyoxel (iPhone 16 Pro) ; le lancement du development
+client puis du lien `grrindapp-dev://avatar-3d` réussit. Metro 8081 sert le bundle au téléphone.
+Les captures ci-dessus viennent du Simulator : l’installation et le lancement sur appareil ne
+valent pas validation visuelle ou mesure de performances sur cet iPhone.
 
 `./scripts/unity-ios.sh` exporte et compile les frameworks arm64 Simulator et iPhone.
 Les produits restent ignorés par Git. Seuls les development builds nécessaires sont reconstruits.
