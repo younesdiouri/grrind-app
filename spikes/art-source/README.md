@@ -1,5 +1,8 @@
 # Source du personnage MMO peint
 
+> Historique de #214. Les étapes Unity 5 et 6 (`AgentScripts`) ont été retirées en #226 ; la
+> production passe désormais par le skill `grrind-character-art` et les outils officiels.
+
 La référence active est `docs/design/references/flyff-3d-proposal/concept-v2.png`,
 approuvée le 19 octobre 2026. Un personnage pilote ; la seconde morphologie et les
 variantes de peau ne sont pas livrées par ce travail. Aucun filtre pixelisé.

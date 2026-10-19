@@ -2,6 +2,9 @@
 
 Ticket : https://github.com/younesdiouri/grrind-app/issues/213.
 
+> Les `AgentScripts` cités ci-dessous (builders, captures, revue) ont été retirés en #226 au
+> profit du plugin Unity officiel et du MCP `unity` ; ils restent lisibles dans l'historique Git.
+
 Toute nouvelle génération, posture ou intégration d’avatar suit le skill
 `.claude/skills/grrind-character-art/SKILL.md` (#215) et ses barrières G1–G5. Le rendu
 livré ici n’a pas passé la barrière DA G4 : il reste une preuve d’intégration, pas une cible.
