@@ -4,7 +4,7 @@ Explore all the animations in the Animation Viewer!
 https://quaternius.com/animviewer.html
 -------------------------------------------------------
 License:
-CC0 1.0 Universal (CC0 1.0) 
+CC0 1.0 Universal (CC0 1.0)
 Public Domain Dedication
 https://creativecommons.org/publicdomain/zero/1.0/
 
