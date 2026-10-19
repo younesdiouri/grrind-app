@@ -5,5 +5,5 @@
   "tasks": "spikes/art-source/chunky-athlete-v1/tasks.json",
   "plan": "Meshy Pro (paid). Licence under Meshy's terms for paid plans; no CC BY credit inherited from the free tier.",
   "modifications": "None to geometry or weights. Import as Humanoid, height normalised to 1.70 m, GRRIND toon material.",
-  "animations": "Quaternius Universal Animation Library 2, CC0-1.0"
+  "animations": "Temporary: Quaternius UAL2 clips inherited from #214, to be replaced by Meshy animations (#224)"
 }

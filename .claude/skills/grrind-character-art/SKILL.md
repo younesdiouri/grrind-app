@@ -138,9 +138,15 @@ Sept gestes, indexés par `UNITY_POSES` dans `unityFrame.ts` : `idle` (garde) 0,
 contact**, que l'horloge serveur place. Une posture ne change jamais un timing : elle remplit
 celui que le combat impose.
 
-Chaque geste se lit en silhouette à la taille du combat : anticipation, contact, retour. Un
-clip générique de pack qui ne se lit pas ainsi est retravaillé ou remplacé (Tripo, retarget,
-ou keys Unity), il n'est pas « adapté à la présentation ».
+**Source unique : Meshy** (décision de l'auteur, 19 octobre 2026). Les gestes viennent de sa
+bibliothèque d'actions (`meshy_list_animations`, `meshy_animate`) ou de `text-to-motion`, sur
+le rig Meshy du personnage. Aucun clip Quaternius, Mixamo ou autre pack ; les clips Quaternius
+encore branchés via `Muscu/Avatar.prefab` sont un reste de #214 à retirer (#224).
+
+Chaque geste se lit en silhouette à la taille du combat : anticipation, contact, retour. Le
+contact de chaque clip se mesure et se reporte dans `MuscuPose.ClipPhase`, pour qu'il tombe à
+la phase 0,5. Un geste Meshy qui ne se lit pas ainsi se régénère (autre action, autre prompt
+`text-to-motion`), il ne se compense pas par du code.
 
 ## Barrières, dans l'ordre
 
