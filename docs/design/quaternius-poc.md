@@ -1,176 +1,132 @@
-# POC Quaternius — un personnage, deux coiffures, un item
+# Quaternius V1 — base de personnages retenue
 
-Ticket : [#229](https://github.com/younesdiouri/grrind-app/issues/229). Décision de l'auteur du
-21 octobre 2026 : nouvelle piste Sport Fantasy Cartoon, sur des personnages pré-riggés.
-Le POC est isolé ; le pilote du combat et le contrat serveur ne changent pas.
+Le 21 octobre 2026, après son essai du personnage puis du duel sur Simulator, l’auteur
+valide : « ok en vrai je suis convaincu je pense que c'est déjà pas mal pour une v1 ».
+Il demande de garder cette seule base et de supprimer les anciens essais.
+Le POC #229 / PR #230 est fusionné ; nettoyage : #221.
 
 ## Essayer
 
-Dans le development build avec le framework Unity de cette branche, ouvrir
-`grrindapp-dev://character-showcase`, ou **POC Quaternius** dans l'atelier `/avatar-3d`.
-L'atelier propose deux coiffures, bottes/pieds nus, repos/crochet, lecture/pause, face,
-profil, trois-quarts et visage. **Voir le duel PvP** joue un duel de démonstration avec deux
-instances masculines Quaternius, coiffures opposées, dans l'arène et le HUD existants.
-Les réglages restent locaux à cet écran ; aucun gain réel ni défi réseau n'est créé.
+Dans le development build Unity, ouvrir `grrindapp-dev://character-showcase` ou
+**Atelier avatar 3D** dans les réglages/la démonstration de combat. L’ancien lien
+`grrindapp-dev://avatar-3d` redirige vers le même atelier.
 
-La validation artistique appartient à l'auteur. Les captures sont des propositions à
-examiner, pas une approbation. Aucun système complet d'itemisation ni remplacement du
-personnage du combat ne doit partir avant son verdict personnel.
+Un masculin, deux coiffures, bottes/pieds nus, repos/crochet, lecture/pause et cadrages.
+**Voir le duel PvP** joue deux hommes Quaternius avec coiffures opposées dans l’arène
+et le HUD existants, puis revient en portrait. Les réglages sont locaux ; aucun gain,
+défi réseau ni choix d’apparence persistant n’est créé.
 
-## Audit et choix
+## Base et provenance
 
-- PR #228 : brief de commande à un artiste, documentation seulement. Elle n'apporte pas
-  de personnage à intégrer. Les anciens modèles et scènes sont conservés.
-- Le projet `spikes/Unity3D` possède déjà URP, l'arène, le bridge natif Expo, le sampler
-  `MuscuPose`, le pack UAL2 Humanoid et les bases Quaternius. Ils sont réutilisés.
-- `claude mcp list` reconnaît Unity et Meshy. Codex pilote le même serveur Unity Pipeline
-  par le CLI officiel (`unity command`), dont les outils de capture. Blender MCP fonctionne
-  après ouverture de Blender 4.5.14 LTS. Son protocole 13 est ancien mais les appels utilisés
-  fonctionnent ; aucune mise à jour ni génération payante n'a été nécessaire.
-- Les deux ZIP **Standard** locaux sont CC0, licence vérifiée dans chaque archive.
-  La version Standard Base contient ici les corps Superhero et huit fichiers de coiffure
-  (dont sourcils et barbe), avec FBX Unity et glTF. Les `.blend` et shaders configurables
-  des versions Source ne sont pas présents. Aucune option de peau/yeux fictive n'est exposée.
-- La Fantasy Standard contient Peasant et Ranger, versions masculines/féminines, en FBX
-  et glTF, tenues complètes et pièces. Son README exige de remplacer le corps sous la tenue.
-  Le Humanoid commun ne suffit pas à prouver une compatibilité avec toutes les morphologies.
-- Un Peasant masculin est assemblé avec la tête Superhero et ses yeux/sourcils d'origine.
-  Les os sont réaffectés par nom au squelette original, doigts conservés. Les mains utilisent
-  la texture Regular du pack Fantasy. C'est une tenue d'essai Fantasy, pas une tenue de sport
-  finale ni une panoplie GRRIND terminée.
-- L'unique item est la paire de bottes Peasant, un mesh **skinné**, substitué aux pieds nus.
-  Ce choix valide un vêtement déformable réel avant de fabriquer des sneakers. Pas de Meshy,
-  Mixamo ou nouvel abonnement nécessaire pour cette preuve.
+- Quaternius Universal Base Characters Standard et Modular Character Outfits Fantasy
+  Standard, ZIP locaux CC0, licences et provenance dans les dossiers de personnages Unity.
+- Le masculin garde le rig Humanoid et les doigts. Les meshes Peasant remplacent le corps
+  caché ; os réaffectés par nom. Les bottes sont un vrai mesh skinné, substitué aux pieds nus.
+- Blender prépare le raccord du cou par coupe et extrusion sous le col ; pas de volume
+  ajouté pour cacher une traversée. Les matériaux utilisent les textures réelles des packs.
+- Une seule base 3D est chargée par `BattleBridge` : `Resources/QuaterniusShowcase.prefab`.
+  Les anciens corps Muscu, Female, MMO, Meshy, Chunky et Painted et leurs bancs sont supprimés.
+- Le sampler `FighterPose` ne garde que le chemin Humanoid Quaternius. Les faux objets
+  d’haltère/lunettes et leurs réglages de prise sont retirés. Les apparences historiques
+  du serveur ne sont plus traduites en sexe ni équipement 3D fictifs.
+- Unity joue la chronologie serveur ; les règles, PV, effets et HUD ne changent pas.
+  La scène Arena et les shaders communs sont conservés. Les lumières propres au prefab
+  ne s’activent qu’en inspection.
 
 Sources officielles : [Base](https://quaternius.com/packs/universalbasecharacters.html),
 [Fantasy](https://quaternius.com/packs/modularcharacteroutfitsfantasy.html),
 [UAL2](https://quaternius.com/packs/universalanimationlibrary2.html).
-Provenance, SHA-256 des archives et licences dans
-`Assets/Characters/QuaterniusPOC/PROVENANCE.json`. Les packs complets restent ignorés dans
-`artifacts/quaternius-source/`. Seuls les fichiers utilisés sont versionnés.
+Les packs complets restent dans `artifacts/quaternius-source/`, ignorés par Git.
 
 ## Reproduction
 
-1. Extraire les deux ZIP sous `artifacts/quaternius-source/`, en conservant leurs dossiers.
-2. Dans Blender, exécuter `spikes/art-source/prepare_quaternius_head.py`. Le script lit le
-   FBX Unity, coupe le cou à 1,56 m et prolonge sa bordure jusqu'à 1,32 m sous le col.
-   Le haut garde ses poids ; le bas suit `spine_03`. L'export utilise `FBX_SCALE_ALL` :
-   le mélange glTF → FBX avec l'échelle par défaut avait produit un skin réduit par 100
-   une fois réaffecté au squelette Unity. Ce n'est pas compensé avec un scale arbitraire.
-3. Dans Unity, exécuter `QuaterniusPoc.Build()` par `unity command eval`. Ce code assemble
-   les vrais meshes, crée les matériaux, le prefab `Resources/QuaterniusShowcase.prefab`
-   et la scène isolée `Assets/Spike/QuaterniusPOC/CharacterShowcase.unity`, puis valide.
-4. Les coiffures et vêtements gardent les bindposes de leur FBX compatible, les os sont
-   réaffectés par nom au squelette masculin. Le cou modifié est exporté avec le même rig.
-   Le corps caché est retiré ; la section des pieds nus ne s'affiche que sans bottes.
-5. En Play, capturer avec `unity command capture_game_view --source camera --width 440
-   --height 580 --save_path Captures/<nom>.png`. Inspecter les fichiers réels, puis déplacer
-   les preuves utiles hors d'`Assets` pour éviter leur inclusion dans le build.
-6. Pour le Simulator uniquement : fermer l'éditeur, exporter avec
-   `unity build spikes/Unity3D --target iOS --execute-method MobileBuild.Simulator --timeout 900`,
-   compiler le scheme `UnityFramework` du projet généré avec le SDK `iphonesimulator` et le
-   DerivedData existant. Mettre à jour la tranche `ios-arm64-simulator` du XCFramework local.
-   La tranche iPhone n'est pas reconstruite par cette vérification.
-7. `E2E_FORCE_BUILD=1 npm run e2e:ios:dev` installe le development build affecté, puis
-   `E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/avatar-3d.yaml`. Le flow existant vérifie
-   l'atelier historique et le combat, puis joue `quaternius-poc.yaml` : cheveux, bottes,
-   cadrages, animation et retour d'arrière-plan. Aucun compte serveur créé.
+1. Extraire les ZIP Standard locaux sous `artifacts/quaternius-source/`.
+2. Exécuter `spikes/art-source/prepare_quaternius_head.py` dans Blender : coupe à 1,56 m,
+   prolongement jusqu’à 1,32 m sous le col, poids du raccord sur `spine_03`.
+   L’export `FBX_SCALE_ALL` préserve les unités du mélange glTF/FBX.
+3. Unity CLI/Pipeline : `QuaterniusPoc.Build()` assemble le prefab et la scène
+   `Assets/Spike/QuaterniusPOC/CharacterShowcase.unity`, puis valide rig, os, coiffures,
+   bottes/pieds nus, matériaux et correspondance des huit clips/contacts.
+4. Pour capturer, utiliser `capture_game_view` en Play. Déplacer les preuves choisies
+   hors d’Assets pour éviter de les embarquer.
+5. `scripts/unity-ios.sh` exporte et compile les deux tranches du framework local.
+   Les binaires restent ignorés ; DerivedData est réutilisé. L’export n’est pas une
+   vérification sur iPhone physique.
+6. `E2E_FORCE_BUILD=1 npm run e2e:ios:dev` si le framework a changé, puis
+   `E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/avatar-3d.yaml`.
+   Ce flow appelle maintenant uniquement `quaternius-poc.yaml` : atelier, accessoires,
+   animation, arrière-plan, duel et retour portrait. Aucun compte serveur créé.
 
-`model: 'quaternius'` sélectionne explicitement ce prefab dans `BattleBridge` ; seuls
-l'atelier et son aperçu PvP l'envoient. Sans ce sélecteur, le chemin historique reste utilisé.
-Le prefab possède un éclairage clair activé uniquement en inspection : le duel garde la
-lumière de l'arène, sans deux éclairages supplémentaires liés aux combattants.
-Le sampler POC respecte la phase même au repos, pour que **Figer** produise une pose stable.
+Le package Assistant IA Unity, utilisé par les anciens essais, est retiré. Le package
+Pipeline et les CLI/MCP officiels restent disponibles pour piloter l’éditeur.
 
-## Autocritique et limites
+## Mesures et preuves de la V1
 
-Les premières découpes par suppression de triangles ont laissé un cou dentelé, puis de la
-peau traversant la tunique. Après ces deux essais, la méthode a été abandonnée au profit
-de la coupe et de l'extrusion Blender. Le gros plan du cou fait partie des preuves à lire.
+La base mesure environ 1,82 m, tête anatomique d’environ 0,25 m. Les pièces Peasant totalisent
+12 894 triangles ; aucun sommet sans poids dans leur préparation Blender. Cette combinaison
+est vérifiée ; elle ne prouve pas une compatibilité avec toutes les morphologies.
 
-La base mesure environ 1,82 m en pose de référence, avec une tête anatomique de l'ordre de
-0,25 m (environ sept têtes). Les proportions du corps Fantasy remplacent celles du torse
-Superhero ; cette combinaison unique est vérifiée, aucune compatibilité universelle n'est
-annoncée. Les pièces gardent les unités métriques et leur placement d'origine.
+Le repos source `Idle_No_Loop` inclinait l’axe de tête de −30,97° à mi-parcours. La variante
+`Forward idle.anim` conserve le corps et règle les courbes tête/cou : neck nod .35, head nod .1,
+rotations latérales nulles. Le FBX tiers est intact. `ValidateGaze()` en Play sur le vrai sampler
+rejette l’ancien clip au seuil de 12° et mesure +2,07 / +0,66 / +2,18 / +0,59 / +1,69° aux
+phases 0 / .25 / .5 / .75 / .99.
 
-L'inspecteur propose le repos et le crochet `Melee_Hook` du pack UAL2 déjà présent. Le duel
-utilise aussi `Idle_Shield_Break` pour le coup reçu, `Sword_Block` pour l'esquive,
-`Sword_Regular_B` pour le combo et `Melee_Hook_Rec` pour la relance. Le critique réutilise
-le crochet ; aucune nouvelle animation n'est revendiquée. Pas de course/victoire inventée.
-Le contact .5 du sampler est placé à .74 du clip du crochet. Les mains sont articulées
-mais la fermeture du poing reste stylisée. Les accents néon et la tenue sportive finale
-restent à concevoir après validation de la base ; ne pas les confondre avec cette preuve.
+Les gestes UAL2 actuels sont Idle, Melee_Hook, Idle_Shield_Break, Melee_Hook (critique),
+Sword_Block, Sword_Regular_B, Melee_Hook_Rec et Idle (repos). La phase canonique .5 est le
+contact ; le crochet atteint sa phase source .74. Une avancée/retour dans l’arène évite le
+coup dans le vide. `ValidateDuel()` contrôle les deux sens : écart horizontal poing/torse
+15,8 cm / 1,6 cm, seuil 30 cm. C’est une mesure dans le plan caméra, pas une collision physique.
 
-Le support féminin, d'autres morphologies, la persistance, les slots serveur, les sneakers,
-les accessoires de main, les mesures de performances sur iPhone et Android sont hors de ce
-POC. La dernière tranche iPhone locale conserve le pilote historique tant qu'elle n'est pas
-explicitement reconstruite. Ce livrable ne constitue pas un candidat de production.
+La validation précédant le verdict : compilation Unity et development build réussis,
+typecheck/lint, 560 tests, 29 previews et flow ciblé en 1 min 39 s, session
+`2026-10-21_194135`. La première exécution Maestro gardait ses coordonnées portrait après
+rotation de l’app ; synchroniser le pilote en paysage corrige le test. Le retour portrait est
+observé avant réorientation du pilote.
 
-## Preuves du 21 octobre 2026
+Preuves choisies : `references/quaternius-poc/pvp-app/` (natif), `unity/gaze-after.png`,
+`unity/pvp-idle.png`, `unity/pvp-contact.png`. La capture native du duel est une phase de
+déplacement ; le contact contrôlé est montré dans la capture Unity dédiée. Les premières
+captures du même dossier gardent l’historique de la tête inclinée, corrigée depuis.
 
-- Recompilation C# sans erreur ; `QuaterniusPoc.Validate()` passe : Humanoid valide, os des
-  doigts, deux coiffures, bottes/pieds nus, os et matériaux de tous les renderers résolus.
-- Blender : 12 894 triangles pour les quatre pièces Peasant ; aucun sommet sans poids.
-- Export Unity Simulator et compilation `UnityFramework` : codes de sortie 0.
-- Development build Simulator : réussi, zéro erreur. Pas de build iPhone, EAS ou Release
-  complet de l'application. Le framework Unity lui-même utilise sa configuration existante.
-- Typecheck, lint, 560 tests unitaires et 29 previews passent. Les routes ont été régénérées
-  par Metro ; la première lecture TypeScript précédant cette génération refusait le nouveau
-  chemin `/character-showcase`. Aucun cast n'a été ajouté pour masquer cet échec.
-- Flow `.maestro/avatar-3d.yaml` incluant `quaternius-poc.yaml` : **PASS**, 2 min 51 s,
-  une exécution. Rapport `artifacts/e2e/report.xml`, session `2026-10-21_182714`.
-- 18 captures du parcours, examinées ; huit preuves natives choisies dans
-  `references/quaternius-poc/app/`, six rendus éditeur dans `references/quaternius-poc/unity/`.
-  Les captures natives font 1206 × 2622 pixels, soit 402 × 874 points à l'échelle 3.
-- Changement de coiffure, retrait/remise des bottes, poses, profil, gros plan du cou et
-  reprise après arrière-plan examinés dans la vraie app. Le combat historique garde son
-  pilote précédent et le flow parcourt son retour à l'atelier.
-- Les captures successives du personnage animé ont des pixels différents dans sa zone de
-  rendu ; une vidéo locale `artifacts/unity-spike/quaternius-simulator-demo.mp4` complète
-  les captures figées. Elle n'est pas ajoutée aux sources.
+## Limites et suite décidée
 
-La première itération avait la tête penchée ; le crochet a une phase aérienne avec genou
-levé. Le poing ne correspond pas encore à une chorégraphie sportive finale.
+La tenue Fantasy est une tenue d’essai. Le crochet reste très aérien et les poings stylisés ;
+ce n’est pas une chorégraphie sportive finale. Le féminin n’est pas encore intégré. Aucun
+nouvel asset Meshy ni téléchargement Mixamo n’est effectué pendant le nettoyage.
 
-## Retour de l'auteur et aperçu PvP
+- [Back #308](https://github.com/younesdiouri/grrind-back/issues/308) : propre avatar,
+  coiffures/coiffes, validation, persistance, contrat OpenAPI et snapshots de combat.
+- [App #231](https://github.com/younesdiouri/grrind-app/issues/231) : féminin de la même
+  banque, équipements créés via Meshy puis Blender, sélection/retargeting de clips Mixamo.
+  Première preuve personnelle avant multiplication des contenus.
+- [App #218](https://github.com/younesdiouri/grrind-app/issues/218) : distribution du framework,
+  activation production et mesures sur iPhone. Le repli 2D reste utilisé en production/web
+  et lorsque le runtime Unity ne démarre pas ; retirer ses assets maintenant casserait ces cas.
 
-Après son essai personnel du 21 octobre, l'auteur écrit : « ok pas mal pour une premiere
-base » puis demande de corriger le regard vers le bas et de voir un combat entre deux
-personnages sur la scène PvP. Cette demande autorise ce nouvel aperçu, sans ouvrir
-l'itemisation complète ni remplacer par défaut le pilote du jeu.
+Pas de publication EAS ni de changement du back dans cette livraison.
 
-Le problème vient des courbes de tête/cou d'`Idle_No_Loop` : à mi-parcours, l'axe de regard
-est incliné de **−30,97°**. Une variante locale `Forward idle.anim` conserve le mouvement du
-corps et règle les courbes de tête/cou : neck nod .35, head nod .1, rotations et inclinaisons
-latérales à zéro. Le FBX tiers reste intact. Aucun repositionnement de tête à chaque frame.
+## Vérification après nettoyage #221
 
-`QuaterniusPoc.ValidateGaze()` s'exécute en **Play mode**, sur le véritable sampler : l'ancien
-clip échoue au seuil de 12° ; le nouveau donne **2,07° / 0,66° / 2,18° / 0,59° / 1,69°**
-aux phases 0 / .25 / .5 / .75 / .99. Le test ne se contente pas de lire la pose de référence
-dans l'éditeur, où le graphe Humanoid n'avait pas évalué le clip.
+Les deux exports et frameworks Unity (Simulator et iPhone arm64) compilent ; le development
+build du Simulator est installé sans erreur. Les anciens produits de build sauvegardés
+localement sont retirés ; les caches Xcode et le Metro du téléphone sont préservés.
 
-Le duel reprend `fixtures/battle/duel-equipped.json`, une réponse PvP déjà capturée.
-`BattleView.unityEnemy` permet au seul aperçu de fournir le deuxième avatar, comme il
-fournit déjà `unityPlayer`. Les coups, PV, effets et résultats gardent la chronologie
-existante. Le bridge ajoute une avancée/retour au modèle Quaternius autour de la phase de
-contact .5 : l'écart initial d'environ un mètre entre poing et torse devenait visuellement
-un coup dans le vide. `ValidateDuel()` vérifie les deux sens ; l'écart horizontal mesuré est
-de **15,8 cm / 1,6 cm**, sous le seuil de 30 cm. Cela vérifie la lecture dans le plan caméra,
-pas une collision physique de boxe. Le déplacement historique des autres modèles reste utilisé.
+Le code final passe typecheck, lint, **559 tests** et **29 previews**. Le test d’équipement
+3D de l’ancien pilote est retiré avec ce comportement ; les tests de chronologie restent.
+Le prefab et les contrôles en Play gardent les mêmes mesures de regard et de contact V1.
 
-La PR reste en brouillon pour examiner le nouveau duel. Le Simulator et Metro sont laissés
-actifs pour l'essai personnel demandé par l'auteur.
+Le flow ciblé `avatar-3d.yaml` passe en **1 min 46 s**, session `2026-10-21_200937` : atelier,
+duel, retour, ancien lien redirigé, puis combat utilisant les avatars par défaut et retour.
+Les captures sont inspectées. La première passe automatique était verte mais montrait un
+combattant manquant et un retour paysage : l’atelier conservé dans la pile continuait
+d’envoyer ses frames, et le verrou d’orientation suivait le montage plutôt que le focus.
+Les vues/horloges Unity sont désormais limitées à la route active, et le verrou du combat
+se libère au blur. La nouvelle capture montre bien deux personnages ; le retour portrait
+mesure **1206 × 2622 px** avant réorientation du pilote, contre **2622 × 1206 px** pour le duel.
+Ces dimensions tiennent compte de l’orientation EXIF de la capture iOS.
 
-Validation de cette correction : export Unity, framework Simulator et development build
-réussis ; typecheck, lint, 560 tests et 29 previews passent sur le code final. Le flow ciblé
-`.maestro/quaternius-poc.yaml` passe en **1 min 39 s**, session `2026-10-21_194135`.
-La première exécution avait échoué sur la visibilité de Malik : le pilote conservait ses
-coordonnées portrait après le passage de l'app en paysage. La synchronisation explicite
-du pilote en paysage a corrigé le test, sans changement de l'app. Le retour portrait est
-observé avant de réorienter le pilote.
-
-Les captures natives du regard corrigé, des deux combattants et du retour sont examinées
-et conservées dans `references/quaternius-poc/pvp-app/`. La capture du duel est une phase
-de déplacement, pas une preuve de contact ; `unity/pvp-contact.png` montre la phase de
-contact contrôlée. Les poses restent très aériennes : ce premier aperçu permet de juger
-le modèle dans le HUD existant, pas de valider une chorégraphie finale.
+Les cinq preuves courantes sont dans `references/quaternius-poc/pvp-app/`, notamment
+`quaternius-default-pvp.png` et `quaternius-workshop-after-default-pvp.png`.
+Le libellé « Muscu » de la fixture de démonstration est un nom affiché, pas l’ancien modèle.
+Le Simulator reste sur l’atelier Quaternius et Metro reste disponible pour l’auteur.

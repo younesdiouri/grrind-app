@@ -102,7 +102,7 @@ function CombatDemo({ pebble }: { pebble: boolean }) {
             ))}
           </View>
           <Button label="Jouer une victoire" onPress={() => setScenario('victoire')} />
-          <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/avatar-3d')} />
+          <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />
           <Button label="Jouer une défaite" variant="quiet" onPress={() => setScenario('defaiteBoss')} />
           <Text style={styles.subtitle}>Pendant le combat, touche pour passer au bilan, puis revenir ici.</Text>
         </ScrollView>

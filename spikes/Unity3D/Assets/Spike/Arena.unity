@@ -385,6 +385,7 @@ GameObject:
   m_Component:
   - component: {fileID: 614909359}
   - component: {fileID: 614909358}
+  - component: {fileID: 614909360}
   m_Layer: 0
   m_Name: Rim
   m_TagString: Untagged
@@ -472,6 +473,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &614909360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 614909357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &729420243
 GameObject:
   m_ObjectHideFlags: 0
@@ -501,8 +531,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495e4ffe1d712457797ffcceef7e4cba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleBridge
-  malePrefab: {fileID: 1505803727364000481, guid: 6df1494cc49e44f0a8de8b3fceca2b7d, type: 3}
-  femalePrefab: {fileID: 1505803727364000481, guid: 6df1494cc49e44f0a8de8b3fceca2b7d, type: 3}
   arenaCamera: {fileID: 380241495}
   contactShadow: {fileID: 2100000, guid: 88b8a5365918f40968e35f8c37d65edb, type: 2}
 --- !u!4 &729420245
@@ -530,6 +558,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1879173253}
   - component: {fileID: 1879173252}
+  - component: {fileID: 1879173254}
   m_Layer: 0
   m_Name: Key
   m_TagString: Untagged
@@ -617,6 +646,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1879173254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879173251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

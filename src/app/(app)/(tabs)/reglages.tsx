@@ -133,7 +133,7 @@ export default function ReglagesScreen() {
       ) : null}
 
       {state.step === 'ready' && <HeroPicker profile={state.profile} onProfile={(profile) => setState({ step: 'ready', profile })} />}
-      {__DEV__ && <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/avatar-3d')} />}
+      {__DEV__ && <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />}
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Santé</Text>

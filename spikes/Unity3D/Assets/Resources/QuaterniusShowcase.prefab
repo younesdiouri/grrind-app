@@ -1586,37 +1586,6 @@ Transform:
   - {fileID: 5491850315092886}
   m_Father: {fileID: 1421919576640017390}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3928524567352703707
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5104818229395989141}
-  m_Layer: 0
-  m_Name: Unused glasses
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &5104818229395989141
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3928524567352703707}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5291555190439229493}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4019436058602298091
 GameObject:
   m_ObjectHideFlags: 0
@@ -3313,8 +3282,6 @@ Transform:
   - {fileID: 8557009758858051869}
   - {fileID: 5341789487743226318}
   - {fileID: 3843073649262113072}
-  - {fileID: 4290709089096582835}
-  - {fileID: 5104818229395989141}
   - {fileID: 880399073449353953}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3365,7 +3332,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 177afba37a7494e5f90a474b06b8ccb1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MuscuPose
+  m_EditorClassIdentifier: Assembly-CSharp::FighterPose
   actor: {fileID: 6987011227669192539}
   clips:
   - {fileID: 7400000, guid: 5fed8ac8ead5643b08da5e958ecca3b8, type: 2}
@@ -3377,8 +3344,6 @@ MonoBehaviour:
   - {fileID: -7192042517891519836, guid: 197ad96334c03492994775f9a192dcf2, type: 3}
   - {fileID: 7400000, guid: 5fed8ac8ead5643b08da5e958ecca3b8, type: 2}
   inspectionCamera: {fileID: 0}
-  weapon: {fileID: 4290709089096582835}
-  glasses: {fileID: 5104818229395989141}
   shoes:
   - {fileID: 5512400630652804502}
   bareFeet: {fileID: 985677140908292360}
@@ -3398,14 +3363,8 @@ MonoBehaviour:
   azimuth: 25
   headViewOffset: 0.1
   headViewSize: 0.25
-  gripCurl: -0.72
-  thumbBase: -0.2
-  thumbSpread: 0
   inspect: 1
-  debugControls: 0
   autoplay: 0
-  grip: 0
-  sampleIdlePhase: 1
   placement: {x: 0, y: 0, z: 0}
   facing: 0
 --- !u!1 &8333337978189884109
@@ -3947,35 +3906,4 @@ Transform:
   m_Children:
   - {fileID: 3622299953344495257}
   m_Father: {fileID: 5198635637232004209}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8856276306517072189
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4290709089096582835}
-  m_Layer: 0
-  m_Name: Unused weapon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &4290709089096582835
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8856276306517072189}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5291555190439229493}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

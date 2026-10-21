@@ -1,9 +1,0 @@
-{
-  "model": "Meshy meshy-7.1 multi-image-to-3D (front, side, back), Meshy auto-rigging, Meshy animation library — all through the Meshy MCP",
-  "inputs": ["docs/design/references/chunky-3d/view-front.png", "view-side.png", "view-back.png"],
-  "concept": "docs/design/references/chunky-3d/concept.png",
-  "tasks": "spikes/art-source/painted-athlete-v2/tasks.json",
-  "plan": "Meshy Pro (paid). Licence under Meshy's terms for paid plans.",
-  "modifications": "None to geometry, weights or clips. Imported as Generic, scaled to 1.70 m, GRRIND painted toon material.",
-  "animations": "Meshy actions 89, 192, 178, 194, 156, 198, 90 (30 fps), in UNITY_POSES order"
-}

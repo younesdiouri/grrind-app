@@ -4,14 +4,11 @@ using UnityEngine;
 
 public sealed class BattleBridge : MonoBehaviour
 {
-    public GameObject malePrefab,femalePrefab;
     public Camera arenaCamera;
     public Material contactShadow;
-    MuscuPose player,enemy;
-    MaterialPropertyBlock tint;
-    static readonly int BaseColor=Shader.PropertyToID("_BaseColor");
+    FighterPose player,enemy;
 
-    [Serializable] public class AvatarConfig {public string body="male",skin="#DBB894",model="",hairStyle="parted";public bool weapon,glasses,boots,visible=true;}
+    [Serializable] public class AvatarConfig {public string hairStyle="parted";public bool boots=true,visible=true;}
     [Serializable] public class Configuration
     {
         public AvatarConfig player=new AvatarConfig(),enemy=new AvatarConfig();
@@ -26,7 +23,6 @@ public sealed class BattleBridge : MonoBehaviour
     bool inspection;
     Frame lastFrame;
 
-    void Awake()=>tint=new MaterialPropertyBlock();
     void Start()
     {
         Application.targetFrameRate=60;
@@ -46,7 +42,7 @@ public sealed class BattleBridge : MonoBehaviour
             inspection=config.inspection;
             if(player!=null)Destroy(player.gameObject);if(enemy!=null)Destroy(enemy.gameObject);
             player=Create(config.player,true);enemy=Create(config.enemy,false);
-            player.inspect=inspection;player.debugControls=false;
+            player.inspect=inspection;
             player.inspectionCamera=inspection?arenaCamera:null;
             player.view=Mathf.Clamp(config.view,0,3);player.azimuth=config.azimuth;
             if(inspection){player.placement=Vector3.zero;player.facing=0;}
@@ -62,20 +58,15 @@ public sealed class BattleBridge : MonoBehaviour
         }
         catch(Exception e){Debug.LogError("GRRIND avatar configuration: "+e.Message);}
     }
-    MuscuPose Create(AvatarConfig config,bool left)
+    FighterPose Create(AvatarConfig config,bool left)
     {
-        var prefab=config.model=="quaternius"?Resources.Load<GameObject>("QuaterniusShowcase")
-            :config.body=="female"?femalePrefab:malePrefab;
+        var prefab=Resources.Load<GameObject>("QuaterniusShowcase");
         var obj=Instantiate(prefab);
-        var pose=obj.GetComponent<MuscuPose>();pose.inspect=false;pose.inspectionCamera=null;
+        var pose=obj.GetComponent<FighterPose>();pose.inspect=false;pose.inspectionCamera=null;
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
-        pose.weapon.gameObject.SetActive(config.weapon);pose.glasses.gameObject.SetActive(config.glasses);pose.SetShoes(config.boots);
-        if(!ColorUtility.TryParseHtmlString(config.skin,out var skin))skin=new Color(.86f,.72f,.58f);
-        tint.Clear();tint.SetColor(BaseColor,skin);
-        foreach(var renderer in obj.GetComponentsInChildren<Renderer>())
-            if(renderer.sharedMaterial!=null&&renderer.sharedMaterial.name=="Skin")renderer.SetPropertyBlock(tint);
+        pose.SetShoes(config.boots);
         if(contactShadow!=null)
         {
             var blob=GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -100,14 +91,13 @@ public sealed class BattleBridge : MonoBehaviour
         }
         catch(Exception e){Debug.LogError("GRRIND avatar frame: "+e.Message);}
     }
-    void Apply(MuscuPose pose,ActorFrame frame,bool left)
+    void Apply(FighterPose pose,ActorFrame frame,bool left)
     {
         if(frame==null)return;
         pose.gameObject.SetActive(frame.visible);pose.stance=Mathf.Clamp(frame.pose,0,7);pose.phase=Mathf.Clamp01(frame.phase);
         // Camera right points towards -X. Input x is a fraction of the arena width.
         pose.placement=inspection?Vector3.zero:new Vector3(CombatX(left)-frame.x*HalfWidth()*2,0,0);
-        if(!inspection&&pose.GetComponent<QuaterniusAppearance>()!=null
-            &&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
+        if(!inspection&&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
         {
             // This rig advances into striking range at the HUD's contact phase, then returns.
             float approach=1-Mathf.Abs(2*Mathf.Clamp01(frame.phase)-1);
