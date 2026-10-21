@@ -22,5 +22,12 @@
     "T_Regular_Male_Dark_BaseColor.png"
   ],
   "changes": "Male Peasant outfit replaces hidden body. Superhero head cut and neck extended in Blender; original skeleton and fingers preserved. Two original hairstyles, tinted brown. Boots swap against bare feet from original body. No Meshy or Mixamo generation.",
-  "scope": "Isolated male POC; no claim of compatibility for other body types or universal wardrobe."
+  "scope": "Isolated male POC; no claim of compatibility for other body types or universal wardrobe.",
+  "animations": {
+    "source": "https://quaternius.itch.io/universal-animation-library-2",
+    "license": "CC0-1.0",
+    "original": "Assets/Animations/Quaternius/UAL2Clean.fbx",
+    "derived": "Assets/Spike/QuaterniusPOC/Forward idle.anim",
+    "changes": "Keep Idle_No_Loop body motion; set six head/neck muscle curves for forward gaze. Other PvP stances reuse the original UAL2 clips."
+  }
 }

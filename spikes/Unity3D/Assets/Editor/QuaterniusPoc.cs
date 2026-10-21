@@ -66,10 +66,12 @@ public static class QuaterniusPoc
         var pose = root.AddComponent<MuscuPose>();
         pose.actor = root.GetComponent<Animator>();
         var clips = AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Quaternius/UAL2Clean.fbx").OfType<AnimationClip>().ToArray();
-        var idle = clips.Single(c => c.name == "Armature|Idle_No_Loop");
+        var idle = ForwardIdle(clips.Single(c => c.name == "Armature|Idle_No_Loop"));
         var attack = clips.Single(c => c.name == "Armature|Melee_Hook");
-        pose.clips = new[] { idle, attack };
-        pose.contacts = new[] { .5f, .74f };
+        pose.clips = new[] { idle, attack, clips.Single(c => c.name == "Armature|Idle_Shield_Break"), attack,
+            clips.Single(c => c.name == "Armature|Sword_Block"), clips.Single(c => c.name == "Armature|Sword_Regular_B"),
+            clips.Single(c => c.name == "Armature|Melee_Hook_Rec"), idle };
+        pose.contacts = new[] { .5f, .74f, .28f, .74f, .30f, .60f, .22f, .5f };
         pose.weapon = Empty(root, "Unused weapon"); pose.glasses = Empty(root, "Unused glasses");
         pose.shoes = new[] { outfitParts.Single(p => p.name == "Male_Peasant_Feet").transform };
         pose.bareFeet = feet;
@@ -100,6 +102,21 @@ public static class QuaterniusPoc
     static Transform Empty(GameObject root, string name)
     {
         var obj = new GameObject(name); obj.transform.SetParent(root.transform, false); obj.SetActive(false); return obj.transform;
+    }
+    static AnimationClip ForwardIdle(AnimationClip source)
+    {
+        var clip = UnityEngine.Object.Instantiate(source);
+        clip.name = "Quaternius forward idle";
+        foreach (var name in new[] { "Neck Nod Down-Up", "Head Nod Down-Up", "Neck Tilt Left-Right",
+            "Head Tilt Left-Right", "Neck Turn Left-Right", "Head Turn Left-Right" })
+            AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Animator), name),
+                AnimationCurve.Constant(0, source.length, name == "Neck Nod Down-Up" ? .35f : name == "Head Nod Down-Up" ? .1f : 0));
+        var path = Output + "Forward idle.anim";
+        var saved = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+        if (saved == null) { AssetDatabase.CreateAsset(clip, path); return clip; }
+        EditorUtility.CopySerialized(clip, saved);
+        UnityEngine.Object.DestroyImmediate(clip);
+        return saved;
     }
     static Material Material(string name, string texture)
     {
@@ -159,5 +176,44 @@ public static class QuaterniusPoc
             Debug.Log("Quaternius POC: Humanoid, finger bones, both hair options, boots/bare feet and all bone bindings PASS");
         }
         finally { UnityEngine.Object.DestroyImmediate(instance); }
+    }
+    public static float[] ValidateGaze()
+    {
+        if (!EditorApplication.isPlaying) throw new InvalidOperationException("Gaze must be checked in Play mode");
+        var pose = UnityEngine.Object.FindObjectsByType<MuscuPose>(FindObjectsSortMode.None).First(p => p.sampleIdlePhase);
+        var saved = (pose.stance, pose.phase, pose.autoplay);
+        try
+        {
+            pose.stance = 0; pose.autoplay = false;
+            return new[] { 0f, .25f, .5f, .75f, .99f }.Select(phase =>
+            {
+                pose.phase = phase; pose.SendMessage("LateUpdate");
+                float pitch = Mathf.Asin(pose.Bone(HumanBodyBones.Head).forward.y) * Mathf.Rad2Deg;
+                if (Mathf.Abs(pitch) > 12) throw new Exception("Idle gaze is not forward: " + pitch + " degrees at " + phase);
+                return pitch;
+            }).ToArray();
+        }
+        finally { (pose.stance, pose.phase, pose.autoplay) = saved; }
+    }
+    public static float[] ValidateDuel()
+    {
+        if (!EditorApplication.isPlaying) throw new InvalidOperationException("Duel must be checked in Play mode");
+        var bridge = UnityEngine.Object.FindFirstObjectByType<BattleBridge>();
+        var poses = UnityEngine.Object.FindObjectsByType<MuscuPose>(FindObjectsSortMode.None);
+        if (poses.Length != 2 || poses.Any(p => p.GetComponent<QuaterniusAppearance>() == null || p.clips.Length < 8))
+            throw new Exception("Expected two Quaternius fighters with the complete stance library");
+        return new[] { true, false }.Select(left =>
+        {
+            bridge.Present(JsonUtility.ToJson(new BattleBridge.Frame {
+                player = new BattleBridge.ActorFrame { pose = left ? 1 : 2, phase = .5f },
+                enemy = new BattleBridge.ActorFrame { pose = left ? 2 : 1, phase = .5f }
+            }));
+            foreach (var pose in poses) pose.SendMessage("LateUpdate");
+            var attacker = poses.Single(p => p.stance == 1);
+            var target = poses.Single(p => p.stance == 2);
+            float gap = Mathf.Abs(attacker.Bone(HumanBodyBones.RightHand).position.x - target.Bone(HumanBodyBones.Chest).position.x);
+            if (gap > .3f) throw new Exception("Strike misses in the camera plane: " + gap + " m");
+            return gap;
+        }).ToArray();
     }
 }

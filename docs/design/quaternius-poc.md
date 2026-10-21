@@ -9,7 +9,9 @@ Le POC est isolé ; le pilote du combat et le contrat serveur ne changent pas.
 Dans le development build avec le framework Unity de cette branche, ouvrir
 `grrindapp-dev://character-showcase`, ou **POC Quaternius** dans l'atelier `/avatar-3d`.
 L'atelier propose deux coiffures, bottes/pieds nus, repos/crochet, lecture/pause, face,
-profil, trois-quarts et visage. Les réglages restent locaux à cet écran.
+profil, trois-quarts et visage. **Voir le duel PvP** joue un duel de démonstration avec deux
+instances masculines Quaternius, coiffures opposées, dans l'arène et le HUD existants.
+Les réglages restent locaux à cet écran ; aucun gain réel ni défi réseau n'est créé.
 
 La validation artistique appartient à l'auteur. Les captures sont des propositions à
 examiner, pas une approbation. Aucun système complet d'itemisation ni remplacement du
@@ -74,10 +76,11 @@ Provenance, SHA-256 des archives et licences dans
    l'atelier historique et le combat, puis joue `quaternius-poc.yaml` : cheveux, bottes,
    cadrages, animation et retour d'arrière-plan. Aucun compte serveur créé.
 
-`model: 'quaternius'` est accepté par `BattleBridge` uniquement en mode inspection.
-Sans ce sélecteur, le chemin historique reste utilisé. La scène POC a un éclairage clair
-qui appartient au prefab et disparaît avec lui. Le sampler POC respecte la phase même au
-repos, pour que **Figer** produise réellement une pose stable.
+`model: 'quaternius'` sélectionne explicitement ce prefab dans `BattleBridge` ; seuls
+l'atelier et son aperçu PvP l'envoient. Sans ce sélecteur, le chemin historique reste utilisé.
+Le prefab possède un éclairage clair activé uniquement en inspection : le duel garde la
+lumière de l'arène, sans deux éclairages supplémentaires liés aux combattants.
+Le sampler POC respecte la phase même au repos, pour que **Figer** produise une pose stable.
 
 ## Autocritique et limites
 
@@ -90,10 +93,12 @@ La base mesure environ 1,82 m en pose de référence, avec une tête anatomique 
 Superhero ; cette combinaison unique est vérifiée, aucune compatibilité universelle n'est
 annoncée. Les pièces gardent les unités métriques et leur placement d'origine.
 
-Le POC ne propose que le repos `Idle_No_Loop` et le crochet `Melee_Hook` du pack UAL2 déjà
-présent. Pas de course/victoire inventée. Le contact .5 du sampler est placé à .74 du clip
-du crochet. Les mains sont articulées mais la fermeture du poing de cette animation reste
-stylisée, et le repos est penché vers l'avant. Les accents néon et la tenue sportive finale
+L'inspecteur propose le repos et le crochet `Melee_Hook` du pack UAL2 déjà présent. Le duel
+utilise aussi `Idle_Shield_Break` pour le coup reçu, `Sword_Block` pour l'esquive,
+`Sword_Regular_B` pour le combo et `Melee_Hook_Rec` pour la relance. Le critique réutilise
+le crochet ; aucune nouvelle animation n'est revendiquée. Pas de course/victoire inventée.
+Le contact .5 du sampler est placé à .74 du clip du crochet. Les mains sont articulées
+mais la fermeture du poing reste stylisée. Les accents néon et la tenue sportive finale
 restent à concevoir après validation de la base ; ne pas les confondre avec cette preuve.
 
 Le support féminin, d'autres morphologies, la persistance, les slots serveur, les sneakers,
@@ -124,6 +129,48 @@ explicitement reconstruite. Ce livrable ne constitue pas un candidat de producti
   rendu ; une vidéo locale `artifacts/unity-spike/quaternius-simulator-demo.mp4` complète
   les captures figées. Elle n'est pas ajoutée aux sources.
 
-La tête reste penchée et le crochet a une phase aérienne avec genou levé. Le poing ne
-correspond pas encore à une chorégraphie sportive finale. Ces limites visibles font partie
-du rendu proposé. **Validation artistique humaine en attente ; PR à conserver en brouillon.**
+La première itération avait la tête penchée ; le crochet a une phase aérienne avec genou
+levé. Le poing ne correspond pas encore à une chorégraphie sportive finale.
+
+## Retour de l'auteur et aperçu PvP
+
+Après son essai personnel du 21 octobre, l'auteur écrit : « ok pas mal pour une premiere
+base » puis demande de corriger le regard vers le bas et de voir un combat entre deux
+personnages sur la scène PvP. Cette demande autorise ce nouvel aperçu, sans ouvrir
+l'itemisation complète ni remplacer par défaut le pilote du jeu.
+
+Le problème vient des courbes de tête/cou d'`Idle_No_Loop` : à mi-parcours, l'axe de regard
+est incliné de **−30,97°**. Une variante locale `Forward idle.anim` conserve le mouvement du
+corps et règle les courbes de tête/cou : neck nod .35, head nod .1, rotations et inclinaisons
+latérales à zéro. Le FBX tiers reste intact. Aucun repositionnement de tête à chaque frame.
+
+`QuaterniusPoc.ValidateGaze()` s'exécute en **Play mode**, sur le véritable sampler : l'ancien
+clip échoue au seuil de 12° ; le nouveau donne **2,07° / 0,66° / 2,18° / 0,59° / 1,69°**
+aux phases 0 / .25 / .5 / .75 / .99. Le test ne se contente pas de lire la pose de référence
+dans l'éditeur, où le graphe Humanoid n'avait pas évalué le clip.
+
+Le duel reprend `fixtures/battle/duel-equipped.json`, une réponse PvP déjà capturée.
+`BattleView.unityEnemy` permet au seul aperçu de fournir le deuxième avatar, comme il
+fournit déjà `unityPlayer`. Les coups, PV, effets et résultats gardent la chronologie
+existante. Le bridge ajoute une avancée/retour au modèle Quaternius autour de la phase de
+contact .5 : l'écart initial d'environ un mètre entre poing et torse devenait visuellement
+un coup dans le vide. `ValidateDuel()` vérifie les deux sens ; l'écart horizontal mesuré est
+de **15,8 cm / 1,6 cm**, sous le seuil de 30 cm. Cela vérifie la lecture dans le plan caméra,
+pas une collision physique de boxe. Le déplacement historique des autres modèles reste utilisé.
+
+La PR reste en brouillon pour examiner le nouveau duel. Le Simulator et Metro sont laissés
+actifs pour l'essai personnel demandé par l'auteur.
+
+Validation de cette correction : export Unity, framework Simulator et development build
+réussis ; typecheck, lint, 560 tests et 29 previews passent sur le code final. Le flow ciblé
+`.maestro/quaternius-poc.yaml` passe en **1 min 39 s**, session `2026-10-21_194135`.
+La première exécution avait échoué sur la visibilité de Malik : le pilote conservait ses
+coordonnées portrait après le passage de l'app en paysage. La synchronisation explicite
+du pilote en paysage a corrigé le test, sans changement de l'app. Le retour portrait est
+observé avant de réorienter le pilote.
+
+Les captures natives du regard corrigé, des deux combattants et du retour sont examinées
+et conservées dans `references/quaternius-poc/pvp-app/`. La capture du duel est une phase
+de déplacement, pas une preuve de contact ; `unity/pvp-contact.png` montre la phase de
+contact contrôlée. Les poses restent très aériennes : ce premier aperçu permet de juger
+le modèle dans le HUD existant, pas de valider une chorégraphie finale.

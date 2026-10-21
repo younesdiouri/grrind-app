@@ -105,6 +105,7 @@ export function BattleView({ battle, enemyArt, heroArt, heroEquipment, opponentE
   heroEquipment?: EquipmentArtwork[];
   opponentEquipment?: EquipmentArtwork[];
   unityPlayer?: UnityAvatar;
+  unityEnemy?: UnityAvatar;
   demo?: boolean;
   demoTime?: number;
   onDismiss?: () => void;
@@ -144,6 +145,7 @@ function PresentedBattle({ artwork, ...props }: {
   heroEquipment?: EquipmentArtwork[];
   opponentEquipment?: EquipmentArtwork[];
   unityPlayer?: UnityAvatar;
+  unityEnemy?: UnityAvatar;
   demo?: boolean;
   demoTime?: number;
   onDismiss?: () => void;
@@ -167,6 +169,7 @@ function BattleScene({
   demo = false,
   demoTime,
   unityPlayer,
+  unityEnemy,
 }: {
   battle: Battle;
   enemyArt?: FighterArtwork;
@@ -174,6 +177,7 @@ function BattleScene({
   heroEquipment?: EquipmentArtwork[];
   opponentEquipment?: EquipmentArtwork[];
   unityPlayer?: UnityAvatar;
+  unityEnemy?: UnityAvatar;
   introduction?: string;
   onArtworkError: () => void;
   demo?: boolean;
@@ -196,7 +200,7 @@ function BattleScene({
   const useUnity = unityCombatAvailable && !unityFailed;
   const window = useWindowDimensions();
   const [unityViewport, setUnityViewport] = useState<UnityViewport>({ x: 0, y: 0, width: 1, height: 1 });
-  const nativeEnemy = useUnity && !!battle.enemy.appearance;
+  const nativeEnemy = useUnity && (unityEnemy?.visible ?? !!battle.enemy.appearance);
   const clock = useSharedValue(0);
   const skipping = useSharedValue(false);
   const reducedMotion = useReducedMotion();
@@ -392,7 +396,7 @@ function BattleScene({
     <View style={styles.screen} testID={done ? `battle-${entrance}` : undefined}>
       <Image source={require('../../../assets/images/arenas/duel.png')} style={StyleSheet.absoluteFill} contentFit="cover" />
       {useUnity && <UnityCombatStage clock={clock} timeline={timeline}
-        player={unityPlayer ?? unityAvatarOf(battle.player)} enemy={{ ...unityAvatarOf(battle.enemy), visible: nativeEnemy }}
+        player={unityPlayer ?? unityAvatarOf(battle.player)} enemy={{ ...(unityEnemy ?? unityAvatarOf(battle.enemy)), visible: nativeEnemy }}
         viewport={unityViewport} width={unityViewport.width * window.width} playing={entrance === 'combat'} done={done}
         onReady={() => { fighterReady('player'); if (nativeEnemy) fighterReady('enemy'); }}
         onError={() => setUnityFailed(true)} />}

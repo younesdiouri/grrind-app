@@ -57,3 +57,31 @@ appId: app.grrind.dev
       id: quaternius-ready
     timeout: 30000
 - takeScreenshot: quaternius-after-background
+- tapOn: Repos
+- tapOn: Visage
+- takeScreenshot: quaternius-forward-gaze
+- tapOn: Voir le duel PvP
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 30000
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: unity-renderer-ready
+- assertVisible: Malik
+- takeScreenshot: quaternius-pvp-two-fighters
+- tapOn:
+    id: battle-combat
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 60000
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: quaternius-ready
+    timeout: 20000
+- takeScreenshot: quaternius-return-from-pvp
+- setOrientation: PORTRAIT

@@ -64,11 +64,12 @@ public sealed class BattleBridge : MonoBehaviour
     }
     MuscuPose Create(AvatarConfig config,bool left)
     {
-        var prefab=inspection&&config.model=="quaternius"?Resources.Load<GameObject>("QuaterniusShowcase")
+        var prefab=config.model=="quaternius"?Resources.Load<GameObject>("QuaterniusShowcase")
             :config.body=="female"?femalePrefab:malePrefab;
         var obj=Instantiate(prefab);
         var pose=obj.GetComponent<MuscuPose>();pose.inspect=false;pose.inspectionCamera=null;
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
+        foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
         pose.weapon.gameObject.SetActive(config.weapon);pose.glasses.gameObject.SetActive(config.glasses);pose.SetShoes(config.boots);
         if(!ColorUtility.TryParseHtmlString(config.skin,out var skin))skin=new Color(.86f,.72f,.58f);
@@ -105,6 +106,14 @@ public sealed class BattleBridge : MonoBehaviour
         pose.gameObject.SetActive(frame.visible);pose.stance=Mathf.Clamp(frame.pose,0,7);pose.phase=Mathf.Clamp01(frame.phase);
         // Camera right points towards -X. Input x is a fraction of the arena width.
         pose.placement=inspection?Vector3.zero:new Vector3(CombatX(left)-frame.x*HalfWidth()*2,0,0);
+        if(!inspection&&pose.GetComponent<QuaterniusAppearance>()!=null
+            &&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
+        {
+            // This rig advances into striking range at the HUD's contact phase, then returns.
+            float approach=1-Mathf.Abs(2*Mathf.Clamp01(frame.phase)-1);
+            float travel=Mathf.Max(0,Mathf.Abs(CombatX(true)-CombatX(false))-.7f);
+            pose.placement+=(left?Vector3.left:Vector3.right)*travel*approach;
+        }
     }
     float CombatX(bool left)=>(left?1:-1)*HalfWidth()*.5f;
     // Half of the visible width on the fighters' plane, for either projection.

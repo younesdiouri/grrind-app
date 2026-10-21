@@ -3,7 +3,10 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
+import { Button } from '@/components/Button';
 import { color, control, frame, space, type } from '@/design/tokens';
+import { BattleView } from '@/features/combat/BattleView';
+import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { UnityAvatarInspector, unityCombatAvailable } from '@/features/combat/UnityCombatStage';
 import type { UnityAvatar } from '@/features/combat/unityFrame';
 
@@ -19,6 +22,7 @@ function Showcase() {
   const [animated, setAnimated] = useState(true);
   const [azimuth, setAzimuth] = useState(25);
   const [view, setView] = useState(0);
+  const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(100);
@@ -27,6 +31,12 @@ function Showcase() {
   const insets = useSafeAreaInsets();
   const avatar: UnityAvatar = { model: 'quaternius', body: 'male', skin: '#FFFFFF', hairStyle,
     boots, weapon: false, glasses: false, visible: true };
+  if (playing) return <View style={styles.screen}>
+    <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
+    <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
+      unityEnemy={{ ...avatar, hairStyle: hairStyle === 'parted' ? 'buzzed' : 'parted', boots: true }}
+      onDismiss={() => { setReady(false); setPlaying(false); }} />
+  </View>;
   return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     {unityCombatAvailable && !failed && <UnityAvatarInspector avatar={avatar} pose={pose} phase={.5} animated={animated}
@@ -63,6 +73,7 @@ function Showcase() {
             <Choice key={label} label={label} selected={view === 0 && azimuth === angle} onPress={() => { setView(0); setAzimuth(angle); }} />)}
           <Choice label="Visage" selected={view === 1} onPress={() => { setView(1); setAzimuth(25); }} />
         </View>
+        <Button label="Voir le duel PvP" disabled={!ready || failed} onPress={() => setPlaying(true)} />
       </View>
     </SafeAreaView>
   </View>;
