@@ -1,0 +1,59 @@
+appId: app.grrind.dev
+---
+# Standalone POC, E2E_OFFLINE=1. No backend account or equipment mutation.
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+- openLink: grrindapp-dev://character-showcase
+- repeat:
+    times: 2
+    commands:
+      - runFlow:
+          when:
+            visible: "Ouvrir dans.*"
+          commands:
+            - tapOn: "Ouvrir"
+- extendedWaitUntil:
+    visible:
+      id: quaternius-ready
+    timeout: 30000
+- tapOn: Figer
+- tapOn: Face
+- takeScreenshot: quaternius-face-equipped
+- tapOn: Profil
+- takeScreenshot: quaternius-profile
+- tapOn: Trois-quarts
+- takeScreenshot: quaternius-three-quarter
+- tapOn: Visage
+- takeScreenshot: quaternius-parted-closeup
+- tapOn: Cheveux courts
+- takeScreenshot: quaternius-buzzed-closeup
+- tapOn: Trois-quarts
+- tapOn: Retirer les bottes
+- assertVisible: Équiper les bottes
+- takeScreenshot: quaternius-bare-feet
+- tapOn: Crochet
+- takeScreenshot: quaternius-attack-bare
+- tapOn: Équiper les bottes
+- takeScreenshot: quaternius-attack-equipped
+- tapOn: Animer
+- takeScreenshot: quaternius-animation-a
+- tapOn: Visage
+- tapOn: Trois-quarts
+- takeScreenshot: quaternius-animation-b
+- pressKey: Home
+- openLink: grrindapp-dev://character-showcase
+- extendedWaitUntil:
+    visible:
+      id: quaternius-ready
+    timeout: 30000
+- takeScreenshot: quaternius-after-background

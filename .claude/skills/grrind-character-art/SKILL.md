@@ -13,14 +13,15 @@ illustration ne le prouvent : #214 et #219 ont échoué exactement là.
 
 - Tout le combat, PvE et PvP, se joue dans **Unity** ; React Native garde l'app et le HUD fixe.
   Le serveur reste l'arbitre : Unity joue la chronologie, il ne calcule rien.
-- **DA : néon futuriste**, cohérente avec l'app (nuit, acier, cyan). Surfaces nettes, accents
-  émissifs, bloom. Rejetés : pixel art, MMO peint, satiné Brawl Stars, peint main façon Waven
-  (« donne une image non finie »).
-- **Corps de base : système modulaire** (piste retenue : Synty Sidekick, packs sci-fi), pas un
-  personnage généré : la génération dérive d'un avatar à l'autre, l'équipement exige l'inverse.
+- **Direction du 21 octobre 2026 : Sport Fantasy Cartoon**, base Quaternius pré-riggée,
+  équipements sportifs ludiques et accents néon GRRIND. Le POC joint par l'auteur remplace
+  les anciennes pistes Synty/sci-fi et les corps Meshy générés.
+- **Un seul personnage d'abord** : deux coiffures et un item interchangeable, dans un atelier
+  isolé fonctionnel sur Simulator. L'auteur valide personnellement les premières captures
+  avant toute extension de l'itemisation. Une preuve technique ne vaut pas verdict artistique.
 - **IA pour ce qu'elle fait bien** : objets de loot, mobs uniques, animations, variantes.
-- **Animations : Meshy uniquement** (bibliothèque d'actions, `text-to-motion`) ou celles du
-  système modulaire. Aucun Quaternius, Mixamo ou autre pack.
+- **Animations : celles du pack Quaternius d'abord**, Mixamo si nécessaire. Meshy seulement
+  pour un besoin réel d'objet ou de mob ; aucun appel payant pour ce POC.
 - **Outils livrés avant code maison** : pas de client API, de builder ou de capture écrits à la
   main quand un plugin, un MCP ou un skill officiel le fait.
 
@@ -68,15 +69,17 @@ pas par du code.
 
 Chaque barrière bloque la suivante ; un échec renvoie à l'étape qui l'a produit.
 
-1. **G0 — DA en moteur.** Une planche de rendu Unity (pas une illustration) du style cible,
-   validée par l'auteur, avant toute production en série.
+1. **G0 — Premier pilote.** Captures du vrai personnage Unity, puis atelier isolé sur Simulator
+   (demande du 21 octobre). Pas de production en série avant le verdict personnel de l'auteur.
 2. **G1 — Entrée.** Un seul sujet par vue, fond uni, membres entiers, proportions mesurées.
 3. **G2 — Mesh brut.** Les cinq contrôles GameFactory (bon objet, dos, complet, pas de sol,
-   budget), échelle 1,70 m, proportions re-mesurées sur une capture orthographique.
+   budget), échelle documentée (dimensions natives conservées pour Quaternius), proportions
+   re-mesurées sur une capture orthographique.
 4. **G3 — Rig et postures.** Les sept gestes au contact, de face et de trois quarts, avec et
    sans chaque objet : aucune interpénétration, pieds au sol, prise propre.
 5. **G4 — Validation de l'auteur.** Planche côte à côte : référence approuvée, rendu Unity au
    cadrage et à l'éclairage du combat, à la résolution de l'iPhone. Réponse de l'auteur
-   consignée mot pour mot. Pas d'intégration dans l'app sans ce verdict.
+   consignée mot pour mot. L'atelier POC isolé est autorisé avant ce verdict ; l'itemisation
+   complète et le remplacement du personnage du combat attendent celui-ci.
 6. **G5 — App.** Flow `.maestro/avatar-3d.yaml` via Metro, captures inspectées, selon
    `docs/ai/mobile-qa.md`. Rebuild natif seulement si le framework Unity a changé.

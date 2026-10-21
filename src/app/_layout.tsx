@@ -108,6 +108,7 @@ export default function RootLayout() {
           <Stack.Screen name="register" options={{ title: 'Créer un compte' }} />
         </Stack.Protected>
         <Stack.Protected guard={__DEV__}>
+          <Stack.Screen name="character-showcase" options={{ title: 'POC Quaternius' }} />
           <Stack.Screen name="avatar-3d" options={{ title: 'Atelier avatar 3D' }} />
           <Stack.Screen name="combat-demo" options={{ title: 'Atelier de combat' }} />
         </Stack.Protected>

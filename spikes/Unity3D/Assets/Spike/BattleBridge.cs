@@ -11,7 +11,7 @@ public sealed class BattleBridge : MonoBehaviour
     MaterialPropertyBlock tint;
     static readonly int BaseColor=Shader.PropertyToID("_BaseColor");
 
-    [Serializable] public class AvatarConfig {public string body="male",skin="#DBB894";public bool weapon,glasses,boots,visible=true;}
+    [Serializable] public class AvatarConfig {public string body="male",skin="#DBB894",model="",hairStyle="parted";public bool weapon,glasses,boots,visible=true;}
     [Serializable] public class Configuration
     {
         public AvatarConfig player=new AvatarConfig(),enemy=new AvatarConfig();
@@ -64,8 +64,11 @@ public sealed class BattleBridge : MonoBehaviour
     }
     MuscuPose Create(AvatarConfig config,bool left)
     {
-        var obj=Instantiate(config.body=="female"?femalePrefab:malePrefab);
+        var prefab=inspection&&config.model=="quaternius"?Resources.Load<GameObject>("QuaterniusShowcase")
+            :config.body=="female"?femalePrefab:malePrefab;
+        var obj=Instantiate(prefab);
         var pose=obj.GetComponent<MuscuPose>();pose.inspect=false;pose.inspectionCamera=null;
+        obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
         pose.weapon.gameObject.SetActive(config.weapon);pose.glasses.gameObject.SetActive(config.glasses);pose.SetShoes(config.boots);
         if(!ColorUtility.TryParseHtmlString(config.skin,out var skin))skin=new Color(.86f,.72f,.58f);

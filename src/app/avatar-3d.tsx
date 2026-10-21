@@ -67,6 +67,7 @@ function Workshop() {
         </View>
         <View style={styles.options}>
           {panel === 'avatar' && <>
+          <Choice label="POC Quaternius" selected={false} onPress={() => router.push('/character-showcase')} />
           <Text style={styles.subtitle}>Modèle V2 · Un personnage pour valider le rendu en combat.</Text>
           <View style={styles.row}>
             <Choice label="Haltère ego" selected={avatar.weapon} onPress={() => patch({ weapon: !avatar.weapon })} />
