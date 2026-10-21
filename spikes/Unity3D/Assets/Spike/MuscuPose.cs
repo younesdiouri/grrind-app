@@ -18,7 +18,7 @@ public sealed class MuscuPose : MonoBehaviour
     public float[] contacts=Array.Empty<float>();
     public int stance,view;
     public float phase=.45f,azimuth=32,headViewOffset=.1f,headViewSize=.23f,gripCurl=-.72f,thumbBase=-.2f,thumbSpread;
-    public bool inspect=true,debugControls=true,autoplay,grip;
+    public bool inspect=true,debugControls=true,autoplay,grip,sampleIdlePhase;
     public Vector3 placement;
     public float facing;
     PlayableGraph graph;
@@ -68,7 +68,7 @@ public sealed class MuscuPose : MonoBehaviour
         float p=autoplay?Mathf.Repeat(Time.time*.55f,1):Mathf.Clamp01(phase);
         float blend=selected==0||selected==7?1:Mathf.Min(1,Mathf.Min(p/.09f,(1-p)/.12f));
         for(int i=0;i<players.Length;i++)mixer.SetInputWeight(i,i==selected?blend:i==0?1-blend:0);
-        players[0].SetTime(inspect?Time.time%clips[0].length:p*clips[0].length);
+        players[0].SetTime(inspect&&!sampleIdlePhase?Time.time%clips[0].length:p*clips[0].length);
         if(selected!=0)players[selected].SetTime(ClipPhase(selected,p,contacts)*clips[selected].length);
         // HumanPoseHandler evaluates in world space. Apply arena placement after the pose solve.
         actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);graph.Evaluate(0);

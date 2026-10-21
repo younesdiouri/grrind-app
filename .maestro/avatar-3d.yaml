@@ -83,3 +83,4 @@ appId: app.grrind.dev
 - tapOn: Cadrage
 - tapOn: Ensemble
 - takeScreenshot: unity-after-background
+- runFlow: quaternius-poc.yaml
