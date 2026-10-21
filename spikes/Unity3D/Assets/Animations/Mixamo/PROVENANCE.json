@@ -1,0 +1,21 @@
+{
+  "author": "Adobe Mixamo",
+  "source": "https://www.mixamo.com/#/?page=1&query=boxing",
+  "license": "Adobe Mixamo account terms; not CC0",
+  "export": {
+    "format": "FBX for Unity",
+    "skin": "Without Skin",
+    "fps": 30,
+    "keyframe_reduction": "none",
+    "source_character": "Remy"
+  },
+  "clips": {
+    "BoxingIdle": "Boxing Idle",
+    "BackHandCross": "Back Hand Cross, Target 50",
+    "BackHandUppercut": "Boxing Back Hand Uppercut, Target 100",
+    "DodgeRetreat": "Boxing Dodge Retreat, In Place enabled",
+    "JabCrossCombo": "Boxing Jab Cross Combo, Target 0"
+  },
+  "unity_import": "Humanoid from each source skeleton, no compression. Horizontal root motion extracted and disabled at runtime; arena owns travel. Boxing idle loops with loop pose. Canonical .5 maps to measured contacts in QuaterniusPoc.cs.",
+  "downloaded": "2026-10-21"
+}

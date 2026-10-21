@@ -8,7 +8,7 @@ public sealed class BattleBridge : MonoBehaviour
     public Material contactShadow;
     FighterPose player,enemy;
 
-    [Serializable] public class AvatarConfig {public string hairStyle="parted";public bool boots=true,visible=true;}
+    [Serializable] public class AvatarConfig {public string body="male",hairStyle="parted";public bool boots=true,visible=true,headband;}
     [Serializable] public class Configuration
     {
         public AvatarConfig player=new AvatarConfig(),enemy=new AvatarConfig();
@@ -60,10 +60,11 @@ public sealed class BattleBridge : MonoBehaviour
     }
     FighterPose Create(AvatarConfig config,bool left)
     {
-        var prefab=Resources.Load<GameObject>("QuaterniusShowcase");
+        var prefab=Resources.Load<GameObject>(config.body=="female"?"QuaterniusFemale":"QuaterniusShowcase");
         var obj=Instantiate(prefab);
         var pose=obj.GetComponent<FighterPose>();pose.inspect=false;pose.inspectionCamera=null;
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
+        obj.GetComponent<QuaterniusAppearance>()?.SetHeadband(config.headband);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
         pose.SetShoes(config.boots);
@@ -101,7 +102,9 @@ public sealed class BattleBridge : MonoBehaviour
         {
             // This rig advances into striking range at the HUD's contact phase, then returns.
             float approach=1-Mathf.Abs(2*Mathf.Clamp01(frame.phase)-1);
-            float travel=Mathf.Max(0,Mathf.Abs(CombatX(true)-CombatX(false))-.7f);
+            // The uppercut has a shorter reach than the extended direct/jab.
+            float range=frame.pose==3?.4f:.6f;
+            float travel=Mathf.Max(0,Mathf.Abs(CombatX(true)-CombatX(false))-range);
             pose.placement+=(left?Vector3.left:Vector3.right)*travel*approach;
         }
     }

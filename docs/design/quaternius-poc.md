@@ -1,4 +1,4 @@
-# Quaternius V1 — base de personnages retenue
+# Quaternius — base retenue et atelier
 
 Le 21 octobre 2026, après son essai du personnage puis du duel sur Simulator, l’auteur
 valide : « ok en vrai je suis convaincu je pense que c'est déjà pas mal pour une v1 ».
@@ -11,8 +11,9 @@ Dans le development build Unity, ouvrir `grrindapp-dev://character-showcase` ou
 **Atelier avatar 3D** dans les réglages/la démonstration de combat. L’ancien lien
 `grrindapp-dev://avatar-3d` redirige vers le même atelier.
 
-Un masculin, deux coiffures, bottes/pieds nus, repos/crochet, lecture/pause et cadrages.
-**Voir le duel PvP** joue deux hommes Quaternius avec coiffures opposées dans l’arène
+L'atelier V2 propose homme/femme, trois coiffures, bottes/pieds nus, un bandeau éclair,
+repos/direct/uppercut/esquive/impact/combo, lecture/pause et cadrages. Faire défiler la
+rangée des poses pour accéder aux dernières. **Voir le duel PvP** joue un duel mixte dans l’arène
 et le HUD existants, puis revient en portrait. Les réglages sont locaux ; aucun gain,
 défi réseau ni choix d’apparence persistant n’est créé.
 
@@ -130,3 +131,58 @@ Les cinq preuves courantes sont dans `references/quaternius-poc/pvp-app/`, notam
 `quaternius-default-pvp.png` et `quaternius-workshop-after-default-pvp.png`.
 Le libellé « Muscu » de la fixture de démonstration est un nom affiché, pas l’ancien modèle.
 Le Simulator reste sur l’atelier Quaternius et Metro reste disponible pour l’auteur.
+
+## Itération #231 — premier ensemble validé sur Simulator
+
+La féminine utilise le vrai rig Superhero Female, ses doigts, sa texture sombre et la tenue
+Female Peasant CC0. Même coupe/extrusion de cou que le masculin, avec des mesures adaptées
+(coupe 1,52 m, raccord sous le col à 1,30 m). Les deux corps peuvent porter chacune des trois
+coiffures. `Resources/QuaterniusFemale.prefab` complète le prefab masculin ; aucune nouvelle
+logique métier de combat ni persistance de compte.
+
+Le premier équipement, choisi par l’auteur, est le **Bandeau éclair**, concept ImageGen puis Meshy 7.1 (35 crédits),
+préparé dans Blender sans retopologie après texture : **1 542 triangles**, un matériau opaque,
+une base couleur sRGB 2k. Six ajustements du même objet couvrent corps × coiffure ; un seul
+est visible à la fois, attaché au vrai os Head. Le réimport FBX conserve triangles, UV et
+échelle 1. Hauteur 45 mm, largeur 164–181 mm et profondeur 216–226 mm selon l'ajustement.
+Le dos et les dimensions portées sont inférés. La frange peut naturellement masquer une
+partie du motif. Sources/master local et scripts dans `spikes/art-source/bandeau-eclair/`.
+
+Cinq clips Mixamo, exportés sur Remy **sans skin**, FBX Unity, 30 fps, aucune réduction :
+Boxing Idle, Back Hand Cross, Back Hand Uppercut (Target 100), Boxing Dodge Retreat
+(In Place), Boxing Jab Cross Combo. Ils sont retargetés Humanoid vers les deux Quaternius.
+La réaction au coup reste Quaternius Idle_Shield_Break. Les licences Mixamo et Meshy ne sont
+pas CC0 ; leur provenance est séparée des packs Quaternius.
+
+Les pics source mesurés sont .30 pour le direct/combo, .37 pour l'uppercut et .15 pour
+l'esquive ; le sampler les présente à la phase canonique .5. Le déplacement horizontal est
+extrait du clip et désactivé dans l'Animator, l'arène gardant la main sur l'approche/retrait.
+L'uppercut demande une distance plus courte. L'inspection au repos garde la correction de
+regard V1 : sur la féminine, +2,51 à +4,00° aux cinq phases vérifiées.
+
+Premier exemplaire seulement : démonstration sur Simulator avant le premier commit, conformément
+à la demande. Le 21 octobre 2026, l'auteur valide (« ok top ») et demande d'ouvrir puis de fusionner
+la PR. Cette validation porte sur ce premier ensemble, avant toute série supplémentaire d'items.
+
+Pour cette première démonstration #231, seule la tranche **Simulator** est reconstruite.
+La tranche iPhone locale garde la V1 ; reconstruire Device avant de vérifier la V2 sur
+un téléphone. Aucun EAS ni changement du backend.
+
+Les premières captures natives ont révélé une traversée du crâne sous la coupe courte
+féminine. `fit_female_buzzed.py` conserve la coiffure CC0, ses 466 sommets et ses poids ;
+128 sommets du haut du crâne sont projetés hors de la vraie surface féminine (jeu 2,5 mm,
+déplacement maximal 12,9 mm). La ligne de cheveux et les favoris restent ceux du pack.
+
+Vérification #231 : exports Unity et builds Simulator réussis, typecheck/lint, **559 tests**
+(dont réaction Unity calée au contact du HUD et récupération jusqu'à la garde), **29 previews**.
+Le flow `avatar-3d.yaml` passe en **1 min 58 s**, session `2026-10-21_204423` ; inspection des
+captures puis correction de la coupe courte. Le flow ciblé `quaternius-poc.yaml` passe ensuite
+sur le binaire corrigé en **1 min 45 s**, session `2026-10-21_205306` : femme/homme, coiffures,
+bandeau avec/sans, bottes, poses, arrière-plan, duel mixte et retour portrait.
+La seconde installation réutilise le projet Xcode Debug et ses caches pour copier le nouveau
+framework ; aucun nouveau prebuild nécessaire. Les preuves choisies sont dans
+`references/quaternius-poc/v2-app/`. Capture manuelle du duel en cours et retour à l'atelier
+confirmés. Le Simulator et Metro 8082 restent ouverts pour le test personnel de l'auteur.
+La frange des chignons masque une partie de l'éclair ; la chorégraphie reste celle d'un POC
+à examiner en mouvement avant de multiplier les contenus. L'auteur a approuvé l'intégration
+de cette première itération après la démonstration.

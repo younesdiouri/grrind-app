@@ -47,6 +47,8 @@ public sealed class FighterPose : MonoBehaviour
     {
         if(!graph.IsValid())return;
         int selected=Mathf.Clamp(stance,0,clips.Length-1);
+        // Workshop rest keeps the forward gaze approved in V1; the arena uses the boxing guard.
+        if(inspect&&selected==0)selected=7;
         float p=autoplay?Mathf.Repeat(Time.time*.55f,1):Mathf.Clamp01(phase);
         float blend=selected==0||selected==7?1:Mathf.Min(1,Mathf.Min(p/.09f,(1-p)/.12f));
         for(int i=0;i<players.Length;i++)mixer.SetInputWeight(i,i==selected?blend:i==0?1-blend:0);
