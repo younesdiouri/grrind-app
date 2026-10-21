@@ -15,5 +15,5 @@
     "Hairstyles/Rigged to Head Bone/FBX (Unity)/Hair_Buns.fbx",
     "License_Standard.txt"
   ],
-  "changes": "Original Quaternius source meshes, imported as Humanoid. The V1 uses the male rig, eyes, brows and parted hair. Head preparation and assembly with Quaternius Peasant clothing are documented in ../QuaterniusPOC/PROVENANCE.json; clothing geometry is by Quaternius. Female sources are retained for the next iteration, not integrated in V1."
+  "changes": "Original Quaternius meshes. Male and female Humanoid rigs, eyes, brows and three source hairstyles are integrated into the isolated V2 workshop. Clothing/head preparation in ../QuaterniusPOC/PROVENANCE.json."
 }

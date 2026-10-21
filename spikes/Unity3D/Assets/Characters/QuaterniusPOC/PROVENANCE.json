@@ -19,15 +19,29 @@
     "Head.fbx",
     "Hair_Buzzed.fbx",
     "T_Peasant_BaseColor.png",
-    "T_Regular_Male_Dark_BaseColor.png"
+    "T_Regular_Male_Dark_BaseColor.png",
+    "Female_Peasant.fbx",
+    "FemaleHead.fbx",
+    "T_Regular_Female_Dark_BaseColor.png",
+    "T_Superhero_Female_Dark_BaseColor.png",
+    "Female_Hair_Buzzed.fbx"
   ],
-  "changes": "Male Peasant outfit replaces hidden body. Superhero head cut and neck extended in Blender; original skeleton and fingers preserved. Two original hairstyles, tinted brown. Boots swap against bare feet from original body. No Meshy or Mixamo generation.",
-  "scope": "Isolated male POC; no claim of compatibility for other body types or universal wardrobe.",
+  "changes": "Male and female Peasant clothing with original Quaternius rigs, fingers and skin. Heads isolated and neck extended in Blender. Three source hairstyles (parted, buzzed, buns). Boots swap against original bare feet. Custom Meshy headband provenance lives in ../BandeauEclair/PROVENANCE.json.",
+  "scope": "Two tested bodies, three hair options and one headband; no universal wardrobe or server persistence.",
   "animations": {
     "source": "https://quaternius.itch.io/universal-animation-library-2",
     "license": "CC0-1.0",
     "original": "Assets/Animations/Quaternius/UAL2Clean.fbx",
     "derived": "Assets/Spike/QuaterniusPOC/Forward idle.anim",
-    "changes": "Keep Idle_No_Loop body motion; set six head/neck muscle curves for forward gaze. Other PvP stances reuse the original UAL2 clips."
+    "changes": "Forward workshop rest keeps V1 head/neck curves. Arena idle, direct, uppercut, dodge and combo use Mixamo, documented in Assets/Animations/Mixamo/PROVENANCE.json. Hit reaction remains original Quaternius Idle_Shield_Break."
+  },
+  "femaleBuzzedFit": {
+    "script": "spikes/art-source/fit_female_buzzed.py",
+    "original": "Hair_Buzzed.fbx",
+    "vertices": 466,
+    "vertices_adjusted": 128,
+    "max_adjustment_m": 0.01286847,
+    "clearance_m": 0.0025,
+    "reason": "Female skull protruded through unmodified male cap after Head rebinding; retain original hairline, weights and topology, move upper scalp vertices outside actual female surface."
   }
 }

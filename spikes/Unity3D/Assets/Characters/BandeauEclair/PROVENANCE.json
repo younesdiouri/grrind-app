@@ -1,0 +1,12 @@
+{
+  "source": "spikes/art-source/bandeau-eclair/source.glb",
+  "authoring": "ImageGen concept, Meshy 7.1 mesh and texture, Blender fit",
+  "license": "Generated using the user Meshy account; subject to Meshy account terms, not Quaternius CC0",
+  "task_id": "01a15fb3-a126-77a8-be26-d9c0d4d45624",
+  "credits": 35,
+  "triangles_per_fit": 1542,
+  "fits": "Male/Female \u00d7 parted/buzzed/buns. Only one fit rendered at once. Original topology and UVs retained.",
+  "texture": "One 2048 px sRGB base color; existing opaque toon shader.",
+  "build": "spikes/art-source/bandeau-eclair/build/01_fit_and_export.py",
+  "manifest": "spikes/art-source/bandeau-eclair/asset-manifest.json"
+}

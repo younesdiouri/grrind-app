@@ -1,0 +1,91 @@
+{
+  "units": "metres",
+  "authoring_axes": "Z up, -Y front",
+  "attachment": "Unity Humanoid Head, baked rest-space placement, worldPositionStays",
+  "source_task": "01a15fb3-a126-77a8-be26-d9c0d4d45624",
+  "consumed_credits": 35,
+  "texture": {
+    "path": "source_base_color.png",
+    "color_space": "sRGB",
+    "size": 2048
+  },
+  "inferred": [
+    "45 mm fabric height",
+    "back and side fit",
+    "2 mm skin clearance"
+  ],
+  "variants": {
+    "Male-parted": {
+      "file": "spikes/Unity3D/Assets/Characters/BandeauEclair/Male-parted.fbx",
+      "triangles": 1542,
+      "forehead_z_m": 1.737,
+      "clearance_min_m": 0.002,
+      "clearance_max_m": 0.009000000000000001,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "Male-buzzed": {
+      "file": "spikes/Unity3D/Assets/Characters/BandeauEclair/Male-buzzed.fbx",
+      "triangles": 1542,
+      "forehead_z_m": 1.737,
+      "clearance_min_m": 0.002,
+      "clearance_max_m": 0.009000000000000001,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "Male-buns": {
+      "file": "spikes/Unity3D/Assets/Characters/BandeauEclair/Male-buns.fbx",
+      "triangles": 1542,
+      "forehead_z_m": 1.737,
+      "clearance_min_m": 0.002,
+      "clearance_max_m": 0.009000000000000001,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "Female-parted": {
+      "file": "spikes/Unity3D/Assets/Characters/BandeauEclair/Female-parted.fbx",
+      "triangles": 1542,
+      "forehead_z_m": 1.695,
+      "clearance_min_m": 0.002,
+      "clearance_max_m": 0.009000000000000001,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "Female-buzzed": {
+      "file": "spikes/Unity3D/Assets/Characters/BandeauEclair/Female-buzzed.fbx",
+      "triangles": 1542,
+      "forehead_z_m": 1.695,
+      "clearance_min_m": 0.002,
+      "clearance_max_m": 0.009000000000000001,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "Female-buns": {
+      "file": "spikes/Unity3D/Assets/Characters/BandeauEclair/Female-buns.fbx",
+      "triangles": 1542,
+      "forehead_z_m": 1.695,
+      "clearance_min_m": 0.002,
+      "clearance_max_m": 0.009000000000000001,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}

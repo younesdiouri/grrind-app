@@ -4,26 +4,29 @@ import bpy
 import bmesh
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / 'artifacts/quaternius-source/Universal Base Characters[Standard]/Base Characters/Unity/Superhero_Male_FullBody.fbx'
-OUTPUT = ROOT / 'spikes/Unity3D/Assets/Characters/QuaterniusPOC/Head.fbx'
+BODY = globals().get('BODY', 'male')
+assert BODY in ('male', 'female')
+SOURCE = ROOT / f'artifacts/quaternius-source/Universal Base Characters[Standard]/Base Characters/Unity/Superhero_{BODY.title()}_FullBody.fbx'
+OUTPUT = ROOT / 'spikes/Unity3D/Assets/Characters/QuaterniusPOC' / ('FemaleHead.fbx' if BODY == 'female' else 'Head.fbx')
+CUT, BOTTOM = (1.52, 1.30) if BODY == 'female' else (1.56, 1.32)
 
 scene = bpy.data.scenes.new('Quaternius neck preparation')
 bpy.context.window.scene = scene
 bpy.ops.import_scene.fbx(filepath=str(SOURCE))
-head = next(o for o in scene.objects if o.type == 'MESH' and o.name.startswith('SuperHero_Male'))
+head = next(o for o in scene.objects if o.type == 'MESH' and o.name.lower().startswith(f'superhero_{BODY}'))
 rig = next(m.object for m in head.modifiers if m.type == 'ARMATURE')
 mesh = bmesh.new()
 mesh.from_mesh(head.data)
 bmesh.ops.bisect_plane(mesh, geom=list(mesh.verts) + list(mesh.edges) + list(mesh.faces),
-                       plane_co=(0, 0, 1.56), plane_no=(0, 0, 1), clear_inner=True)
-boundary = [e for e in mesh.edges if e.is_boundary and all(abs(v.co.z - 1.56) < .0001 for v in e.verts)]
+                       plane_co=(0, 0, CUT), plane_no=(0, 0, 1), clear_inner=True)
+boundary = [e for e in mesh.edges if e.is_boundary and all(abs(v.co.z - CUT) < .0001 for v in e.verts)]
 assert len(boundary) >= 8, 'Expected a complete neck boundary'
 extension = bmesh.ops.extrude_edge_only(mesh, edges=boundary)
 vertices = [v for v in extension['geom'] if isinstance(v, bmesh.types.BMVert)]
 weights = mesh.verts.layers.deform.active
 chest = head.vertex_groups['spine_03'].index
 for vertex in vertices:
-    vertex.co.z = 1.32
+    vertex.co.z = BOTTOM
     vertex[weights].clear()
     vertex[weights][chest] = 1
 bmesh.ops.recalc_face_normals(mesh, faces=list(mesh.faces))

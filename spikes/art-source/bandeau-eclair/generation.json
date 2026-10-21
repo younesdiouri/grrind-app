@@ -1,0 +1,11 @@
+{
+  "task_id": "01a15fb3-a126-77a8-be26-d9c0d4d45624",
+  "status": "SUCCEEDED",
+  "consumed_credits": 35,
+  "date": "2026-10-21",
+  "reference_tool": "OpenAI image_gen",
+  "reference_prompt": "Stylized concept reference: one isolated sports fantasy fabric headband compatible with clean matte low-poly Quaternius characters. Closed oval loop, open interior. Navy fabric with cyan trim along top and bottom and a single cyan lightning badge on front. Three-quarter view slightly from above. Plain light grey background. No person, head, hair, mannequin, pedestal, text, glow or VFX.",
+  "mesh_tool": "official @meshy-ai/meshy-mcp-server 0.6.4",
+  "mesh_request": "request.json",
+  "master": "PR_BandeauEclair_master.blend"
+}

@@ -15,26 +15,36 @@ public static class QuaterniusPoc
 
     public static void Build()
     {
+        ImportMixamo();
+        BuildCharacter(false);
+        BuildCharacter(true);
+    }
+    static void BuildCharacter(bool female)
+    {
+        string bodyName = female ? "Female" : "Male";
+        string prefabPath = female ? "Assets/Resources/QuaterniusFemale.prefab" : Prefab;
+        string output = female ? Output + "Female/" : Output;
         Directory.CreateDirectory(Output);
+        Directory.CreateDirectory(output);
         Directory.CreateDirectory("Assets/Resources");
         AssetDatabase.Refresh();
-        foreach (var path in new[] { Source + "Superhero_Male_FullBody.fbx", Added + "Male_Peasant.fbx", Added + "Hair_Buzzed.fbx" })
+        foreach (var path in new[] { Source + "Superhero_" + bodyName + "_FullBody.fbx", Added + bodyName + "_Peasant.fbx", Added + "Hair_Buzzed.fbx" })
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
             importer.isReadable = true;
             importer.SaveAndReimport();
         }
-        var root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Source + "Superhero_Male_FullBody.fbx"));
-        root.name = "Quaternius pilot";
+        var root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Source + "Superhero_" + bodyName + "_FullBody.fbx"));
+        root.name = "Quaternius " + bodyName;
         var bones = root.GetComponentsInChildren<Transform>().ToDictionary(t => t.name);
-        var skin = Material("Skin dark", Source + "T_Superhero_Male_Dark.png");
-        var hands = Material("Hands dark", Added + "T_Regular_Male_Dark_BaseColor.png");
+        var skin = Material(female ? "Female skin" : "Skin dark", female ? Added + "T_Superhero_Female_Dark_BaseColor.png" : Source + "T_Superhero_Male_Dark.png");
+        var hands = Material(female ? "Female hands" : "Hands dark", Added + "T_Regular_" + bodyName + "_Dark_BaseColor.png");
         var cloth = Material("Fantasy cloth", Added + "T_Peasant_BaseColor.png");
         var hair = Material("Hair", Added + "T_Hair_1_BaseColor.png");
         var eyes = Material("Eyes", Source + "T_Eye_Brown.png");
         foreach (var renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>())
             renderer.sharedMaterial = renderer.name == "Eyes" ? eyes : renderer.name == "Eyebrows" ? hair : skin;
-        var body = root.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name == "SuperHero_Male");
+        var body = root.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name.Equals("Superhero_" + bodyName, StringComparison.OrdinalIgnoreCase));
         var original = body.sharedMesh;
         var feet = new GameObject("Bare feet");
         feet.transform.SetParent(body.transform.parent, false);
@@ -42,13 +52,13 @@ public static class QuaterniusPoc
         feet.transform.localRotation = body.transform.localRotation;
         feet.transform.localScale = body.transform.localScale;
         var bare = feet.AddComponent<SkinnedMeshRenderer>();
-        bare.sharedMesh = Section(body, original, "Bare feet", v => v.y < .43f);
+        bare.sharedMesh = Section(body, original, female ? "Female bare feet" : "Bare feet", v => v.y < .43f);
         bare.bones = body.bones; bare.rootBone = body.rootBone; bare.sharedMaterial = skin;
         bare.localBounds = body.localBounds;
         UnityEngine.Object.DestroyImmediate(body.gameObject);
         AssetDatabase.DeleteAsset(Output + "Head.asset");
-        Hair(Added + "Head.fbx", root, bones, skin);
-        var outfit = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Added + "Male_Peasant.fbx"));
+        Hair(Added + (female ? "FemaleHead.fbx" : "Head.fbx"), root, bones, skin);
+        var outfit = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Added + bodyName + "_Peasant.fbx"));
         var outfitParts = outfit.GetComponentsInChildren<SkinnedMeshRenderer>();
         foreach (var part in outfitParts)
         {
@@ -61,18 +71,25 @@ public static class QuaterniusPoc
         UnityEngine.Object.DestroyImmediate(outfit);
         var appearance = root.AddComponent<QuaterniusAppearance>();
         appearance.parted = Hair(Source + "Hair_SimpleParted_Rigged.fbx", root, bones, hair);
-        appearance.buzzed = Hair(Added + "Hair_Buzzed.fbx", root, bones, hair);
-        appearance.SelectHair("parted");
+        appearance.buzzed = Hair(Added + (female ? "Female_Hair_Buzzed.fbx" : "Hair_Buzzed.fbx"), root, bones, hair);
+        appearance.buns = Hair(Source + "Hair_Buns_Rigged.fbx", root, bones, hair);
+        appearance.SelectHair(female ? "buns" : "parted");
         var pose = root.AddComponent<FighterPose>();
         pose.actor = root.GetComponent<Animator>();
+        appearance.headbands = new[] { "parted", "buzzed", "buns" }.Select(style => {
+            var band = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/BandeauEclair/" + bodyName + "-" + style + ".fbx"));
+            band.name = "Bandeau éclair " + style;
+            band.transform.SetParent(pose.actor.GetBoneTransform(HumanBodyBones.Head), true);
+            band.GetComponentInChildren<MeshRenderer>().sharedMaterial = Material("Bandeau éclair", "Assets/Characters/BandeauEclair/BaseColor.png");
+            return band;
+        }).ToArray();
+        appearance.SetHeadband(false);
         var clips = AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Quaternius/UAL2Clean.fbx").OfType<AnimationClip>().ToArray();
         var idle = ForwardIdle(clips.Single(c => c.name == "Armature|Idle_No_Loop"));
-        var attack = clips.Single(c => c.name == "Armature|Melee_Hook");
-        pose.clips = new[] { idle, attack, clips.Single(c => c.name == "Armature|Idle_Shield_Break"), attack,
-            clips.Single(c => c.name == "Armature|Sword_Block"), clips.Single(c => c.name == "Armature|Sword_Regular_B"),
-            clips.Single(c => c.name == "Armature|Melee_Hook_Rec"), idle };
-        pose.contacts = new[] { .5f, .74f, .28f, .74f, .30f, .60f, .22f, .5f };
-        pose.shoes = new[] { outfitParts.Single(p => p.name == "Male_Peasant_Feet").transform };
+        pose.clips = new[] { Mixamo("BoxingIdle"), Mixamo("BackHandCross"), clips.Single(c => c.name == "Armature|Idle_Shield_Break"),
+            Mixamo("BackHandUppercut"), Mixamo("DodgeRetreat"), Mixamo("JabCrossCombo"), Mixamo("BackHandCross"), idle };
+        pose.contacts = new[] { .5f, .30f, .28f, .37f, .15f, .30f, .30f, .5f };
+        pose.shoes = new[] { outfitParts.Single(p => p.name == bodyName + "_Peasant_Feet").transform };
         pose.bareFeet = feet;
         pose.SetShoes(true);
         pose.facing = 0; pose.azimuth = 25; pose.inspect = true;
@@ -81,7 +98,7 @@ public static class QuaterniusPoc
         var light = new GameObject("Soft showcase key", typeof(Light)).GetComponent<Light>();
         light.transform.SetParent(root.transform, false);
         light.type = LightType.Directional; light.intensity = 1.5f; light.transform.localRotation = Quaternion.Euler(35, 150, 0);
-        PrefabUtility.SaveAsPrefabAsset(root, Prefab);
+        PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
         UnityEngine.Object.DestroyImmediate(root);
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -90,11 +107,38 @@ public static class QuaterniusPoc
         camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.055f, .07f, .10f);
         camera.transform.position = new Vector3(0, 1.25f, 5); camera.transform.LookAt(new Vector3(0, .95f, 0));
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(.6f, .6f, .6f);
-        var pilot = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(Prefab));
+        var pilot = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath));
         pilot.GetComponent<FighterPose>().inspectionCamera = camera;
-        EditorSceneManager.SaveScene(scene, Output + "CharacterShowcase.unity");
+        EditorSceneManager.SaveScene(scene, output + "CharacterShowcase.unity");
         AssetDatabase.SaveAssets();
-        Validate();
+        ValidatePrefab(prefabPath);
+    }
+
+    static AnimationClip Mixamo(string name) => AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Mixamo/" + name + ".fbx")
+        .OfType<AnimationClip>().Single(c => !c.name.StartsWith("__preview__"));
+
+    static void ImportMixamo()
+    {
+        foreach (var path in Directory.GetFiles("Assets/Animations/Mixamo", "*.fbx"))
+        {
+            var importer = (ModelImporter)AssetImporter.GetAtPath(path);
+            importer.animationType = ModelImporterAnimationType.Human;
+            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            importer.animationCompression = ModelImporterAnimationCompression.Off;
+            var clips = importer.defaultClipAnimations;
+            foreach (var clip in clips)
+            {
+                clip.name = Path.GetFileNameWithoutExtension(path);
+                clip.lockRootRotation = clip.lockRootHeightY = true;
+                // Extract horizontal motion; the arena owns travel, Animator.applyRootMotion is false.
+                clip.lockRootPositionXZ = false;
+                clip.keepOriginalOrientation = true;
+                clip.heightFromFeet = true;
+                clip.loopTime = clip.loopPose = clip.name == "BoxingIdle";
+            }
+            importer.clipAnimations = clips;
+            importer.SaveAndReimport();
+        }
     }
 
     static AnimationClip ForwardIdle(AnimationClip source)
@@ -146,7 +190,12 @@ public static class QuaterniusPoc
     }
     public static void Validate()
     {
-        var instance = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Prefab));
+        ValidatePrefab(Prefab);
+        ValidatePrefab("Assets/Resources/QuaterniusFemale.prefab");
+    }
+    static void ValidatePrefab(string path)
+    {
+        var instance = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(path));
         try
         {
             var pose = instance.GetComponent<FighterPose>();
@@ -155,10 +204,11 @@ public static class QuaterniusPoc
                 || pose.contacts.Any(c => c <= 0 || c >= 1)) throw new Exception("Missing clip/contact mapping");
             if (pose.actor.GetBoneTransform(HumanBodyBones.RightIndexDistal) == null) throw new Exception("Missing fingers");
             var appearance = instance.GetComponent<QuaterniusAppearance>();
-            foreach (var style in new[] { "buzzed", "parted" })
+            foreach (var style in new[] { "buzzed", "parted", "buns" })
             {
                 appearance.SelectHair(style);
-                if (appearance.parted.activeSelf == appearance.buzzed.activeSelf || appearance.buzzed.activeSelf != (style == "buzzed"))
+                if (new[] { appearance.parted, appearance.buzzed, appearance.buns }.Count(h => h.activeSelf) != 1
+                    || appearance.buzzed.activeSelf != (style == "buzzed") || appearance.buns.activeSelf != (style == "buns"))
                     throw new Exception("Hair selection failed");
             }
             foreach (bool equipped in new[] { false, true })
@@ -169,7 +219,18 @@ public static class QuaterniusPoc
             }
             foreach (var renderer in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                 if (renderer.bones.Any(b => b == null) || renderer.sharedMaterials.Any(m => m == null)) throw new Exception("Missing binding/material");
-            Debug.Log("Quaternius POC: Humanoid, finger bones, both hair options, boots/bare feet and all bone bindings PASS");
+            if (appearance.headbands.Length != 3) throw new Exception("Missing headband fits");
+            foreach (var style in new[] { "parted", "buzzed", "buns" })
+            {
+                appearance.SelectHair(style);
+                foreach (bool equipped in new[] { false, true })
+                {
+                    appearance.SetHeadband(equipped);
+                    if (appearance.headbands.Count(b => b.activeSelf) != (equipped ? 1 : 0))
+                        throw new Exception("Headband selection failed");
+                }
+            }
+            Debug.Log("Quaternius POC: Humanoid, fingers, three hair options, headband, boots and bone bindings PASS: " + path);
         }
         finally { UnityEngine.Object.DestroyImmediate(instance); }
     }

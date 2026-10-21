@@ -3,9 +3,12 @@ import { contactAt, fighterMotionAt, type FighterPose, type PoseSignals } from '
 import { beatAt, sampleRamp } from './sampling.ts';
 import type { Actor, BattleBeat } from './timeline.ts';
 
-export type UnityAvatar = { boots: boolean; visible: boolean; hairStyle: 'parted' | 'buzzed' };
+export type UnityAvatar = {
+  body: 'male' | 'female'; hairStyle: 'parted' | 'buzzed' | 'buns';
+  boots: boolean; headband: boolean; visible: boolean;
+};
 // Local V1 default; persistent appearance comes from the future server avatar contract.
-export const QUATERNIUS_AVATAR: UnityAvatar = { hairStyle: 'parted', boots: true, visible: true };
+export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true };
 export type UnityViewport = { x: number; y: number; width: number; height: number };
 export type UnityActorFrame = { pose: number; phase: number; x: number; visible: boolean };
 export type UnityInspectorProps = {
@@ -38,7 +41,9 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
   } else if (beat.kind === 'dodge') {
     frame.pose = 4; frame.phase = (time - beat.at) / span;
   } else if (time >= contact && time < beat.at + span * combatMotion.recover) {
-    frame.pose = 2; frame.phase = (time - contact) / (beat.until - contact);
+    frame.pose = 2;
+    // Reaction peak meets the fist and HUD at contact, then recovers into the boxing guard.
+    frame.phase = .5 + (time - contact) / (beat.at + span * combatMotion.recover - contact) * .5;
   }
   if (reduced && frame.pose !== 0) frame.phase = .5;
   return frame;

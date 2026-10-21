@@ -1,6 +1,6 @@
 import { Redirect, Stack, router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { Button } from '@/components/Button';
@@ -9,6 +9,7 @@ import { BattleView } from '@/features/combat/BattleView';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { UnityAvatarInspector, unityCombatAvailable } from '@/features/combat/UnityCombatStage';
 import type { UnityAvatar } from '@/features/combat/unityFrame';
+import type { FighterPose } from '@/features/combat/fighterMotion';
 
 export default function CharacterShowcaseScreen() {
   if (!__DEV__) return <Redirect href="/" />;
@@ -16,9 +17,11 @@ export default function CharacterShowcaseScreen() {
 }
 
 function Showcase() {
-  const [hairStyle, setHairStyle] = useState<'parted' | 'buzzed'>('parted');
+  const [body, setBody] = useState<UnityAvatar['body']>('female');
+  const [hairStyle, setHairStyle] = useState<UnityAvatar['hairStyle']>('buns');
+  const [headband, setHeadband] = useState(true);
   const [boots, setBoots] = useState(true);
-  const [pose, setPose] = useState<'idle' | 'attack'>('idle');
+  const [pose, setPose] = useState<FighterPose>('idle');
   const [animated, setAnimated] = useState(true);
   const [azimuth, setAzimuth] = useState(25);
   const [view, setView] = useState(0);
@@ -29,11 +32,11 @@ function Showcase() {
   const [controlsHeight, setControlsHeight] = useState(260);
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const avatar: UnityAvatar = { hairStyle, boots, visible: true };
+  const avatar: UnityAvatar = { body, hairStyle, headband, boots, visible: true };
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
-      unityEnemy={{ ...avatar, hairStyle: hairStyle === 'parted' ? 'buzzed' : 'parted', boots: true }}
+      unityEnemy={{ ...avatar, body: body === 'male' ? 'female' : 'male', hairStyle: body === 'male' ? 'buns' : 'parted', headband: false, boots: true }}
       onDismiss={() => { setReady(false); setPlaying(false); }} />
   </View>;
   return <View style={styles.screen}>
@@ -44,10 +47,10 @@ function Showcase() {
       onReady={() => setReady(true)} onError={() => setFailed(true)} />}
     <SafeAreaView style={styles.overlay} pointerEvents="box-none">
       <View style={styles.header} onLayout={({ nativeEvent }) => setHeaderHeight(nativeEvent.layout.height)}>
-        <Text style={styles.title}>QUATERNIUS · V1</Text>
+        <Text style={styles.title}>QUATERNIUS · V2</Text>
         <Text style={styles.subtitle} testID={ready && !failed ? 'quaternius-ready' : undefined}>
           {!unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
-            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Un personnage · deux coiffures · un item' : 'Chargement…'}
+            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Duel mixte · bandeau éclair · boxe Mixamo' : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo');
@@ -55,16 +58,22 @@ function Showcase() {
       </View>
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>
         <View style={styles.row}>
-          <Choice label="Cheveux coiffés" selected={hairStyle === 'parted'} onPress={() => setHairStyle('parted')} />
-          <Choice label="Cheveux courts" selected={hairStyle === 'buzzed'} onPress={() => setHairStyle('buzzed')} />
+          <Choice label="Femme" selected={body === 'female'} onPress={() => setBody('female')} />
+          <Choice label="Homme" selected={body === 'male'} onPress={() => setBody('male')} />
+          <Choice label="Coiffés" selected={hairStyle === 'parted'} onPress={() => setHairStyle('parted')} />
+          <Choice label="Courts" selected={hairStyle === 'buzzed'} onPress={() => setHairStyle('buzzed')} />
+          <Choice label="Chignons" selected={hairStyle === 'buns'} onPress={() => setHairStyle('buns')} />
         </View>
         <View style={styles.row}>
           <Choice label={boots ? 'Retirer les bottes' : 'Équiper les bottes'} selected={boots} onPress={() => setBoots(!boots)} />
-          <Text style={styles.subtitle}>Tenue Fantasy · essai visuel</Text>
+          <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />
         </View>
         <View style={styles.row}>
-          <Choice label="Repos" selected={pose === 'idle'} onPress={() => setPose('idle')} />
-          <Choice label="Crochet" selected={pose === 'attack'} onPress={() => setPose('attack')} />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.poseList} contentContainerStyle={styles.poseRow}>
+            {([{ label: 'Repos', pose: 'idle' }, { label: 'Direct', pose: 'attack' }, { label: 'Uppercut', pose: 'critical' },
+              { label: 'Esquive', pose: 'dodge' }, { label: 'Impact', pose: 'hit' }, { label: 'Combo', pose: 'combo' }] as const).map(choice =>
+              <Choice key={choice.pose} label={choice.label} selected={pose === choice.pose} onPress={() => setPose(choice.pose)} />)}
+          </ScrollView>
           <Choice label={animated ? 'Figer' : 'Animer'} selected={animated} onPress={() => setAnimated(!animated)} />
         </View>
         <View style={styles.row}>
@@ -89,6 +98,7 @@ const styles = StyleSheet.create({
   title: { ...type.title, color: color.text }, subtitle: { ...type.label, color: color.textMuted },
   link: { ...type.body, color: color.accent }, label: { ...type.label, color: color.text, letterSpacing: 0 },
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm },
+  poseList: { flex: 1 }, poseRow: { flexDirection: 'row', gap: space.sm },
   choice: { minHeight: control.backSize, justifyContent: 'center', padding: space.sm, borderWidth: control.borderWidth,
     borderColor: color.border, borderRadius: frame.standard.radius }, selected: { borderColor: color.accent },
 });

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { combatMotion } from '@/design/tokens';
 import boss from '../../../fixtures/battle/defaite-boss.json' with { type: 'json' };
 import { contactAt, type PoseSignals } from './fighterMotion.ts';
 import { buildBattleTimeline, type Actor, type Battle } from './timeline.ts';
@@ -23,6 +24,12 @@ test('Unity prepares the attack before the server contact and reaches contact wi
   assert.equal(unityActorFrame(timeline.beats, target, contact - 1, signals(target), 500, true, false).pose, 0);
   assert.equal(unityActorFrame(timeline.beats, beat.attacker, contact, signals(beat.attacker), 500, true, false).phase, .5);
   assert.equal(unityActorFrame(timeline.beats, target, contact, signals(target), 500, true, false).pose, 2);
+  assert.equal(unityActorFrame(timeline.beats, target, contact, signals(target), 500, true, false).phase, .5);
+  const recovered = beat.at + (beat.until - beat.at) * combatMotion.recover;
+  const recovery = unityActorFrame(timeline.beats, target, recovered - 1, signals(target), 500, true, false);
+  assert.equal(recovery.pose, 2);
+  assert.ok(recovery.phase > .99);
+  assert.equal(unityActorFrame(timeline.beats, target, recovered, signals(target), 500, true, false).pose, 0);
 });
 
 test('a dodge belongs to the defender, with reduced motion preserving a fixed pose', () => {

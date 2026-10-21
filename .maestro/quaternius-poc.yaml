@@ -27,24 +27,39 @@ appId: app.grrind.dev
       id: quaternius-ready
     timeout: 30000
 - tapOn: Figer
+- tapOn: Femme
 - tapOn: Face
-- takeScreenshot: quaternius-face-equipped
+- takeScreenshot: quaternius-female-equipped
 - tapOn: Profil
 - takeScreenshot: quaternius-profile
 - tapOn: Trois-quarts
 - takeScreenshot: quaternius-three-quarter
 - tapOn: Visage
-- takeScreenshot: quaternius-parted-closeup
-- tapOn: Cheveux courts
+- takeScreenshot: quaternius-female-band-closeup
+- tapOn: Retirer le bandeau
+- assertVisible: Équiper le bandeau
+- takeScreenshot: quaternius-female-no-band
+- tapOn: Équiper le bandeau
+- tapOn: Courts
 - takeScreenshot: quaternius-buzzed-closeup
+- tapOn: Coiffés
+- takeScreenshot: quaternius-parted-closeup
+- tapOn: Homme
+- takeScreenshot: quaternius-male-band-closeup
+- tapOn: Femme
+- tapOn: Chignons
 - tapOn: Trois-quarts
 - tapOn: Retirer les bottes
 - assertVisible: Équiper les bottes
 - takeScreenshot: quaternius-bare-feet
-- tapOn: Crochet
+- tapOn: Direct
 - takeScreenshot: quaternius-attack-bare
 - tapOn: Équiper les bottes
 - takeScreenshot: quaternius-attack-equipped
+- tapOn: Uppercut
+- takeScreenshot: quaternius-uppercut
+- tapOn: Esquive
+- takeScreenshot: quaternius-dodge
 - tapOn: Animer
 - takeScreenshot: quaternius-animation-a
 - tapOn: Visage
