@@ -2,6 +2,7 @@ import { setAudioModeAsync, useAudioPlayer } from 'expo-audio';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -52,7 +53,7 @@ import { appearanceArtwork } from './appearances';
 import { useAppearances } from './useAppearances';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
 import { UnityCombatStage, unityCombatAvailable } from './UnityCombatStage';
-import { unityAvatarOf, type UnityAvatar, type UnityViewport } from './unityFrame';
+import { QUATERNIUS_AVATAR, type UnityAvatar, type UnityViewport } from './unityFrame';
 import {
   buildBattleTimeline,
   sampleRamp,
@@ -112,11 +113,11 @@ export function BattleView({ battle, enemyArt, heroArt, heroEquipment, opponentE
 }) {
   // Un seul verrou pour la fenêtre : les orientations de la pile native entreraient
   // en concurrence avec celui-ci pendant la fermeture de la modale.
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (Platform.OS === 'web') return;
     void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     return () => { void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP); };
-  }, []);
+  }, []));
   const catalog = useAppearances();
   const playerEquipment = heroEquipment ?? equippedArtwork(catalog.data?.equipment ?? [], battle.player, 'back');
   const enemyEquipment = opponentEquipment ?? equippedArtwork(catalog.data?.equipment ?? [], battle.enemy, 'front');
@@ -396,7 +397,7 @@ function BattleScene({
     <View style={styles.screen} testID={done ? `battle-${entrance}` : undefined}>
       <Image source={require('../../../assets/images/arenas/duel.png')} style={StyleSheet.absoluteFill} contentFit="cover" />
       {useUnity && <UnityCombatStage clock={clock} timeline={timeline}
-        player={unityPlayer ?? unityAvatarOf(battle.player)} enemy={{ ...(unityEnemy ?? unityAvatarOf(battle.enemy)), visible: nativeEnemy }}
+        player={unityPlayer ?? QUATERNIUS_AVATAR} enemy={{ ...(unityEnemy ?? QUATERNIUS_AVATAR), visible: nativeEnemy }}
         viewport={unityViewport} width={unityViewport.width * window.width} playing={entrance === 'combat'} done={done}
         onReady={() => { fighterReady('player'); if (nativeEnemy) fighterReady('enemy'); }}
         onError={() => setUnityFailed(true)} />}

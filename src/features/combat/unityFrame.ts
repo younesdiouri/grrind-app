@@ -2,10 +2,10 @@ import { combatMotion } from '@/design/tokens';
 import { contactAt, fighterMotionAt, type FighterPose, type PoseSignals } from './fighterMotion.ts';
 import { beatAt, sampleRamp } from './sampling.ts';
 import type { Actor, BattleBeat } from './timeline.ts';
-import type { components } from '@/api/schema';
 
-export type UnityAvatar = { body: 'male' | 'female'; skin: string; weapon: boolean; glasses: boolean; boots?: boolean; visible: boolean;
-  model?: 'quaternius'; hairStyle?: 'parted' | 'buzzed' };
+export type UnityAvatar = { boots: boolean; visible: boolean; hairStyle: 'parted' | 'buzzed' };
+// Local V1 default; persistent appearance comes from the future server avatar contract.
+export const QUATERNIUS_AVATAR: UnityAvatar = { hairStyle: 'parted', boots: true, visible: true };
 export type UnityViewport = { x: number; y: number; width: number; height: number };
 export type UnityActorFrame = { pose: number; phase: number; x: number; visible: boolean };
 export type UnityInspectorProps = {
@@ -13,13 +13,6 @@ export type UnityInspectorProps = {
   view: number; azimuth: number; viewport: UnityViewport; onReady(): void; onError(): void;
 };
 export const UNITY_POSES: Record<FighterPose, number> = { idle: 0, attack: 1, hit: 2, critical: 3, dodge: 4, combo: 5, replay: 6 };
-
-export function unityAvatarOf(fighter: { appearance?: string | null; equipment?: components['schemas']['BattleEquipment'] }): UnityAvatar {
-  const items = Object.values(fighter.equipment ?? {});
-  return { body: fighter.appearance === 'RUNNER_V3' || fighter.appearance === 'SWIMMER_V3' ? 'female' : 'male',
-    skin: '#DBB894', weapon: items.some((item) => item.key === 'HALTER_EGO'),
-    glasses: items.some((item) => item.key === 'PURSUIT_GOGGLES'), visible: true };
-}
 
 /** Same server timeline and contact as the HUD; phase .5 is the contact in each clip. */
 export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, signals: PoseSignals,

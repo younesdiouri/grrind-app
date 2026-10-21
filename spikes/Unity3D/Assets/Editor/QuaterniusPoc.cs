@@ -63,7 +63,7 @@ public static class QuaterniusPoc
         appearance.parted = Hair(Source + "Hair_SimpleParted_Rigged.fbx", root, bones, hair);
         appearance.buzzed = Hair(Added + "Hair_Buzzed.fbx", root, bones, hair);
         appearance.SelectHair("parted");
-        var pose = root.AddComponent<MuscuPose>();
+        var pose = root.AddComponent<FighterPose>();
         pose.actor = root.GetComponent<Animator>();
         var clips = AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Quaternius/UAL2Clean.fbx").OfType<AnimationClip>().ToArray();
         var idle = ForwardIdle(clips.Single(c => c.name == "Armature|Idle_No_Loop"));
@@ -72,12 +72,10 @@ public static class QuaterniusPoc
             clips.Single(c => c.name == "Armature|Sword_Block"), clips.Single(c => c.name == "Armature|Sword_Regular_B"),
             clips.Single(c => c.name == "Armature|Melee_Hook_Rec"), idle };
         pose.contacts = new[] { .5f, .74f, .28f, .74f, .30f, .60f, .22f, .5f };
-        pose.weapon = Empty(root, "Unused weapon"); pose.glasses = Empty(root, "Unused glasses");
         pose.shoes = new[] { outfitParts.Single(p => p.name == "Male_Peasant_Feet").transform };
         pose.bareFeet = feet;
         pose.SetShoes(true);
-        pose.facing = 0; pose.azimuth = 25; pose.inspect = true; pose.debugControls = false;
-        pose.sampleIdlePhase = true;
+        pose.facing = 0; pose.azimuth = 25; pose.inspect = true;
         pose.headViewOffset = .1f; pose.headViewSize = .25f;
         hair.SetColor("_BaseColor", new Color(.17f, .085f, .04f));
         var light = new GameObject("Soft showcase key", typeof(Light)).GetComponent<Light>();
@@ -93,16 +91,12 @@ public static class QuaterniusPoc
         camera.transform.position = new Vector3(0, 1.25f, 5); camera.transform.LookAt(new Vector3(0, .95f, 0));
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(.6f, .6f, .6f);
         var pilot = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(Prefab));
-        pilot.GetComponent<MuscuPose>().inspectionCamera = camera;
+        pilot.GetComponent<FighterPose>().inspectionCamera = camera;
         EditorSceneManager.SaveScene(scene, Output + "CharacterShowcase.unity");
         AssetDatabase.SaveAssets();
         Validate();
     }
 
-    static Transform Empty(GameObject root, string name)
-    {
-        var obj = new GameObject(name); obj.transform.SetParent(root.transform, false); obj.SetActive(false); return obj.transform;
-    }
     static AnimationClip ForwardIdle(AnimationClip source)
     {
         var clip = UnityEngine.Object.Instantiate(source);
@@ -155,8 +149,10 @@ public static class QuaterniusPoc
         var instance = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Prefab));
         try
         {
-            var pose = instance.GetComponent<MuscuPose>();
+            var pose = instance.GetComponent<FighterPose>();
             if (!pose.actor.isHuman || !pose.actor.avatar.isValid) throw new Exception("Invalid Humanoid");
+            if (pose.clips.Length != 8 || pose.clips.Any(c => c == null) || pose.contacts.Length != pose.clips.Length
+                || pose.contacts.Any(c => c <= 0 || c >= 1)) throw new Exception("Missing clip/contact mapping");
             if (pose.actor.GetBoneTransform(HumanBodyBones.RightIndexDistal) == null) throw new Exception("Missing fingers");
             var appearance = instance.GetComponent<QuaterniusAppearance>();
             foreach (var style in new[] { "buzzed", "parted" })
@@ -180,7 +176,7 @@ public static class QuaterniusPoc
     public static float[] ValidateGaze()
     {
         if (!EditorApplication.isPlaying) throw new InvalidOperationException("Gaze must be checked in Play mode");
-        var pose = UnityEngine.Object.FindObjectsByType<MuscuPose>(FindObjectsSortMode.None).First(p => p.sampleIdlePhase);
+        var pose = UnityEngine.Object.FindObjectsByType<FighterPose>(FindObjectsSortMode.None).First(p => p.inspect);
         var saved = (pose.stance, pose.phase, pose.autoplay);
         try
         {
@@ -199,7 +195,7 @@ public static class QuaterniusPoc
     {
         if (!EditorApplication.isPlaying) throw new InvalidOperationException("Duel must be checked in Play mode");
         var bridge = UnityEngine.Object.FindFirstObjectByType<BattleBridge>();
-        var poses = UnityEngine.Object.FindObjectsByType<MuscuPose>(FindObjectsSortMode.None);
+        var poses = UnityEngine.Object.FindObjectsByType<FighterPose>(FindObjectsSortMode.None);
         if (poses.Length != 2 || poses.Any(p => p.GetComponent<QuaterniusAppearance>() == null || p.clips.Length < 8))
             throw new Exception("Expected two Quaternius fighters with the complete stance library");
         return new[] { true, false }.Select(left =>

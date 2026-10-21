@@ -29,8 +29,7 @@ function Showcase() {
   const [controlsHeight, setControlsHeight] = useState(260);
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const avatar: UnityAvatar = { model: 'quaternius', body: 'male', skin: '#FFFFFF', hairStyle,
-    boots, weapon: false, glasses: false, visible: true };
+  const avatar: UnityAvatar = { hairStyle, boots, visible: true };
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
@@ -45,13 +44,13 @@ function Showcase() {
       onReady={() => setReady(true)} onError={() => setFailed(true)} />}
     <SafeAreaView style={styles.overlay} pointerEvents="box-none">
       <View style={styles.header} onLayout={({ nativeEvent }) => setHeaderHeight(nativeEvent.layout.height)}>
-        <Text style={styles.title}>QUATERNIUS · POC</Text>
+        <Text style={styles.title}>QUATERNIUS · V1</Text>
         <Text style={styles.subtitle} testID={ready && !failed ? 'quaternius-ready' : undefined}>
           {!unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
             : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Un personnage · deux coiffures · un item' : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
-          if (router.canGoBack()) router.back(); else router.replace('/avatar-3d');
+          if (router.canGoBack()) router.back(); else router.replace('/combat-demo');
         }}><Text style={styles.link}>Fermer</Text></Pressable>
       </View>
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>

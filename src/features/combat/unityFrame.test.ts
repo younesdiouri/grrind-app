@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import duel from '../../../fixtures/battle/duel-equipped.json' with { type: 'json' };
 import boss from '../../../fixtures/battle/defaite-boss.json' with { type: 'json' };
 import { contactAt, type PoseSignals } from './fighterMotion.ts';
 import { buildBattleTimeline, type Actor, type Battle } from './timeline.ts';
-import { unityActorFrame, unityAvatarOf } from './unityFrame.ts';
+import { unityActorFrame } from './unityFrame.ts';
 
 const timeline = buildBattleTimeline(boss as unknown as Battle, { illustrated: true });
 function signals(actor: Actor): PoseSignals {
@@ -42,11 +41,4 @@ test('skip to verdict leaves no attack or movement running', () => {
   assert.equal(result.pose, 0);
   assert.equal(result.x, 0);
   assert.equal(result.visible, false);
-});
-
-test('equipped 3D objects come from this fight snapshot', () => {
-  assert.equal(unityAvatarOf(duel.player).weapon, true);
-  assert.equal(unityAvatarOf(duel.player).glasses, true);
-  assert.equal(unityAvatarOf(duel.enemy).weapon, false);
-  assert.equal(unityAvatarOf(duel.enemy).glasses, false);
 });
