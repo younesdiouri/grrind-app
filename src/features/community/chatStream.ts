@@ -6,7 +6,7 @@ import type { ChatSubscription } from '@/features/community/chatState';
 export function connectChatStream(subscription: ChatSubscription, changed: () => void, opened: () => void, closed: () => void) {
   const abort = new AbortController();
   const url = new URL(subscription.url);
-  url.searchParams.append('topic', subscription.topic);
+  url.searchParams.append('match', subscription.topic);
   void (async () => {
     const response = await fetch(url.toString(), {
       headers: { Accept: 'text/event-stream', Authorization: `Bearer ${subscription.token}`, 'Cache-Control': 'no-store' },
