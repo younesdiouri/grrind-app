@@ -1,5 +1,10 @@
 # Packs de combat — génération et intégration
 
+**Pipeline existant à retirer :** la [refonte PvE/Ālam Unity](unity-pve-alam.md)
+prévoit un nouveau bestiaire 3D via Meshy et la suppression des anciens sprites.
+Ne plus produire de nouveaux packs 2D ; les étapes ci-dessous décrivent les assets
+encore actifs en attendant leur remplacement vérifié.
+
 Premier lot : Cailloux (`SAND_JACKAL`) et Al-Kasal (`AL_KASAL`), les deux mobs illustrés
 confirmés en lecture seule en production le 17 octobre 2026. Les autres entrées publiées
 n’ont pas encore d’illustration : elles restent sur leur présentation actuelle.

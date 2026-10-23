@@ -1,5 +1,10 @@
 # ʿĀlam al-Nafs et atelier
 
+**Refonte prévue :** [Unity et nouveau bestiaire 3D](design/unity-pve-alam.md),
+ticket [#249](https://github.com/younesdiouri/grrind-app/issues/249).
+Le raid et l’ancien PvE abandonneront tous leurs sprites ; les nouveaux mobs seront
+créés avec Meshy puis préparés pour Unity. Le reste de ce document décrit l’existant.
+
 Le serveur décide des jauges, des rencontres, du récit et des récompenses. Le mobile ne lit que
 les événements horodatés pour animer Al-Kasal et les participants. La lecture et le replay
 restent des GET : quitter l’écran, reprendre ou rejouer ne distribue rien.
