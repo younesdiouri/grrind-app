@@ -12,25 +12,6 @@ import { equipmentFrameScale, equipmentPlacement, type EquipmentArtwork, type Fi
 export type { FighterArtwork } from './enemyPresentation';
 export { AL_KASAL } from './bundledMobs';
 
-/** Le repli embarqué conserve les mêmes sept silhouettes que le catalogue. */
-export const DEFAULT_HERO: FighterArtwork = { name: 'Toi', poses: {
-  idle: require('../../../assets/images/heroes/retro-strength/v3/back/idle.png'),
-  attack: require('../../../assets/images/heroes/retro-strength/v3/back/attack.png'),
-  hit: require('../../../assets/images/heroes/retro-strength/v3/back/hit.png'),
-  critical: require('../../../assets/images/heroes/retro-strength/v3/back/critical.png'),
-  dodge: require('../../../assets/images/heroes/retro-strength/v3/back/dodge.png'),
-  combo: require('../../../assets/images/heroes/retro-strength/v3/back/combo.png'),
-  replay: require('../../../assets/images/heroes/retro-strength/v3/back/replay.png'),
-} };
-export const DEFAULT_OPPONENT: FighterArtwork = { name: 'Muscu', poses: {
-  idle: require('../../../assets/images/heroes/retro-strength/v3/front/idle.png'),
-  attack: require('../../../assets/images/heroes/retro-strength/v3/front/attack.png'),
-  hit: require('../../../assets/images/heroes/retro-strength/v3/front/hit.png'),
-  critical: require('../../../assets/images/heroes/retro-strength/v3/front/critical.png'),
-  dodge: require('../../../assets/images/heroes/retro-strength/v3/front/dodge.png'),
-  combo: require('../../../assets/images/heroes/retro-strength/v3/front/combo.png'),
-  replay: require('../../../assets/images/heroes/retro-strength/v3/front/replay.png'),
-} };
 export const DEFAULT_RAID_HERO: FighterArtwork = { name: 'Muscu', poses: {
   idle: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/idle.png'),
   attack: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/attack.png'),

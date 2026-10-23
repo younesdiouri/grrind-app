@@ -13,7 +13,11 @@ export type UnityAvatar = {
   dumbbell?: boolean;
 };
 // Local V1 default; persistent appearance comes from the future server avatar contract.
-export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true };
+export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true,
+  skinTone: 'tan', eyeColor: 'brown', hairColor: 'brown', sportShirt: true, shirtColor: 'cyan',
+  pantsColor: 'violet', boxingGloves: true };
+export const QUATERNIUS_OPPONENT: UnityAvatar = { ...QUATERNIUS_AVATAR, body: 'female', hairStyle: 'buns',
+  skinTone: 'deep', shirtColor: 'coral', pantsColor: 'cyan' };
 export type UnityViewport = { x: number; y: number; width: number; height: number };
 export type UnityActorFrame = { pose: number; phase: number; x: number; visible: boolean };
 export type UnityInspectorProps = {

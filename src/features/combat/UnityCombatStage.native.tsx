@@ -10,7 +10,7 @@ import type { BattleTimeline } from './timeline';
 
 type UnityModule = { isAvailable(): boolean; setFrame(frame: string): Promise<void> };
 const bridge = requireOptionalNativeModule<UnityModule>('GrrindUnity');
-export const unityCombatAvailable = __DEV__ && bridge?.isAvailable() === true;
+export const unityCombatAvailable = bridge?.isAvailable() === true;
 type NativeProps = ViewProps & { configuration: string; onReady(): void; onFailure(): void };
 const UnityView = bridge ? requireNativeView<NativeProps>('GrrindUnity') : null;
 

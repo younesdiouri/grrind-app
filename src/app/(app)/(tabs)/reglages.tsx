@@ -6,11 +6,11 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { Button } from '@/components/Button';
 import { DangerRow } from '@/components/DangerRow';
 import { ToggleRow } from '@/components/ToggleRow';
-import { color, notificationCategoryLabel, radius, space, type } from '@/design/tokens';
+import { color, combatMotion, notificationCategoryLabel, radius, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { signOut } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
-import { HeroPicker } from '@/features/combat/HeroPicker';
+import { CombatAvatarPreview } from '@/features/combat/CombatAvatarPreview';
 import {
   fetchProfile,
   updateNotificationPreference,
@@ -132,7 +132,10 @@ export default function ReglagesScreen() {
         </View>
       ) : null}
 
-      {state.step === 'ready' && <HeroPicker profile={state.profile} onProfile={(profile) => setState({ step: 'ready', profile })} />}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Ton personnage</Text>
+        <View style={styles.avatar}><CombatAvatarPreview /></View>
+      </View>
       {__DEV__ && <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />}
 
       <View style={styles.card}>
@@ -606,6 +609,7 @@ function Preferences({
 const styles = StyleSheet.create({
   screen: { padding: space.lg, gap: space.md },
   centered: { paddingVertical: space.xl, alignItems: 'center' },
+  avatar: { height: combatMotion.previewHeight },
   card: {
     backgroundColor: color.surface,
     borderRadius: radius.md,
