@@ -70,7 +70,7 @@ public sealed class BattleBridge : MonoBehaviour
         obj.GetComponent<QuaterniusAppearance>()?.SetHeadband(config.headband);
         obj.GetComponent<QuaterniusAppearance>()?.SetBoxingGloves(config.boxingGloves);
         // Workshop experiment: existing boxing transitions still intersect the large weights.
-        obj.GetComponent<DumbbellGrip>()?.SetEquipped(inspection && config.dumbbell);
+        obj.GetComponent<WeaponGrip>()?.SetEquipped(inspection && config.dumbbell);
         obj.GetComponent<QuaterniusAppearance>()?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;

@@ -25,7 +25,7 @@ public sealed class QuaterniusAppearance : MonoBehaviour
 
     public void SetBoxingGloves(bool visible)
     {
-        if (visible) GetComponent<DumbbellGrip>()?.SetEquipped(false);
+        if (visible) GetComponent<WeaponGrip>()?.SetEquipped(false);
         foreach (var glove in boxingGloves) glove.SetActive(visible);
         for (int i = 0; i < gloveArms.Length; i++)
             gloveArms[i].sharedMesh = visible ? coveredHandMeshes[i] : bareHandMeshes[i];
