@@ -10,7 +10,7 @@ public sealed class BattleBridge : MonoBehaviour
 
     [Serializable] public class AvatarConfig {
         public string body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original";
-        public bool boots=true,visible=true,headband,sportShirt,boxingGloves;
+        public bool boots=true,visible=true,headband,sportShirt,boxingGloves,dumbbell;
     }
     [Serializable] public class Configuration
     {
@@ -69,6 +69,8 @@ public sealed class BattleBridge : MonoBehaviour
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
         obj.GetComponent<QuaterniusAppearance>()?.SetHeadband(config.headband);
         obj.GetComponent<QuaterniusAppearance>()?.SetBoxingGloves(config.boxingGloves);
+        // Workshop experiment: existing boxing transitions still intersect the large weights.
+        obj.GetComponent<DumbbellGrip>()?.SetEquipped(inspection && config.dumbbell);
         obj.GetComponent<QuaterniusAppearance>()?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;

@@ -29,6 +29,7 @@ function Showcase() {
   const [pantsColor, setPantsColor] = useState<UnityAvatar['pantsColor']>('violet');
   const [boots, setBoots] = useState(true);
   const [boxingGloves, setBoxingGloves] = useState(true);
+  const [dumbbell, setDumbbell] = useState(false);
   const [pose, setPose] = useState<FighterPose>('idle');
   const [animated, setAnimated] = useState(true);
   const [azimuth, setAzimuth] = useState(25);
@@ -41,7 +42,7 @@ function Showcase() {
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const avatar: UnityAvatar = { body, hairStyle, headband: headband && hairStyle !== 'long', boots, visible: true,
-    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves };
+    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves, dumbbell };
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
@@ -119,9 +120,14 @@ function Showcase() {
           {hairStyle !== 'long' && <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
         </View>
         <View style={styles.row}>
-          <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => setBoxingGloves(!boxingGloves)} />
+          <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => { setBoxingGloves(!boxingGloves); setDumbbell(false); }} />
           <Choice label="Gants" selected={view === 2} onPress={() => { setView(2); setAzimuth(25); }} />
         </View>
+        <View style={styles.row}>
+          <Choice label={dumbbell ? 'Retirer l’haltère' : 'Équiper Le Poids Lourd'} selected={dumbbell} onPress={() => { setDumbbell(!dumbbell); setBoxingGloves(false); }} />
+          <Choice label="Prise" selected={view === 2} onPress={() => { setPose('attack'); setAnimated(false); setView(2); setAzimuth(-65); }} />
+        </View>
+        {dumbbell && <Text style={styles.subtitle}>Essai atelier · animations à adapter</Text>}
         </>}
         {section === 'Mouvements' && <>
         <View style={styles.row}>

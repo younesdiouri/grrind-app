@@ -38,5 +38,27 @@ Ces comptages sont un diagnostic de pénétration, pas une distance exacte entre
 La prise reste stable ; c’est l’espace réservé par les gestes de boxe qui manque.
 Suite nécessaire : une garde et des coups adaptés à l’haltère, puis contrôle continu des
 transitions sur les deux corps. Réduire la poignée ou masquer les mains ne corrige pas cela.
-Le pilote n’est donc pas ajouté aux prefabs actifs, à l’atelier ou au duel. Pas de rebuild
-iOS, Maestro, EAS ni modification du backend pour cet asset encore non validé en mouvement.
+Le premier pilote n’avait donc pas été ajouté à l’app.
+
+## Essai atelier demandé par l’auteur
+
+Le 23 octobre, l’auteur demande : « Mets quand même l’haltère dans l’atelier sur le simulateur,
+je veux voir ce que ça donne avec les mains. On adaptera les animations après. »
+L’objet est désormais sélectionnable dans **Tenue → Équiper Le Poids Lourd**, avec **Prise**
+pour le gros plan. Il remplace les gants ; le retrait restitue la main animée.
+Le changement de corps conserve la sélection. L’haltère reste limité au mode inspection
+Unity : le duel et le combat normal ne l’équipent pas, même si la configuration le demande.
+Le message d’atelier indique que les animations restent à adapter. Les collisions décrites
+ci-dessus sont acceptées pour cet essai personnel, pas validées pour le combat.
+
+La tranche Simulator est reconstruite pour embarquer le mesh. Pas d’EAS, de changement
+backend ou de reconstruction iPhone physique.
+
+Vérification : compilation Unity et app hôte réussies ; 16 fichiers de données et UUID du
+framework installé identiques à la compilation. Contrôles Unity de prise, retrait, exclusion
+mutuelle des gants et limitation à l’inspection réussis. Typecheck, lint, 559 tests et 29 previews
+passent. Le parcours `quaternius-poc.yaml` passe, session `2026-10-23_142013` ; les captures
+homme/femme et retrait sont dans `references/quaternius-poc/le-poids-lourd/workshop/`.
+Une première passe a été arrêtée après constat visuel : le repos cachait la prise derrière
+le corps. Le bouton **Prise** fige désormais le direct et choisit l’angle opposé ; les nouvelles
+captures montrent la poignée. Les mouvements eux-mêmes n’ont pas été corrigés.

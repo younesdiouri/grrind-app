@@ -23,6 +23,7 @@ public sealed class FighterPose : MonoBehaviour
     AnimationMixerPlayable mixer;
     AnimationClipPlayable[] players;
     Transform head;
+    DumbbellGrip dumbbell;
 
     public void SetShoes(bool visible)
     {
@@ -32,6 +33,7 @@ public sealed class FighterPose : MonoBehaviour
     }
     void Awake()
     {
+        dumbbell=GetComponent<DumbbellGrip>();
         actor.cullingMode=AnimatorCullingMode.AlwaysAnimate;actor.applyRootMotion=false;
         head=Bone(HumanBodyBones.Head);
         graph=PlayableGraph.Create("GRRIND avatar poses");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
@@ -57,6 +59,7 @@ public sealed class FighterPose : MonoBehaviour
         if(selected!=0)players[selected].SetTime(ClipPhase(selected,p,contacts)*clips[selected].length);
         // Apply arena placement after the pose solve.
         actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);graph.Evaluate(0);
+        dumbbell?.Apply();
         actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));
         if(contactShadow!=null)
         {
@@ -68,6 +71,7 @@ public sealed class FighterPose : MonoBehaviour
             var target=view==1?head.position+Vector3.up*headViewOffset:view==2?Bone(HumanBodyBones.RightHand).position:view==3?(Bone(HumanBodyBones.LeftFoot).position+Bone(HumanBodyBones.RightFoot).position)*.5f:view==4?Bone(HumanBodyBones.Chest).position+Vector3.up*.04f:placement+Vector3.up*.95f;
             inspectionCamera.transform.position=target+Quaternion.Euler(0,azimuth,0)*new Vector3(0,view==0?.6f:.10f,5);
             inspectionCamera.transform.LookAt(target);inspectionCamera.orthographicSize=view==0?1.1f:view==1?headViewSize:view==4?.38f:view==3?.35f:.23f;
+            if(view==2&&dumbbell!=null&&dumbbell.item!=null&&dumbbell.item.activeSelf)inspectionCamera.orthographicSize=.43f;
         }
     }
     // Canonical phase .5 is the visible contact/reaction peak, not the middle of the source file.
