@@ -1,6 +1,14 @@
 # PvE et ʿĀlam al-Nafs — Unity et nouveau bestiaire
 
-Ticket de réalisation : [#249](https://github.com/younesdiouri/grrind-app/issues/249).
+Trois chantiers distincts :
+
+- **Refonte métier d’Ālam — backend** : [grrind-back#317](https://github.com/younesdiouri/grrind-back/issues/317).
+  Règles, déroulement, catalogue serveur, résultats, récompenses et contrat si nécessaire.
+- **Création des nouveaux adversaires 3D — art** : [#251](https://github.com/younesdiouri/grrind-app/issues/251).
+  Références, Meshy, préparation Blender, rigs/animations, prefabs et validation artistique.
+- **Intégration Unity — app** : [#249](https://github.com/younesdiouri/grrind-app/issues/249).
+  Scènes PvE/raid, consommation du contrat et retrait des anciens sprites.
+
 Statut : chantier futur, cadrage du 23 octobre 2026 ; réalisation non démarrée.
 
 ## Décision de l’auteur
@@ -14,8 +22,8 @@ La liste, les noms et l’identité des nouveaux ennemis restent à définir ave
 La cible couvre le PvE solo, les rencontres et boss d’Ālam, ainsi que les participants
 du raid. La DA reste **Sport Fantasy Cartoon**, cohérente avec les sportifs Quaternius
 et les équipements Unity. Les humains conservent cette base ; Meshy sert aux nouveaux
-mobs et objets. Le volet bestiaire de #220 est élargi par ce chantier ; l’équipement
-de l’adversaire PvP reste un sujet distinct.
+mobs et objets. Le volet bestiaire de #220 est repris par #251 ; l’équipement
+de l’adversaire PvP reste dans #220.
 
 ## État actuel et retrait prévu
 
@@ -63,8 +71,10 @@ génération de corps humains ni de production de nouveaux packs de sprites 2D.
 
 React Native garde l’application et le HUD ; Unity présente la scène et les acteurs.
 Le serveur décide des événements, résultats, gains et règles. Le rendu ne recalcule
-ni dégâts, ni progression, ni récompenses. Le cadrage des éventuelles nouvelles règles
-PvE reste à faire ; ce document ne fixe aucun rééquilibrage.
+ni dégâts, ni progression, ni récompenses. La refonte métier d’Ālam relève uniquement
+de **grrind-back#317**, dont les nouvelles règles restent à cadrer avec l’auteur ;
+ce document ne fixe aucun rééquilibrage. Le rendu Unity et la fabrication des modèles
+restent les chantiers distincts #249 et #251 côté app.
 
 Les changements de catalogue, les identifiants de nouveaux mobs, les données d’avatar
 et le devenir des anciennes références se traitent avec **grrind-back**, propriétaire
