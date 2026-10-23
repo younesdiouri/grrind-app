@@ -22,8 +22,9 @@ Critique et garde utilisent les booléens serveur. Les dégâts apparaissent aup
 sans nombre ni phrase redondants au centre. Le bilan conserve les détails d’armure et de fatigue.
 
 Les quatre PNG suivent leurs combattants : le critique sur la cible, l’esquive, le combo et la
-relance sur leur acteur. Murīd dispose de trois poses de base et quatre variantes par direction ;
-les modèles sans variante gardent leur pose de base. Les poses et effets utilisent les rampes
+relance sur leur acteur. Les sprites de monstres disposent de trois poses de base et, selon
+le pack, quatre variantes ; les modèles sans variante gardent leur pose de base.
+Les poses et effets utilisent les rampes
 existantes, sans composant par événement ni boucle de setState. Les recherches de battement,
 rampe et impact sont logarithmiques. La même horloge pilote sprite, HP et haptique.
 Réduire les animations conserve les poses et images, retire transformations et vibrations.
@@ -31,10 +32,10 @@ Le saut pose toutes les rampes à l’arrivée ; une fin ATTACK_LIMIT n’affich
 Les compteurs de bilan viennent du serveur, distincts des sommes descriptives de dégâts.
 
 Les duels utilisent une arène latérale en paysage plein écran, puis rétablissent le portrait.
-Ālam utilise une carte surélevée et les miniatures de face. Le choix d’apparence est enregistré
-par PATCH /me ; chaque combat lit son apparence figée par le serveur. La livraison des six poses
-de base murid/v2 au backend attend leur validation utilisateur. Sources et prompts :
-[combat-art.md](../../assets/images/combat-art.md).
+Les personnages du 1v1 et du PvP utilisent désormais [Unity](../ai/unity-1v1.md).
+Ālam conserve sa carte surélevée et les miniatures de face issues du snapshot serveur,
+avec le repli Muscu embarqué. Les calques 2D des anciens équipements ont été retirés ;
+les [packs de monstres](combat-art-workflow.md) restent utilisés.
 
 ## Assets générés
 

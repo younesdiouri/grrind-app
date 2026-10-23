@@ -27,9 +27,14 @@ Code dans `src/features/combat/`, appelants inventaire/profil/réglages ; types 
 OpenAPI généré. Les noms traduits ne décident jamais du modèle. Les cases se rangent sur
 deux lignes de trois sous l’avatar. Aucun nouveau mesh, build natif ou abonnement ajouté.
 
-Le nettoyage du catalogue et des possessions appartient à `grrind-back#315`, par commandes
-locales et production. Les snapshots historiques de combat restent distincts de l’inventaire
-courant. Les animations de l’haltère en combat et la personnalisation persistante restent
+Le nettoyage du catalogue et des possessions est terminé en local et en production
+([grrind-back#316](https://github.com/younesdiouri/grrind-back/pull/316)), par commande,
+sans migration : 17 références sans modèle 3D retirées, HALTER_EGO conservé.
+Les snapshots historiques de combat restent distincts de l’inventaire courant et leurs
+fixtures sont conservées. Le résolveur et les calques 2D des anciens équipements,
+leurs scripts de fabrication et leurs documents de revue ont été supprimés dans #247.
+Les sprites rétro servent encore au raid de guilde, sans calques d’équipement.
+Les animations de l’haltère en combat et la personnalisation persistante restent
 hors du périmètre ; Unity as a Library reste plein écran, les petites vignettes utilisent
 ces captures.
 
