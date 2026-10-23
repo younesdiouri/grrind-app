@@ -1,13 +1,7 @@
 appId: app.grrind.dev
 ---
-# Reprise ciblée autorisée après la phase d’équipement ; même compte QA et mêmes objets.
+# Même équipement dans les réglages, le profil public et après relancement.
 - openLink: grrindapp-dev://inventaire
-- runFlow:
-    file: inventory-avatar-remove.yaml
-    env:
-      SLOT: HANDS
-      ITEM: Gants de boxe dorés
-- takeScreenshot: avatar-gloves-removed
 - tapOn:
     id: tab-reglages
 - scrollUntilVisible:
@@ -15,7 +9,7 @@ appId: app.grrind.dev
       id: combat-avatar-ready
     direction: DOWN
     centerElement: true
-- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Le Poids Lourd"
+- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Gants de boxe dorés"
 - takeScreenshot: avatar-settings
 - openLink: grrindapp-dev://joueur/${MAESTRO_AVATAR_PLAYER_ID}
 - extendedWaitUntil:
@@ -27,7 +21,7 @@ appId: app.grrind.dev
       id: combat-avatar-ready
     direction: DOWN
     centerElement: true
-- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Le Poids Lourd"
+- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Gants de boxe dorés"
 - assertNotVisible: Retirer
 - takeScreenshot: avatar-public-profile
 - stopApp
@@ -43,5 +37,5 @@ appId: app.grrind.dev
       id: combat-avatar-ready
     direction: DOWN
     centerElement: true
-- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Le Poids Lourd"
+- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Gants de boxe dorés"
 - takeScreenshot: avatar-after-relaunch

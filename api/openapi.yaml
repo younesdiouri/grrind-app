@@ -2873,7 +2873,6 @@ components:
           enum:
             - HEAD
             - CHEST
-            - HANDS
             - LEGS
             - FEET
             - ACCESSORY
@@ -2955,7 +2954,6 @@ components:
           enum:
             - HEAD
             - CHEST
-            - HANDS
             - LEGS
             - FEET
             - ACCESSORY
@@ -2983,7 +2981,6 @@ components:
           required:
             - HEAD
             - CHEST
-            - HANDS
             - LEGS
             - FEET
             - ACCESSORY
@@ -2995,11 +2992,6 @@ components:
                 -
                   $ref: '#/components/schemas/PublicInventoryLine'
             CHEST:
-              nullable: true
-              allOf:
-                -
-                  $ref: '#/components/schemas/PublicInventoryLine'
-            HANDS:
               nullable: true
               allOf:
                 -
@@ -3106,7 +3098,6 @@ components:
           required:
             - HEAD
             - CHEST
-            - HANDS
             - LEGS
             - FEET
             - ACCESSORY
@@ -3118,11 +3109,6 @@ components:
                 -
                   $ref: '#/components/schemas/InventoryLine'
             CHEST:
-              nullable: true
-              allOf:
-                -
-                  $ref: '#/components/schemas/InventoryLine'
-            HANDS:
               nullable: true
               allOf:
                 -

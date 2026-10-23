@@ -3,8 +3,8 @@ tags:
   - ios
   - inventory
 ---
-# Compte dédié préchargé côté backend : chaussures ×2 équipées, gantelets ×1, coffre ×1.
-# MAESTRO_SALE_EMAIL choisit ce compte; le harness garde son reset ciblé habituel.
+# Compte dédié préchargé côté backend : t-shirt ardoise ×2 équipé, gants de boxe ×1 dans le sac, coffre ×1.
+# MAESTRO_SALE_EMAIL choisit ce compte; préparation via les API normales, sans reset de base.
 - launchApp
 - runFlow:
     when:
@@ -27,38 +27,38 @@ tags:
 - takeScreenshot: sale-inventory-before
 - scrollUntilVisible:
     element:
-      text: "Vendre — Gantelets de fer"
+      text: "Vendre — Gants de boxe dorés"
     direction: DOWN
-- tapOn: "Vendre — Gantelets de fer"
+- tapOn: "Vendre — Gants de boxe dorés"
 - assertVisible: "Vendre un exemplaire ?"
-- assertVisible: ".*Gantelets de fer.*15 pièces.*"
+- assertVisible: ".*Gants de boxe dorés.*10 pièces.*"
 - takeScreenshot: sale-confirmation
 - tapOn: "Annuler"
-- assertVisible: "Vendre — Gantelets de fer"
-- tapOn: "Vendre — Gantelets de fer"
+- assertVisible: "Vendre — Gants de boxe dorés"
+- tapOn: "Vendre — Gants de boxe dorés"
 - tapOn: "Confirmer la vente"
 - extendedWaitUntil:
-    visible: ".*Exemplaire vendu.*15 pièces.*"
+    visible: ".*Exemplaire vendu.*10 pièces.*"
     timeout: 15000
-- assertNotVisible: "Vendre — Gantelets de fer"
+- assertNotVisible: "Vendre — Gants de boxe dorés"
 - takeScreenshot: sale-last-unit
 - scrollUntilVisible:
     element:
-      text: ".*Pieds.*"
+      text: ".*Torse.*"
     direction: UP
-- tapOn: ".*Pieds.*"
+- tapOn: ".*Torse.*"
 - scrollUntilVisible:
     element:
-      text: "Vendre — Baskets usées"
+      text: "Vendre — T-shirt sportif — Ardoise"
     direction: DOWN
-- tapOn: "Vendre — Baskets usées"
+- tapOn: "Vendre — T-shirt sportif — Ardoise"
 - tapOn: "Confirmer la vente"
 - extendedWaitUntil:
     visible: "Retire cet objet avant de vendre son dernier exemplaire."
     timeout: 15000
 - assertVisible: "ÉQUIPÉ"
 - takeScreenshot: sale-equipped-duplicate
-- assertNotVisible: "Vendre — Baskets usées"
+- assertNotVisible: "Vendre — T-shirt sportif — Ardoise"
 - scrollUntilVisible:
     element:
       text: "Ouvrir"

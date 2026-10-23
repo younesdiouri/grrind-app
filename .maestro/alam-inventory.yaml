@@ -7,24 +7,7 @@ appId: app.grrind.dev
     visible:
       id: character-tab-equipment
     timeout: 30000
-# La silhouette n'affiche qu'un emplacement à la fois : chercher les gantelets sans avoir
-# choisi MAINS revient à les chercher dans le panneau du TORSE, et le flow échoue en disant
-# que l'objet n'existe pas alors qu'il est porté.
-- tapOn:
-    id: equipment-slot-HANDS
-- scrollUntilVisible:
-    element: "Gantelets de fer"
-    direction: DOWN
-    timeout: 20000
-- runFlow:
-    when:
-      visible: "Équiper — Gantelets de fer"
-    commands:
-      - tapOn: "Équiper — Gantelets de fer"
-- extendedWaitUntil:
-    visible: ÉQUIPÉ
-    timeout: 30000
-- takeScreenshot: alam-crafted-equipped
+# La recette des anciens gantelets a été retirée avec le catalogue sans modèle 3D.
 - scrollUntilVisible:
     element:
       id: character-tab-bag

@@ -775,7 +775,7 @@ export const battleResultLabel: Record<components['schemas']['BattleSummary']['r
  */
 export type ItemRarity = components['schemas']['DroppedItem']['rarity'];
 
-/** Les sept emplacements où un équipement se porte. Les coffres n'en ont pas. */
+/** Les six emplacements où un équipement se porte. Les coffres n'en ont pas. */
 export type EquipmentSlot = NonNullable<components['schemas']['DroppedItem']['slot']>;
 
 /** Les treize effets qu'un modificateur peut porter, mêmes garde-fous que `ItemRarity`. */
@@ -814,7 +814,6 @@ export const rarityLabel: Record<ItemRarity, string> = {
 export const equipmentSlotLabel: Record<EquipmentSlot, string> = {
   HEAD: 'Tête',
   CHEST: 'Torse',
-  HANDS: 'Mains',
   LEGS: 'Jambes',
   FEET: 'Pieds',
   ACCESSORY: 'Accessoire',

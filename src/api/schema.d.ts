@@ -1692,7 +1692,7 @@ export interface components {
              * @description `null` pour un coffre (#230) — il ne se porte pas, il s'ouvre.
              * @enum {string|null}
              */
-            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
+            slot: "HEAD" | "CHEST" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
             /** @description Dans l'ordre du catalogue. */
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
@@ -1745,7 +1745,7 @@ export interface components {
              * @description `null` pour un coffre (#230) — il ne se porte pas, il s'ouvre.
              * @enum {string|null}
              */
-            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
+            slot: "HEAD" | "CHEST" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
             /** @description Dans l'ordre du catalogue. */
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
@@ -1760,7 +1760,6 @@ export interface components {
             equipment: {
                 HEAD: components["schemas"]["PublicInventoryLine"] | null;
                 CHEST: components["schemas"]["PublicInventoryLine"] | null;
-                HANDS: components["schemas"]["PublicInventoryLine"] | null;
                 LEGS: components["schemas"]["PublicInventoryLine"] | null;
                 FEET: components["schemas"]["PublicInventoryLine"] | null;
                 ACCESSORY: components["schemas"]["PublicInventoryLine"] | null;
@@ -1809,7 +1808,6 @@ export interface components {
             equipment: {
                 HEAD: components["schemas"]["InventoryLine"] | null;
                 CHEST: components["schemas"]["InventoryLine"] | null;
-                HANDS: components["schemas"]["InventoryLine"] | null;
                 LEGS: components["schemas"]["InventoryLine"] | null;
                 FEET: components["schemas"]["InventoryLine"] | null;
                 ACCESSORY: components["schemas"]["InventoryLine"] | null;

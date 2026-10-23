@@ -3,7 +3,7 @@ tags:
   - ios
   - inventory
 ---
-# Deux comptes jetables de la même guilde, équipés de gantelets, chaussures et jambes.
+# Deux comptes jetables de la même guilde, équipés de gants de boxe, t-shirt et jambes Unity.
 # Les identifiants MAESTRO_INVENTORY_EMAIL/PASSWORD restent hors Git.
 - launchApp
 - runFlow:
@@ -38,22 +38,22 @@ tags:
 - takeScreenshot: inventory-equipped-board
 - tapOn:
     id: "character-tab-statistics"
-- assertVisible: '.*Force.*\+350 équipement.*'
+- assertVisible: '.*Force.*\+0 équipement.*'
 - takeScreenshot: inventory-equipped-statistics
 - tapOn:
     id: "character-tab-equipment"
 - scrollUntilVisible:
     element:
-      text: ".*Mains.*"
+      text: ".*Arme.*"
     direction: DOWN
-- tapOn: ".*Mains.*"
+- tapOn: ".*Arme.*"
 - scrollUntilVisible:
     element:
       text: "Retirer"
     direction: DOWN
 - tapOn: "Retirer"
 - extendedWaitUntil:
-    visible: ".*Équiper — Gantelets de fer.*"
+    visible: ".*Équiper — Gants de boxe dorés.*"
     timeout: 15000
 - scrollUntilVisible:
     element:
@@ -67,9 +67,9 @@ tags:
     id: "character-tab-equipment"
 - scrollUntilVisible:
     element:
-      text: ".*Équiper — Gantelets de fer.*"
+      text: ".*Équiper — Gants de boxe dorés.*"
     direction: DOWN
-- tapOn: ".*Équiper — Gantelets de fer.*"
+- tapOn: ".*Équiper — Gants de boxe dorés.*"
 - extendedWaitUntil:
     visible: "ÉQUIPÉ"
     timeout: 15000
@@ -80,7 +80,7 @@ tags:
     direction: UP
 - tapOn:
     id: "character-tab-statistics"
-- assertVisible: '.*Force.*\+350 équipement.*'
+- assertVisible: '.*Force.*\+0 équipement.*'
 - takeScreenshot: inventory-reequipped-statistics
 - tapOn:
     id: "tab-guilde"
@@ -124,7 +124,7 @@ tags:
     id: "character-tab-equipment"
 - scrollUntilVisible:
     element:
-      text: "Gantelets de fer"
+      text: "Gants de boxe dorés"
     direction: DOWN
 - takeScreenshot: player-equipment-readonly
 - assertNotVisible: "Retirer"
@@ -137,7 +137,7 @@ tags:
     id: "character-tab-bag"
 - scrollUntilVisible:
     element:
-      text: "Gantelets de fer"
+      text: "Gants de boxe dorés"
     direction: DOWN
 - takeScreenshot: player-bag-readonly
 - assertNotVisible: "Valeur"

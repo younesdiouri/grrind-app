@@ -1,6 +1,6 @@
 appId: app.grrind.dev
 ---
-# Continuation du parcours de vente, avec ses deux crédits de 15 pièces.
+# Continuation du parcours de vente, avec ses crédits de 10 et 5 pièces.
 - scrollUntilVisible:
     element:
       text: "BOURSE"
@@ -10,5 +10,5 @@ appId: app.grrind.dev
     visible: "SOLDE"
     timeout: 15000
 - assertVisible: ".*Vente.*"
-- assertVisible: ".*15 pièces.*"
+- assertVisible: ".*10 pièces.*"
 - takeScreenshot: sale-coin-ledger

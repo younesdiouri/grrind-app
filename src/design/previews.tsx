@@ -128,14 +128,14 @@ function droppedItem(
   overrides: Partial<components['schemas']['DroppedItem']>,
 ): components['schemas']['DroppedItem'] {
   return {
-    key: 'WORN_RUNNING_SHOES',
+    key: 'LE_POIDS_LOURD',
     kind: 'EQUIPMENT',
-    name: 'Baskets usées',
+    name: 'Le Poids Lourd',
     rarity: 'COMMON',
-    slot: 'FEET',
+    slot: 'WEAPON',
     modifiers: [],
-    priceCoins: 30,
-    imageUrl: 'https://api.grrind.app/game-images/items/worn-running-shoes.png',
+    priceCoins: 25,
+    imageUrl: '',
     ...overrides,
   };
 }
@@ -995,7 +995,7 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         {/* Le sac seulement : un drop n'a jamais de quantité à porter. */}
         <Specimen label="Dans le sac, une quantité à deux chiffres">
-          <ItemCard item={droppedItem({ rarity: 'RARE', slot: 'HANDS' })} quantity={12} />
+          <ItemCard item={droppedItem({ rarity: 'RARE', slot: 'WEAPON' })} quantity={12} />
         </Specimen>
         <Specimen label="Équipé">
           <ItemCard item={droppedItem({ rarity: 'EPIC', slot: 'WEAPON' })} equipped />

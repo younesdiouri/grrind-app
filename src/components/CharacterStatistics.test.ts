@@ -36,7 +36,7 @@ test('un objet public ne montre aucun prix et les emplacements publics ne propos
   assert.match(markup, /ÉQUIPÉ/);
   assert.doesNotMatch(markup, /Valeur|Vendre|Retirer|Équiper/);
   const board = renderToStaticMarkup(createElement(EquipmentBoard, { equipment: {
-    HEAD: null, CHEST: null, HANDS: null, LEGS: null, FEET: null, ACCESSORY: null, WEAPON: null,
+    HEAD: null, CHEST: null, LEGS: null, FEET: null, ACCESSORY: null, WEAPON: null,
   } }));
   assert.doesNotMatch(board, /role="button"|Afficher les objets compatibles/);
   assert.match(board, /Tête, vide/);

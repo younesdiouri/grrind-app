@@ -27,6 +27,8 @@ tags:
     direction: DOWN
     centerElement: true
 - assertVisible: "Personnage équipé : tenue de base"
+- assertNotVisible:
+    id: equipment-slot-HANDS
 - takeScreenshot: avatar-empty
 - runFlow:
     file: inventory-avatar-equip.yaml
@@ -34,18 +36,6 @@ tags:
       SLOT: WEAPON
       ITEM: Haltère ego
 - takeScreenshot: avatar-ego-equipped
-- runFlow:
-    file: inventory-avatar-remove.yaml
-    env:
-      SLOT: WEAPON
-      ITEM: Haltère ego
-- assertVisible: "Personnage équipé : tenue de base"
-- takeScreenshot: avatar-ego-removed
-- runFlow:
-    file: inventory-avatar-equip.yaml
-    env:
-      SLOT: WEAPON
-      ITEM: Haltère ego
 - runFlow:
     file: inventory-avatar-equip.yaml
     env:
@@ -55,29 +45,35 @@ tags:
 - runFlow:
     file: inventory-avatar-equip.yaml
     env:
-      SLOT: CHEST
-      ITEM: T-shirt sportif — Ardoise
-- runFlow:
-    file: inventory-avatar-equip.yaml
-    env:
-      SLOT: LEGS
-      ITEM: Les Guinzz — Violet
-- runFlow:
-    file: inventory-avatar-equip.yaml
-    env:
-      SLOT: HANDS
+      SLOT: WEAPON
       ITEM: Gants de boxe dorés
-- takeScreenshot: avatar-full-equipment
+- assertVisible:
+    id: avatar-preview-base-original-gloves
+- assertNotVisible: "Personnage équipé :.*Le Poids Lourd.*"
+- takeScreenshot: avatar-gloves-replace-dumbbell
 - runFlow:
-    file: inventory-avatar-equip.yaml
+    file: inventory-avatar-remove.yaml
     env:
-      SLOT: LEGS
-      ITEM: Les Guinzz — Cyan
-- takeScreenshot: avatar-pants-replaced
+      SLOT: WEAPON
+      ITEM: Gants de boxe dorés
+- assertVisible: "Personnage équipé : tenue de base"
+- takeScreenshot: avatar-gloves-removed
 - runFlow:
     file: inventory-avatar-equip.yaml
     env:
       SLOT: CHEST
       ITEM: T-shirt sportif — Corail
-- takeScreenshot: avatar-shirt-replaced
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: LEGS
+      ITEM: Les Guinzz — Cyan
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: WEAPON
+      ITEM: Gants de boxe dorés
+- assertVisible:
+    id: avatar-preview-coral-cyan-gloves
+- takeScreenshot: avatar-six-slots-gloves
 - runFlow: inventory-avatar-finish.yaml

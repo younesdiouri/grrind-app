@@ -9,18 +9,13 @@ export type EquippableInventoryLine = InventoryLine & {
 };
 
 /**
- * L'ordre des sept emplacements, **celui du contrat** — de la tête aux pieds, puis ce qui se
- * porte à la main.
+ * L'ordre des emplacements, celui du contrat. Les gants occupent WEAPON comme les haltères.
  *
- * Même idiome qu'`ATTRIBUTE_ORDER` : un `Record` dont le compilateur exige les sept clés, puis
- * ses clés. Un tableau littéral se contenterait de six sans que rien ne le dise ; ici, oublier
- * un emplacement casse le build, et c'est le seul garde-fou qui survit à un huitième
- * emplacement ouvert côté back.
+ * Le Record exige toutes les clés du contrat : oublier un emplacement casse le build.
  */
 const EQUIPMENT_SLOT_ORDER_KEYS: Record<EquipmentSlot, true> = {
   HEAD: true,
   CHEST: true,
-  HANDS: true,
   LEGS: true,
   FEET: true,
   ACCESSORY: true,
@@ -35,7 +30,7 @@ export type EquippedSlot = { slot: EquipmentSlot; line: InventoryLine | null };
 /**
  * La doublure, emplacement par emplacement, **dans l'ordre du contrat**.
  *
- * `equipment` porte toujours les sept clés, `null` pour les vides : il n'y a donc rien à
+ * `equipment` porte toujours toutes les clés, `null` pour les vides : il n'y a donc rien à
  * compléter ici, seulement à mettre en ordre. Un emplacement libre est un emplacement à
  * dessiner — c'est même la moitié de l'information de cet écran, celle qui dit ce qu'on
  * pourrait porter et qu'on ne porte pas.
