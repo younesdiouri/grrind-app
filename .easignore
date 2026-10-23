@@ -1,0 +1,63 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+artifacts/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+example
+
+# generated native folders
+/ios
+/android
+
+.idea/
+
+# Les colorsets du widget sont dérivés des `colors` d'`expo-target.config.js` et réécrits à
+# chaque `expo prebuild` — même raison que `/ios` plus haut : un artefact généré qui
+# traîne en versionné finit par décrire une couleur qui n'existe plus.
+/targets/*/Assets.xcassets
+
+# Local Blender working scenes; source GLB, scripts and Unity exports are versioned.
+/spikes/art-source/**/*.blend*
+
+# Unity sources/editor caches stay local; EAS consumes the exported framework.
+/spikes/
+/previews/
+/docs/
+/tasks/
+/modules/grrind-unity/ios/Frameworks/*
+!/modules/grrind-unity/ios/Frameworks/UnityFramework.xcframework
+!/modules/grrind-unity/ios/Frameworks/UnityFramework.xcframework/**

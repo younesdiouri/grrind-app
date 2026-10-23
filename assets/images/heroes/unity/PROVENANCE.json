@@ -1,0 +1,17 @@
+{
+  "asset": "athlete.png",
+  "createdAt": "2026-10-23",
+  "tool": "Unity 6000.3.26f1, official Pipeline capture_game_view",
+  "scene": "spikes/Unity3D/Assets/Spike/Arena.unity",
+  "prefab": "spikes/Unity3D/Assets/Resources/QuaterniusShowcase.prefab",
+  "configuration": "QUATERNIUS_AVATAR in src/features/combat/unityFrame.ts; inspection=true, view=0, azimuth=25, idle phase=0",
+  "capture": { "source": "camera", "width": 512, "height": 640 },
+  "measurement": { "coloredAthleteBounds": [145, 93, 382, 601], "heightOccupancy": 0.794 },
+  "sources": [
+    "spikes/Unity3D/Assets/Characters/QuaterniusPOC/PROVENANCE.json",
+    "spikes/Unity3D/Assets/Characters/Personalization/PROVENANCE.json",
+    "spikes/Unity3D/Assets/Characters/GoldenBoxingGloves/PROVENANCE.json",
+    "spikes/Unity3D/Assets/Characters/LesGuinzz/PROVENANCE.json"
+  ],
+  "modifications": "No mesh, material or image editing. Capture of the existing combat avatar."
+}

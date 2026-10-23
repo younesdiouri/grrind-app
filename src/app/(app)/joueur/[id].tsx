@@ -58,7 +58,7 @@ export default function JoueurScreen() {
           <Challenge id={id} name={player.data.displayName} />
 
           <PlayerAttributes player={player.data} />
-          <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics} appearance={player.data.appearance} />
+          <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics} />
 
           <Text style={styles.body}>
             Membre GRRIND depuis le {formatCalendarDate(player.data.registeredAt)}.

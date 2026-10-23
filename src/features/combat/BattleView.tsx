@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   type SharedValue,
@@ -22,6 +22,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { CoinAmount } from '@/components/CoinAmount';
+import { Button } from '@/components/Button';
 import { hpBarFill, HpBar } from '@/components/HpBar';
 import { ItemCard } from '@/components/ItemCard';
 import {
@@ -43,14 +44,10 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 
 import { hasBattleReward } from './reward.ts';
 import { IMPACT } from './camera.ts';
-import { DEFAULT_HERO, DEFAULT_OPPONENT, FighterSprite, type FighterArtwork } from './FighterSprite';
+import { FighterSprite, type FighterArtwork } from './FighterSprite';
 import { Stage } from './Stage';
-import { enemyArtworkOf } from './enemyPresentation';
+import { combatEnemy } from './combatCharacters';
 import { BUNDLED_MOBS } from './bundledMobs';
-import type { EquipmentArtwork } from './equipmentArtwork';
-import { equippedArtwork } from './equippedArtwork';
-import { appearanceArtwork } from './appearances';
-import { useAppearances } from './useAppearances';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
 import { UnityCombatStage, unityCombatAvailable } from './UnityCombatStage';
 import { QUATERNIUS_AVATAR, type UnityAvatar, type UnityViewport } from './unityFrame';
@@ -99,12 +96,9 @@ import {
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export function BattleView({ battle, enemyArt, heroArt, heroEquipment, opponentEquipment, ...props }: {
+export function BattleView({ battle, enemyArt, ...props }: {
   battle: Battle;
   enemyArt?: FighterArtwork;
-  heroArt?: FighterArtwork;
-  heroEquipment?: EquipmentArtwork[];
-  opponentEquipment?: EquipmentArtwork[];
   unityPlayer?: UnityAvatar;
   unityEnemy?: UnityAvatar;
   demo?: boolean;
@@ -118,33 +112,16 @@ export function BattleView({ battle, enemyArt, heroArt, heroEquipment, opponentE
     void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     return () => { void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP); };
   }, []));
-  const catalog = useAppearances();
-  const playerEquipment = heroEquipment ?? equippedArtwork(catalog.data?.equipment ?? [], battle.player, 'back');
-  const enemyEquipment = opponentEquipment ?? equippedArtwork(catalog.data?.equipment ?? [], battle.enemy, 'front');
-  const { artwork, hero } = useMemo(() => {
-    const models = catalog.data?.appearances ?? [];
-    const player = appearanceArtwork(models, battle.player.appearance, 'back', 'Toi');
-    const opponent = appearanceArtwork(models, battle.enemy.appearance, 'front', battle.enemy.name);
-    return {
-      artwork: enemyArt ?? (battle.enemy.appearance
-        ? opponent ?? { ...DEFAULT_OPPONENT, name: battle.enemy.name }
-        : enemyArtworkOf(battle.enemy, BUNDLED_MOBS)),
-      hero: heroArt ?? player ?? DEFAULT_HERO,
-    };
-  }, [catalog.data, battle, enemyArt, heroArt]);
-  if (!props.demo && catalog.isLoading) return <View style={styles.screen}><ActivityIndicator color={color.accent} /></View>;
-  return <PresentedBattle key={battle.id} {...props} battle={battle} artwork={artwork} hero={hero}
-    heroEquipment={playerEquipment} opponentEquipment={enemyEquipment}
+  const enemy = combatEnemy(battle.enemy, BUNDLED_MOBS);
+  return <PresentedBattle key={battle.id} {...props} battle={battle}
+    unityEnemy={props.unityEnemy ?? enemy.avatar} artwork={enemy.avatar.visible ? undefined : enemyArt ?? enemy.artwork}
     introduction={enemyArt?.introduction ?? battle.enemy.introduction ?? undefined} />;
 }
 
 function PresentedBattle({ artwork, ...props }: {
   battle: Battle;
   artwork?: FighterArtwork;
-  hero: FighterArtwork;
   introduction?: string;
-  heroEquipment?: EquipmentArtwork[];
-  opponentEquipment?: EquipmentArtwork[];
   unityPlayer?: UnityAvatar;
   unityEnemy?: UnityAvatar;
   demo?: boolean;
@@ -159,12 +136,9 @@ function PresentedBattle({ artwork, ...props }: {
 }
 
 function BattleScene({
-  heroEquipment,
-  opponentEquipment,
   battle,
   onDismiss,
   enemyArt,
-  hero,
   introduction,
   onArtworkError,
   demo = false,
@@ -174,9 +148,6 @@ function BattleScene({
 }: {
   battle: Battle;
   enemyArt?: FighterArtwork;
-  hero: FighterArtwork;
-  heroEquipment?: EquipmentArtwork[];
-  opponentEquipment?: EquipmentArtwork[];
   unityPlayer?: UnityAvatar;
   unityEnemy?: UnityAvatar;
   introduction?: string;
@@ -189,19 +160,19 @@ function BattleScene({
    */
   onDismiss?: () => void;
 }) {
-  const timeline = useMemo(() => buildBattleTimeline(battle, { illustrated: !!enemyArt }), [battle, enemyArt]);
+  const nativeEnemy = unityEnemy?.visible ?? Boolean(battle.enemy.appearance);
+  const illustrated = !!enemyArt || nativeEnemy;
+  const timeline = useMemo(() => buildBattleTimeline(battle, { illustrated }), [battle, illustrated]);
   const enemyName = enemyArt?.name ?? battle.enemy.name;
   const hasIntroduction = !!introduction?.trim();
-  const hasEntrance = !!enemyArt || hasIntroduction;
+  const hasEntrance = illustrated || hasIntroduction;
   const [entrance, setEntrance] = useState<EntrancePhase>(hasEntrance ? 'loading' : 'combat');
   const started = useRef(false);
   const loaded = useRef(new Set<string>());
-  const [heroFailed, setHeroFailed] = useState(false);
   const [unityFailed, setUnityFailed] = useState(false);
   const useUnity = unityCombatAvailable && !unityFailed;
   const window = useWindowDimensions();
   const [unityViewport, setUnityViewport] = useState<UnityViewport>({ x: 0, y: 0, width: 1, height: 1 });
-  const nativeEnemy = useUnity && (unityEnemy?.visible ?? !!battle.enemy.appearance);
   const clock = useSharedValue(0);
   const skipping = useSharedValue(false);
   const reducedMotion = useReducedMotion();
@@ -302,17 +273,16 @@ function BattleScene({
 
   /** Toucher démarre le dialogue ou passe au bilan ; son bouton sort sans gêner le défilement. */
   const touch = () => {
+    if (done) {
+      onDismiss?.();
+      return;
+    }
     if (entrance === 'loading' || entrance === 'entering') return;
     if (entrance === 'dialogue') {
       setEntrance('combat');
       play();
       return;
     }
-    if (done) {
-      onDismiss?.();
-      return;
-    }
-
     skip();
   };
 
@@ -420,23 +390,16 @@ function BattleScene({
             combos={{ PLAYER: timeline.player.comboFlash, ENEMY: timeline.enemy.comboFlash }}>
             {enemyArt && (
               <Animated.View style={[styles.spriteStage, actionsStyle, spriteEntranceStyle]}>
-                {!nativeEnemy && <FighterSprite artwork={enemyArt} clock={clock} beats={timeline.beats} lateral
-                  equipment={opponentEquipment}
+                <FighterSprite artwork={enemyArt} clock={clock} beats={timeline.beats} lateral
                   signals={{ critical: timeline.player.criticalFlash, dodge: timeline.enemy.dodgeFlash,
                     combo: timeline.enemy.comboFlash, replay: timeline.enemy.replayFlash }}
-                  pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('enemy')} onError={onArtworkError} />}
+                  pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('enemy')} onError={onArtworkError} />
                 <DamagePop clock={clock} ramps={timeline.enemy} tone={styles.dealt} />
                 <FighterEffects clock={clock} ramps={timeline.enemy} />
               </Animated.View>
             )}
             {(
               <Animated.View style={[styles.heroStage, heroStyle]} pointerEvents="none">
-                {!useUnity && <FighterSprite key={heroFailed ? 'fallback' : 'hero'} artwork={heroFailed ? DEFAULT_HERO : hero} side="PLAYER" clock={clock} beats={timeline.beats} lateral
-                  equipment={heroEquipment}
-                  signals={{ critical: timeline.enemy.criticalFlash, dodge: timeline.player.dodgeFlash,
-                    combo: timeline.player.comboFlash, replay: timeline.player.replayFlash }}
-                  pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('player')}
-                  onError={() => { if (heroFailed) fighterReady('player'); else setHeroFailed(true); }} />}
                 <DamagePop clock={clock} ramps={timeline.player} tone={styles.taken} />
                 <FighterEffects clock={clock} ramps={timeline.player} />
               </Animated.View>
@@ -454,7 +417,7 @@ function BattleScene({
                 <View style={styles.dialogueTail} />
               </Animated.View>
             )}
-            {entrance === 'loading' && <Text style={styles.dialogueHint}>Préparation du combat…</Text>}
+            {useUnity && entrance === 'loading' && <Text style={styles.dialogueHint}>Préparation du combat…</Text>}
 
 
             <Animated.View style={[styles.layer, recapStyle]} pointerEvents={done ? 'auto' : 'none'}>
@@ -472,6 +435,10 @@ function BattleScene({
       {!done && <Pressable style={styles.touchSurface} onPress={touch} testID={`battle-${entrance}`}
         accessibilityRole="button" accessibilityLabel={entrance === 'dialogue'
           ? `${enemyName}. ${introduction}. Toucher pour combattre` : 'Passer au bilan'} />}
+      {!useUnity && !done && <View style={[StyleSheet.absoluteFill, styles.rendererNotice]} testID="battle-renderer-unavailable">
+        <Text style={styles.rendererNoticeText}>Le rendu 3D est indisponible.</Text>
+        <Button label="Voir le bilan" onPress={skip} />
+      </View>}
       {entrance === 'combat' && !done && demoTime === undefined && (
         <View style={styles.controls}>
           <Pressable onPress={toggleSpeed} style={[styles.control, speed === 2 && styles.controlOn]} hitSlop={space.sm}
@@ -726,6 +693,9 @@ const styles = StyleSheet.create({
     backgroundColor: color.background,
   },
   safe: { flex: 1 },
+  rendererNotice: { zIndex: ambient.contentLayer + 1,
+    justifyContent: 'center', alignItems: 'center', gap: space.md, backgroundColor: color.background },
+  rendererNoticeText: { ...type.body, color: color.textMuted },
   eventFrame: { flex: 1, zIndex: ambient.contentLayer },
   eventContent: {
     flex: 1,

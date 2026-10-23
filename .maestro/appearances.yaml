@@ -1,262 +1,124 @@
 appId: app.grrind.dev
-tags:
-  - ios
-  - combat
 ---
-# Catalogue serveur, PATCH /me, combat et relecture avec retour au portrait.
+# Standalone presentation flow: E2E_OFFLINE=1. An existing QA session also checks previews.
 - launchApp
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: "Ouvrir dans.*"
+      visible: Continue
     commands:
-      - tapOn: "Ouvrir"
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
 - runFlow:
     when:
-      visible: "Continue"
+      visible: Close
     commands:
-      - tapOn: "Continue"
-      - extendedWaitUntil:
-          visible: "Close"
-          timeout: 5000
-      - tapOn: "Close"
-- runFlow:
-    file: login.yaml
-    env:
-      EMAIL: ${EMPTY_EMAIL}
+      - tapOn: Close
+- openLink: grrindapp-dev://reglages
 - extendedWaitUntil:
-    visible: "NIVEAU"
+    visible: "Ton personnage|Se connecter"
     timeout: 30000
-- tapOn:
-    id: "tab-reglages"
-- scrollUntilVisible:
-    element:
-      id: hero-STRENGTH_V3
-    direction: DOWN
-- tapOn:
-    id: hero-STRENGTH_V3
-- scrollUntilVisible:
-    element: Apparence enregistrée
-    direction: DOWN
-    timeout: 15000
-- scrollUntilVisible:
-    element:
-      id: hero-RUNNER_V3
-    direction: UP
-- tapOn:
-    id: hero-RUNNER_V3
-- scrollUntilVisible:
-    element: Apparence enregistrée
-    direction: DOWN
-    timeout: 15000
-- scrollUntilVisible:
-    element:
-      id: hero-CLIMBER_V3
-    direction: UP
-- tapOn:
-    id: hero-CLIMBER_V3
-- scrollUntilVisible:
-    element: Apparence enregistrée
-    direction: DOWN
-    timeout: 15000
-- scrollUntilVisible:
-    element:
-      id: hero-SWIMMER_V3
-    direction: UP
-- tapOn:
-    id: hero-SWIMMER_V3
-- scrollUntilVisible:
-    element: Apparence enregistrée
-    direction: DOWN
-    timeout: 15000
-- takeScreenshot: retro-01-avatar-picker
-- openLink: grrindapp-dev://avatars
-- extendedWaitUntil:
-    visible: Avatars sportifs
-    timeout: 15000
-- scrollUntilVisible:
-    element:
-      id: art-item-HALTER_EGO
-    direction: DOWN
-- tapOn:
-    id: art-item-HALTER_EGO
-- scrollUntilVisible:
-    element:
-      id: art-item-PURSUIT_GOGGLES
-    direction: DOWN
-- tapOn:
-    id: art-item-PURSUIT_GOGGLES
-- scrollUntilVisible:
-    element:
-      id: art-item-TRAVELERS_CLOAK
-    direction: DOWN
-- tapOn:
-    id: art-item-TRAVELERS_CLOAK
-- scrollUntilVisible:
-    element:
-      id: art-item-ACADEMIC_FLIPPERS
-    direction: DOWN
-- tapOn:
-    id: art-item-ACADEMIC_FLIPPERS
-- scrollUntilVisible:
-    element:
-      id: art-avatar-STRENGTH_V3
-    direction: UP
-- tapOn:
-    id: art-avatar-STRENGTH_V3
-- takeScreenshot: retro-STRENGTH_V3-equipped
-- scrollUntilVisible:
-    element:
-      id: art-avatar-RUNNER_V3
-    direction: UP
-- tapOn:
-    id: art-avatar-RUNNER_V3
-- takeScreenshot: retro-RUNNER_V3-equipped
-- scrollUntilVisible:
-    element:
-      id: art-avatar-CLIMBER_V3
-    direction: UP
-- tapOn:
-    id: art-avatar-CLIMBER_V3
-- takeScreenshot: retro-CLIMBER_V3-equipped
-- scrollUntilVisible:
-    element:
-      id: art-avatar-SWIMMER_V3
-    direction: UP
-- tapOn:
-    id: art-avatar-SWIMMER_V3
-- takeScreenshot: retro-SWIMMER_V3-equipped
-- scrollUntilVisible:
-    element:
-      text: Vers la droite
-    direction: DOWN
-- tapOn:
-    text: Vers la droite
-- scrollUntilVisible:
-    element:
-      id: art-pose-idle
-    direction: DOWN
-- tapOn:
-    id: art-pose-idle
-- takeScreenshot: retro-back-idle
-- scrollUntilVisible:
-    element:
-      id: art-pose-attack
-    direction: DOWN
-- tapOn:
-    id: art-pose-attack
-- takeScreenshot: retro-back-attack
-- scrollUntilVisible:
-    element:
-      id: art-pose-hit
-    direction: DOWN
-- tapOn:
-    id: art-pose-hit
-- takeScreenshot: retro-back-hit
-- scrollUntilVisible:
-    element:
-      id: art-pose-critical
-    direction: DOWN
-- tapOn:
-    id: art-pose-critical
-- takeScreenshot: retro-back-critical
-- scrollUntilVisible:
-    element:
-      id: art-pose-dodge
-    direction: DOWN
-- tapOn:
-    id: art-pose-dodge
-- takeScreenshot: retro-back-dodge
-- scrollUntilVisible:
-    element:
-      id: art-pose-combo
-    direction: DOWN
-- tapOn:
-    id: art-pose-combo
-- takeScreenshot: retro-back-combo
-- scrollUntilVisible:
-    element:
-      id: art-pose-replay
-    direction: DOWN
-- tapOn:
-    id: art-pose-replay
-- takeScreenshot: retro-back-replay
-- scrollUntilVisible:
-    element:
-      text: Vers la gauche
-    direction: DOWN
-- tapOn:
-    text: Vers la gauche
-- scrollUntilVisible:
-    element:
-      id: art-pose-idle
-    direction: DOWN
-- tapOn:
-    id: art-pose-idle
-- takeScreenshot: retro-front-idle
-- scrollUntilVisible:
-    element:
-      id: art-pose-attack
-    direction: DOWN
-- tapOn:
-    id: art-pose-attack
-- takeScreenshot: retro-front-attack
-- scrollUntilVisible:
-    element:
-      id: art-pose-hit
-    direction: DOWN
-- tapOn:
-    id: art-pose-hit
-- takeScreenshot: retro-front-hit
-- scrollUntilVisible:
-    element:
-      id: art-pose-critical
-    direction: DOWN
-- tapOn:
-    id: art-pose-critical
-- takeScreenshot: retro-front-critical
-- scrollUntilVisible:
-    element:
-      id: art-pose-dodge
-    direction: DOWN
-- tapOn:
-    id: art-pose-dodge
-- takeScreenshot: retro-front-dodge
-- scrollUntilVisible:
-    element:
-      id: art-pose-combo
-    direction: DOWN
-- tapOn:
-    id: art-pose-combo
-- takeScreenshot: retro-front-combo
-- scrollUntilVisible:
-    element:
-      id: art-pose-replay
-    direction: DOWN
-- tapOn:
-    id: art-pose-replay
-- takeScreenshot: retro-front-replay
-- scrollUntilVisible:
-    element: Jouer un combat de démonstration
-    direction: DOWN
-- tapOn: Jouer un combat de démonstration
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Ton personnage
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: combat-avatar-ready
+          direction: DOWN
+          timeout: 30000
+      - assertNotVisible:
+          id: hero-picker
+      - takeScreenshot: unity-settings-avatar
+      - tapOn:
+          id: tab-inventaire
+      - extendedWaitUntil:
+          visible:
+            id: combat-avatar-ready
+          timeout: 30000
+      - takeScreenshot: unity-inventory-avatar
+- openLink: grrindapp-dev://combat-demo?scenario=duel&at=3200
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: Ouvrir
 - extendedWaitUntil:
     visible:
       id: battle-combat
-    timeout: 20000
+    timeout: 30000
 - setOrientation: LANDSCAPE_LEFT
-- takeScreenshot: retro-equipped-battle
-- tapOn: Passer
-# Le scénario court peut finir pendant le tap : le toucher de fin revient déjà à l’atelier.
+- assertVisible:
+    id: unity-renderer-ready
+- assertNotVisible:
+    id: battle-renderer-unavailable
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+- takeScreenshot: unity-default-pvp
+- tapOn:
+    id: battle-combat
 - extendedWaitUntil:
-    visible: "Touche pour revenir|Avatars sportifs"
+    visible:
+      id: battle-exit
     timeout: 10000
+- takeScreenshot: unity-default-pvp-recap
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: al-kasal-idle
+    timeout: 15000
+- takeScreenshot: unity-return-portrait
+- setOrientation: PORTRAIT
+- openLink: grrindapp-dev://combat-demo?scenario=victoire&at=3200
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 30000
 - runFlow:
     when:
       visible:
-        id: battle-exit
+        id: battle-dialogue
     commands:
       - tapOn:
-          id: battle-exit
+          id: battle-dialogue
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: unity-renderer-ready
+- takeScreenshot: unity-hero-versus-mob
+- tapOn:
+    id: battle-combat
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 10000
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: al-kasal-idle
+    timeout: 15000
 - setOrientation: PORTRAIT
-- assertVisible: Avatars sportifs
+- openLink: grrindapp-dev://avatar-3d
+- extendedWaitUntil:
+    visible:
+      id: quaternius-ready
+    timeout: 30000
+- takeScreenshot: unity-workshop-after-combats
+- setOrientation: PORTRAIT
