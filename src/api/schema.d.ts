@@ -1673,7 +1673,7 @@ export interface components {
         DroppedItem: {
             /**
              * @description La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire.
-             * @example WORN_RUNNING_SHOES
+             * @example GOLDEN_BOXING_GLOVES
              */
             key: string;
             /**
@@ -1683,7 +1683,7 @@ export interface components {
             kind: "EQUIPMENT" | "CHEST" | "RESOURCE";
             /**
              * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
-             * @example Chaussures de course usées
+             * @example Gants de boxe dorés
              */
             name: string;
             /** @enum {string} */
@@ -1692,12 +1692,12 @@ export interface components {
              * @description `null` pour un coffre (#230) — il ne se porte pas, il s'ouvre.
              * @enum {string|null}
              */
-            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
+            slot: "HEAD" | "CHEST" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
             /** @description Dans l'ordre du catalogue. */
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
              * @description En pièces — de quoi afficher la valeur de l'objet sans recharger le catalogue.
-             * @example 30
+             * @example 20
              */
             priceCoins: number;
             /**
@@ -1726,7 +1726,7 @@ export interface components {
         PublicInventoryLine: {
             /**
              * @description La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire.
-             * @example WORN_RUNNING_SHOES
+             * @example GOLDEN_BOXING_GLOVES
              */
             key: string;
             /**
@@ -1736,7 +1736,7 @@ export interface components {
             kind: "EQUIPMENT" | "CHEST" | "RESOURCE";
             /**
              * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
-             * @example Chaussures de course usées
+             * @example Gants de boxe dorés
              */
             name: string;
             /** @enum {string} */
@@ -1745,7 +1745,7 @@ export interface components {
              * @description `null` pour un coffre (#230) — il ne se porte pas, il s'ouvre.
              * @enum {string|null}
              */
-            slot: "HEAD" | "CHEST" | "HANDS" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
+            slot: "HEAD" | "CHEST" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
             /** @description Dans l'ordre du catalogue. */
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
@@ -1760,7 +1760,6 @@ export interface components {
             equipment: {
                 HEAD: components["schemas"]["PublicInventoryLine"] | null;
                 CHEST: components["schemas"]["PublicInventoryLine"] | null;
-                HANDS: components["schemas"]["PublicInventoryLine"] | null;
                 LEGS: components["schemas"]["PublicInventoryLine"] | null;
                 FEET: components["schemas"]["PublicInventoryLine"] | null;
                 ACCESSORY: components["schemas"]["PublicInventoryLine"] | null;
@@ -1809,7 +1808,6 @@ export interface components {
             equipment: {
                 HEAD: components["schemas"]["InventoryLine"] | null;
                 CHEST: components["schemas"]["InventoryLine"] | null;
-                HANDS: components["schemas"]["InventoryLine"] | null;
                 LEGS: components["schemas"]["InventoryLine"] | null;
                 FEET: components["schemas"]["InventoryLine"] | null;
                 ACCESSORY: components["schemas"]["InventoryLine"] | null;

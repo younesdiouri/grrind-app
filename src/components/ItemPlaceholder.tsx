@@ -56,8 +56,6 @@ function SlotGlyph({
       return <Path {...common} d="M5 14a7 7 0 0 1 14 0v4H5v-4Zm3-1h8M12 6v7" />;
     case 'CHEST':
       return <Path {...common} d="m8 5 4 2 4-2 3 4-2 10H7L5 9l3-4Zm4 2v12" />;
-    case 'HANDS':
-      return <Path {...common} d="M8 11V6a1.2 1.2 0 0 1 2.4 0v4-5a1.2 1.2 0 0 1 2.4 0v5-4a1.2 1.2 0 0 1 2.4 0v5l1-1a1.5 1.5 0 0 1 2 2.2l-4.2 6H9.5L6 14a2 2 0 0 1 2-3Z" />;
     case 'LEGS':
       return <Path {...common} d="M7 4h10l1 7-3 9h-3l-1-8-1 8H7l-1-9 1-7Zm4 0v8" />;
     case 'FEET':

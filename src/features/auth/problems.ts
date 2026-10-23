@@ -290,7 +290,7 @@ function messageForProblem(problem: ProblemDetails): string {
 
     // ————— Le sac (younesdiouri/grrind-back#27 à #30) ————————————————————————————————
 
-    // Un bug de l'app, pas une situation de jeu : les sept emplacements viennent de la
+    // Un bug de l'app, pas une situation de jeu : les six emplacements viennent de la
     // réponse d'inventaire, le joueur n'en saisit aucun. Même registre qu'`enemy-key-unknown`.
     case 'https://grrind.app/problems/equipment-slot-unknown':
       return "L'app a envoyé une requête que le serveur ne comprend pas.";

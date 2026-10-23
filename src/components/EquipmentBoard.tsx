@@ -29,14 +29,13 @@ const placement: Record<EquipmentSlot, ViewStyle> = {
   HEAD: { top: 0, left: '50%', marginLeft: -38 },
   ACCESSORY: { top: 70, left: 0 },
   CHEST: { top: 70, right: 0 },
-  HANDS: { top: 170, left: 0 },
   WEAPON: { top: 170, right: 0 },
   LEGS: { top: 280, left: 0 },
   FEET: { bottom: 0, left: '50%', marginLeft: -38 },
 };
 
 /**
- * La doublure du combattant : le corps donne la carte, les sept cases donnent le geste.
+ * La doublure du combattant : le corps donne la carte, les cases donnent le geste.
  *
  * Avec un avatar équipé, les cases sont sous l’aperçu pour laisser sa prise et ses pieds visibles.
  * Le mannequin reste le repli des aperçus sans catalogue ; chaque case garde sa cible tactile.
@@ -121,7 +120,7 @@ const styles = StyleSheet.create({
   },
   avatar: { height: appearanceArt.overviewHeight },
   slotGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm, paddingBottom: space.sm },
-  gridSlot: { position: 'relative' },
+  gridSlot: { position: 'relative', width: '30%' },
   silhouette: {
     position: 'absolute',
     top: space.xl,

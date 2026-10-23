@@ -53,7 +53,7 @@ import { SHOP_QUERY_KEY } from '@/features/shop/useShop';
  *
  * ————— Deux listes, jamais dérivées l'une de l'autre ——————————————————————————————————
  *
- * `equipment` porte **toujours** les sept emplacements, `null` pour les vides : un emplacement
+ * `equipment` porte **toujours** les six emplacements, `null` pour les vides : un emplacement
  * libre est une information, pas un trou, et c'est même la moitié de ce que cet écran montre —
  * ce qu'on pourrait porter et qu'on ne porte pas.
  *
