@@ -46,3 +46,14 @@ Les captures du parcours sont inspectées à la taille iPhone.
 
 Sources : [Unity as a Library](https://docs.unity3d.com/6000.3/Documentation/Manual/UnityasaLibrary.html),
 [Expo Image SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/image/).
+
+## Preuve du 23 octobre 2026 — #245
+
+Types, lint, 571 tests Node et les 29 previews passent. Le flow complet passe en 7 min 29 s
+(`artifacts/e2e/2026-10-23_194901`), sans rebuild natif. Les captures à vide, bleu, doré,
+gants, retrait, vêtements, réglages, profil public et après relancement ont été inspectées.
+Une capture manuelle après ce passage montre l’avatar entier et ses six cases ensemble.
+Le même compte QA que #243 a été réutilisé ; aucun nouveau compte créé par le front.
+
+![Gants en Arme et six cases sous l’avatar](equipped-avatar/inventory.png)
+![Même équipement dans les réglages](equipped-avatar/settings.png)
