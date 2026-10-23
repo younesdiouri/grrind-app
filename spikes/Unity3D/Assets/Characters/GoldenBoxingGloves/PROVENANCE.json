@@ -1,0 +1,16 @@
+{
+  "source": "spikes/art-source/golden-boxing-gloves/source.glb",
+  "authoring": "ImageGen three-view reference, Meshy 7.1 multi-image mesh and texture, Blender scale and mirror",
+  "license": "Generated using the user Meshy account; subject to Meshy account terms, not Quaternius CC0",
+  "task_id": "01a16814-afe5-7372-8cc8-0d0acb93157b",
+  "credits": 35,
+  "triangles_per_glove": 1852,
+  "triangles_equipped_pair": 3704,
+  "fits": "Male/Female, left/right. Original Meshy topology and UVs preserved. Mirrored winding corrected without remeshing.",
+  "texture": "One shared 2048 px sRGB base color, URP Lit, restrained metallic response for golden leather.",
+  "covered_meshes": "Copies of Quaternius arms and sport skin with hidden hands removed. Native source meshes restored on unequip; Quaternius sources remain CC0.",
+  "build": "spikes/art-source/golden-boxing-gloves/build/01_fit_and_export.py",
+  "unity_assembly": "spikes/Unity3D/Assets/Editor/GoldenBoxingGloves.cs",
+  "manifest": "spikes/art-source/golden-boxing-gloves/asset-manifest.json",
+  "approval": "Technical candidate; final artistic acceptance belongs to the user."
+}

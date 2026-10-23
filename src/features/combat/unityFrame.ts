@@ -9,6 +9,7 @@ export type UnityAvatar = {
   skinTone?: 'light' | 'tan' | 'brown' | 'deep'; eyeColor?: 'brown' | 'blue' | 'green';
   hairColor?: 'brown' | 'black' | 'blond'; sportShirt?: boolean; shirtColor?: 'cyan' | 'coral';
   pantsColor?: 'original' | 'violet' | 'cyan' | 'coral';
+  boxingGloves?: boolean;
 };
 // Local V1 default; persistent appearance comes from the future server avatar contract.
 export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true };

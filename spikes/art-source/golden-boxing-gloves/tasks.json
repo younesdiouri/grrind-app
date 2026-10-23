@@ -1,0 +1,25 @@
+{
+  "task_id": "01a16814-afe5-7372-8cc8-0d0acb93157b",
+  "status": "SUCCEEDED",
+  "consumed_credits": 35,
+  "parameters": {
+    "file_paths": [
+      "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/golden-boxing-gloves/ref/front.png",
+      "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/golden-boxing-gloves/ref/side.png",
+      "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/golden-boxing-gloves/ref/back.png"
+    ],
+    "ai_model": "meshy-7.1",
+    "geometry_resolution": "2k",
+    "target_polycount": 1800,
+    "should_remesh": true,
+    "topology": "triangle",
+    "should_texture": true,
+    "texture_resolution": "2k",
+    "enable_pbr": false,
+    "image_enhancement": false,
+    "target_formats": [
+      "glb"
+    ],
+    "response_format": "json"
+  }
+}

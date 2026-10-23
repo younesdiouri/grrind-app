@@ -1,0 +1,42 @@
+{
+  "Male_r": {
+    "triangles": 1852,
+    "uv_layers": 1,
+    "dimensions_m": [
+      0.26999998092651367,
+      0.16874998807907104,
+      0.1274399757385254
+    ],
+    "pass": true
+  },
+  "Male_l": {
+    "triangles": 1852,
+    "uv_layers": 1,
+    "dimensions_m": [
+      0.26999998092651367,
+      0.16875000298023224,
+      0.1274399757385254
+    ],
+    "pass": true
+  },
+  "Female_r": {
+    "triangles": 1852,
+    "uv_layers": 1,
+    "dimensions_m": [
+      0.25,
+      0.15625,
+      0.11800003051757812
+    ],
+    "pass": true
+  },
+  "Female_l": {
+    "triangles": 1852,
+    "uv_layers": 1,
+    "dimensions_m": [
+      0.25,
+      0.15625,
+      0.11800003051757812
+    ],
+    "pass": true
+  }
+}

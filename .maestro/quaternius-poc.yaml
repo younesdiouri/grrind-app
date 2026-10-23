@@ -39,6 +39,13 @@ appId: app.grrind.dev
 - tapOn: Visage
 - takeScreenshot: quaternius-female-band-closeup
 - tapOn: Tenue
+- tapOn: Gants
+- takeScreenshot: golden-gloves-female-closeup
+- tapOn: Retirer les gants
+- assertVisible: Équiper les gants dorés
+- takeScreenshot: golden-gloves-female-bare-hands
+- tapOn: Équiper les gants dorés
+- tapOn: Visage
 - tapOn: Retirer le bandeau
 - assertVisible: Équiper le bandeau
 - takeScreenshot: quaternius-female-no-band
@@ -51,6 +58,11 @@ appId: app.grrind.dev
 - tapOn: Corps
 - tapOn: Homme
 - takeScreenshot: quaternius-male-band-closeup
+- tapOn: Tenue
+- tapOn: Gants
+- takeScreenshot: golden-gloves-male-closeup
+- tapOn: Corps
+- tapOn: Visage
 - tapOn: Femme
 - tapOn: Teint clair
 - tapOn: Yeux bleus

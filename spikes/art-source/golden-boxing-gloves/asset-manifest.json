@@ -1,0 +1,71 @@
+{
+  "units": "metres",
+  "source_task": "01a16814-afe5-7372-8cc8-0d0acb93157b",
+  "consumed_credits": 35,
+  "source_triangles": 1852,
+  "variants": {
+    "Male_r": {
+      "triangles": 1852,
+      "wrist": [
+        0.7064873576164246,
+        -0.0654001384973526,
+        1.4555003643035889
+      ],
+      "length_m": 0.27,
+      "width_m": 0.16875,
+      "depth_m": 0.12744,
+      "cuff_back_m": 0.0567,
+      "skin_cut_abs_x_m": 0.6914873576164245
+    },
+    "Male_l": {
+      "triangles": 1852,
+      "wrist": [
+        -0.7064874172210693,
+        -0.06539993733167648,
+        1.4555003643035889
+      ],
+      "length_m": 0.27,
+      "width_m": 0.16875,
+      "depth_m": 0.12744,
+      "cuff_back_m": 0.0567,
+      "skin_cut_abs_x_m": 0.6914874172210693
+    },
+    "Female_r": {
+      "triangles": 1852,
+      "wrist": [
+        0.6411000490188599,
+        -0.05160015821456909,
+        1.418100118637085
+      ],
+      "length_m": 0.25,
+      "width_m": 0.15625,
+      "depth_m": 0.118,
+      "cuff_back_m": 0.0525,
+      "skin_cut_abs_x_m": 0.6261000490188598
+    },
+    "Female_l": {
+      "triangles": 1852,
+      "wrist": [
+        -0.6411001682281494,
+        -0.05159996077418327,
+        1.418100118637085
+      ],
+      "length_m": 0.25,
+      "width_m": 0.15625,
+      "depth_m": 0.118,
+      "cuff_back_m": 0.0525,
+      "skin_cut_abs_x_m": 0.6261001682281494
+    }
+  },
+  "inferred": [
+    "physical size",
+    "hidden cuff interior",
+    "symmetric opposite glove"
+  ],
+  "attachment": "Quaternius hand_l/hand_r, rest world space, rigid parent",
+  "texture": {
+    "file": "BaseColor.png",
+    "size": 2048,
+    "color_space": "sRGB"
+  }
+}

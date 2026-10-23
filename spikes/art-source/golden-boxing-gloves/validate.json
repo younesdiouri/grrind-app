@@ -1,0 +1,109 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/golden-boxing-gloves/PR_GoldenBoxingGloves_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 7408
+    },
+    "fail": [],
+    "warn": [
+      "PR_GoldenGlove_Male_r: 2253 doubled vertices within 0.0001",
+      "PR_GoldenGlove_Male_l: 2253 doubled vertices within 0.0001",
+      "PR_GoldenGlove_Female_r: 2253 doubled vertices within 0.0001",
+      "PR_GoldenGlove_Female_l: 2253 doubled vertices within 0.0001"
+    ]
+  },
+  "objects": [
+    {
+      "name": "PR_GoldenGlove_Male_r",
+      "type": "MESH",
+      "warn": [
+        "2253 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1852,
+        "verts_evaluated": 3183,
+        "verts": 3183,
+        "faces": 1852,
+        "boundary_edges": 3202,
+        "nonmanifold_edges": 0,
+        "islands": 656,
+        "flipped_vs_recalc": 850,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "PR_GoldenGlove_Male_l",
+      "type": "MESH",
+      "warn": [
+        "2253 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1852,
+        "verts_evaluated": 3183,
+        "verts": 3183,
+        "faces": 1852,
+        "boundary_edges": 3202,
+        "nonmanifold_edges": 0,
+        "islands": 656,
+        "flipped_vs_recalc": 846,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0.001"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "PR_GoldenGlove_Female_r",
+      "type": "MESH",
+      "warn": [
+        "2253 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1852,
+        "verts_evaluated": 3183,
+        "verts": 3183,
+        "faces": 1852,
+        "boundary_edges": 3202,
+        "nonmanifold_edges": 0,
+        "islands": 656,
+        "flipped_vs_recalc": 858,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0.002"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "PR_GoldenGlove_Female_l",
+      "type": "MESH",
+      "warn": [
+        "2253 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1852,
+        "verts_evaluated": 3183,
+        "verts": 3183,
+        "faces": 1852,
+        "boundary_edges": 3202,
+        "nonmanifold_edges": 0,
+        "islands": 656,
+        "flipped_vs_recalc": 890,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0.003"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}

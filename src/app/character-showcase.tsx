@@ -28,6 +28,7 @@ function Showcase() {
   const [shirtColor, setShirtColor] = useState<UnityAvatar['shirtColor']>('cyan');
   const [pantsColor, setPantsColor] = useState<UnityAvatar['pantsColor']>('violet');
   const [boots, setBoots] = useState(true);
+  const [boxingGloves, setBoxingGloves] = useState(true);
   const [pose, setPose] = useState<FighterPose>('idle');
   const [animated, setAnimated] = useState(true);
   const [azimuth, setAzimuth] = useState(25);
@@ -40,7 +41,7 @@ function Showcase() {
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const avatar: UnityAvatar = { body, hairStyle, headband: headband && hairStyle !== 'long', boots, visible: true,
-    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor };
+    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves };
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
@@ -60,7 +61,7 @@ function Showcase() {
         <Text style={styles.title}>ATELIER AVATAR</Text>
         <Text style={styles.subtitle} testID={ready && !failed ? 'quaternius-ready' : undefined}>
           {!unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
-            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Spike local · T-shirt et Les Guinzz' : 'Chargement…'}
+            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Spike local · Gants dorés' : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo');
@@ -116,6 +117,10 @@ function Showcase() {
         <View style={styles.row}>
           <Choice label={boots ? 'Retirer les bottes' : 'Équiper les bottes'} selected={boots} onPress={() => setBoots(!boots)} />
           {hairStyle !== 'long' && <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
+        </View>
+        <View style={styles.row}>
+          <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => setBoxingGloves(!boxingGloves)} />
+          <Choice label="Gants" selected={view === 2} onPress={() => { setView(2); setAzimuth(25); }} />
         </View>
         </>}
         {section === 'Mouvements' && <>

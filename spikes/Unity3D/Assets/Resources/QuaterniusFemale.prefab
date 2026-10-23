@@ -600,6 +600,96 @@ Transform:
   - {fileID: 4475899207986640984}
   m_Father: {fileID: 4825071109987357714}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &948696665257229059
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5606382646468703695}
+  - component: {fileID: 8885044781100216430}
+  - component: {fileID: 7313512353774485969}
+  m_Layer: 0
+  m_Name: Golden boxing glove r
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &5606382646468703695
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948696665257229059}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.503952, y: -0.49601623, z: -0.5039526, w: 0.49601611}
+  m_LocalPosition: {x: 1.4181001, y: -0.6418395, z: 0.041418057}
+  m_LocalScale: {x: 0.99999964, y: 1.0000002, z: 1.0000002}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7970956728703473382}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &8885044781100216430
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948696665257229059}
+  m_Mesh: {fileID: -5506263203445484713, guid: 3896ad740053b4fe09e41c2a585d00d9, type: 3}
+--- !u!23 &7313512353774485969
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948696665257229059}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: b7c3994236f794430b5d323d5ce7587b, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1005291248599064524
 GameObject:
   m_ObjectHideFlags: 0
@@ -3790,6 +3880,7 @@ Transform:
   - {fileID: 8271171625680315794}
   - {fileID: 5879751695982422847}
   - {fileID: 8230548445423664310}
+  - {fileID: 5606382646468703695}
   m_Father: {fileID: 1646207277745177262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6667881088931223418
@@ -4502,6 +4593,18 @@ MonoBehaviour:
   guinzzMaterial: {fileID: 2100000, guid: 0ada6d374f84c49308b88edbc463dad6, type: 2}
   guinzzFullMesh: {fileID: 3427425129843836188, guid: b9506433d3fc1476691b165c349343dd, type: 3}
   guinzzBootMesh: {fileID: 4300000, guid: 37311827a85614872a0bac949bd0cfa7, type: 2}
+  boxingGloves:
+  - {fileID: 948696665257229059}
+  - {fileID: 8185316297957566070}
+  gloveArms:
+  - {fileID: 5743864158258755765}
+  - {fileID: 4873310858238774679}
+  bareHandMeshes:
+  - {fileID: -4332047964961328057, guid: 5e318102ff9604442aabae12f5e5e8ad, type: 3}
+  - {fileID: -1018327905982188144, guid: 304d355cb7fcf4be0820260d8d3ea318, type: 3}
+  coveredHandMeshes:
+  - {fileID: 4300000, guid: 5bd905362a754451aa9d399bec1cd8b6, type: 2}
+  - {fileID: 4300000, guid: 963075a83a17645ba82c938181c0d7e5, type: 2}
 --- !u!114 &7952890022034898261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4737,6 +4840,96 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3978601440686593640}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8185316297957566070
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5489079355708054416}
+  - component: {fileID: 5003436127890391595}
+  - component: {fileID: 490882793263056926}
+  m_Layer: 0
+  m_Name: Golden boxing glove l
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &5489079355708054416
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8185316297957566070}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.503952, y: -0.49601623, z: -0.5039526, w: -0.49601611}
+  m_LocalPosition: {x: -1.4181001, y: -0.6418395, z: 0.041418057}
+  m_LocalScale: {x: 0.99999976, y: 1.0000002, z: 1.0000002}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4825071109987357714}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &5003436127890391595
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8185316297957566070}
+  m_Mesh: {fileID: -3670482345615140630, guid: 06b12eb81ef664a13b18b88a303d773e, type: 3}
+--- !u!23 &490882793263056926
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8185316297957566070}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: b7c3994236f794430b5d323d5ce7587b, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &8216688745684373416
 GameObject:
   m_ObjectHideFlags: 0
@@ -5120,6 +5313,7 @@ Transform:
   - {fileID: 7385487025462490091}
   - {fileID: 4334897996340548971}
   - {fileID: 1499071977511060004}
+  - {fileID: 5489079355708054416}
   m_Father: {fileID: 8379032282088039773}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9173881640692134494
