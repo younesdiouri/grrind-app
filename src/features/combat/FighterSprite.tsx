@@ -7,7 +7,6 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { fighterMotionAt, fighterPoseAt, type FighterPose, type PoseSignals } from './fighterMotion';
 import type { Actor, BattleBeat } from './timeline';
 import { ENEMY_IMAGE_TIMEOUT_MS, type FighterArtwork } from './enemyPresentation';
-import { equipmentFrameScale, equipmentPlacement, type EquipmentArtwork, type FighterAttachments } from './equipmentArtwork';
 
 export type { FighterArtwork } from './enemyPresentation';
 export { AL_KASAL } from './bundledMobs';
@@ -23,9 +22,8 @@ export const DEFAULT_RAID_HERO: FighterArtwork = { name: 'Muscu', poses: {
 } };
 
 /** Les poses disponibles se chargent ensemble ; aucune source ne change au milieu d'un coup. */
-export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, beats, pose, signals, lateral = false, staticPreview = false, onReady, onError }: {
+export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, signals, lateral = false, staticPreview = false, onReady, onError }: {
   artwork: FighterArtwork;
-  equipment?: EquipmentArtwork[];
   /** Le camp qu'il incarne : il oriente l'élan et le recul. */
   side?: Actor;
   clock: SharedValue<number>;
@@ -39,19 +37,15 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
 }) {
   const poses = staticPreview && pose ? [pose] : Object.keys(artwork.poses) as FighterPose[];
   const sharedGuard = poses.every((entry) => JSON.stringify(artwork.poses[entry]) === JSON.stringify(artwork.poses[poses[0]]));
-  const wearables = equipment.filter((item) => artwork.attachments?.[item.attachment]);
-  const frameScale = equipmentFrameScale(artwork.attachments, wearables);
-  const foregroundPoses = wearables.length ? poses.filter((entry) => artwork.foreground?.[entry]) : [];
   const loaded = useRef(new Set<string>());
   const settled = useRef(false);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [failed, setFailed] = useState(false);
-  const [equipmentFailed, setEquipmentFailed] = useState<Set<string>>(new Set());
   const [canvasSize, setCanvasSize] = useState<number>();
   const ready = (candidate: string) => {
     if (settled.current) return;
     loaded.current.add(candidate);
-    if (poses.every((entry) => loaded.current.has(entry)) && wearables.every((item) => loaded.current.has(item.key)) && foregroundPoses.every((entry) => loaded.current.has('foreground-' + entry))) {
+    if (poses.every((entry) => loaded.current.has(entry))) {
       settled.current = true;
       clearTimeout(timeout.current);
       onReady?.();
@@ -61,12 +55,6 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
     timeout.current = setTimeout(() => {
       if (settled.current) return;
       settled.current = true;
-      if (poses.every((entry) => loaded.current.has(entry)) && foregroundPoses.every((entry) => loaded.current.has('foreground-' + entry))) {
-        // Un accessoire lent est facultatif : jouer le corps prêt sans le faire apparaître en plein coup.
-        setEquipmentFailed(new Set(wearables.filter((item) => !loaded.current.has(item.key)).map((item) => item.key)));
-        onReady?.();
-        return;
-      }
       setFailed(true);
       onError?.();
     }, ENEMY_IMAGE_TIMEOUT_MS);
@@ -99,27 +87,14 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
       const size = Math.min(layout.width, layout.height);
       setCanvasSize((current) => current === size ? current : size);
     }}>
-      <Animated.View style={[styles.body, canvasSize === undefined ? undefined : { width: canvasSize * frameScale, height: canvasSize * frameScale }, transform]}>
-        {wearables.filter((item) => item.plane === 'behind' && !equipmentFailed.has(item.key)).map((item) => (
-          <EquipmentLayer key={item.key} item={item} attachments={artwork.attachments?.[item.attachment]}
-            selected={pose} motion={motion} onLoad={() => ready(item.key)}
-            onError={() => { setEquipmentFailed((failed) => new Set([...failed, item.key])); ready(item.key); }} />
-        ))}
+      <Animated.View style={[styles.body, canvasSize === undefined ? undefined : { width: canvasSize, height: canvasSize }, transform]}>
         {sharedGuard ? <Image source={artwork.poses[poses[0]]} style={StyleSheet.absoluteFill} contentFit="contain"
           enforceEarlyResizing transition={0} cachePolicy="memory-disk" onError={fail}
           onLoad={() => poses.forEach(ready)} accessible={false} /> : poses.map((candidate) => (
           <PoseLayer key={candidate} source={artwork.poses[candidate]!} candidate={candidate}
             selected={pose} motion={motion} onError={fail}
-            onLoad={() => ready(candidate)} />
+            onLoad={ready} />
         ))}
-        {wearables.filter((item) => item.plane === 'front' && !equipmentFailed.has(item.key)).map((item) => (
-          <EquipmentLayer key={item.key} item={item} attachments={artwork.attachments?.[item.attachment]}
-            selected={pose} motion={motion} onLoad={() => ready(item.key)}
-            onError={() => { setEquipmentFailed((failed) => new Set([...failed, item.key])); ready(item.key); }} />
-        ))}
-        {foregroundPoses.map((candidate) => <PoseLayer key={'foreground-' + candidate}
-          source={artwork.foreground![candidate]!} candidate={candidate} selected={pose} motion={motion}
-          onLoad={() => ready('foreground-' + candidate)} onError={fail} />)}
         <Animated.View style={[styles.flash, flash]} />
       </Animated.View>
       {failed && <Text style={styles.error}>Illustration indisponible. Reviens puis réessaie.</Text>}
@@ -127,41 +102,19 @@ export function FighterSprite({ artwork, equipment = [], side = 'ENEMY', clock, 
   );
 }
 
-function EquipmentLayer({ item, attachments, selected, motion, onLoad, onError }: {
-  item: EquipmentArtwork;
-  attachments?: FighterAttachments;
-  selected?: FighterPose;
-  motion: SharedValue<Omit<ReturnType<typeof fighterMotionAt>, 'pose'> & { pose: FighterPose }>;
-  onLoad: () => void;
-  onError: () => void;
-}) {
-  const style = useAnimatedStyle(() => {
-    const box = equipmentPlacement(attachments, selected ?? motion.get().pose, item, !!item.mirror);
-    if (!box) return { opacity: 0 };
-    return { opacity: 1, left: `${box.left * 100}%`, top: `${box.top * 100}%`,
-      width: `${box.width * 100}%`, height: `${box.height * 100}%`,
-      transformOrigin: [`${box.pivotX * 100}%`, `${box.pivotY * 100}%`, 0],
-      transform: [{ rotate: `${box.rotate}deg` }, { scaleX: item.mirror ? -1 : 1 }] };
-  });
-  return <Animated.View style={[styles.equipment, style]}>
-    <Image source={item.source} style={StyleSheet.absoluteFill} contentFit="contain" enforceEarlyResizing
-      transition={0} cachePolicy="memory-disk" onLoad={onLoad} onError={onError} accessible={false} />
-  </Animated.View>;
-}
-
 function PoseLayer({ source, candidate, selected, motion, onLoad, onError }: {
   source: ImageSource;
   candidate: FighterPose;
   selected?: FighterPose;
   motion: SharedValue<Omit<ReturnType<typeof fighterMotionAt>, 'pose'> & { pose: FighterPose }>;
-  onLoad: () => void;
+  onLoad: (candidate: FighterPose) => void;
   onError: () => void;
 }) {
   const style = useAnimatedStyle(() => ({ opacity: (selected ?? motion.get().pose) === candidate ? 1 : 0 }));
   return (
     <Animated.View style={[StyleSheet.absoluteFill, style]}>
       <Image source={source} style={StyleSheet.absoluteFill} contentFit="contain"
-        enforceEarlyResizing transition={0} cachePolicy="memory-disk" onLoad={onLoad} onError={onError} accessible={false} />
+        enforceEarlyResizing transition={0} cachePolicy="memory-disk" onLoad={() => onLoad(candidate)} onError={onError} accessible={false} />
     </Animated.View>
   );
 }
@@ -169,7 +122,6 @@ function PoseLayer({ source, candidate, selected, motion, onLoad, onError }: {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   body: { width: '100%', height: '100%', margin: combatMotion.spriteInset },
-  equipment: { position: 'absolute' },
   flash: { position: 'absolute', top: '45%', left: '45%', width: combatMotion.impactSize,
     height: combatMotion.impactSize, backgroundColor: color.text, borderRadius: combatMotion.impactSize },
   error: { ...type.label, color: color.danger, textAlign: 'center', position: 'absolute' },

@@ -120,6 +120,22 @@ celui qui décide : une mise en scène qui ne tient que sur le cas joyeux ne tie
 - `AGENTS.md` — Expo a changé ; les docs de mémoire sont fausses d'une majeure à l'autre.
 - `src/features/reward/timeline.ts` — la mise en scène du `RewardSummary`, en fonction pure.
 
+## Personnages et équipements
+
+- [Personnages Unity en combat](docs/ai/unity-1v1.md) : 1v1, PvP et rejeux.
+- [Aperçus des objets équipés](docs/ai/equipped-avatar.md) : les huit objets Unity du catalogue,
+  les six emplacements et les 48 combinaisons d’aperçu.
+- [Base Quaternius et atelier](docs/design/quaternius-poc.md),
+  [personnalisation](docs/design/avatar-customization-spike.md),
+  [gants dorés](docs/design/golden-boxing-gloves.md),
+  [Le Poids Lourd](docs/design/le-poids-lourd-pilot.md) et
+  [Les Guinzz](docs/design/les-guinzz-pilot.md) : sources et fabrication 3D.
+- [Illustrations des monstres](docs/design/combat-art-workflow.md) : packs 2D encore utilisés.
+
+Les anciens équipements sans modèle 3D et leur pipeline de calques rétro ont été retirés.
+Le raid de guilde utilise encore les apparences 2D et son repli Muscu ; leurs sprites restent
+embarqués. Les fixtures de réponses serveur historiques servent toujours aux tests.
+
 ## Suivi
 
 https://github.com/users/younesdiouri/projects/1 — tableau commun aux deux dépôts, avec une

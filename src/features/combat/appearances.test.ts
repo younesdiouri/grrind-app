@@ -15,8 +15,6 @@ it('choisit la vue du héros figé dans le combat, et les miniatures pour la gui
   assert.deepEqual(appearanceArtwork([model], 'STRENGTH_V1', 'front', 'Duel')?.poses.attack, { uri: model.imageUrls.front.attack });
   assert.deepEqual(appearanceArtwork([model], 'STRENGTH_V1', 'front', 'Guilde', true)?.poses.hit, { uri: model.thumbnailUrls.front.hit });
   assert.deepEqual(appearanceArtwork([model], 'STRENGTH_V1', 'back', 'Toi')?.poses.critical, { uri: model.imageUrls.back.critical });
-  assert.equal(appearanceArtwork([model], 'STRENGTH_V1', 'back', 'Toi')?.attachments, model.attachments.back);
-  assert.deepEqual(appearanceArtwork([model], 'STRENGTH_V1', 'front', 'Duel')?.foreground?.attack, { uri: model.foregroundUrls!.front.attack });
   assert.equal(appearanceArtwork([], 'STRENGTH_V1', 'back', 'Toi'), undefined);
   assert.equal(appearanceArtwork([model], null, 'front', 'Mob'), undefined);
   assert.equal(appearanceArtwork([{ ...model, imageUrls: { ...model.imageUrls, front: { ...model.imageUrls.front, hit: '' } } }], 'STRENGTH_V1', 'front', 'Duel'), undefined);

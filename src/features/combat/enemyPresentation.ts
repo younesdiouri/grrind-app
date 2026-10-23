@@ -1,11 +1,8 @@
 import type { ImageSource } from 'expo-image';
 import type { components } from '@/api/schema';
-import type { FighterPose, BaseFighterPose, SpecialFighterPose } from './fighterMotion';
-import type { FighterAttachments } from './equipmentArtwork';
+import type { BaseFighterPose, SpecialFighterPose } from './fighterMotion';
 
 export type FighterArtwork = { name: string; introduction?: string;
-  foreground?: Partial<Record<FighterPose, ImageSource>>;
-  attachments?: Record<string, FighterAttachments>;
   poses: Record<BaseFighterPose, ImageSource> & Partial<Record<SpecialFighterPose, ImageSource>> };
 type EnemyPresentation = Pick<components['schemas']['BattleEnemy'], 'name' | 'imageUrls'>
   & Partial<Pick<components['schemas']['BattleEnemy'], 'key' | 'introduction'>>;
