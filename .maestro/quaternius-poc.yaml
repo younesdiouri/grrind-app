@@ -61,6 +61,21 @@ appId: app.grrind.dev
 - tapOn: Tenue
 - tapOn: Gants
 - takeScreenshot: golden-gloves-male-closeup
+- tapOn: Équiper Le Poids Lourd
+- assertVisible: Équiper les gants dorés
+- tapOn: Prise
+- takeScreenshot: dumbbell-male-grip
+- tapOn: Corps
+- tapOn: Femme
+- takeScreenshot: dumbbell-female-grip
+- tapOn: Tenue
+- tapOn: Retirer l’haltère
+- assertVisible: Équiper Le Poids Lourd
+- takeScreenshot: dumbbell-unequipped
+- tapOn: Équiper Le Poids Lourd
+- tapOn: Équiper les gants dorés
+- assertVisible: Équiper Le Poids Lourd
+- assertVisible: Retirer les gants
 - tapOn: Corps
 - tapOn: Visage
 - tapOn: Femme
