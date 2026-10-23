@@ -131,10 +131,13 @@ celui qui décide : une mise en scène qui ne tient que sur le cas joyeux ne tie
   [Le Poids Lourd](docs/design/le-poids-lourd-pilot.md) et
   [Les Guinzz](docs/design/les-guinzz-pilot.md) : sources et fabrication 3D.
 - [Illustrations des monstres](docs/design/combat-art-workflow.md) : packs 2D encore utilisés.
+- [Refonte PvE et Ālam dans Unity](docs/design/unity-pve-alam.md) : chantier futur,
+  nouveau bestiaire Meshy et retrait complet des anciens sprites.
 
 Les anciens équipements sans modèle 3D et leur pipeline de calques rétro ont été retirés.
 Le raid de guilde utilise encore les apparences 2D et son repli Muscu ; leurs sprites restent
 embarqués. Les fixtures de réponses serveur historiques servent toujours aux tests.
+Ces derniers sprites seront retirés lors de la refonte [#249](https://github.com/younesdiouri/grrind-app/issues/249).
 
 ## Suivi
 
