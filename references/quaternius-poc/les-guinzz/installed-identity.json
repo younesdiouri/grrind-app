@@ -1,0 +1,25 @@
+{
+  "uuid": [
+    "5B3EB137-AEEB-3CAF-A2D8-469E1FAF00EE",
+    "(arm64)"
+  ],
+  "data_matches": {
+    "Data/globalgamemanagers": "e6c67420d81a74502898bae7765c4c7c2c12d6669d5e8c2b4447e0cfb4639070",
+    "Data/boot.config": "39dfc1d67a9863bf33ae24f29fd17ee2e1d61d5a89f20b96dc319f0b4a5ded7c",
+    "Data/RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+    "Data/resources.assets": "784c08df2df81208e806a78ba9654a8682a7c181bb2fb27a89d9e41345e7ceeb",
+    "Data/ScriptingAssemblies.json": "f773af6143b46408f4415a50a039524a444412abea2ba854c4234e84029b6e88",
+    "Data/sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968",
+    "Data/sharedassets0.assets": "13a1de4061e319d9375d60b6d45bb0e9c4c65e06fd2f4ff640d607e2d91ac2f9",
+    "Data/globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+    "Data/level0": "ccb1d7f8b76fe7236eb7c712a24087918c96670b9fede6a84fa297c610979ea3",
+    "Data/resources.assets.resS": "31e8fabbc7c029ec400649999264c924c6c2df283c84e9c05e402d90dc8de177",
+    "Data/globalgamemanagers.assets": "a52c9889534b28e88a630c477db090ad8190178123aa49c00c9322b6281ca1b9",
+    "Data/Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+    "Data/Resources/unity_builtin_extra": "54c99c97cb7396b16256680eb0202038197f391dddf59b64dd1867d923034d01",
+    "Data/Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+    "Data/Managed/Metadata/global-metadata.dat": "1ede8a3de91550208a1e1bb8089518dc1342f5f5753188f5c8b1abe0af2a153c",
+    "Data/Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed"
+  },
+  "installed": "/Users/younesdiouri/Library/Developer/CoreSimulator/Devices/236B6829-DCFF-4048-B4D4-430D9A97F840/data/Containers/Bundle/Application/A0A589A7-00A6-4E20-91DA-C15CB502B123/GRRINDdev.app/Frameworks/UnityFramework.framework"
+}

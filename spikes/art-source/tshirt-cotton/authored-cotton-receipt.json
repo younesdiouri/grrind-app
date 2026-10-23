@@ -1,0 +1,36 @@
+{
+  "Male": {
+    "low_position_uv_sha256": "7788e1fbcc8ceda647016e8233527b9ab03a5ba777923139845567e90816419a",
+    "unchanged": true,
+    "source": "Blender procedural cotton; ImageGen/Meshy retained as design reference",
+    "grain_scale_per_m": 220,
+    "bump_distance_m": 0.00035,
+    "bump_strength": 0.6,
+    "roughness_range": [
+      0.82,
+      0.88
+    ],
+    "logo_height_m": 0.048,
+    "logo_center": [
+      -0.1,
+      1.4124998254776
+    ]
+  },
+  "Female": {
+    "low_position_uv_sha256": "6fd961cc38baf6c4baafc5fcb5e877ecc599978cbb6195228c9c98a97edfc848",
+    "unchanged": true,
+    "source": "Blender procedural cotton; ImageGen/Meshy retained as design reference",
+    "grain_scale_per_m": 220,
+    "bump_distance_m": 0.00035,
+    "bump_strength": 0.6,
+    "roughness_range": [
+      0.82,
+      0.88
+    ],
+    "logo_height_m": 0.048,
+    "logo_center": [
+      -0.1,
+      1.3568999977111815
+    ]
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "time_utc": "2026-10-23T06:49:46.728154+00:00",
+  "geometry_revision": "32640d627d80",
+  "motion_revision": "685504540f41",
+  "material": "authored2",
+  "copies": {
+    "unity_build": {
+      "framework": "/Users/younesdiouri/Desktop/grrind-app/spikes/Unity3D/Builds/DerivedDataSimulator/Build/Products/Release-iphonesimulator/UnityFramework.framework",
+      "uuid": [
+        [
+          "940ECAC0-6E8F-3390-89F2-14E40360A1C9",
+          "arm64"
+        ]
+      ],
+      "data_files": {
+        "Managed/Metadata/global-metadata.dat": "517d23adf7be25ca5bc2502a293c73963a985a82d7a037b5e964f8210e83ad57",
+        "Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+        "Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed",
+        "Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+        "Resources/unity_builtin_extra": "b7c7923d6fd91fabf2147c2f1d2d49cc40bce2dad370122ae39d1529aece4460",
+        "RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+        "ScriptingAssemblies.json": "f773af6143b46408f4415a50a039524a444412abea2ba854c4234e84029b6e88",
+        "boot.config": "7790dea357f80be4d45b8a9322d3d2ac5d752dfd518b6a2dd7d2fbb4a302a360",
+        "globalgamemanagers": "07f33636f47056c32717613b057963deb1706b6f2b5e7a1b18bb86d548292ae4",
+        "globalgamemanagers.assets": "d8d922ca080d617be4091f985399c7c1301d5266a2ac9c548a9bcaeea616e828",
+        "globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+        "level0": "ccb1d7f8b76fe7236eb7c712a24087918c96670b9fede6a84fa297c610979ea3",
+        "resources.assets": "4ea583bb3366c912adaefcc6aef9b99bc3c3ca24941d191295cae6be38894295",
+        "resources.assets.resS": "31e8fabbc7c029ec400649999264c924c6c2df283c84e9c05e402d90dc8de177",
+        "sharedassets0.assets": "13a1de4061e319d9375d60b6d45bb0e9c4c65e06fd2f4ff640d607e2d91ac2f9",
+        "sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968"
+      },
+      "binary_sha256": "07d9defd242215c93110540c669288ae8b2da36c00cd7982554c9e7c868672a0"
+    },
+    "xcframework": {
+      "framework": "/Users/younesdiouri/Desktop/grrind-app/modules/grrind-unity/ios/Frameworks/UnityFramework.xcframework/ios-arm64-simulator/UnityFramework.framework",
+      "uuid": [
+        [
+          "940ECAC0-6E8F-3390-89F2-14E40360A1C9",
+          "arm64"
+        ]
+      ],
+      "data_files": {
+        "Managed/Metadata/global-metadata.dat": "517d23adf7be25ca5bc2502a293c73963a985a82d7a037b5e964f8210e83ad57",
+        "Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+        "Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed",
+        "Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+        "Resources/unity_builtin_extra": "b7c7923d6fd91fabf2147c2f1d2d49cc40bce2dad370122ae39d1529aece4460",
+        "RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+        "ScriptingAssemblies.json": "f773af6143b46408f4415a50a039524a444412abea2ba854c4234e84029b6e88",
+        "boot.config": "7790dea357f80be4d45b8a9322d3d2ac5d752dfd518b6a2dd7d2fbb4a302a360",
+        "globalgamemanagers": "07f33636f47056c32717613b057963deb1706b6f2b5e7a1b18bb86d548292ae4",
+        "globalgamemanagers.assets": "d8d922ca080d617be4091f985399c7c1301d5266a2ac9c548a9bcaeea616e828",
+        "globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+        "level0": "ccb1d7f8b76fe7236eb7c712a24087918c96670b9fede6a84fa297c610979ea3",
+        "resources.assets": "4ea583bb3366c912adaefcc6aef9b99bc3c3ca24941d191295cae6be38894295",
+        "resources.assets.resS": "31e8fabbc7c029ec400649999264c924c6c2df283c84e9c05e402d90dc8de177",
+        "sharedassets0.assets": "13a1de4061e319d9375d60b6d45bb0e9c4c65e06fd2f4ff640d607e2d91ac2f9",
+        "sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968"
+      },
+      "binary_sha256": "07d9defd242215c93110540c669288ae8b2da36c00cd7982554c9e7c868672a0"
+    },
+    "debug_app": {
+      "framework": "/Users/younesdiouri/Library/Developer/Xcode/DerivedData/GRRINDdev-dyxvwkkcjmlksbcqsitzadrtqpdx/Build/Products/Debug-iphonesimulator/GRRINDdev.app/Frameworks/UnityFramework.framework",
+      "uuid": [
+        [
+          "940ECAC0-6E8F-3390-89F2-14E40360A1C9",
+          "arm64"
+        ]
+      ],
+      "data_files": {
+        "Managed/Metadata/global-metadata.dat": "517d23adf7be25ca5bc2502a293c73963a985a82d7a037b5e964f8210e83ad57",
+        "Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+        "Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed",
+        "Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+        "Resources/unity_builtin_extra": "b7c7923d6fd91fabf2147c2f1d2d49cc40bce2dad370122ae39d1529aece4460",
+        "RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+        "ScriptingAssemblies.json": "f773af6143b46408f4415a50a039524a444412abea2ba854c4234e84029b6e88",
+        "boot.config": "7790dea357f80be4d45b8a9322d3d2ac5d752dfd518b6a2dd7d2fbb4a302a360",
+        "globalgamemanagers": "07f33636f47056c32717613b057963deb1706b6f2b5e7a1b18bb86d548292ae4",
+        "globalgamemanagers.assets": "d8d922ca080d617be4091f985399c7c1301d5266a2ac9c548a9bcaeea616e828",
+        "globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+        "level0": "ccb1d7f8b76fe7236eb7c712a24087918c96670b9fede6a84fa297c610979ea3",
+        "resources.assets": "4ea583bb3366c912adaefcc6aef9b99bc3c3ca24941d191295cae6be38894295",
+        "resources.assets.resS": "31e8fabbc7c029ec400649999264c924c6c2df283c84e9c05e402d90dc8de177",
+        "sharedassets0.assets": "13a1de4061e319d9375d60b6d45bb0e9c4c65e06fd2f4ff640d607e2d91ac2f9",
+        "sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968"
+      },
+      "binary_sha256": "e78ad7c344d7dc575f1e70f36c52eb9f3fe3f9d5272aedf9e5b8c8ea403de09c"
+    },
+    "installed_simulator_app": {
+      "framework": "/Users/younesdiouri/Library/Developer/CoreSimulator/Devices/236B6829-DCFF-4048-B4D4-430D9A97F840/data/Containers/Bundle/Application/64C0C551-25D6-4656-B9A2-E00A68ED4F74/GRRINDdev.app/Frameworks/UnityFramework.framework",
+      "uuid": [
+        [
+          "940ECAC0-6E8F-3390-89F2-14E40360A1C9",
+          "arm64"
+        ]
+      ],
+      "data_files": {
+        "Managed/Metadata/global-metadata.dat": "517d23adf7be25ca5bc2502a293c73963a985a82d7a037b5e964f8210e83ad57",
+        "Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+        "Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed",
+        "Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+        "Resources/unity_builtin_extra": "b7c7923d6fd91fabf2147c2f1d2d49cc40bce2dad370122ae39d1529aece4460",
+        "RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+        "ScriptingAssemblies.json": "f773af6143b46408f4415a50a039524a444412abea2ba854c4234e84029b6e88",
+        "boot.config": "7790dea357f80be4d45b8a9322d3d2ac5d752dfd518b6a2dd7d2fbb4a302a360",
+        "globalgamemanagers": "07f33636f47056c32717613b057963deb1706b6f2b5e7a1b18bb86d548292ae4",
+        "globalgamemanagers.assets": "d8d922ca080d617be4091f985399c7c1301d5266a2ac9c548a9bcaeea616e828",
+        "globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+        "level0": "ccb1d7f8b76fe7236eb7c712a24087918c96670b9fede6a84fa297c610979ea3",
+        "resources.assets": "4ea583bb3366c912adaefcc6aef9b99bc3c3ca24941d191295cae6be38894295",
+        "resources.assets.resS": "31e8fabbc7c029ec400649999264c924c6c2df283c84e9c05e402d90dc8de177",
+        "sharedassets0.assets": "13a1de4061e319d9375d60b6d45bb0e9c4c65e06fd2f4ff640d607e2d91ac2f9",
+        "sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968"
+      },
+      "binary_sha256": "e78ad7c344d7dc575f1e70f36c52eb9f3fe3f9d5272aedf9e5b8c8ea403de09c"
+    }
+  },
+  "uuid_all_equal": true,
+  "data_all_equal": true,
+  "previous_rejected_data_differences": [
+    "boot.config",
+    "globalgamemanagers",
+    "resources.assets"
+  ],
+  "binary_uuid_note": "Native code UUID unchanged; three Data files differ from the rejected build. Current clip resources are identified by the full Data SHA256 set."
+}

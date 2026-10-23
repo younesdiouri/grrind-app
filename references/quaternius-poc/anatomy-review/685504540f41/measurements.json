@@ -1,0 +1,1256 @@
+{
+  "geometry_revision": "32640d627d80",
+  "motion_revision": "685504540f41",
+  "capture_prefix": "motion-combo-persist",
+  "complete": true,
+  "snapshots": 54,
+  "expected": 54,
+  "hand_tee_failed_states": 0,
+  "arm_arm_failed_states": 0,
+  "pants_tee_tested_states": 54,
+  "pants_tee_failed_states": 0,
+  "rows": [
+    {
+      "source": "motion-combo-persist-female-5-0.0.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.0,
+      "frame": 974,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.025.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.025,
+      "frame": 986,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.05.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.05,
+      "frame": 996,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.075.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.075,
+      "frame": 1010,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.09.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.09,
+      "frame": 1022,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.1.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.1,
+      "frame": 1034,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.15.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.15,
+      "frame": 1045,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.2.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.2,
+      "frame": 1057,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.25.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.25,
+      "frame": 1073,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.3.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.3,
+      "frame": 1086,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.35.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.35,
+      "frame": 1102,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.4.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.4,
+      "frame": 1112,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.45.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.45,
+      "frame": 1122,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.5.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.5,
+      "frame": 1132,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.55.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.55,
+      "frame": 1144,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.6.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.6,
+      "frame": 1154,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.65.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.65,
+      "frame": 1184,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.7.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.7,
+      "frame": 1194,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.75.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.75,
+      "frame": 1207,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.8.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.8,
+      "frame": 1219,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.85.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.85,
+      "frame": 1229,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.88.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.88,
+      "frame": 1239,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.9.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.9,
+      "frame": 1251,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.925.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.925,
+      "frame": 1261,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.95.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.95,
+      "frame": 1272,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-0.975.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 0.975,
+      "frame": 1282,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-female-5-1.0.json",
+      "sex": "female",
+      "stance": "5",
+      "phase": 1.0,
+      "frame": 1293,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Female_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.0.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.0,
+      "frame": 1373,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.025.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.025,
+      "frame": 1385,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.05.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.05,
+      "frame": 1400,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.075.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.075,
+      "frame": 1411,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.09.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.09,
+      "frame": 1425,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.1.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.1,
+      "frame": 1435,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.15.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.15,
+      "frame": 1446,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.2.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.2,
+      "frame": 1458,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.25.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.25,
+      "frame": 1474,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.3.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.3,
+      "frame": 1484,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.35.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.35,
+      "frame": 1496,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.4.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.4,
+      "frame": 1506,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.45.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.45,
+      "frame": 1518,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.5.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.5,
+      "frame": 1530,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.55.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.55,
+      "frame": 1541,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.6.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.6,
+      "frame": 1554,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.65.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.65,
+      "frame": 1566,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.7.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.7,
+      "frame": 1577,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.75.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.75,
+      "frame": 1587,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.8.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.8,
+      "frame": 1599,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.85.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.85,
+      "frame": 1611,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.88.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.88,
+      "frame": 1622,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.9.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.9,
+      "frame": 1632,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.925.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.925,
+      "frame": 1644,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.95.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.95,
+      "frame": 1656,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-0.975.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 0.975,
+      "frame": 1668,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    },
+    {
+      "source": "motion-combo-persist-male-5-1.0.json",
+      "sex": "male",
+      "stance": "5",
+      "phase": 1.0,
+      "frame": 1679,
+      "quality": "FourBones",
+      "hand_tee": {
+        "crossings": 0,
+        "examples": []
+      },
+      "arm_arm": {
+        "crossings": 0,
+        "examples": []
+      },
+      "pants_tee": {
+        "crossings": 0,
+        "examples": [],
+        "mesh_names": [
+          "Male_SportTrousers"
+        ]
+      }
+    }
+  ]
+}

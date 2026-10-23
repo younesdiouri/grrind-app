@@ -8,7 +8,10 @@ public sealed class BattleBridge : MonoBehaviour
     public Material contactShadow;
     FighterPose player,enemy;
 
-    [Serializable] public class AvatarConfig {public string body="male",hairStyle="parted";public bool boots=true,visible=true,headband;}
+    [Serializable] public class AvatarConfig {
+        public string body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original";
+        public bool boots=true,visible=true,headband,sportShirt;
+    }
     [Serializable] public class Configuration
     {
         public AvatarConfig player=new AvatarConfig(),enemy=new AvatarConfig();
@@ -44,7 +47,7 @@ public sealed class BattleBridge : MonoBehaviour
             player=Create(config.player,true);enemy=Create(config.enemy,false);
             player.inspect=inspection;
             player.inspectionCamera=inspection?arenaCamera:null;
-            player.view=Mathf.Clamp(config.view,0,3);player.azimuth=config.azimuth;
+            player.view=Mathf.Clamp(config.view,0,4);player.azimuth=config.azimuth;
             if(inspection){player.placement=Vector3.zero;player.facing=0;}
             // The inspector keeps its calibrated orthographic close-ups; the fight uses perspective.
             arenaCamera.orthographic=inspection;
@@ -65,6 +68,7 @@ public sealed class BattleBridge : MonoBehaviour
         var pose=obj.GetComponent<FighterPose>();pose.inspect=false;pose.inspectionCamera=null;
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
         obj.GetComponent<QuaterniusAppearance>()?.SetHeadband(config.headband);
+        obj.GetComponent<QuaterniusAppearance>()?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
         pose.SetShoes(config.boots);

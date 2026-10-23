@@ -1,0 +1,56 @@
+[
+  {
+    "pilot": "motion-combo-clearance-female-5-0.45.json",
+    "persisted": "motion-combo-persist-female-5-0.45.json",
+    "max_world_difference_m": {
+      "skin": 0.0,
+      "tee": 0.0
+    },
+    "indices_equal": true
+  },
+  {
+    "pilot": "motion-combo-clearance-male-5-0.45.json",
+    "persisted": "motion-combo-persist-male-5-0.45.json",
+    "max_world_difference_m": {
+      "skin": 0.0,
+      "tee": 0.0
+    },
+    "indices_equal": true
+  },
+  {
+    "pilot": "motion-combo-clearance-female-5-0.4.json",
+    "persisted": "motion-combo-persist-female-5-0.4.json",
+    "max_world_difference_m": {
+      "skin": 0.0,
+      "tee": 0.0
+    },
+    "indices_equal": true
+  },
+  {
+    "pilot": "motion-combo-clearance-male-5-0.4.json",
+    "persisted": "motion-combo-persist-male-5-0.4.json",
+    "max_world_difference_m": {
+      "skin": 0.0,
+      "tee": 0.0
+    },
+    "indices_equal": true
+  },
+  {
+    "pilot": "motion-combo-clearance-male-5-0.5.json",
+    "persisted": "motion-combo-persist-male-5-0.5.json",
+    "max_world_difference_m": {
+      "skin": 0.0,
+      "tee": 0.0
+    },
+    "indices_equal": true
+  },
+  {
+    "pilot": "motion-combo-clearance-female-5-0.5.json",
+    "persisted": "motion-combo-persist-female-5-0.5.json",
+    "max_world_difference_m": {
+      "skin": 0.0,
+      "tee": 0.0
+    },
+    "indices_equal": true
+  }
+]

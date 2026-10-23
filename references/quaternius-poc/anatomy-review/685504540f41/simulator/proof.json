@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-23",
+  "geometry": "32640d627d80",
+  "motion": "685504540f41",
+  "material": "authored2",
+  "installed_copies_sha256": "PASS4copies16Datafiles",
+  "visual": "PASS Astra actual Simulator, two bodies, full-body and detailed motion",
+  "stable_duel": "PASS39.82s sampled Astra, two actors, victory, portrait return, no Refreshing observed",
+  "author_personal_verdict": "pending",
+  "commit": false,
+  "pr": false,
+  "simulator_left_open": true,
+  "source_changes_during_final_captures": false,
+  "performance_benchmark": false
+}

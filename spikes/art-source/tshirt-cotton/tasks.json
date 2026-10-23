@@ -1,0 +1,16 @@
+[
+  {
+    "id": "01a1604f-621e-769f-9b31-fcf8c803a718",
+    "kind": "multi-image-to-3d",
+    "model": "meshy-7.1",
+    "geometry_resolution": "2k",
+    "texture_resolution": "4k",
+    "enable_pbr": true,
+    "target_triangles": 10000,
+    "expected_credits": 35,
+    "decision": "new simplified cotton reference; replaces angular old shirt after visual QA",
+    "status": "SUCCEEDED",
+    "consumed_credits": 35,
+    "actual_triangles": 10304
+  }
+]

@@ -15,6 +15,9 @@ head = rig.matrix_world @ rig.data.bones['Head'].matrix_local
 skull = BVHTree.FromPolygons([body.matrix_world @ v.co for v in body.data.vertices], [list(p.vertices) for p in body.data.polygons])
 bpy.ops.import_scene.fbx(filepath=str(SOURCE / 'QuaterniusPOC/Hair_Buzzed.fbx'))
 hair = next(o for o in bpy.context.selected_objects if o.type == 'MESH')
+bpy.context.view_layer.objects.active=hair
+modifier=hair.modifiers.new('Scalp fit samples','SUBSURF');modifier.subdivision_type='SIMPLE';modifier.levels=1
+bpy.ops.object.modifier_apply(modifier=modifier.name)
 hair_rig = next(m.object for m in hair.modifiers if m.type == 'ARMATURE')
 rest = hair_rig.matrix_world @ hair_rig.data.bones['Head'].matrix_local
 rebind = head @ rest.inverted()
@@ -25,14 +28,14 @@ largest = 0
 for vertex in hair.data.vertices:
     target = rebind @ hair.matrix_world @ vertex.co
     # Preserve the authored hairline/sideburns; the mismatch is confined to the upper scalp.
-    if target.z < 1.70:
+    if target.z < 1.60:
         continue
     ray = target-origin
     distance = ray.length
     ray.normalize()
     hit, _, _, t = skull.ray_cast(origin+ray*.5, -ray, .5)
     assert hit is not None, 'Hair projection missed the real female head'
-    radius = .5-t+.0025  # 2.5 mm outside skin, including polygon interpolation clearance.
+    radius = .5-t+.004  # 4 mm outside skin, including polygon interpolation clearance.
     if radius > distance:
         moved += 1
         largest = max(largest, radius-distance)

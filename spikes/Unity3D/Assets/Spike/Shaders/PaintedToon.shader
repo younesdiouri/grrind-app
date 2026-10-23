@@ -6,6 +6,9 @@ Shader "GRRIND/Painted Toon"
     {
         _BaseMap ("Base", 2D) = "white" {}
         _BaseColor ("Tint", Color) = (1, 1, 1, 1)
+        _EyeMode ("Quaternius eye atlas", Float) = 0
+        _IrisTint ("Iris tint", Color) = (1, 1, 1, 1)
+        _EyeSkinTint ("Eyelid tint", Color) = (1, 1, 1, 1)
         _ShadowTint ("Shadow tint", Color) = (0.66, 0.6, 0.76, 1)
         _RampCenter ("Ramp centre", Range(-1, 1)) = 0
         _RampSoftness ("Ramp softness", Range(0.01, 1)) = 0.22
@@ -26,6 +29,9 @@ Shader "GRRIND/Painted Toon"
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor;
+            half4 _IrisTint;
+            half4 _EyeSkinTint;
+            half _EyeMode;
             half4 _ShadowTint;
             half4 _RimColor;
             half4 _OutlineColor;
@@ -79,6 +85,16 @@ Shader "GRRIND/Painted Toon"
             half4 Fragment(Varyings input) : SV_Target
             {
                 half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
+                if (_EyeMode > .5)
+                {
+                    // The source atlas has a central iris and painted skin around the sclera.
+                    half iris = 1 - smoothstep(.098, .112, distance(input.uv, float2(.5, .5)));
+                    half value = max(albedo.r, max(albedo.g, albedo.b));
+                    half pigment = smoothstep(.012, .035, value) * (1 - smoothstep(.55, .8, value));
+                    half eyelid = (1 - iris) * smoothstep(.08, .16, albedo.r - albedo.g);
+                    albedo.rgb *= lerp(half3(1,1,1), _IrisTint.rgb, iris * pigment);
+                    albedo.rgb *= lerp(half3(1,1,1), _EyeSkinTint.rgb, eyelid);
+                }
                 float3 normal = normalize(input.normalWS);
                 Light light = GetMainLight();
                 half lambert = dot(normal, light.direction);

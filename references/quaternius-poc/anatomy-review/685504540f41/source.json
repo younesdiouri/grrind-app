@@ -1,0 +1,19 @@
+{
+  "revision": "685504540f41",
+  "models": {
+    "Male": "38a04b7fe7e03cfac5f272e666f719da0f8237ef6bedb90522c71c48ab62b781",
+    "Female": "4397c08f9ef4f4743e28ed52626c8cc4d7c479fc3a982fbd8ea94a2e9542e280"
+  },
+  "dependencies": {
+    "spikes/Unity3D/ProjectSettings/QualitySettings.asset": "2649bfcad5163435c6e3cc201bce2b48b52a2613108b4baa1afafe33ed6a9d9a",
+    "spikes/Unity3D/Assets/Spike/QuaterniusPOC/Fitted uppercut.anim": "f32a87f5826eb0291893a0b7ecd92eec1466150457408de27d0c3960ebaf735a",
+    "spikes/Unity3D/Assets/Characters/Personalization/Male_SportTrousers.fbx": "847e24aa11b29c76df6fa5066e19be02e5cd542d90ec0a6a7b188915a33f7bc1",
+    "spikes/Unity3D/Assets/Characters/Personalization/Female_SportTrousers.fbx": "270ff0ffa6a6d150428a564cd7df114f2334801a4b8efe56eee6f3159d2541a5",
+    "spikes/Unity3D/Assets/Characters/QuaterniusPOC/Female_Hair_Buzzed.fbx": "fd918dfa4fe4665252463192f8cd0d56957faf9b5c38599311798fc3602dbe98",
+    "spikes/Unity3D/Assets/Spike/FighterPose.cs": "161e56db11089565c39c27d32d5b0589e729d54615c5e7ace968c2b779a6e922",
+    "spikes/Unity3D/Assets/Spike/QuaterniusPOC/Fitted BackHandCross.anim": "db7345df2963527ee7e197760f63fb653f7dad6d2c2ff8a6122e0fe575eab7e6",
+    "spikes/Unity3D/Assets/Spike/QuaterniusPOC/Fitted BoxingIdle.anim": "ad4bf60b994ccb0ff06a8423c7c328c244a812beaca1c61942fb7da3a79edf66",
+    "spikes/Unity3D/Assets/Spike/QuaterniusPOC/Fitted DodgeRetreat.anim": "316e4993521b5fd465bbbbcc97920b835be14f5e4edf8ee963d565922d100061",
+    "spikes/Unity3D/Assets/Spike/QuaterniusPOC/Fitted JabCrossCombo.anim": "ae5892320a53c0be5d85de839759f9b461599acf152680e7e12ce6b10bb99ac5"
+  }
+}

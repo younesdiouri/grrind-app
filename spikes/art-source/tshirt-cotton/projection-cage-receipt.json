@@ -1,0 +1,20 @@
+{
+  "PR_TshirtCotton_Male_LOD0": {
+    "low_position_uv_sha256": "7788e1fbcc8ceda647016e8233527b9ab03a5ba777923139845567e90816419a",
+    "unchanged": true,
+    "cage": "PR_TshirtCotton_Male_BakeCage",
+    "nearest_high_max_m": 0.07767084985971451,
+    "inner_donor_faces_removed": 5033,
+    "donor_shading_normals": "LOW nearest interpolated",
+    "source_normal_strength": 0.25
+  },
+  "PR_TshirtCotton_Female_LOD0": {
+    "low_position_uv_sha256": "6fd961cc38baf6c4baafc5fcb5e877ecc599978cbb6195228c9c98a97edfc848",
+    "unchanged": true,
+    "cage": "PR_TshirtCotton_Female_BakeCage",
+    "nearest_high_max_m": 0.19270484149456024,
+    "inner_donor_faces_removed": 5033,
+    "donor_shading_normals": "LOW nearest interpolated",
+    "source_normal_strength": 0.25
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "file_paths": [
+    "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/tshirt-cotton/ref/front.png",
+    "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/tshirt-cotton/ref/back.png",
+    "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/tshirt-cotton/ref/right.png"
+  ],
+  "ai_model": "meshy-7.1",
+  "geometry_resolution": "2k",
+  "enable_pbr": true,
+  "should_remesh": true,
+  "topology": "triangle",
+  "target_polycount": 10000,
+  "should_texture": true,
+  "texture_prompt": "Premium matte heather cotton jersey knit, muted slate blue-grey fabric with fine soft fibers, subtle natural mottling and ribbed crewneck. Tiny off-white lightning on left chest only, plain back. No neon, plastic, leather, denim, glitter, baked directional shadows or faceted triangular painted patches. Consistent small-scale knit on all views. Rough dry cotton, zero metallic, subtle textile normal map. Keep stitches restrained.",
+  "texture_resolution": "4k",
+  "image_enhancement": false,
+  "remove_lighting": true,
+  "target_formats": [
+    "glb"
+  ],
+  "multi_view_thumbnails": true,
+  "response_format": "json"
+}
