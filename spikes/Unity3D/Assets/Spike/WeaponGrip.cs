@@ -1,7 +1,8 @@
 using UnityEngine;
 
-// Applied by FighterPose after sampling, so animation cannot open the loaded hand.
-public sealed class DumbbellGrip : MonoBehaviour
+// Authored cylindrical grip, calibrated per anatomy. The held item is attached inside the palm.
+// Applied by FighterPose after sampling, so weapon-specific arm animations retain this grip.
+public sealed class WeaponGrip : MonoBehaviour
 {
     public GameObject item;
     public Transform[] fingers = System.Array.Empty<Transform>();

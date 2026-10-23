@@ -23,7 +23,7 @@ public sealed class FighterPose : MonoBehaviour
     AnimationMixerPlayable mixer;
     AnimationClipPlayable[] players;
     Transform head;
-    DumbbellGrip dumbbell;
+    WeaponGrip dumbbell;
 
     public void SetShoes(bool visible)
     {
@@ -33,7 +33,7 @@ public sealed class FighterPose : MonoBehaviour
     }
     void Awake()
     {
-        dumbbell=GetComponent<DumbbellGrip>();
+        dumbbell=GetComponent<WeaponGrip>();
         actor.cullingMode=AnimatorCullingMode.AlwaysAnimate;actor.applyRootMotion=false;
         head=Bone(HumanBodyBones.Head);
         graph=PlayableGraph.Create("GRRIND avatar poses");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);

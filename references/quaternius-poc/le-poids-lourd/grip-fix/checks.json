@@ -1,0 +1,23 @@
+{
+  "unityValidation": "PASS: enclosure, mutual exclusion, bare hand restoration, unequip",
+  "animationSamples": 70,
+  "maxFingerRotationErrorDegrees": 0,
+  "femaleEnclosingFingerContours": {
+    "correctedSocket": 4,
+    "originalSocket": 0
+  },
+  "typecheck": "PASS",
+  "lint": "PASS",
+  "unitTests": {
+    "passed": 559,
+    "failed": 0
+  },
+  "frameworkBuild": "SUCCEEDED",
+  "simulatorHostBuild": "SUCCEEDED",
+  "maestro": {
+    "flow": "quaternius-poc.yaml",
+    "session": "2026-10-23_144305",
+    "result": "PASS",
+    "durationSeconds": 200
+  }
+}
