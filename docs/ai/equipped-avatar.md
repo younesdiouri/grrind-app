@@ -38,5 +38,27 @@ Pas de publication EAS, de nouveaux meshes ou de génération payante. Les anima
 combat de l’haltère et la personnalisation persistante restent dans leurs tickets dédiés.
 Les snapshots de combat ne sont pas remplacés par l’inventaire courant.
 
+## Preuve du 23 octobre 2026
+
+Typecheck et lint passent, ainsi que 571 tests et les 29 previews, sans rebuild natif.
+Les 72 captures Unity sont distinctes, mesurent 512 × 640 px et pèsent ensemble 8,12 Mo.
+Les pixels du personnage et de ses objets restent dans `[90, 76, 376, 600]`, soit environ
+82 % de la hauteur pour le personnage, tête et pieds dans le cadre source. Les SHA-256 et
+la méthode de mesure sont dans `assets/images/heroes/unity/PROVENANCE.json`.
+
+Un seul compte QA jetable a reçu ses pièces et objets via les API normales. Les essais
+`inventory-avatar.yaml` ont effectivement vérifié et capturé l’haltère bleu ajouté, retiré,
+rééquipé, puis remplacé par le doré ; le t-shirt, le pantalon violet/cyan et les gants.
+Ils se sont arrêtés sur des clics Maestro passant sous la barre d’onglets. Le pilote centre
+désormais chaque cible interactive et confirme la case vide après un retrait.
+
+La reprise ciblée `inventory-avatar-finish.yaml` passe en 1 min 24 s : retrait des gants en
+conservant les vêtements et l’arme, réglages, profil public en lecture seule et conservation
+après arrêt/relancement. Les captures ont été inspectées. La phase d’équipement déjà passée
+n’a pas été rejouée une troisième fois. Le contrat et le backend restent inchangés.
+
+![Inventaire : mains vides, t-shirt corail, Guinzz cyan et haltère doré](equipped-avatar/inventory.png)
+![Même équipement dans les réglages](equipped-avatar/settings.png)
+
 Sources : [Unity as a Library](https://docs.unity3d.com/6000.3/Documentation/Manual/UnityasaLibrary.html),
 [Expo Image SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/image/).

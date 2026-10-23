@@ -11,10 +11,10 @@ export function CombatAvatarPreview({ equipment }: { equipment: components['sche
   const { key, unsupported } = equippedAvatarPreview(equipment);
   const [loaded, setLoaded] = useState<string>();
   const names = Object.values(equipment).flatMap((line) => line ? [line.name] : []);
-  return <View style={styles.container} testID={loaded === key ? 'combat-avatar-ready' : 'combat-avatar-loading'}>
+  return <View style={styles.container} testID={`avatar-preview-${key}`}>
     <Image source={EQUIPPED_AVATAR_IMAGES[key]} style={styles.preview} recyclingKey={key}
       contentFit="contain" accessible accessibilityLabel={`Personnage équipé : ${names.join(', ') || 'tenue de base'}`}
-      onLoad={() => setLoaded(key)} testID={`avatar-preview-${key}`} />
+      onLoad={() => setLoaded(key)} testID={loaded === key ? 'combat-avatar-ready' : 'combat-avatar-loading'} />
     {unsupported.length > 0 && <Text style={styles.note}>
       Équipé, sans aperçu 3D : {unsupported.map((line) => line.name).join(', ')}
     </Text>}
