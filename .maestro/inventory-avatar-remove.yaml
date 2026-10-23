@@ -1,0 +1,39 @@
+appId: app.grrind.dev
+---
+- scrollUntilVisible:
+    element:
+      id: character-tab-equipment
+    direction: UP
+- scrollUntilVisible:
+    element:
+      id: equipment-slot-${SLOT}
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: equipment-slot-${SLOT}
+- scrollUntilVisible:
+    element:
+      text: Retirer
+    direction: DOWN
+    centerElement: true
+- tapOn: Retirer
+- assertVisible:
+    id: tab-inventaire
+    selected: true
+- scrollUntilVisible:
+    element:
+      id: equipment-slot-${SLOT}
+    direction: UP
+    centerElement: true
+- extendedWaitUntil:
+    visible:
+      id: equipment-slot-${SLOT}
+      text: ".*, vide"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: combat-avatar-ready
+    direction: UP
+    centerElement: true
+- assertNotVisible: "Personnage équipé :.*${ITEM}.*"
+

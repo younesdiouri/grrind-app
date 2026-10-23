@@ -1,0 +1,47 @@
+appId: app.grrind.dev
+---
+# Reprise ciblée autorisée après la phase d’équipement ; même compte QA et mêmes objets.
+- openLink: grrindapp-dev://inventaire
+- runFlow:
+    file: inventory-avatar-remove.yaml
+    env:
+      SLOT: HANDS
+      ITEM: Gants de boxe dorés
+- takeScreenshot: avatar-gloves-removed
+- tapOn:
+    id: tab-reglages
+- scrollUntilVisible:
+    element:
+      id: combat-avatar-ready
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Le Poids Lourd"
+- takeScreenshot: avatar-settings
+- openLink: grrindapp-dev://joueur/${MAESTRO_AVATAR_PLAYER_ID}
+- extendedWaitUntil:
+    visible:
+      id: character-tab-equipment
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: combat-avatar-ready
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Le Poids Lourd"
+- assertNotVisible: Retirer
+- takeScreenshot: avatar-public-profile
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: tab-inventaire
+    timeout: 30000
+- tapOn:
+    id: tab-inventaire
+- scrollUntilVisible:
+    element:
+      id: combat-avatar-ready
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Personnage équipé :.*Corail.*Cyan.*Le Poids Lourd"
+- takeScreenshot: avatar-after-relaunch

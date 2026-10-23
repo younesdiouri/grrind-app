@@ -1,0 +1,33 @@
+appId: app.grrind.dev
+---
+# Sous-flow du parcours d’aperçu : sélectionner puis équiper un objet réellement possédé.
+- scrollUntilVisible:
+    element:
+      id: character-tab-equipment
+    direction: UP
+- scrollUntilVisible:
+    element:
+      id: equipment-slot-${SLOT}
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: equipment-slot-${SLOT}
+- scrollUntilVisible:
+    element:
+      text: "Équiper — ${ITEM}"
+    direction: DOWN
+    centerElement: true
+- tapOn: "Équiper — ${ITEM}"
+- assertVisible:
+    id: tab-inventaire
+    selected: true
+- extendedWaitUntil:
+    notVisible: "Équiper — ${ITEM}"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: combat-avatar-ready
+    direction: UP
+    centerElement: true
+- assertVisible: "Personnage équipé :.*${ITEM}.*"
+

@@ -11,6 +11,7 @@ import { messageFor, type Failure } from '@/features/auth/problems';
 import { signOut } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
 import { CombatAvatarPreview } from '@/features/combat/CombatAvatarPreview';
+import { useInventory } from '@/features/inventory/useInventory';
 import {
   fetchProfile,
   updateNotificationPreference,
@@ -97,6 +98,7 @@ export default function ReglagesScreen() {
   const { permission, refresh } = useNotificationPermission();
   const { access } = useHealthAccess();
   const auth = useAuth();
+  const inventory = useInventory();
 
   const [state, setState] = useState<
     { step: 'loading' } | { step: 'ready'; profile: UserProfile } | { step: 'failed'; failure: Failure }
@@ -134,7 +136,10 @@ export default function ReglagesScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Ton personnage</Text>
-        <View style={styles.avatar}><CombatAvatarPreview /></View>
+        <View style={styles.avatar}>{inventory.data ? <CombatAvatarPreview equipment={inventory.data.equipment} />
+          : inventory.isPending ? <ActivityIndicator color={color.accent} />
+          : <Text style={styles.body}>Personnage indisponible.</Text>}</View>
+        {inventory.isError && <Button label="Recharger le personnage" variant="quiet" onPress={() => void inventory.refetch()} />}
       </View>
       {__DEV__ && <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />}
 

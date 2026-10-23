@@ -1,0 +1,83 @@
+appId: app.grrind.dev
+tags:
+  - ios
+  - inventory
+---
+# E2E_OFFLINE=1 conserve la session ; le compte QA jetable est provisionné par l’API normale.
+# MAESTRO_AVATAR_EMAIL/MAESTRO_AVATAR_PLAYER_ID restent hors Git. Aucun reset de base.
+- launchApp
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - tapOn: Close
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${MAESTRO_AVATAR_EMAIL}
+- extendedWaitUntil:
+    visible: NIVEAU
+    timeout: 30000
+- tapOn:
+    id: tab-inventaire
+- scrollUntilVisible:
+    element:
+      id: combat-avatar-ready
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Personnage équipé : tenue de base"
+- takeScreenshot: avatar-empty
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: WEAPON
+      ITEM: Haltère ego
+- takeScreenshot: avatar-ego-equipped
+- runFlow:
+    file: inventory-avatar-remove.yaml
+    env:
+      SLOT: WEAPON
+      ITEM: Haltère ego
+- assertVisible: "Personnage équipé : tenue de base"
+- takeScreenshot: avatar-ego-removed
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: WEAPON
+      ITEM: Haltère ego
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: WEAPON
+      ITEM: Le Poids Lourd
+- takeScreenshot: avatar-weapon-replaced
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: CHEST
+      ITEM: T-shirt sportif — Ardoise
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: LEGS
+      ITEM: Les Guinzz — Violet
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: HANDS
+      ITEM: Gants de boxe dorés
+- takeScreenshot: avatar-full-equipment
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: LEGS
+      ITEM: Les Guinzz — Cyan
+- takeScreenshot: avatar-pants-replaced
+- runFlow:
+    file: inventory-avatar-equip.yaml
+    env:
+      SLOT: CHEST
+      ITEM: T-shirt sportif — Corail
+- takeScreenshot: avatar-shirt-replaced
+- runFlow: inventory-avatar-finish.yaml
