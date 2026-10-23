@@ -158,6 +158,7 @@ public static class QuaterniusPoc
             return band;
         }).ToArray();
         appearance.SetHeadband(false);
+        GoldenBoxingGloves.Install(root, bodyName);
         var clips = AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Quaternius/UAL2Clean.fbx").OfType<AnimationClip>().ToArray();
         var idle = ForwardIdle(clips.Single(c => c.name == "Armature|Idle_No_Loop"));
         pose.clips = new[] { FittedMixamo("BoxingIdle"), FittedMixamo("BackHandCross"), clips.Single(c => c.name == "Armature|Idle_Shield_Break"),

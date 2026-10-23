@@ -1,0 +1,22 @@
+{
+  "uuid": "ECEEA66B-FE35-38CA-9EAD-658C4275303C",
+  "installed": "/Users/younesdiouri/Library/Developer/CoreSimulator/Devices/236B6829-DCFF-4048-B4D4-430D9A97F840/data/Containers/Bundle/Application/E4D450A0-032B-4454-BB4B-CD5CF0F0DDF3/GRRINDdev.app",
+  "data_files": {
+    "Data/globalgamemanagers": "eb3157d83dd629819ff5c5a3a03bb2ac0c146df77d362f1914506f288b355d66",
+    "Data/boot.config": "b747191a75b29159f516e478ea1e688d73af0ca61e212025811ff15d54907ec3",
+    "Data/RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+    "Data/resources.assets": "ee194b67c779e93711ae4c44ce93ac5cfb2705e0dbe3246e3cfa8322b3678242",
+    "Data/ScriptingAssemblies.json": "f773af6143b46408f4415a50a039524a444412abea2ba854c4234e84029b6e88",
+    "Data/sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968",
+    "Data/sharedassets0.assets": "13a1de4061e319d9375d60b6d45bb0e9c4c65e06fd2f4ff640d607e2d91ac2f9",
+    "Data/globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+    "Data/level0": "ccb1d7f8b76fe7236eb7c712a24087918c96670b9fede6a84fa297c610979ea3",
+    "Data/resources.assets.resS": "9a7461a8bf722f716eaa26ec77cb2f840d773247dce1e4c3f349f3caf223b026",
+    "Data/globalgamemanagers.assets": "6e11363e5a9c1cbbf7764b8797b8d10ae6beede3d77350a06349d7909e875664",
+    "Data/Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+    "Data/Resources/unity_builtin_extra": "54c99c97cb7396b16256680eb0202038197f391dddf59b64dd1867d923034d01",
+    "Data/Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+    "Data/Managed/Metadata/global-metadata.dat": "0c7c44d19795f68b2654f3575b70c1409b8e5f9faec1587500dc8b344b01cdb9",
+    "Data/Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed"
+  }
+}

@@ -19,6 +19,16 @@ public sealed class QuaterniusAppearance : MonoBehaviour
     public GameObject guinzz;
     public Material guinzzMaterial;
     public Mesh guinzzFullMesh, guinzzBootMesh;
+    public GameObject[] boxingGloves = System.Array.Empty<GameObject>();
+    public SkinnedMeshRenderer[] gloveArms = System.Array.Empty<SkinnedMeshRenderer>();
+    public Mesh[] bareHandMeshes = System.Array.Empty<Mesh>(), coveredHandMeshes = System.Array.Empty<Mesh>();
+
+    public void SetBoxingGloves(bool visible)
+    {
+        foreach (var glove in boxingGloves) glove.SetActive(visible);
+        for (int i = 0; i < gloveArms.Length; i++)
+            gloveArms[i].sharedMesh = visible ? coveredHandMeshes[i] : bareHandMeshes[i];
+    }
 
     public void SetBoots(bool visible)
     {
