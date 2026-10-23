@@ -1673,7 +1673,7 @@ export interface components {
         DroppedItem: {
             /**
              * @description La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire.
-             * @example WORN_RUNNING_SHOES
+             * @example GOLDEN_BOXING_GLOVES
              */
             key: string;
             /**
@@ -1683,7 +1683,7 @@ export interface components {
             kind: "EQUIPMENT" | "CHEST" | "RESOURCE";
             /**
              * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
-             * @example Chaussures de course usées
+             * @example Gants de boxe dorés
              */
             name: string;
             /** @enum {string} */
@@ -1697,7 +1697,7 @@ export interface components {
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
              * @description En pièces — de quoi afficher la valeur de l'objet sans recharger le catalogue.
-             * @example 30
+             * @example 20
              */
             priceCoins: number;
             /**
@@ -1726,7 +1726,7 @@ export interface components {
         PublicInventoryLine: {
             /**
              * @description La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire.
-             * @example WORN_RUNNING_SHOES
+             * @example GOLDEN_BOXING_GLOVES
              */
             key: string;
             /**
@@ -1736,7 +1736,7 @@ export interface components {
             kind: "EQUIPMENT" | "CHEST" | "RESOURCE";
             /**
              * @description Déjà traduit dans la langue du joueur — rien à recharger côté client.
-             * @example Chaussures de course usées
+             * @example Gants de boxe dorés
              */
             name: string;
             /** @enum {string} */

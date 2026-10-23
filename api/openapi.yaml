@@ -2846,7 +2846,7 @@ components:
         key:
           description: "La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire."
           type: string
-          example: WORN_RUNNING_SHOES
+          example: GOLDEN_BOXING_GLOVES
         kind:
           description: "Ce que l'objet *est* — `EQUIPMENT` se porte, `CHEST` s'ouvre (#230). C'est sur ce champ que l'app décide « Équiper » ou « Ouvrir », jamais sur `slot === null`."
           type: string
@@ -2857,7 +2857,7 @@ components:
         name:
           description: 'Déjà traduit dans la langue du joueur — rien à recharger côté client.'
           type: string
-          example: 'Chaussures de course usées'
+          example: 'Gants de boxe dorés'
         rarity:
           type: string
           enum:
@@ -2885,7 +2885,7 @@ components:
         priceCoins:
           description: "En pièces — de quoi afficher la valeur de l'objet sans recharger le catalogue."
           type: integer
-          example: 30
+          example: 20
         imageUrl:
           description: "URL absolue de l'image livrée par le serveur."
           type: string
@@ -2927,7 +2927,7 @@ components:
         key:
           description: "La clé du catalogue — stable, ce n'est pas un identifiant d'exemplaire."
           type: string
-          example: WORN_RUNNING_SHOES
+          example: GOLDEN_BOXING_GLOVES
         kind:
           description: "Ce que l'objet *est* — `EQUIPMENT` se porte, `CHEST` s'ouvre (#230). C'est sur ce champ que l'app décide « Équiper » ou « Ouvrir », jamais sur `slot === null`."
           type: string
@@ -2938,7 +2938,7 @@ components:
         name:
           description: 'Déjà traduit dans la langue du joueur — rien à recharger côté client.'
           type: string
-          example: 'Chaussures de course usées'
+          example: 'Gants de boxe dorés'
         rarity:
           type: string
           enum:
