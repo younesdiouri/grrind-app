@@ -1,7 +1,12 @@
 # ʿĀlam al-Nafs et atelier
 
-**Refonte prévue :** [Unity et nouveau bestiaire 3D](design/unity-pve-alam.md),
-ticket [#249](https://github.com/younesdiouri/grrind-app/issues/249).
+**Refonte métier prévue côté backend :**
+[grrind-back#317](https://github.com/younesdiouri/grrind-back/issues/317).
+Les nouvelles règles restent à cadrer avec l’auteur avant implémentation.
+
+Le [cadrage visuel Unity et nouveau bestiaire](design/unity-pve-alam.md) distingue
+la création des adversaires [#251](https://github.com/younesdiouri/grrind-app/issues/251)
+et leur intégration dans l’app [#249](https://github.com/younesdiouri/grrind-app/issues/249).
 Le raid et l’ancien PvE abandonneront tous leurs sprites ; les nouveaux mobs seront
 créés avec Meshy puis préparés pour Unity. Le reste de ce document décrit l’existant.
 
