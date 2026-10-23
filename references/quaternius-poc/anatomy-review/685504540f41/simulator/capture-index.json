@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-10-23T06:58:33.435400+00:00",
+  "simulator": "236B6829-DCFF-4048-B4D4-430D9A97F840",
+  "appContainer": "/Users/younesdiouri/Library/Developer/CoreSimulator/Devices/236B6829-DCFF-4048-B4D4-430D9A97F840/data/Containers/Bundle/Application/64C0C551-25D6-4656-B9A2-E00A68ED4F74/GRRINDdev.app",
+  "identityReport": "../root-native-motion-copy-identity.json",
+  "captureMethod": "simctl io recordVideo; Python child SIGINT; all exit0",
+  "videos": [
+    "duel-and-return.mp4",
+    "female-combo-detail.mp4",
+    "female-combo-full.mp4",
+    "female-direct-full.mp4",
+    "female-dodge-detail.mp4",
+    "female-dodge-full.mp4",
+    "male-combo-detail.mp4",
+    "male-combo-full.mp4",
+    "male-direct-full.mp4",
+    "male-dodge-detail.mp4",
+    "male-dodge-full.mp4"
+  ],
+  "workshop": {
+    "angle": 25,
+    "animated": true,
+    "shirt": "cyan (Ardoise)",
+    "skin": "tan",
+    "eyes": "green",
+    "hair": "brown buns",
+    "headband": true
+  },
+  "duel": "male player ardoise / female opponent coral; arena guard inspect=false; victory; return portrait content observed before rotating physical pilot",
+  "finalState": "female; idle; Tenue; T-shirt sport; Ardoise; Tissu; boots and cyan headband; portrait pilot",
+  "metro": {
+    "port": 8082,
+    "EXPO_PUBLIC_E2E": "1",
+    "E2E_OFFLINE": "1",
+    "session": 89139
+  },
+  "sourceMutations": false,
+  "rebuild": false,
+  "reset": false
+}

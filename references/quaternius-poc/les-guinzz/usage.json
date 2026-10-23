@@ -1,0 +1,14 @@
+{
+  "cutoff_utc": "2026-10-23T08:27:36.964581+00:00",
+  "responses": 94,
+  "elapsed_minutes": 26.7,
+  "usage": {
+    "input_tokens": 12216041,
+    "cached_input_tokens": 12042624,
+    "output_tokens": 31066,
+    "reasoning_output_tokens": 8570
+  },
+  "meshy_credits": 0,
+  "subagents": 0,
+  "limits": "Snapshot before final reply; reasoning included in output, not added. Not ChatGPT quota or billing. Previous tee scope was broader."
+}

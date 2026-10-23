@@ -4,8 +4,11 @@ import { beatAt, sampleRamp } from './sampling.ts';
 import type { Actor, BattleBeat } from './timeline.ts';
 
 export type UnityAvatar = {
-  body: 'male' | 'female'; hairStyle: 'parted' | 'buzzed' | 'buns';
+  body: 'male' | 'female'; hairStyle: 'parted' | 'buzzed' | 'buns' | 'long';
   boots: boolean; headband: boolean; visible: boolean;
+  skinTone?: 'light' | 'tan' | 'brown' | 'deep'; eyeColor?: 'brown' | 'blue' | 'green';
+  hairColor?: 'brown' | 'black' | 'blond'; sportShirt?: boolean; shirtColor?: 'cyan' | 'coral';
+  pantsColor?: 'original' | 'violet' | 'cyan' | 'coral';
 };
 // Local V1 default; persistent appearance comes from the future server avatar contract.
 export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true };

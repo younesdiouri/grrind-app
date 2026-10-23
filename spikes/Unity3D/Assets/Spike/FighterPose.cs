@@ -28,6 +28,7 @@ public sealed class FighterPose : MonoBehaviour
     {
         foreach(var shoe in shoes)shoe.gameObject.SetActive(visible);
         if(bareFeet!=null)bareFeet.SetActive(!visible);
+        GetComponent<QuaterniusAppearance>()?.SetBoots(visible);
     }
     void Awake()
     {
@@ -64,9 +65,9 @@ public sealed class FighterPose : MonoBehaviour
         }
         if(inspect&&inspectionCamera!=null)
         {
-            var target=view==1?head.position+Vector3.up*headViewOffset:view==2?Bone(HumanBodyBones.RightHand).position:view==3?(Bone(HumanBodyBones.LeftFoot).position+Bone(HumanBodyBones.RightFoot).position)*.5f:placement+Vector3.up*.95f;
+            var target=view==1?head.position+Vector3.up*headViewOffset:view==2?Bone(HumanBodyBones.RightHand).position:view==3?(Bone(HumanBodyBones.LeftFoot).position+Bone(HumanBodyBones.RightFoot).position)*.5f:view==4?Bone(HumanBodyBones.Chest).position+Vector3.up*.04f:placement+Vector3.up*.95f;
             inspectionCamera.transform.position=target+Quaternion.Euler(0,azimuth,0)*new Vector3(0,view==0?.6f:.10f,5);
-            inspectionCamera.transform.LookAt(target);inspectionCamera.orthographicSize=view==0?1.1f:view==1?headViewSize:view==3?.35f:.23f;
+            inspectionCamera.transform.LookAt(target);inspectionCamera.orthographicSize=view==0?1.1f:view==1?headViewSize:view==4?.38f:view==3?.35f:.23f;
         }
     }
     // Canonical phase .5 is the visible contact/reaction peak, not the middle of the source file.

@@ -79,7 +79,10 @@ Chaque barrière bloque la suivante ; un échec renvoie à l'étape qui l'a prod
    budget), échelle documentée (dimensions natives conservées pour Quaternius), proportions
    re-mesurées sur une capture orthographique.
 4. **G3 — Rig et postures.** Les sept gestes au contact, de face et de trois quarts, avec et
-   sans chaque objet : aucune interpénétration, pieds au sol, prise propre.
+   sans chaque objet : aucune interpénétration, pieds au sol, prise propre. Pour un vêtement,
+   appliquer aussi le [contrôle de raccord au corps](references/garment-fit.md) : un cou
+   artificiellement long, un col flottant ou une rupture de silhouette bloque cette barrière
+   et impose une correction de l'asset puis de nouvelles captures.
 5. **G4 — Validation de l'auteur.** Planche côte à côte : référence approuvée, rendu Unity au
    cadrage et à l'éclairage du combat, à la résolution de l'iPhone. Réponse de l'auteur
    consignée mot pour mot. Le verdict V1 autorise sa conservation et la suppression des

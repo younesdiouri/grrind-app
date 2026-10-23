@@ -29,6 +29,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _EyeMode: 1
     - _OutlineWidth: 0.0007
     - _RampCenter: 0
     - _RampSoftness: 0.22
@@ -36,6 +37,8 @@ Material:
     - _RimStrength: 0.06
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EyeSkinTint: {r: 1, g: 1, b: 1, a: 1}
+    - _IrisTint: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 0.06999998, g: 0.059999965, b: 0.09999997, a: 1}
     - _RimColor: {r: 0.54999995, g: 0.88, b: 1, a: 1}
     - _ShadowTint: {r: 0.72, g: 0.72, b: 0.72, a: 1}

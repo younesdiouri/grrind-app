@@ -1,0 +1,23 @@
+{
+  "name": "Les Guinzz",
+  "source": "Quaternius Universal Base Characters",
+  "license": "CC0",
+  "method": "Native lower body cut, 2 mm offset, inherited weights, authored matte color panels",
+  "meshy_credits": 0,
+  "measurements": {
+    "Male": {
+      "vertices": 1636,
+      "triangles": 3184,
+      "min_z_m": 0.17809545993804932,
+      "max_z_m": 1.1509184837341309,
+      "max_influences": 4
+    },
+    "Female": {
+      "vertices": 1648,
+      "triangles": 3220,
+      "min_z_m": 0.1790422946214676,
+      "max_z_m": 1.1497045755386353,
+      "max_influences": 4
+    }
+  }
+}
