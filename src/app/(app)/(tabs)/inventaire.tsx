@@ -316,7 +316,7 @@ export default function InventoryScreen() {
             <Text style={styles.hint}>Choisis une zone</Text>
           </View>
 
-          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={<CombatAvatarPreview />} />
+          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={<CombatAvatarPreview equipment={data.equipment} />} />
 
           <SystemFrame contentStyle={styles.drawer}>
             <View style={styles.drawerHead}>
