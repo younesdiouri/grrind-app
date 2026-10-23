@@ -1,0 +1,26 @@
+{
+  "units": "metres",
+  "source_bounds": [
+    1.899608850479126,
+    1.0243979692459106,
+    1.1457679271697998
+  ],
+  "dimensions_m": [
+    0.65,
+    0.3,
+    0.3
+  ],
+  "grip_diameter_m": 0.025,
+  "triangles": 1974,
+  "vertices": 3980,
+  "material_count": 1,
+  "grip_center": "origin",
+  "long_axis": "X",
+  "texture": "BaseColor.png, sRGB, 2048px",
+  "inferred": [
+    "physical dimensions",
+    "back from generated views"
+  ],
+  "topology": "Meshy original, no remesh or decimation after texture",
+  "deviation": "Grip narrowed from 56.6 x 49 mm to 25 mm to fit fingers; overall length/diameter 2.17 versus source 1.66."
+}

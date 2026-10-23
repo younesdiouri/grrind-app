@@ -1,0 +1,20 @@
+{
+  "file_paths": [
+    "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/le-poids-lourd/ref/front.png",
+    "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/le-poids-lourd/ref/side.png",
+    "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/le-poids-lourd/ref/back.png"
+  ],
+  "ai_model": "meshy-7.1",
+  "geometry_resolution": "2k",
+  "target_polycount": 2000,
+  "should_remesh": true,
+  "topology": "triangle",
+  "should_texture": true,
+  "texture_resolution": "2k",
+  "enable_pbr": false,
+  "image_enhancement": false,
+  "target_formats": [
+    "glb"
+  ],
+  "response_format": "json"
+}

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "triangles": 1974,
+  "dimensions_m": [
+    0.6499999761581421,
+    0.30000001192092896,
+    0.30000001192092896
+  ],
+  "center_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "uv_layers": 1,
+  "pivot": "grip centre; lower extent -0.15 m is intentional"
+}

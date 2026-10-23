@@ -1,0 +1,37 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/le-poids-lourd/PR_LePoidsLourd_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 1974
+    },
+    "fail": [],
+    "warn": [
+      "PR_LePoidsLourd_LOD0: 2989 doubled vertices within 0.0001"
+    ]
+  },
+  "objects": [
+    {
+      "name": "PR_LePoidsLourd_LOD0",
+      "type": "MESH",
+      "warn": [
+        "2989 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1974,
+        "verts_evaluated": 3980,
+        "verts": 3980,
+        "faces": 1974,
+        "boundary_edges": 4070,
+        "nonmanifold_edges": 0,
+        "islands": 958,
+        "flipped_vs_recalc": 840,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}
