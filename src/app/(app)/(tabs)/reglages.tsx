@@ -1,6 +1,7 @@
 import * as Linking from 'expo-linking';
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -10,10 +11,9 @@ import { color, combatMotion, notificationCategoryLabel, radius, space, type } f
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { signOut } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
-import { CombatAvatarPreview } from '@/features/combat/CombatAvatarPreview';
-import { useInventory } from '@/features/inventory/useInventory';
+import { AvatarEntry } from '@/features/avatar/AvatarEntry';
+import { avatarProfileKey, useAvatarProfile } from '@/features/avatar/useAvatarProfile';
 import {
-  fetchProfile,
   updateNotificationPreference,
   type UserProfile,
 } from '@/features/notifications/preferences';
@@ -98,29 +98,12 @@ export default function ReglagesScreen() {
   const { permission, refresh } = useNotificationPermission();
   const { access } = useHealthAccess();
   const auth = useAuth();
-  const inventory = useInventory();
-
-  const [state, setState] = useState<
-    { step: 'loading' } | { step: 'ready'; profile: UserProfile } | { step: 'failed'; failure: Failure }
-  >({ step: 'loading' });
-
-  // `load` ne touche jamais `state` avant l'attente réseau : l'état initial est déjà
-  // `'loading'` (voir `useState` ci-dessus), donc rien à écrire de synchrone dans l'effet de
-  // montage — seul `retry` (l'appui sur « Réessayer ») a besoin de repasser par `'loading'`.
-  const load = () => {
-    void fetchProfile().then((outcome) => {
-      setState(
-        outcome.ok ? { step: 'ready', profile: outcome.profile } : { step: 'failed', failure: outcome.failure },
-      );
-    });
-  };
-
-  useEffect(load, []);
-
-  const retry = () => {
-    setState({ step: 'loading' });
-    load();
-  };
+  const profile = useAvatarProfile();
+  const queryClient = useQueryClient();
+  const state = profile.isPending ? { step: 'loading' as const }
+    : profile.isError ? { step: 'failed' as const, failure: profile.error }
+    : { step: 'ready' as const, profile: profile.data };
+  const retry = () => { void profile.refetch(); };
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
@@ -136,10 +119,11 @@ export default function ReglagesScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Ton personnage</Text>
-        <View style={styles.avatar}>{inventory.data ? <CombatAvatarPreview equipment={inventory.data.equipment} />
-          : inventory.isPending ? <ActivityIndicator color={color.accent} />
+        <View style={styles.avatar}>{state.step === 'ready' ? <AvatarEntry avatar={state.profile.avatar}
+          editable onPress={() => router.push('/apparence')} />
+          : state.step === 'loading' ? <ActivityIndicator color={color.accent} />
           : <Text style={styles.body}>Personnage indisponible.</Text>}</View>
-        {inventory.isError && <Button label="Recharger le personnage" variant="quiet" onPress={() => void inventory.refetch()} />}
+        {profile.isError && <Button label="Recharger le personnage" variant="quiet" onPress={retry} />}
       </View>
       {__DEV__ && <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />}
 
@@ -173,7 +157,7 @@ export default function ReglagesScreen() {
         </View>
       ) : null}
 
-      {state.step === 'ready' ? <Preferences profile={state.profile} onProfile={(profile) => setState({ step: 'ready', profile })} /> : null}
+      {state.step === 'ready' ? <Preferences profile={state.profile} onProfile={(profile) => queryClient.setQueryData(avatarProfileKey(profile.id), profile)} /> : null}
 
     </ScrollView>
   );

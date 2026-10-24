@@ -58,7 +58,8 @@ export default function JoueurScreen() {
           <Challenge id={id} name={player.data.displayName} />
 
           <PlayerAttributes player={player.data} />
-          <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics} />
+          <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics}
+            avatar={player.data.avatar} onAvatarPress={() => router.push({ pathname: '/apparence', params: { playerId: id } })} />
 
           <Text style={styles.body}>
             Membre GRRIND depuis le {formatCalendarDate(player.data.registeredAt)}.
