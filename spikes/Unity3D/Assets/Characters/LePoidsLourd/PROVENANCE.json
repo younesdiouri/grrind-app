@@ -6,6 +6,6 @@
   "triangles": 1974,
   "texture": "One 2048px sRGB base color",
   "modifications": "Scaled to 650 x 300 x 300 mm; grip narrowed to 25 mm. Original triangles, UVs and face winding retained.",
-  "approval": "User explicitly requested a Simulator workshop trial on 2026-10-23 despite known boxing-transition collisions. Inspection only; combat equipment remains disabled.",
+  "approval": "On 2026-10-24 the author explicitly chose combat visibility with the current normal punch and critical uppercut despite known intersections. Other attacks are excluded; weapon-specific animations remain deferred. Mesh and grip unchanged.",
   "rig_reference": "Quaternius CC0 hand bones; grip rotations sampled from existing Mixamo direct at contact, for local fitting only. Clip licensing remains separate."
 }

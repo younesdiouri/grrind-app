@@ -48,6 +48,7 @@ public sealed class CombatPresentation : MonoBehaviour
     TextMeshProUGUI duel,turn,title,subtitle,gains;
     CanvasGroup resultAlpha;
     TMP_FontAsset font;
+    FacetedGraphic[] confetti;
 
     public void Setup(Configuration value,Camera camera,FighterPose left,FighterPose right,Rect framing)
     {
@@ -80,13 +81,20 @@ public sealed class CombatPresentation : MonoBehaviour
         enemyUI=BuildFighter("Enemy",new Vector2(.565f,.81f),new Vector2(.975f,.97f),Pink);
         duel=Label("Duel",safe,new Vector2(.45f,.91f),new Vector2(.55f,.97f),"DUEL",22,Cyan);
         turn=Label("Turn",safe,new Vector2(.35f,.74f),new Vector2(.65f,.80f),"PRÊTS ?",23,White);
-        finale=Rect("Result",safe,new Vector2(.32f,.56f),new Vector2(.68f,.80f));
+        finale=Rect("Result",safe,new Vector2(.30f,.78f),new Vector2(.70f,.98f));
         resultAlpha=finale.gameObject.AddComponent<CanvasGroup>();resultAlpha.alpha=0;
         Plate("Result shadow",finale,Vector2.zero,Vector2.one,WithAlpha(Night,.94f));
         Plate("Top neon",finale,new Vector2(.08f,.97f),new Vector2(.92f,1),Cyan);
         title=Label("Verdict",finale,new Vector2(.03f,.35f),new Vector2(.97f,.95f),"",66,Mint);
         subtitle=Label("Subtitle",finale,new Vector2(.04f,.10f),new Vector2(.96f,.36f),"",20,White);
-        gains=Label("Gains",safe,new Vector2(.30f,.40f),new Vector2(.70f,.51f),"",27,Amber);
+        gains=Label("Gains",safe,new Vector2(.26f,.69f),new Vector2(.74f,.75f),"",27,Amber);
+        confetti=new FacetedGraphic[42];
+        var colors=new[]{Cyan,Mint,Amber,Pink,Violet};
+        for(int i=0;i<confetti.Length;i++)
+        {
+            confetti[i]=Plate("Confetti",safe,Vector2.zero,Vector2.zero,WithAlpha(colors[i%colors.Length],0));
+            confetti[i].rectTransform.sizeDelta=new Vector2(12+i%5*3,8+i%3*4);
+        }
         // Rendering only: RN owns accessible controls and the detailed loot cards.
         canvas.gameObject.SetActive(config!=null);
     }
@@ -130,6 +138,9 @@ public sealed class CombatPresentation : MonoBehaviour
         safe.anchorMax=new Vector2(area.xMax/Screen.width,area.yMax/Screen.height);
         Fighter(playerUI,player,frame.player,config.playerHp,1,Mint);
         Fighter(enemyUI,enemy,frame.enemy,config.enemyHp,2,Pink);
+        playerUI.plate.gameObject.SetActive(!frame.finished);
+        enemyUI.plate.gameObject.SetActive(!frame.finished);
+        duel.gameObject.SetActive(!frame.finished);
         turn.text=frame.finished?"":frame.active==1?"À TOI DE JOUER":frame.active==2?"L’ADVERSAIRE ATTAQUE":"PRÊTS ?";
         turn.color=frame.active==1?Mint:frame.active==2?Pink:White;
         float reveal=frame.reduced?1:Mathf.Clamp01(frame.finale*4);
@@ -139,8 +150,19 @@ public sealed class CombatPresentation : MonoBehaviour
         int coins=Mathf.RoundToInt(config.coins*(frame.reduced?1:Mathf.Clamp01((frame.finale-.35f)/.55f)));
         gains.text=(config.coins>0?"+"+coins+" PIÈCES":"")
             +(config.coins>0&&config.loot>0?"   /   ":"")+(config.loot>0?"+"+config.loot+" OBJET"+(config.loot>1?"S":""):"");
-        if(player!=null)player.resultPose=frame.finished&&!config.limit?(config.won?1:-1)*reveal:0;
-        if(enemy!=null)enemy.resultPose=frame.finished&&!config.limit?(config.won?-1:1)*reveal:0;
+        for(int i=0;i<confetti.Length;i++)
+        {
+            float delay=(i%7)*.025f;
+            float progress=Mathf.Clamp01((frame.finale-delay)/(1.15f+i%5*.12f));
+            float fade=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.9f,1,progress));
+            var shard=confetti[i];
+            shard.color=WithAlpha(shard.color,frame.finished&&config.won&&!frame.reduced
+                ?Mathf.Clamp01(progress*12)*(1-fade):0);
+            float x=.05f+Mathf.Repeat(i*.618034f,1)*.9f+Mathf.Sin(i+progress*5)*.035f;
+            shard.rectTransform.anchoredPosition=new Vector2(x*safe.rect.width,(1.08f-progress)*safe.rect.height);
+            shard.rectTransform.localRotation=Quaternion.Euler(0,0,i*137+progress*(i%2==0?300:-300));
+            shard.rectTransform.localScale=new Vector3(.45f+Mathf.Abs(Mathf.Cos(i+progress*8))*.55f,1,1);
+        }
     }
     void Fighter(FighterUI ui,FighterPose actor,FighterState state,int maxHp,int side,Color color)
     {
@@ -172,11 +194,10 @@ public sealed class CombatPresentation : MonoBehaviour
         for(int i=0;i<ui.shards.Length;i++)
         {
             float angle=i*2.39996f;
-            bool celebrate=frame.finished&&config.won&&side==1&&!frame.reduced;
-            float progress=celebrate?frame.finale:state.impactProgress;
+            float progress=state.impactProgress;
             var shard=ui.shards[i];
-            shard.color=WithAlpha(celebrate||state.impact>1?Amber:Cyan,
-                celebrate||state.impact>0&&!frame.finished?(1-progress)*(1-progress):0);
+            shard.color=WithAlpha(state.impact>1?Amber:Cyan,
+                state.impact>0&&!frame.finished?(1-progress)*(1-progress):0);
             float travel=(18+progress*95)*(state.impact>1?1.3f:1);
             shard.rectTransform.anchoredPosition=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*travel;
             shard.rectTransform.localRotation=Quaternion.Euler(0,0,angle*Mathf.Rad2Deg);

@@ -17,10 +17,11 @@ personnelle de l’auteur sur Simulator. Aucun build EAS.
    Unity dessine chiffres, impacts et effets sur les positions projetées des personnages,
    ainsi que le HUD fixe néon facetté. Les textes suivent les personnages mais restent face
    à la caméra. Les illustrations PvE restantes conservent un ancrage dans leur cadre actuel.
-3. **Finale.** Le vainqueur reste visible, le cadre et le titre arrivent avec une animation
-   courte. Les gains serveur apparaissent ensuite ; les fiches de butin, le bilan détaillé,
+3. **Finale.** Le vainqueur est seul au centre, de face, dans la posture neutre existante.
+   Le cadre et le titre arrivent avec une animation courte, accompagnés de confettis facettés
+   en cas de victoire. Les gains serveur apparaissent ensuite ; les fiches de butin, le bilan détaillé,
    les commandes et l’accessibilité restent en RN. Une fin à la limite ne simule pas de KO.
-4. **Preuve.** Compiler/exporter Unity pour le Simulator, reconstruire seulement le dev build
+4. **Preuve.** Compiler/exporter Unity pour le Simulator et l’iPhone, reconstruire le dev build
    concerné, jouer un parcours pertinent et inspecter les captures. Laisser une démo jouable
    à l’auteur avant tout push.
 
@@ -87,7 +88,48 @@ les huit effets/camps, le PvP naturel, les finales PvE et le retour portrait. Ca
 Les exports/intermédiaires Unity de cette compilation sont retirés après copie du framework
 courant et installation ; aucun historique de builds n’est ajouté.
 
+### Retour sur le Poids Lourd et la finale
+
+L’auteur demande ensuite d’afficher son arme équipée avec les gestes actuels, en conservant
+seulement le direct et l’uppercut critique. La restriction native à l’inspection est retirée.
+L’annonce de combo garde le repos neutre et la relance utilise le direct ; les réactions
+restent disponibles. Les limites des clips et le contrôle géométrique sont consignés dans
+`le-poids-lourd-pilot.md`, sans présenter l’essai comme une validation des collisions.
+
+Le lever de bras procédural est supprimé. Le gagnant Unity rejoint le centre, se tourne vers
+la caméra et garde la posture neutre existante. L’autre personnage et les barres de vie
+disparaissent. Le titre et les gains occupent le haut du cadre, au-dessus du visage ; des
+confettis polygonaux néon accompagnent la victoire et sont retirés en mouvements réduits.
+Un adversaire PvE encore illustré conserve son rendu existant.
+
+Les contrôles Unity vérifient l’arme sur les deux corps, le gagnant seul au centre et de face,
+la posture neutre, les confettis, les mouvements réduits et le retour des acteurs au rejeu.
+Le cadrage final utilise une zone fixe, indépendante de la hauteur du stage RN : le premier
+parcours avait révélé des pieds masqués par les boutons en PvE. Le contrôle de projection
+passe pour les deux hauteurs de stage, en victoire et en défaite.
+Les deux exports et frameworks compilent : Simulator `0903457E-2EEE-30AC-A9BD-EB1D622A9A0E`,
+Device `9A60B418-D925-341E-88A8-E1296ECD62FA`. Binaire et 16 fichiers Data de chaque tranche
+copiée identiques à la compilation ; exports et intermédiaires Unity supprimés après copie.
+Types, lint, 587 tests Node et 29 previews passent.
+
+Le parcours ciblé `combat-loot-preview.yaml` passe en **1 min 49 s**, session
+`2026-10-24_193345` : direct et uppercut sur les deux corps, duel naturel jusqu’au gagnant
+centré, victoire PvE avec 6 pièces/1 objet, bilan et retour portrait. Captures inspectées.
+Le contrôle d’opacité reproduit les confettis trop pâles avant correction du fondu, puis passe ;
+les mouvements réduits les suppriment toujours. Une compilation Simulator sans signature avait
+exposé une erreur Keychain pendant la vérification ; la signature normale et ses autorisations
+sont rétablies, et cette erreur est absente du parcours final.
+
+Le development build iPhone est installé en conservant la session. Le poids est visible sur
+les deux combattants ; le duel local a été joué naturellement jusqu’à la nouvelle victoire.
+Capture de 2622 × 1206 px, gagnant sur l’axe central X=1311 ; dernier pixel du pied à Y=1096,
+bord supérieur des boutons à Y=1105, soit 8 pixels libres. Les exports et caches de compilation
+Unity temporaires sont retirés ; les tranches
+courantes et les caches Xcode restent. Metro iPhone est conservé, Metro E2E et Simulator arrêtés.
+Aucun push, PR, merge ou EAS.
+
 ![Critique centré sur la cible](combat-presentation/critical.png)
 ![Esquive centrée sur le défenseur](combat-presentation/dodge.png)
 ![Victoire et gains de la fixture](combat-presentation/victory-gains.png)
 ![Victoire Unity sur iPhone](combat-presentation/iphone-victory.png)
+![Poids Lourd et gagnant de face](combat-presentation/weight-victory.png)

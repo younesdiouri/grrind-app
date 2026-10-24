@@ -33,6 +33,9 @@ public sealed class BattleBridge : MonoBehaviour
     }
     bool inspection;
     bool caillouxFight;
+    CombatPresentation.Configuration hud;
+    bool FinaleLayout => !inspection&&lastFrame?.presentation?.finished==true&&hud!=null
+        &&(hud.won?lastFrame.player.visible:lastFrame.enemy.visible);
     Frame lastFrame;
     Rect combatViewport=new Rect(0,0,1,1),projectionSurface;
 
@@ -57,7 +60,15 @@ public sealed class BattleBridge : MonoBehaviour
     public void CancelPreview(string _) => GetComponent<AvatarCapture>()?.Cancel();
     void FrameArena()
     {
-        arenaCamera.rect=combatViewport;arenaCamera.ResetAspect();arenaCamera.ResetProjectionMatrix();
+        var framingViewport=combatViewport;
+        if(FinaleLayout)
+        {
+            // The result has a fixed safe region, independent of the RN combat stage's height.
+            float reveal=lastFrame.presentation.reduced?1:Mathf.SmoothStep(0,1,lastFrame.presentation.finale*3);
+            framingViewport.y=Mathf.Lerp(framingViewport.y,.05f,reveal);
+            framingViewport.height=Mathf.Lerp(framingViewport.height,.58f,reveal);
+        }
+        arenaCamera.rect=framingViewport;arenaCamera.ResetAspect();arenaCamera.ResetProjectionMatrix();
         float aspect=arenaCamera.aspect;
         var projection=arenaCamera.projectionMatrix;
         // Sample the optical axis to retain Unity's raster rounding at viewport edges.
@@ -82,6 +93,7 @@ public sealed class BattleBridge : MonoBehaviour
             combatViewport=new Rect(Mathf.Clamp01(config.viewport.x),Mathf.Clamp01(config.viewport.y),Mathf.Clamp01(config.viewport.width),Mathf.Clamp01(config.viewport.height));
             arenaCamera.rect=combatViewport;arenaCamera.ResetAspect();arenaCamera.ResetProjectionMatrix();
             inspection=config.inspection;
+            hud=config.hud;
             if(combatEnvironment!=null)combatEnvironment.SetActive(!inspection);
             if(inspectionFloor!=null)inspectionFloor.SetActive(inspection);
             arenaCamera.backgroundColor=inspection?new Color(.0196f,.0314f,.0863f):new Color(.48f,.66f,.77f);
@@ -115,8 +127,8 @@ public sealed class BattleBridge : MonoBehaviour
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
         obj.GetComponent<QuaterniusAppearance>()?.SetHeadband(config.headband);
         obj.GetComponent<QuaterniusAppearance>()?.SetBoxingGloves(config.boxingGloves);
-        // Workshop experiment: existing boxing transitions still intersect the large weights.
-        obj.GetComponent<WeaponGrip>()?.SetEquipped(inspection && config.dumbbell);
+        // shortcut: existing boxing clips can intersect large weights; combat trial explicitly accepted by the author.
+        obj.GetComponent<WeaponGrip>()?.SetEquipped(config.dumbbell);
         obj.GetComponent<QuaterniusAppearance>()?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
         obj.GetComponent<QuaterniusAppearance>()?.SelectFace(config.faceStyle, config.noseStyle);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
@@ -150,6 +162,17 @@ public sealed class BattleBridge : MonoBehaviour
     void Apply(FighterPose pose,ActorFrame frame,bool left)
     {
         if(frame==null)return;
+        if(FinaleLayout)
+        {
+            bool winner=left==hud.won;
+            pose.gameObject.SetActive(frame.visible&&winner);
+            float reveal=lastFrame.presentation.reduced?1:Mathf.SmoothStep(0,1,lastFrame.presentation.finale*3);
+            pose.placement=Vector3.Lerp(new Vector3(CombatX(left),0,0),Vector3.zero,reveal);
+            pose.facing=Mathf.Lerp(left?-65:65,0,reveal);
+            pose.stance=7;pose.phase=.45f;
+            return;
+        }
+        pose.facing=inspection?0:left?-65:65;
         pose.gameObject.SetActive(frame.visible);pose.stance=Mathf.Clamp(frame.pose,0,7);pose.phase=Mathf.Clamp01(frame.phase);
         // Camera right points towards -X. Input x is a fraction of the arena width.
         pose.placement=inspection?Vector3.zero:new Vector3(CombatX(left)-frame.x*HalfWidth()*2,0,0);

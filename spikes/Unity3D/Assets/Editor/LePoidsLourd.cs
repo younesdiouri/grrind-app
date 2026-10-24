@@ -81,4 +81,47 @@ public static class LePoidsLourd
         }
         Debug.Log("Le Poids Lourd: grip, visible hands, mutual exclusion and unequip PASS");
     }
+
+    // Reproducible geometric diagnostic, not a claim of collision-free animation.
+    public static string CheckTwoCombatAttacks()
+    {
+        var samples = new System.Collections.Generic.List<string>();
+        foreach (var name in new[] { "QuaterniusShowcase", "QuaterniusFemale" })
+        {
+            var root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Resources/" + name + ".prefab"));
+            try
+            {
+                var pose = root.GetComponent<FighterPose>();
+                if (!Application.isPlaying) pose.SendMessage("Awake");
+                pose.inspect = false;
+                var grip = root.GetComponent<WeaponGrip>(); grip.SetEquipped(true);
+                foreach (int stance in new[] { 1, 3 })
+                foreach (float phase in Enumerable.Range(0, 21).Select(i => i / 20f))
+                {
+                    pose.stance = stance; pose.phase = phase; pose.SendMessage("LateUpdate");
+                    var hits = new System.Collections.Generic.Dictionary<string, int>();
+                    foreach (var renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    {
+                        var mesh = new Mesh(); renderer.BakeMesh(mesh);
+                        var vertices = mesh.vertices; var weights = renderer.sharedMesh.boneWeights;
+                        for (int i = 0; i < vertices.Length && i < weights.Length; i++)
+                        {
+                            var point = grip.item.transform.InverseTransformPoint(renderer.transform.TransformPoint(vertices[i]));
+                            if (Mathf.Abs(point.x) < .15f || Mathf.Abs(point.x) > .31f || point.y * point.y + point.z * point.z > .14f * .14f) continue;
+                            var w = weights[i]; int bone = w.boneIndex0; float weight = w.weight0;
+                            if (w.weight1 > weight) { bone = w.boneIndex1; weight = w.weight1; }
+                            if (w.weight2 > weight) { bone = w.boneIndex2; weight = w.weight2; }
+                            if (w.weight3 > weight) bone = w.boneIndex3;
+                            string part = renderer.bones[bone].name;
+                            hits[part] = hits.TryGetValue(part, out int count) ? count + 1 : 1;
+                        }
+                        UnityEngine.Object.DestroyImmediate(mesh);
+                    }
+                    samples.Add(name + " pose=" + stance + " phase=" + phase.ToString(CultureInfo.InvariantCulture) + ": " + string.Join(",", hits.Select(kv => kv.Key + "=" + kv.Value)));
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+        return string.Join("\n", samples);
+    }
 }

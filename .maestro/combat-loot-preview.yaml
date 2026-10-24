@@ -2,6 +2,60 @@ appId: app.grrind.dev
 ---
 # Local captured reward, explicit demo notice; no login, account creation or credit.
 - launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+# Wait for restored navigation before sending the first deep link after a cold Metro start.
+- extendedWaitUntil:
+    visible:
+      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|al-kasal-idle|battle-combat|battle-exit"
+    timeout: 30000
+# Equipped weapon, both attacks, then a natural finale using the same server timeline.
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weight&at=1394
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: unity-weight-direct
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weight&at=12023
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: unity-weight-uppercut-female
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weight&at=15923
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: unity-weight-uppercut-male
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weight
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 60000
+- waitForAnimationToEnd
+- takeScreenshot: unity-weight-centered-winner
 - openLink: grrindapp-dev://combat-demo?scenario=loot&mob=pebble
 - extendedWaitUntil:
     visible:

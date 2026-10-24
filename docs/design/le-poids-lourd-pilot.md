@@ -101,3 +101,24 @@ réussis ; UUID et 16 fichiers de données installés vérifiés. Le parcours `q
 passe en 3 min 20 s (session `2026-10-23_144305`) ; captures homme/femme et retrait inspectées.
 Le Simulator reste ouvert sur la prise féminine corrigée. Le verdict artistique de l’auteur
 sur cette correction reste à recueillir.
+
+## Essai en combat demandé le 24 octobre
+
+Après vérification sur iPhone, l’auteur choisit explicitement « L’afficher avec les gestes
+actuels », puis limite les attaques au **direct normal et à l’uppercut critique**. Cette demande
+remplace la restriction à l’inspection pour cet essai. Le repos utilise la posture neutre
+existante ; l’annonce de combo conserve ce repos et la relance reprend le direct. Les réactions
+aux coups et l’esquive restent disponibles. Le mesh, la prise et les clips ne sont pas refaits.
+
+Le diagnostic `LePoidsLourd.CheckTwoCombatAttacks()` échantillonne les deux coups à 21 phases
+sur chaque corps (84 états), après application réelle du skin et de la prise. Le volume
+conservateur décrit plus haut est dégagé au contact du direct. Il détecte encore la tête
+pendant certains retours et la main gauche féminine dans l’uppercut. Restreindre les coups
+ne suffit donc pas à valider G3 : les intersections restent acceptées pour l’essai demandé.
+Les captures Simulator confirment aussi le disque devant le visage pendant l’uppercut.
+[Capture de l’uppercut](combat-presentation/weight-uppercut.png).
+
+`CombatPresentationChecks.Run()` vérifie l’affichage de l’objet équipé sur les deux corps,
+le gagnant seul au centre et de face, sa posture neutre, les confettis de victoire, les
+mouvements réduits et le retour des deux adversaires au rejeu. `LePoidsLourd.Validate()`
+conserve les contrôles de prise et d’exclusion mutuelle avec les gants.
