@@ -1,0 +1,13 @@
+{
+  "authoring": "Built-in ImageGen front, side and back; Meshy 7.1 multi-image generation; Blender metre calibration and FBX export with topology and UVs preserved",
+  "license": "Generated with the user’s Meshy account under its terms",
+  "credits": 35,
+  "triangles": 6070,
+  "texture": "One 2048px sRGB base color, roughness 0.85, metallic 0",
+  "task_id": "01a16f10-00fd-7324-acdf-de8cf1a46b2f",
+  "reference_silhouette_IoU": 0.910,
+  "width_height_difference": 0.008,
+  "rig": "None required for the V1 boss: whole-body idle sway and recoil at melee contact",
+  "inferred": ["2.6m boss scale", "slipper soles", "whole-body motion"],
+  "approval": "User requested an autonomous V1 to review on Simulator; personal artistic acceptance pending"
+}

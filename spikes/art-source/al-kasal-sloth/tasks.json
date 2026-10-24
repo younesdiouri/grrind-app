@@ -1,0 +1,28 @@
+[
+  {
+    "task_id": "01a16f10-00fd-7324-acdf-de8cf1a46b2f",
+    "parameters": {
+      "file_paths": [
+        "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/al-kasal-sloth/ref/front.png",
+        "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/al-kasal-sloth/ref/side.png",
+        "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/al-kasal-sloth/ref/back.png"
+      ],
+      "ai_model": "meshy-7.1",
+      "geometry_resolution": "2k",
+      "target_polycount": 6000,
+      "should_remesh": true,
+      "topology": "triangle",
+      "should_texture": true,
+      "texture_resolution": "2k",
+      "enable_pbr": false,
+      "image_enhancement": false,
+      "target_formats": [
+        "glb"
+      ],
+      "response_format": "json"
+    },
+    "quoted_credits": 35,
+    "consumed_credits": 35,
+    "status": "SUCCEEDED"
+  }
+]

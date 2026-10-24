@@ -1,0 +1,12 @@
+{
+  "asset": "CR_AlKasal",
+  "rig": null,
+  "root_motion": false,
+  "controller": "RaidScene",
+  "clock": "RN server journal",
+  "idle": "global body sway, sampled from presentation time",
+  "hit": "global recoil at hero clip phase 0.5",
+  "attack": "none in raid V1",
+  "reduced_motion": "no sway, travel, snow or impact sparks",
+  "player_clips": "Existing Quaternius FighterPose clips"
+}

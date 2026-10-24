@@ -1,0 +1,37 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/al-kasal-sloth/CR_AlKasal_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 6070
+    },
+    "fail": [],
+    "warn": [
+      "CR_AlKasal_Body_LOD0: 7332 doubled vertices within 0.0001"
+    ]
+  },
+  "objects": [
+    {
+      "name": "CR_AlKasal_Body_LOD0",
+      "type": "MESH",
+      "warn": [
+        "7332 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 6070,
+        "verts_evaluated": 10366,
+        "verts": 10366,
+        "faces": 6070,
+        "boundary_edges": 10484,
+        "nonmanifold_edges": 0,
+        "islands": 2089,
+        "flipped_vs_recalc": 1972,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}
