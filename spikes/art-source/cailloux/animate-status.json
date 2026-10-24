@@ -1,0 +1,23 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"id\": \"01a16a63-2c86-770a-9c9b-3b2370bffcc6\",\n  \"type\": \"animate\",\n  \"name\": \"\",\n  \"status\": \"SUCCEEDED\",\n  \"created_at\": 1792786246982,\n  \"progress\": 100,\n  \"started_at\": 1792786246987,\n  \"finished_at\": 1792786261705,\n  \"expires_at\": 1793045461705,\n  \"task_error\": null,\n  \"result\": {\n    \"animation_glb_url\": \"https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a63-2c86-770a-9c9b-3b2370bffcc6/output/merged_animations.glb\",\n    \"animation_fbx_url\": \"https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a63-2c86-770a-9c9b-3b2370bffcc6/output/merged_animations.fbx\",\n    \"processed_usdz_url\": \"\",\n    \"processed_armature_fbx_url\": \"\",\n    \"processed_animation_fps_fbx_url\": \"\"\n  },\n  \"consumed_credits\": 6\n}"
+    }
+  ],
+  "structuredContent": {
+    "outcome": "SUCCEEDED",
+    "task_id": "01a16a63-2c86-770a-9c9b-3b2370bffcc6",
+    "task_type": "animation",
+    "status": "SUCCEEDED",
+    "progress": 100,
+    "consumed_credits": 6,
+    "result": {
+      "animation_glb_url": "https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a63-2c86-770a-9c9b-3b2370bffcc6/output/merged_animations.glb",
+      "animation_fbx_url": "https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a63-2c86-770a-9c9b-3b2370bffcc6/output/merged_animations.fbx",
+      "processed_usdz_url": "",
+      "processed_armature_fbx_url": "",
+      "processed_animation_fps_fbx_url": ""
+    }
+  }
+}

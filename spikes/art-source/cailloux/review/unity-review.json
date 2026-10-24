@@ -1,0 +1,33 @@
+{
+  "runtime_advancing": {
+    "before_frame": 124,
+    "after_frame": 158,
+    "before_time": 9.608898,
+    "after_time": 12.312768
+  },
+  "console_errors": 0,
+  "contacts": {
+    "player_normal_root_distance_m": 0.85,
+    "player_critical_root_distance_m": 0.65,
+    "enemy_root_distance_m": 0.8,
+    "rest_root_distance_m": 1.25
+  },
+  "reviewed": [
+    "7 canonical contact poses in arena at 1920x886",
+    "attack and counter at phases .25 and .75",
+    "rigid torso and fixed sole vertices in Blender across every authored frame",
+    "8 FBX actions round trip, 24 bones, 6189 triangles, 1.3m height"
+  ],
+  "limits": [
+    "No physical iPhone trial",
+    "Artistic acceptance reserved to the author",
+    "Raw reference front fist lower edge differs; front silhouette IoU .9542, side .953; broad band 70\u201380% changes sharply at fist endpoint. This is a generated concept, not a measured industrial turnaround.",
+    "No crowd/performance or production build requested"
+  ],
+  "counter_continuity": {
+    "rejected_step_m": 0.12624199,
+    "final_max_step_m": 0.05611025,
+    "limit_m_per_30fps_frame": 0.08,
+    "check": "05_validate_motion.py, failed before correction, passes after"
+  }
+}

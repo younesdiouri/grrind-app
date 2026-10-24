@@ -1,0 +1,87 @@
+{
+  "fps": 30,
+  "root_motion": false,
+  "canonical_contact_phase": 0.5,
+  "clips": [
+    {
+      "name": "Idle",
+      "frames": [
+        0,
+        75
+      ],
+      "length_s": 2.5,
+      "loop": true,
+      "contact_s": null
+    },
+    {
+      "name": "Attack",
+      "frames": [
+        0,
+        30
+      ],
+      "length_s": 1.0,
+      "loop": false,
+      "contact_s": 0.5
+    },
+    {
+      "name": "Hit",
+      "frames": [
+        0,
+        30
+      ],
+      "length_s": 1.0,
+      "loop": false,
+      "contact_s": 0.5
+    },
+    {
+      "name": "Critical",
+      "frames": [
+        0,
+        30
+      ],
+      "length_s": 1.0,
+      "loop": false,
+      "contact_s": 0.5
+    },
+    {
+      "name": "Dodge",
+      "frames": [
+        0,
+        30
+      ],
+      "length_s": 1.0,
+      "loop": false,
+      "contact_s": 0.5
+    },
+    {
+      "name": "Combo",
+      "frames": [
+        0,
+        30
+      ],
+      "length_s": 1.0,
+      "loop": false,
+      "contact_s": 0.5
+    },
+    {
+      "name": "Counter",
+      "frames": [
+        0,
+        30
+      ],
+      "length_s": 1.0,
+      "loop": false,
+      "contact_s": 0.5
+    },
+    {
+      "name": "WorkshopIdle",
+      "frames": [
+        0,
+        75
+      ],
+      "length_s": 2.5,
+      "loop": true,
+      "contact_s": null
+    }
+  ]
+}

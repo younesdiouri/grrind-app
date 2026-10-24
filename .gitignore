@@ -52,3 +52,7 @@ example
 
 # Local Blender working scenes; source GLB, scripts and Unity exports are versioned.
 /spikes/art-source/**/*.blend*
+
+# Detailed Blender sampling reports are reproducible local diagnostics.
+/spikes/art-source/cailloux/review/source-motion.json
+/spikes/art-source/cailloux/review/rig-source.json

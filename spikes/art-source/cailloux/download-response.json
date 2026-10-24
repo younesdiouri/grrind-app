@@ -1,0 +1,18 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "# Model Downloaded\n\n**Task ID**: 01a16a60-444a-7189-a1c2-574dccd5f249\n**Format**: GLB\n**Local File**: /Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/source.glb\n**File Size**: 2.76 MB\n\n## Saved Textures\n- /Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/source_base_color.png\n\n**Note**: The Meshy download URLs stop working at 2026-10-26T20:08:52.839Z (results are kept for 3 days after the task finishes). Local files are permanent."
+    }
+  ],
+  "structuredContent": {
+    "download_url": "https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a60-444a-7189-a1c2-574dccd5f249/output/model.glb",
+    "local_path": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/source.glb",
+    "file_size_bytes": 2893048,
+    "format": "glb",
+    "texture_paths": [
+      "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/source_base_color.png"
+    ],
+    "expires_at": "2026-10-26T20:08:52.839Z"
+  }
+}

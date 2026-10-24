@@ -17,24 +17,14 @@ tags:
 - extendedWaitUntil:
     visible: "Repos"
     timeout: 30000
-# Les deux packs publiés gardent leur identité sur les sept stances.
+# Le pilote Cailloux est désormais 3D ; ses gestes sont couverts par combat-3d.yaml.
 - openLink: grrindapp-dev://combat-demo?mob=pebble
 - extendedWaitUntil:
     visible: "Cailloux dans la Chaussure"
     timeout: 15000
 - takeScreenshot: pebble-idle
-- tapOn: "Attaque"
-- takeScreenshot: pebble-attack
-- tapOn: "Coup reçu"
-- takeScreenshot: pebble-hit
-- tapOn: "Critique"
-- takeScreenshot: pebble-critical
-- tapOn: "Esquive"
-- takeScreenshot: pebble-dodge
-- tapOn: "Combo"
-- takeScreenshot: pebble-combo
-- tapOn: "Relance"
-- takeScreenshot: pebble-replay
+- assertVisible: "Jouer une victoire"
+- assertVisible: "Jouer une défaite"
 - openLink: grrindapp-dev://combat-demo
 - extendedWaitUntil:
     visible: "Al-Kasal"

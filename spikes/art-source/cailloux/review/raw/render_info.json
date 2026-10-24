@@ -1,0 +1,74 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/CR_Cailloux_raw.blend",
+  "mode": "material",
+  "engine": "cycles",
+  "bbox_min": [
+    -0.712421178817749,
+    -0.3390868306159973,
+    0.0
+  ],
+  "bbox_max": [
+    0.712421178817749,
+    0.3390868306159973,
+    1.3000000715255737
+  ],
+  "size_xyz": [
+    1.424842357635498,
+    0.6781736612319946,
+    1.3000000715255737
+  ],
+  "objects": [
+    "CR_Cailloux_Body_LOD0"
+  ],
+  "renders": {
+    "front": {
+      "file": "spikes/art-source/cailloux/review/raw/material_front.png",
+      "az_el_lens": [
+        0,
+        0,
+        0
+      ],
+      "distance": 4.339086830615997
+    },
+    "side": {
+      "file": "spikes/art-source/cailloux/review/raw/material_side.png",
+      "az_el_lens": [
+        90,
+        0,
+        0
+      ],
+      "distance": 4.712421178817749
+    },
+    "back": {
+      "file": "spikes/art-source/cailloux/review/raw/material_back.png",
+      "az_el_lens": [
+        180,
+        0,
+        0
+      ],
+      "distance": 4.339086830615997
+    },
+    "threequarter": {
+      "file": "spikes/art-source/cailloux/review/raw/material_threequarter.png",
+      "az_el_lens": [
+        35,
+        15,
+        50
+      ],
+      "distance": 3.067905627398027
+    },
+    "ref": {
+      "file": "spikes/art-source/cailloux/review/raw/material_ref.png",
+      "az_el_lens": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "distance": 4.339086830615997
+    },
+    "gameplay": {
+      "file": "spikes/art-source/cailloux/review/raw/material_gameplay_128px.png",
+      "subject_px": 128
+    }
+  }
+}

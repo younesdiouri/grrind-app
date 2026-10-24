@@ -81,6 +81,6 @@ public sealed class FighterPose : MonoBehaviour
         float contact=measured[selected];
         return p<=.5f?Mathf.Lerp(0,contact,p*2):Mathf.Lerp(contact,1,(p-.5f)*2);
     }
-    public Transform Bone(HumanBodyBones bone)=>actor.GetBoneTransform(bone);
+    public Transform Bone(HumanBodyBones bone)=>actor.isHuman?actor.GetBoneTransform(bone):actor.transform;
     void OnDestroy(){if(graph.IsValid())graph.Destroy();}
 }

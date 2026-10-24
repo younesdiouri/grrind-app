@@ -1,0 +1,62 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/CR_Cailloux_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 6189
+    },
+    "fail": [],
+    "warn": [
+      "CR_Cailloux_Body_LOD0: 7924 doubled vertices within 0.0001",
+      "CR_Cailloux_Body_LOD0: 2171 tiny influences below 0.01"
+    ]
+  },
+  "objects": [
+    {
+      "name": "CR_Cailloux_Body_LOD0",
+      "type": "MESH",
+      "warn": [
+        "7924 doubled vertices within 0.0001",
+        "2171 tiny influences below 0.01"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 6189,
+        "verts_evaluated": 11009,
+        "verts": 11009,
+        "faces": 6189,
+        "boundary_edges": 10915,
+        "nonmanifold_edges": 0,
+        "islands": 2457,
+        "flipped_vs_recalc": 2199,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "CaillouxStone"
+        ],
+        "modifiers": [
+          "ARMATURE:Armature"
+        ],
+        "skin": {
+          "armature": "CR_Cailloux_Rig",
+          "unweighted": 0,
+          "over_influences": 0,
+          "not_normalised": 0,
+          "tiny_weights": 2171,
+          "orphan_groups": []
+        }
+      }
+    },
+    {
+      "name": "CR_Cailloux_Rig",
+      "type": "ARMATURE",
+      "warn": [],
+      "fail": [],
+      "info": {
+        "bones": 24,
+        "deform_bones": 24,
+        "roots": [
+          "Hips"
+        ]
+      }
+    }
+  ]
+}
