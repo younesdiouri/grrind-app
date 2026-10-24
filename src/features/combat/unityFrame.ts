@@ -2,22 +2,20 @@ import { combatMotion } from '@/design/tokens';
 import { contactAt, fighterMotionAt, type FighterPose, type PoseSignals } from './fighterMotion.ts';
 import { beatAt, sampleRamp } from './sampling.ts';
 import type { Actor, BattleBeat } from './timeline.ts';
+import type { components } from '@/api/schema';
 
-export type UnityAvatar = {
+export type UnityAvatar = Omit<components['schemas']['Avatar'], 'version'> & {
   model?: 'cailloux';
-  body: 'male' | 'female'; hairStyle: 'parted' | 'buzzed' | 'buns' | 'long';
   boots: boolean; headband: boolean; visible: boolean;
-  skinTone?: 'light' | 'tan' | 'brown' | 'deep'; eyeColor?: 'brown' | 'blue' | 'green';
-  hairColor?: 'brown' | 'black' | 'blond'; sportShirt?: boolean; shirtColor?: 'cyan' | 'coral';
-  pantsColor?: 'original' | 'violet' | 'cyan' | 'coral';
-  faceStyle?: 'original' | 'square'; noseStyle?: 'original' | 'wide';
+  sportShirt?: boolean; shirtColor?: 'cyan' | 'coral';
+  pantsColor?: 'base' | 'original' | 'violet' | 'cyan' | 'coral';
   boxingGloves?: boolean;
   dumbbell?: boolean;
 };
-// Local V1 default; persistent appearance comes from the future server avatar contract.
+// Isolated workshop/demo defaults; live snapshots are resolved by serverAvatar.
 export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true,
   skinTone: 'tan', eyeColor: 'brown', hairColor: 'brown', sportShirt: true, shirtColor: 'cyan',
-  pantsColor: 'violet', boxingGloves: true };
+  pantsColor: 'violet', boxingGloves: true, faceStyle: 'original', noseStyle: 'original' };
 export const QUATERNIUS_OPPONENT: UnityAvatar = { ...QUATERNIUS_AVATAR, body: 'female', hairStyle: 'buns',
   skinTone: 'deep', shirtColor: 'coral', pantsColor: 'cyan' };
 export type UnityViewport = { x: number; y: number; width: number; height: number };

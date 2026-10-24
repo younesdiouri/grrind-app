@@ -76,3 +76,25 @@ Le rendu d’aperçu mesure 512 × 640 px ; sa provenance et sa configuration so
 
 Le candidat iPhone/TestFlight et ses mesures poids/mémoire/chauffe restent à vérifier lors
 de la prochaine livraison EAS (#218). Aucun build de production n’a été lancé pour ce ticket.
+
+## Avatars et équipements des snapshots — #220
+
+Les deux acteurs Unity lisent désormais `avatar` et `equipment` depuis le combat reçu, sans
+consulter le profil ou l’inventaire courant. Le défaut V1 couvre les anciennes captures locales ;
+les réponses serveur normalisent déjà les anciennes archives. Les vêtements sont sélectionnés
+indépendamment par slot et les emplacements vides ne reçoivent plus les objets de démonstration.
+Les clés sans modèle ne fabriquent aucun équipement de remplacement. Le Poids Lourd et Haltère
+ego restent limités à l’inspection par le bridge existant, jusqu’à livraison de clips adaptés.
+
+Typecheck, lint, 569 tests, 29 previews et OpenAPI reproductible passent. Le contrôle Unity
+reproduit puis valide l’indépendance haut/pantalon et le retrait des objets sur les deux corps.
+Export Unity et build Debug Simulator passent ; UUID et 16 fichiers Data de l’app installée
+correspondent à l’export. Le parcours `combat-3d.yaml` passe en 67 s le 24 octobre 2026
+(`2026-10-24_115318`). Les captures synthétiques d’apparence sur une timeline HTTP conservée
+montrent deux choix distincts et leur rejeu : à 2622 × 1206, les zones cyan/violet des pantalons
+gardent leurs dimensions et se décalent de 1 px au maximum. Captures inspectées. Les tests
+vérifient aussi que les changements ultérieurs des données courantes ne modifient pas le replay.
+La validation iPhone physique reste à effectuer lors d’une prochaine livraison native.
+
+![Avatars et équipements figés au combat](unity-1v1/pvp-avatar.png)
+![Même snapshot au rejeu](unity-1v1/pvp-avatar-replay.png)

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import type { components } from '@/api/schema';
+import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar.ts';
 
 import { progressFill } from './guildProgress.ts';
 
@@ -12,6 +13,7 @@ function member(
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'Sam Petit',
     appearance: 'STRENGTH_V1',
+    avatar: DEFAULT_AVATAR,
     registeredAt: '2026-01-01T00:00:00Z',
     level: 4,
     xpIntoLevel: 0,

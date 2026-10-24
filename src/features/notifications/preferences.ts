@@ -49,6 +49,7 @@ export async function updateNotificationPreference(
         timezone: null,
         locale: null,
         appearance: null,
+        avatar: null,
         notificationPreferences: [
           { category: category as components['schemas']['NotificationCategory'], enabled },
         ],

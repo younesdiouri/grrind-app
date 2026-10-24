@@ -46,7 +46,7 @@ import { hasBattleReward } from './reward.ts';
 import { IMPACT } from './camera.ts';
 import { FighterSprite, type FighterArtwork } from './FighterSprite';
 import { Stage } from './Stage';
-import { combatEnemy } from './combatCharacters';
+import { combatEnemy, combatPlayer } from './combatCharacters';
 import { BUNDLED_MOBS } from './bundledMobs';
 import { entranceMotionAt, type EntrancePhase } from './entranceMotion';
 import { UnityCombatStage, unityCombatAvailable } from './UnityCombatStage';
@@ -114,6 +114,7 @@ export function BattleView({ battle, enemyArt, ...props }: {
   }, []));
   const enemy = combatEnemy(battle.enemy, BUNDLED_MOBS);
   return <PresentedBattle key={battle.id} {...props} battle={battle}
+    unityPlayer={props.unityPlayer ?? combatPlayer(battle.player)}
     unityEnemy={props.unityEnemy ?? enemy.avatar} artwork={enemy.avatar.visible ? undefined : enemyArt ?? enemy.artwork}
     introduction={enemyArt?.introduction ?? battle.enemy.introduction ?? undefined} />;
 }

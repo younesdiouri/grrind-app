@@ -1,12 +1,82 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { combatEnemy } from './combatCharacters.ts';
+import { combatEnemy, combatPlayer } from './combatCharacters.ts';
 import duel from '../../../fixtures/battle/duel-equipped.json' with { type: 'json' };
 import victory from '../../../fixtures/battle/victoire.json' with { type: 'json' };
 import type { Battle } from './timeline.ts';
 
 const duelBattle = duel as unknown as Battle;
 const victoryBattle = victory as unknown as Battle;
+const avatar: Battle['player']['avatar'] = { version: 1, body: 'female', faceStyle: 'original', noseStyle: 'original',
+  hairStyle: 'long', skinTone: 'deep', eyeColor: 'green', hairColor: 'black' };
+const equipment: NonNullable<Battle['player']['equipment']> = {
+  CHEST: { key: 'SPORT_TSHIRT_CORAL', artworkVersion: null },
+  LEGS: { key: 'LES_GUINZZ_CYAN', artworkVersion: null },
+  WEAPON: { key: 'GOLDEN_BOXING_GLOVES', artworkVersion: null },
+};
+
+test('le joueur et le rival utilisent chacun leur avatar et les vêtements de leur snapshot', () => {
+  const player = combatPlayer({ ...duelBattle.player, avatar, equipment });
+  assert.equal(player.body, 'female');
+  assert.equal(player.hairStyle, 'long');
+  assert.equal(player.skinTone, 'deep');
+  assert.equal(player.eyeColor, 'green');
+  assert.equal(player.hairColor, 'black');
+  assert.equal(player.faceStyle, 'original');
+  assert.equal(player.sportShirt, true);
+  assert.equal(player.shirtColor, 'coral');
+  assert.equal(player.pantsColor, 'cyan');
+  assert.equal(player.boxingGloves, true);
+  assert.equal(player.boots, false);
+  assert.equal(player.headband, false);
+  const enemy = combatEnemy({ ...duelBattle.enemy, appearance: null, avatar, equipment });
+  assert.deepEqual(enemy.avatar, player);
+  assert.equal(enemy.artwork, undefined);
+});
+
+test('le pantalon équipé reste indépendant du haut et une arme retirée disparaît', () => {
+  const player = combatPlayer({ ...duelBattle.player, avatar, equipment: { LEGS: equipment.LEGS } });
+  assert.equal(player.sportShirt, false);
+  assert.equal(player.pantsColor, 'cyan');
+  assert.equal(player.boxingGloves, false);
+  const shirtOnly = combatPlayer({ ...duelBattle.player, avatar, equipment: { CHEST: equipment.CHEST } });
+  assert.equal(shirtOnly.sportShirt, true);
+  assert.equal(shirtOnly.pantsColor, 'base');
+});
+
+test('un ancien snapshot reçoit le défaut V1 sans aucun équipement de démonstration', () => {
+  const player = combatPlayer(duelBattle.player);
+  assert.equal(player.body, 'male');
+  assert.equal(player.faceStyle, 'square');
+  assert.equal(player.noseStyle, 'wide');
+  assert.equal(player.boxingGloves, false);
+  assert.equal(player.boots, false);
+  assert.equal(player.sportShirt, false);
+});
+
+test('une clé inconnue ou rangée dans le mauvais slot ne fabrique aucun objet Unity', () => {
+  const player = combatPlayer({ ...duelBattle.player, avatar, equipment: {
+    HEAD: { key: 'GOLDEN_BOXING_GLOVES', artworkVersion: null },
+    FEET: { key: 'FUTURE_BOOTS', artworkVersion: null },
+  } });
+  assert.equal(player.boxingGloves, false);
+  assert.equal(player.boots, false);
+  assert.equal(player.headband, false);
+});
+
+test('le replay conserve les deux snapshots quand les apparences et équipements changent ensuite', () => {
+  const current: Battle = { ...duelBattle, player: { ...duelBattle.player, avatar, equipment },
+    enemy: { ...duelBattle.enemy, avatar: { ...avatar, body: 'male' as const, faceStyle: 'square' as const }, equipment } };
+  const replay = structuredClone(current);
+  const before = { player: combatPlayer(replay.player), enemy: combatEnemy(replay.enemy) };
+  current.player.avatar.hairStyle = 'buzzed';
+  current.player.equipment = {};
+  current.enemy.avatar!.faceStyle = 'original';
+  current.enemy.equipment = {};
+  assert.deepEqual({ player: combatPlayer(replay.player), enemy: combatEnemy(replay.enemy) }, before);
+  assert.notDeepEqual(combatPlayer(current.player), before.player);
+  assert.notDeepEqual(combatEnemy(current.enemy), before.enemy);
+});
 
 test('les anciens duels utilisent un personnage Unity sans recharger les sprites du héros serveur', () => {
   const enemy = { ...duelBattle.enemy, appearance: 'STRENGTH_V3',

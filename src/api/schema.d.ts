@@ -364,6 +364,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/avatar-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_identity_avatar_catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/devices": {
         parameters: {
             query?: never;
@@ -806,6 +822,7 @@ export interface components {
                 sessions: number;
                 durationSeconds: number;
             }[];
+            avatar: components["schemas"]["Avatar"];
         };
         AlamDrop: {
             /** Format: uuid */
@@ -1090,6 +1107,7 @@ export interface components {
             /** Format: date-time */
             registeredAt: string;
             appearance: components["schemas"]["Appearance"];
+            avatar: components["schemas"]["Avatar"];
             /** @example 12 */
             level: number;
             /** @example 340 */
@@ -1283,6 +1301,7 @@ export interface components {
             nextTitle: components["schemas"]["PlayerTitle"] | null;
             /** @description Le modèle de héros porté (#289), modifiable par `PATCH /api/me`. Les images sont dans `GET /api/appearances`. */
             appearance: components["schemas"]["Appearance"];
+            avatar: components["schemas"]["Avatar"];
             /**
              * @description Toutes les catégories vivantes : le client lit l'état exact de chacune plutôt
              *     que de connaître le défaut. Clé = valeur de `NotificationCategory`, valeur =
@@ -2243,6 +2262,57 @@ export interface components {
             precisionPercent: number;
         };
         /**
+         * @description Apparence Unity/Quaternius complète, indépendante de l'ancien champ appearance.
+         *     Identifiants stables dans la version 1. Corps et coiffure sont indépendants ;
+         *     square et wide sont réservés à male, les deux traits se choisissent séparément.
+         *     Absence historique/version inconnue : défaut V1 figé. Identifiant retiré :
+         *     défaut du champ ; les traits féminins reviennent à original. Aucun profil courant
+         *     n'est consulté pour un replay. Les écritures inconnues/incomplètes sont refusées (422).
+         *     Aucun vêtement, coiffe ou objet : utiliser l'équipement serveur.
+         */
+        Avatar: {
+            /** @enum {integer} */
+            version: 1;
+            /** @enum {string} */
+            body: "male" | "female";
+            /** @enum {string} */
+            faceStyle: "original" | "square";
+            /** @enum {string} */
+            noseStyle: "original" | "wide";
+            /** @enum {string} */
+            hairStyle: "parted" | "buzzed" | "buns" | "long";
+            /** @enum {string} */
+            skinTone: "light" | "tan" | "brown" | "deep";
+            /** @enum {string} */
+            eyeColor: "brown" | "blue" | "green";
+            /** @enum {string} */
+            hairColor: "brown" | "black" | "blond";
+        };
+        AvatarOption: {
+            key: string;
+            compatibleBodies: ("male" | "female")[];
+        };
+        /** @description Catalogue cosmétique versionné. Les coiffes sont des équipements HEAD, séparés des coiffures ; aucune coiffe Unity disponible actuellement. Le bandeau de l'atelier est un prototype, non équipable. */
+        AvatarCatalog: {
+            /** @enum {integer} */
+            version: 1;
+            default: components["schemas"]["Avatar"];
+            options: {
+                body: components["schemas"]["AvatarOption"][];
+                faceStyle: components["schemas"]["AvatarOption"][];
+                noseStyle: components["schemas"]["AvatarOption"][];
+                hairStyle: components["schemas"]["AvatarOption"][];
+                skinTone: components["schemas"]["AvatarOption"][];
+                eyeColor: components["schemas"]["AvatarOption"][];
+                hairColor: components["schemas"]["AvatarOption"][];
+            };
+            headwear: {
+                /** @enum {string} */
+                slot: "HEAD";
+                options: string[];
+            };
+        };
+        /**
          * @description Clé stable d’un avatar du catalogue graphique administrable.
          * @example RUNNER_V1
          */
@@ -2404,6 +2474,7 @@ export interface components {
             /** @description Le héros du défié au moment du combat (#289), `null` face à un ennemi du catalogue. Ses poses **de face** sont dans `GET /api/appearances` ; `imageUrls` reste `null` pour un joueur. */
             appearance: components["schemas"]["Appearance"] | null;
             equipment?: components["schemas"]["BattleEquipment"];
+            avatar: components["schemas"]["Avatar"] | null;
             imageUrls?: components["schemas"]["EnemyImageUrls"];
             /** @description Texte brut localisé selon Accept-Language (repli EN puis FR), indépendant des images. Toujours présent, null si absent ; facultatif pour les anciennes réponses. */
             introduction?: string | null;
@@ -2543,6 +2614,7 @@ export interface components {
             player: components["schemas"]["BattleFighter"] & {
                 appearance: components["schemas"]["Appearance"];
                 equipment?: components["schemas"]["BattleEquipment"];
+                avatar: components["schemas"]["Avatar"];
             };
             enemy: components["schemas"]["BattleEnemy"];
             /** @description La timeline complète, dans l'ordre de l'animation. */
@@ -2784,6 +2856,11 @@ export interface components {
             notificationPreferences: components["schemas"]["NotificationPreferenceRequest"][];
             /** @default null */
             appearance: string | null;
+            /**
+             * @description Remplacement complet ; absent ou null = inchangé. Aucun équipement accepté.
+             * @default null
+             */
+            avatar: components["schemas"]["Avatar"] | null;
         };
         RegisterRequest: {
             /** @default  */
@@ -3936,6 +4013,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AppearanceCatalog"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    get_identity_avatar_catalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Options Unity compatibles et défaut de la version courante. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvatarCatalog"];
                 };
             };
             401: components["responses"]["Unauthorized"];
