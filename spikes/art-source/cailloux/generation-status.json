@@ -1,0 +1,20 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"id\": \"01a16a60-444a-7189-a1c2-574dccd5f249\",\n  \"type\": \"multi-image-to-3d\",\n  \"name\": \"\",\n  \"art_style\": \"\",\n  \"object_prompt\": \"\",\n  \"style_prompt\": \"\",\n  \"negative_prompt\": \"\",\n  \"texture_prompt\": \"\",\n  \"texture_image_url\": \"\",\n  \"text_style_prompt\": \"\",\n  \"image_style_url\": \"\",\n  \"status\": \"SUCCEEDED\",\n  \"created_at\": 1792786057660,\n  \"progress\": 100,\n  \"started_at\": 1792786057677,\n  \"finished_at\": 1792786132839,\n  \"expires_at\": 1793045332839,\n  \"task_error\": null,\n  \"model_url\": \"https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a60-444a-7189-a1c2-574dccd5f249/output/model.glb\",\n  \"model_urls\": {\n    \"glb\": \"https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a60-444a-7189-a1c2-574dccd5f249/output/model.glb\"\n  },\n  \"thumbnail_url\": \"https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a60-444a-7189-a1c2-574dccd5f249/output/preview.png\",\n  \"texture_urls\": [\n    {\n      \"base_color\": \"https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a60-444a-7189-a1c2-574dccd5f249/output/texture_0.png\"\n    }\n  ],\n  \"ultra_mode\": true,\n  \"geometry_resolution\": \"2k\",\n  \"consumed_credits\": 35\n}"
+    }
+  ],
+  "structuredContent": {
+    "outcome": "SUCCEEDED",
+    "task_id": "01a16a60-444a-7189-a1c2-574dccd5f249",
+    "task_type": "multi-image-to-3d",
+    "status": "SUCCEEDED",
+    "progress": 100,
+    "model_urls": {
+      "glb": "https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a60-444a-7189-a1c2-574dccd5f249/output/model.glb"
+    },
+    "consumed_credits": 35,
+    "thumbnail_url": "https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16a60-444a-7189-a1c2-574dccd5f249/output/preview.png"
+  }
+}

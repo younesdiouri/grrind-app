@@ -1,0 +1,5 @@
+Built-in ImageGen; stylized-concept; style references: le-poids-lourd/ref/front.png and golden-boxing-gloves/ref/front.png.
+
+One new original Sport Fantasy Cartoon enemy: Cailloux dans la chaussure, a mischievous squat rocky golem with compact pebble head fused into broad stone torso, short chunky arms, closed stone fists, two separated short legs and oversized charcoal athletic sneakers with cream soles and small cyan trims. Matte warm slate grey broad facets, thick angular eyebrows, cyan inset eyes and carved crooked mouth. Three consistent full-body orthographic front, left side and back views, same relaxed riggable A pose, feet separated on one ground line; uniform neutral grey background, soft neutral studio lighting. Match the clean faceted forms and restrained materials of the supplied dumbbell and glove references. No weapons, other clothing, floor, text, labels or extra objects.
+
+Original image: ref/three-views.png. This is a descriptive generation receipt; landmarks and discrepancies are recorded in asset-brief.md and review/raw/.

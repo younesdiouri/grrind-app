@@ -9,7 +9,7 @@ public sealed class BattleBridge : MonoBehaviour
     FighterPose player,enemy;
 
     [Serializable] public class AvatarConfig {
-        public string body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original",faceStyle="original",noseStyle="original";
+        public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original",faceStyle="original",noseStyle="original";
         public bool boots=true,visible=true,headband,sportShirt,boxingGloves,dumbbell;
     }
     [Serializable] public class Configuration
@@ -24,6 +24,7 @@ public sealed class BattleBridge : MonoBehaviour
     [Serializable] public class ActorFrame {public int pose;public float phase,x;public bool visible=true;}
     [Serializable] public class Frame {public ActorFrame player=new ActorFrame(),enemy=new ActorFrame();}
     bool inspection;
+    bool caillouxFight;
     Frame lastFrame;
 
     void Start()
@@ -43,6 +44,7 @@ public sealed class BattleBridge : MonoBehaviour
             if(config.viewport.width<=0||config.viewport.height<=0)return;
             arenaCamera.rect=new Rect(Mathf.Clamp01(config.viewport.x),Mathf.Clamp01(config.viewport.y),Mathf.Clamp01(config.viewport.width),Mathf.Clamp01(config.viewport.height));
             inspection=config.inspection;
+            caillouxFight=config.enemy.model=="cailloux";
             if(player!=null)Destroy(player.gameObject);if(enemy!=null)Destroy(enemy.gameObject);
             player=Create(config.player,true);enemy=Create(config.enemy,false);
             player.inspect=inspection;
@@ -63,7 +65,7 @@ public sealed class BattleBridge : MonoBehaviour
     }
     FighterPose Create(AvatarConfig config,bool left)
     {
-        var prefab=Resources.Load<GameObject>(config.body=="female"?"QuaterniusFemale":"QuaterniusShowcase");
+        var prefab=Resources.Load<GameObject>(config.model=="cailloux"?"Cailloux":config.body=="female"?"QuaterniusFemale":"QuaterniusShowcase");
         var obj=Instantiate(prefab);
         var pose=obj.GetComponent<FighterPose>();pose.inspect=false;pose.inspectionCamera=null;
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
@@ -112,11 +114,13 @@ public sealed class BattleBridge : MonoBehaviour
             float approach=1-Mathf.Abs(2*Mathf.Clamp01(frame.phase)-1);
             // The uppercut has a shorter reach than the extended direct/jab.
             float range=frame.pose==3?.4f:.6f;
+            // Match the human's head strike and the short stone arm's body strike.
+            if(caillouxFight)range=left?(frame.pose==3?.65f:.85f):.8f;
             float travel=Mathf.Max(0,Mathf.Abs(CombatX(true)-CombatX(false))-range);
             pose.placement+=(left?Vector3.left:Vector3.right)*travel*approach;
         }
     }
-    float CombatX(bool left)=>(left?1:-1)*HalfWidth()*.5f;
+    float CombatX(bool left)=>(left?1:-1)*(caillouxFight?.625f:HalfWidth()*.5f);
     // Half of the visible width on the fighters' plane, for either projection.
     float HalfWidth()
     {

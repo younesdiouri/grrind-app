@@ -4,6 +4,7 @@ import { beatAt, sampleRamp } from './sampling.ts';
 import type { Actor, BattleBeat } from './timeline.ts';
 
 export type UnityAvatar = {
+  model?: 'cailloux';
   body: 'male' | 'female'; hairStyle: 'parted' | 'buzzed' | 'buns' | 'long';
   boots: boolean; headband: boolean; visible: boolean;
   skinTone?: 'light' | 'tan' | 'brown' | 'deep'; eyeColor?: 'brown' | 'blue' | 'green';

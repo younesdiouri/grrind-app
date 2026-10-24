@@ -1,0 +1,63 @@
+{
+  "clips": {
+    "Attack": {
+      "foot_drift_m": 1.3657139822709083e-07,
+      "torso_pair_distance_error_m": 4.4772898447620335e-06,
+      "min_ground_z_m": -1.1148820533435355e-07,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.05475387632243037
+    },
+    "Combo": {
+      "foot_drift_m": 0.0,
+      "torso_pair_distance_error_m": 5.97932570067794e-07,
+      "min_ground_z_m": -8.30689828035247e-08,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.010774575602440987
+    },
+    "Counter": {
+      "foot_drift_m": 1.3514129182113002e-07,
+      "torso_pair_distance_error_m": 6.488578450980498e-06,
+      "min_ground_z_m": -9.758866070797012e-08,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.056110252796729314
+    },
+    "Critical": {
+      "foot_drift_m": 1.3265381615433736e-07,
+      "torso_pair_distance_error_m": 2.7547459591215073e-06,
+      "min_ground_z_m": -1.1323659521167428e-07,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.05672083716190976
+    },
+    "Dodge": {
+      "foot_drift_m": 1.8143349382111313e-07,
+      "torso_pair_distance_error_m": 1.4666301151877725e-06,
+      "min_ground_z_m": -1.1654990572651514e-07,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.015593677971707805
+    },
+    "Hit": {
+      "foot_drift_m": 1.5269146510898468e-07,
+      "torso_pair_distance_error_m": 4.3566179501186575e-06,
+      "min_ground_z_m": -1.0635039160433735e-07,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.011608820895702478
+    },
+    "Idle": {
+      "foot_drift_m": 0.0,
+      "torso_pair_distance_error_m": 4.0896357800246363e-08,
+      "min_ground_z_m": -8.30689828035247e-08,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.0002513527817174329
+    },
+    "WorkshopIdle": {
+      "foot_drift_m": 0.0,
+      "torso_pair_distance_error_m": 4.0896357800246363e-08,
+      "min_ground_z_m": -8.30689828035247e-08,
+      "loop_or_guard_seam_m": 0.0,
+      "max_joint_step_per_frame_m": 0.0002513527817174329
+    }
+  },
+  "errors": [],
+  "foot_vertices": 810,
+  "rigid_torso_vertices": 1128
+}

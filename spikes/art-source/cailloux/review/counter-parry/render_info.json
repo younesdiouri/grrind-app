@@ -1,0 +1,43 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/CR_Cailloux_master.blend",
+  "mode": "material",
+  "engine": "cycles",
+  "bbox_min": [
+    -0.5417378544807434,
+    -0.6194840669631958,
+    -9.758866070797012e-08
+  ],
+  "bbox_max": [
+    0.683289110660553,
+    0.34056827425956726,
+    1.299420714378357
+  ],
+  "size_xyz": [
+    1.2250269651412964,
+    0.9600523710250854,
+    1.2994208335876465
+  ],
+  "objects": [
+    "CR_Cailloux_Body_LOD0"
+  ],
+  "renders": {
+    "front": {
+      "file": "spikes/art-source/cailloux/review/counter-parry/material_front.png",
+      "az_el_lens": [
+        0,
+        0,
+        0
+      ],
+      "distance": 4.480026185512543
+    },
+    "threequarter": {
+      "file": "spikes/art-source/cailloux/review/counter-parry/material_threequarter.png",
+      "az_el_lens": [
+        35,
+        15,
+        50
+      ],
+      "distance": 3.171325966922773
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "maestro_flow": ".maestro/combat-3d.yaml",
+  "session": "2026-10-24_112346",
+  "result": "PASS",
+  "duration_s": 65,
+  "unit_tests": 564,
+  "typecheck": "PASS",
+  "lint": "PASS",
+  "previews": 29,
+  "native_copy_proof": "artifacts/cailloux/main-sync-native-proof.json",
+  "visual_comparison_proof": "artifacts/cailloux/main-sync-visual-proof.json",
+  "review_clip": "references/quaternius-poc/cailloux/combat-motion.mp4",
+  "review_sheet": "references/quaternius-poc/cailloux/motion-review.png",
+  "author_artistic_acceptance": "ok ça me va",
+  "physical_iphone": "not built or tested",
+  "broader_preview_check": "appearance preview cold-start check remains in appearances.yaml; not claimed as passing"
+}

@@ -1,4 +1,5 @@
 import { Redirect, Stack, router, useLocalSearchParams } from 'expo-router';
+import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
@@ -24,14 +25,19 @@ export default function CombatDemoScreen() {
   const { network, frame, scenario, at, opponent, mob } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string; mob?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
   // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
-  if (at && (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel')) return <AmbientBackdropProvider>
+  if (at && (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel')) {
+    const sample = BATTLE_FIXTURES[scenario];
+    const battle = mob === 'pebble' ? { ...sample, enemy: { ...sample.enemy, key: 'SAND_JACKAL',
+      name: PEBBLE.name, introduction: PEBBLE.introduction ?? null, appearance: null } } : sample;
+    return <AmbientBackdropProvider>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <View style={styles.screen}>
-      <BattleView key={at} battle={BATTLE_FIXTURES[scenario]}
-        enemyArt={scenario === 'duel' ? undefined : AL_KASAL} demo demoTime={Number(at)}
+      <BattleView key={at} battle={battle}
+        enemyArt={scenario === 'defaiteBoss' && mob !== 'pebble' ? AL_KASAL : undefined} demo demoTime={Number(at)}
         onDismiss={() => router.replace('/combat-demo')} />
     </View>
   </AmbientBackdropProvider>;
+  }
   if (isE2eBuild && network) return <AmbientBackdropProvider><NetworkDemo key={`${network}-${frame}-${opponent}`} scenario={network} frame={frame} duel={opponent === 'player'} pebble={opponent === 'pebble'} /></AmbientBackdropProvider>;
   return <AmbientBackdropProvider><CombatDemo key={`${mob}`} pebble={mob === 'pebble'} /></AmbientBackdropProvider>;
 }
@@ -72,6 +78,8 @@ function CombatDemo({ pebble }: { pebble: boolean }) {
   const [pose, setPose] = useState<FighterPose>('idle');
   const [scenario, setScenario] = useState<'victoire' | 'defaiteBoss' | null>(null);
   const clock = useSharedValue(0);
+  const battle = scenario ? { ...BATTLE_FIXTURES[scenario], enemy: { ...BATTLE_FIXTURES[scenario].enemy,
+    key: pebble ? 'SAND_JACKAL' : 'AL_KASAL', name: artwork.name, introduction: artwork.introduction ?? null } } : null;
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ headerShown: !scenario, statusBarHidden: !!scenario, headerLeft: () => (
@@ -83,23 +91,25 @@ function CombatDemo({ pebble }: { pebble: boolean }) {
         </Pressable>
       ) }} />
       <Text style={styles.notice}>DÉMONSTRATION · AUCUN GAIN RÉEL</Text>
-      {scenario ? (
-        <BattleView battle={BATTLE_FIXTURES[scenario]} enemyArt={artwork} demo onDismiss={() => setScenario(null)} />
+      {battle ? (
+        <BattleView battle={battle} enemyArt={pebble ? undefined : artwork} demo onDismiss={() => setScenario(null)} />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.title}>{artwork.name}</Text>
           <Text style={styles.subtitle}>{pebble ? 'Un petit obstacle prend corps.' : 'La paresse prend corps.'}</Text>
           <View style={styles.preview} testID={`${pebble ? 'pebble' : 'al-kasal'}-${pose}`}>
-            <FighterSprite artwork={artwork} clock={clock} beats={[]} pose={pose} />
+            {pebble ? <Image source={require('../../assets/images/enemies/cailloux-preview.png')}
+              style={StyleSheet.absoluteFill} contentFit="contain" accessibilityLabel="Cailloux, golem de pierre en baskets" />
+              : <FighterSprite artwork={artwork} clock={clock} beats={[]} pose={pose} />}
           </View>
-          <View style={styles.poses}>
+          {!pebble && <View style={styles.poses}>
             {POSES.map((option) => (
               <Pressable key={option.value} onPress={() => setPose(option.value)} accessibilityRole="button"
                 accessibilityState={{ selected: pose === option.value }} style={[styles.pose, pose === option.value && styles.selected]}>
                 <Text style={styles.poseLabel}>{option.label}</Text>
               </Pressable>
             ))}
-          </View>
+          </View>}
           <Button label="Jouer une victoire" onPress={() => setScenario('victoire')} />
           <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />
           <Button label="Jouer une défaite" variant="quiet" onPress={() => setScenario('defaiteBoss')} />

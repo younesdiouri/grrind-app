@@ -1,0 +1,164 @@
+appId: app.grrind.dev
+---
+# Standalone Unity combat pilot: E2E_OFFLINE=1. Previews remain in appearances.yaml.
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+- openLink: grrindapp-dev://combat-demo?scenario=duel&at=3200
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: Ouvrir
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 30000
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: unity-renderer-ready
+- assertNotVisible:
+    id: battle-renderer-unavailable
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+- takeScreenshot: unity-default-pvp
+- tapOn:
+    id: battle-combat
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 10000
+- takeScreenshot: unity-default-pvp-recap
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: al-kasal-idle
+    timeout: 15000
+- takeScreenshot: unity-return-portrait
+- setOrientation: PORTRAIT
+- openLink: grrindapp-dev://combat-demo?scenario=victoire&mob=pebble&at=1280
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: battle-dialogue
+    commands:
+      - tapOn:
+          id: battle-dialogue
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: unity-renderer-ready
+- takeScreenshot: unity-cailloux-attack
+- tapOn:
+    id: battle-combat
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 10000
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: al-kasal-idle
+    timeout: 15000
+- setOrientation: PORTRAIT
+- openLink: grrindapp-dev://combat-demo?scenario=defaiteBoss&mob=pebble&at=2015
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: battle-dialogue
+    commands:
+      - tapOn:
+          id: battle-dialogue
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: unity-renderer-ready
+- takeScreenshot: unity-cailloux-counter
+- tapOn:
+    id: battle-combat
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 10000
+- takeScreenshot: unity-cailloux-defeat-recap
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: al-kasal-idle
+    timeout: 15000
+- setOrientation: PORTRAIT
+- openLink: grrindapp-dev://avatar-3d
+- extendedWaitUntil:
+    visible:
+      id: quaternius-ready
+    timeout: 30000
+- takeScreenshot: unity-workshop-after-combats
+- setOrientation: PORTRAIT
+- openLink: grrindapp-dev://combat-demo?mob=pebble
+- extendedWaitUntil:
+    visible:
+      id: pebble-idle
+    timeout: 30000
+- takeScreenshot: unity-cailloux-menu
+- tapOn: Jouer une victoire
+- extendedWaitUntil:
+    visible:
+      id: battle-dialogue
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: battle-dialogue
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 10000
+- assertVisible:
+    id: unity-renderer-ready
+- takeScreenshot: unity-cailloux-playing
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 30000
+- takeScreenshot: unity-cailloux-natural-recap
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: pebble-idle
+    timeout: 15000

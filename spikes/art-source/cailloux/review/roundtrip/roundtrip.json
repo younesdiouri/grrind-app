@@ -1,0 +1,149 @@
+{
+  "file": "/Users/younesdiouri/Desktop/grrind-app/spikes/Unity3D/Assets/Characters/Cailloux/Cailloux.fbx",
+  "errors": [],
+  "meshes": [
+    {
+      "name": "CR_Cailloux_Body_LOD0",
+      "tris": 6189,
+      "verts": 11009,
+      "uv": true,
+      "materials": [
+        "CaillouxStone"
+      ],
+      "skinned": true,
+      "shape_keys": 0
+    }
+  ],
+  "armatures": [
+    {
+      "name": "CR_Cailloux_Rig",
+      "bones": [
+        "Hips",
+        "Spine02",
+        "Spine01",
+        "Spine",
+        "neck",
+        "Head",
+        "head_end",
+        "headfront",
+        "LeftShoulder",
+        "LeftArm",
+        "LeftForeArm",
+        "LeftHand",
+        "RightShoulder",
+        "RightArm",
+        "RightForeArm",
+        "RightHand",
+        "LeftUpLeg",
+        "LeftLeg",
+        "LeftFoot",
+        "LeftToeBase",
+        "RightUpLeg",
+        "RightLeg",
+        "RightFoot",
+        "RightToeBase"
+      ],
+      "roots": [
+        "Hips"
+      ]
+    }
+  ],
+  "clips": [
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|Attack",
+      "frames": [
+        1,
+        31
+      ],
+      "length_s": 1.0
+    },
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|Combo",
+      "frames": [
+        1,
+        31
+      ],
+      "length_s": 1.0
+    },
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|Counter",
+      "frames": [
+        1,
+        31
+      ],
+      "length_s": 1.0
+    },
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|Critical",
+      "frames": [
+        1,
+        31
+      ],
+      "length_s": 1.0
+    },
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|Dodge",
+      "frames": [
+        1,
+        31
+      ],
+      "length_s": 1.0
+    },
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|Hit",
+      "frames": [
+        1,
+        31
+      ],
+      "length_s": 1.0
+    },
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|Idle",
+      "frames": [
+        1,
+        76
+      ],
+      "length_s": 2.5
+    },
+    {
+      "name": "CR_Cailloux_Rig|CR_Cailloux_Rig|WorkshopIdle",
+      "frames": [
+        1,
+        76
+      ],
+      "length_s": 2.5
+    }
+  ],
+  "materials": [
+    "CaillouxStone"
+  ],
+  "images": [
+    {
+      "name": "Image_0",
+      "size": [
+        2048,
+        2048
+      ],
+      "ok": true
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.6538,
+      -0.4981,
+      -0.0
+    ],
+    "max": [
+      0.6498,
+      0.3391,
+      1.3
+    ],
+    "size": [
+      1.3036,
+      0.8372,
+      1.3
+    ]
+  },
+  "height_m": 1.3,
+  "render": "spikes/art-source/cailloux/review/roundtrip/roundtrip_clay_threequarter.png"
+}

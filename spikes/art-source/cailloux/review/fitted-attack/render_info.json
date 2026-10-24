@@ -1,0 +1,56 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/CR_Cailloux_master.blend",
+  "mode": "material",
+  "engine": "cycles",
+  "bbox_min": [
+    -0.5306226015090942,
+    -0.6991589069366455,
+    -8.79661286035116e-08
+  ],
+  "bbox_max": [
+    0.6489276885986328,
+    0.3443875312805176,
+    1.297920823097229
+  ],
+  "size_xyz": [
+    1.179550290107727,
+    1.043546438217163,
+    1.2979209423065186
+  ],
+  "objects": [
+    "CR_Cailloux_Body_LOD0"
+  ],
+  "renders": {
+    "front": {
+      "file": "spikes/art-source/cailloux/review/fitted-attack/material_front.png",
+      "az_el_lens": [
+        0,
+        0,
+        0
+      ],
+      "distance": 4.5217732191085815
+    },
+    "side": {
+      "file": "spikes/art-source/cailloux/review/fitted-attack/material_side.png",
+      "az_el_lens": [
+        90,
+        0,
+        0
+      ],
+      "distance": 4.5897751450538635
+    },
+    "threequarter": {
+      "file": "spikes/art-source/cailloux/review/fitted-attack/material_threequarter.png",
+      "az_el_lens": [
+        35,
+        15,
+        50
+      ],
+      "distance": 3.207130693727069
+    },
+    "gameplay": {
+      "file": "spikes/art-source/cailloux/review/fitted-attack/material_gameplay_128px.png",
+      "subject_px": 128
+    }
+  }
+}

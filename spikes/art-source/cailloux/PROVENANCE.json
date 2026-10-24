@@ -1,0 +1,21 @@
+{
+  "authoring": "Built-in ImageGen style references from Ego dumbbell and golden boxing gloves; Meshy 7.1 multiview generation; Meshy autorig; Blender rigid torso weight refinement and compact authored IK actions after rejecting raw humanoid motion.",
+  "license": "Generated with the user’s Meshy account; subject to its terms, not Quaternius CC0",
+  "tasks": [
+    "01a16a60-444a-7189-a1c2-574dccd5f249",
+    "01a16a62-1f2b-7730-b599-47b4e88ff6db",
+    "01a16a63-2c86-770a-9c9b-3b2370bffcc6"
+  ],
+  "credits": 46,
+  "triangles": 6189,
+  "texture": "One 2048px sRGB base color; roughness .85, metallic 0",
+  "animations": "Downloaded Meshy presets 192 (Right Jab from Guard) and 90 (Counterstrike) retained as references. Final seven gestures and workshop idle reauthored in Blender to preserve stone rigidity and planted feet.",
+  "approval": "User requested a local Simulator trial without commits on 2026-10-23. Artistic acceptance awaits that trial.",
+  "inferred": [
+    "1.3m height",
+    "joint pivots",
+    "hidden sole detail",
+    "compact attack and counter choreography"
+  ],
+  "menu_preview": "assets/images/enemies/cailloux-preview.png, Blender material render of the final idle pose; not an animated sprite"
+}

@@ -1,0 +1,34 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/cailloux/CR_Cailloux_motion_source.blend",
+  "mode": "material",
+  "engine": "cycles",
+  "bbox_min": [
+    -1.2476475238800049,
+    -0.8500828146934509,
+    -0.13709180057048798
+  ],
+  "bbox_max": [
+    0.2372342199087143,
+    0.34111034870147705,
+    1.1320500373840332
+  ],
+  "size_xyz": [
+    1.4848817586898804,
+    1.1911931037902832,
+    1.2691417932510376
+  ],
+  "objects": [
+    "char1"
+  ],
+  "renders": {
+    "threequarter": {
+      "file": "spikes/art-source/cailloux/review/source-counter-contact/material_threequarter.png",
+      "az_el_lens": [
+        35,
+        15,
+        50
+      ],
+      "distance": 3.4318437675635014
+    }
+  }
+}
