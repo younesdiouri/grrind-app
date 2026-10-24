@@ -27,7 +27,7 @@ export default function CombatDemoScreen() {
       name: PEBBLE.name, introduction: PEBBLE.introduction ?? null, appearance: null } } : sample;
     return <AmbientBackdropProvider>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
-    <View style={styles.screen}>
+    <View style={styles.screen} testID={`combat-demo-${snapshot ?? scenario}-${at ?? 'live'}`}>
       {scenario === 'loot' && <Text style={styles.notice}>DÉMONSTRATION · AUCUN GAIN RÉEL</Text>}
       <BattleView key={at} battle={battle}
         demo={scenario !== 'loot'} demoTime={at ? Number(at) : undefined}

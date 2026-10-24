@@ -211,7 +211,7 @@ appId: app.grrind.dev
 - setOrientation: LANDSCAPE_LEFT
 - assertVisible:
     id: unity-renderer-ready
-- assertVisible: Malik
+- assertVisible: Malik. Passer au bilan
 - takeScreenshot: quaternius-pvp-two-fighters
 - tapOn:
     id: battle-combat
@@ -229,34 +229,7 @@ appId: app.grrind.dev
     timeout: 20000
 - takeScreenshot: quaternius-return-from-pvp
 - setOrientation: PORTRAIT
-- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=1394
-- extendedWaitUntil:
-    visible:
-      id: unity-renderer-ready
-    timeout: 20000
-- setOrientation: LANDSCAPE_LEFT
-- takeScreenshot: weapons-duel-fer-play-normal
-- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=2694
-- extendedWaitUntil:
-    visible:
-      id: unity-renderer-ready
-    timeout: 20000
-- setOrientation: LANDSCAPE_LEFT
-- takeScreenshot: weapons-duel-huilesson-normal
-- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=11754
-- extendedWaitUntil:
-    visible:
-      id: unity-renderer-ready
-    timeout: 20000
-- setOrientation: LANDSCAPE_LEFT
-- takeScreenshot: weapons-duel-huilesson-critical
-- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=15654
-- extendedWaitUntil:
-    visible:
-      id: unity-renderer-ready
-    timeout: 20000
-- setOrientation: LANDSCAPE_LEFT
-- takeScreenshot: weapons-duel-fer-play-critical
+- runFlow: sports-weapons-contacts.yaml
 - openLink: grrindapp-dev://character-showcase
 - extendedWaitUntil:
     visible:

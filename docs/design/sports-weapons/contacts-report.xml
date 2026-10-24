@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="GRRIND E2E - iOS 27.0 - 236B6829-DCFF-4048-B4D4-430D9A97F840" tests="1" failures="0" time="21.987" timestamp="2026-10-24T23:41:59">
+    <testcase id="sports-weapons-contacts" name="sports-weapons-contacts" classname="sports-weapons-contacts" file=".maestro/sports-weapons-contacts.yaml" time="21.974" timestamp="2026-10-24T23:41:59" status="SUCCESS"/>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,75 @@
+appId: app.grrind.dev
+---
+# Frozen cosmetic snapshots; run standalone with E2E_OFFLINE=1 or from quaternius-poc.
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+- extendedWaitUntil:
+    visible:
+      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|battle-combat|battle-exit|unity-raid-ready"
+    timeout: 30000
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=1394
+- extendedWaitUntil:
+    visible:
+      id: combat-demo-weapons-1394
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: weapons-duel-fer-play-normal
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=2694
+- extendedWaitUntil:
+    visible:
+      id: combat-demo-weapons-2694
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: weapons-duel-huilesson-normal
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=11754
+- extendedWaitUntil:
+    visible:
+      id: combat-demo-weapons-11754
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: weapons-duel-huilesson-critical
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=15654
+- extendedWaitUntil:
+    visible:
+      id: combat-demo-weapons-15654
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: weapons-duel-fer-play-critical
