@@ -164,6 +164,7 @@ describe("le middleware d'authentification", () => {
         timezone: 'Europe/Paris',
         locale: null,
         appearance: null,
+        avatar: null,
         notificationPreferences: [],
       },
     });

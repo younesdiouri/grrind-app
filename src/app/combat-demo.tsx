@@ -10,7 +10,7 @@ import { BattleView } from '@/features/combat/BattleView';
 import { AL_KASAL, FighterSprite } from '@/features/combat/FighterSprite';
 import { PEBBLE } from '@/features/combat/bundledMobs';
 import type { FighterPose } from '@/features/combat/fighterMotion';
-import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
+import { AVATAR_DUEL, BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { useAuth } from '@/features/auth/useAuth';
 import { isE2eBuild } from '@/features/health/e2e';
 import { buildBattleTimeline, type Battle } from '@/features/combat/timeline';
@@ -22,11 +22,11 @@ const POSES: { value: FighterPose; label: string }[] = [
 ];
 
 export default function CombatDemoScreen() {
-  const { network, frame, scenario, at, opponent, mob } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string; mob?: string }>();
+  const { network, frame, scenario, at, opponent, mob, snapshot } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string; mob?: string; snapshot?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
   // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
   if (at && (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel')) {
-    const sample = BATTLE_FIXTURES[scenario];
+    const sample = scenario === 'duel' && snapshot === 'avatar' ? AVATAR_DUEL : BATTLE_FIXTURES[scenario];
     const battle = mob === 'pebble' ? { ...sample, enemy: { ...sample.enemy, key: 'SAND_JACKAL',
       name: PEBBLE.name, introduction: PEBBLE.introduction ?? null, appearance: null } } : sample;
     return <AmbientBackdropProvider>

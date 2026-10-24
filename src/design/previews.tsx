@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
+import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BattleResultBadge } from '@/components/BattleResultBadge';
 import { BagRow } from '@/components/BagRow';
@@ -96,6 +97,7 @@ function guildMember(
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'Sam Petit',
     appearance: 'STRENGTH_V3',
+    avatar: DEFAULT_AVATAR,
     registeredAt: '2025-11-02T00:00:00Z',
     level: 7,
     xpIntoLevel: 340,

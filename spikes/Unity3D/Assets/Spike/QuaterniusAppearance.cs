@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Only the isolated POC uses this selection; account equipment stays server-owned.
+// Visual selection only; account appearance and equipment stay server-owned.
 public sealed class QuaterniusAppearance : MonoBehaviour
 {
     public GameObject[] headbands = System.Array.Empty<GameObject>();
@@ -70,9 +70,10 @@ public sealed class QuaterniusAppearance : MonoBehaviour
     {
         foreach (var obj in fantasyTop) obj.SetActive(!sport);
         foreach (var obj in sportTop) obj.SetActive(sport);
-        fantasyTrousers.SetActive(!sport);
-        sportTrousers.SetActive(sport && pantsColor == "original");
-        guinzz.SetActive(sport && pantsColor != "original");
+        bool baseTrousers = pantsColor == "base" || (!sport && pantsColor == "original");
+        fantasyTrousers.SetActive(baseTrousers);
+        sportTrousers.SetActive(!baseTrousers && pantsColor == "original");
+        guinzz.SetActive(pantsColor != "base" && pantsColor != "original");
         // Local prototype palette over the painted source; no account persistence.
         Color skin = tone == "light" ? new Color(1.4f, 1.65f, 1.85f) : tone == "brown" ? new Color(.66f, .52f, .43f)
             : tone == "deep" ? new Color(.37f, .27f, .23f) : Color.white;

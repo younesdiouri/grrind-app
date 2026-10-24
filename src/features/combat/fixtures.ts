@@ -17,3 +17,16 @@ export const BATTLE_FIXTURES = {
 } as const;
 
 export type BattleFixtureName = keyof typeof BATTLE_FIXTURES;
+
+/** Synthetic cosmetic snapshots over the captured timeline; no game values are changed. */
+export const AVATAR_DUEL: Battle = { ...BATTLE_FIXTURES.duel,
+  player: { ...BATTLE_FIXTURES.duel.player,
+    avatar: { version: 1, body: 'male', faceStyle: 'square', noseStyle: 'wide', hairStyle: 'buzzed',
+      skinTone: 'brown', eyeColor: 'blue', hairColor: 'black' },
+    equipment: { CHEST: { key: 'SPORT_TSHIRT_CORAL', artworkVersion: null },
+      LEGS: { key: 'LES_GUINZZ_CYAN', artworkVersion: null } } },
+  enemy: { ...BATTLE_FIXTURES.duel.enemy,
+    avatar: { version: 1, body: 'female', faceStyle: 'original', noseStyle: 'original', hairStyle: 'long',
+      skinTone: 'light', eyeColor: 'green', hairColor: 'blond' },
+    equipment: { LEGS: { key: 'LES_GUINZZ_PURPLE', artworkVersion: null },
+      WEAPON: { key: 'GOLDEN_BOXING_GLOVES', artworkVersion: null } } } };

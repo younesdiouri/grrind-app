@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { DEFAULT_AVATAR } from './serverAvatar.ts';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
@@ -91,11 +92,12 @@ function fabricated(attacks: number): Battle {
     result: 'VICTORY',
     attackCount: attacks, actionCount: attacks, elapsedTicks: attacks, endReason: 'KO', algorithmVersion: 'v2',
     foughtAt: '2026-08-29T15:00:00+00:00',
-    player: { hp: 10_000, damage: 1, mitigationPercent: 0, comboPercent: 0, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 0, appearance: 'STRENGTH_V1' },
+    player: { hp: 10_000, damage: 1, mitigationPercent: 0, comboPercent: 0, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 0, appearance: 'STRENGTH_V1', avatar: DEFAULT_AVATAR },
     enemy: {
       key: 'SAND_JACKAL',
       playerId: null,
       appearance: null,
+      avatar: null,
       name: 'Chacal des sables',
       hp: 10_000,
       damage: 1,
