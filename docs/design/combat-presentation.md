@@ -67,10 +67,27 @@ du composant de rendu se nomment désormais `Setup`/`DrawFrame`, seuls `BattleBr
 et `BattleBridge.Present` reçoivent les messages JSON. Le protocole a été rejoué dans l’éditeur
 avec `GameObject.SendMessage` avant le nouvel export, puis vérifié sur Simulator.
 
-VoiceOver et les grands réglages de texte conservent le HUD RN accessible. Le prochain contrôle
-sur iPhone physique demande un export Unity Device ; seul le Simulator a été reconstruit ici.
-Le verdict artistique de l’auteur reste attendu sur Simulator. Aucun push, PR, merge ou EAS.
+VoiceOver et les grands réglages de texte conservent le HUD RN accessible.
+Le verdict artistique de l’auteur reste attendu. Aucun push, PR, merge ou EAS.
+
+### Mise à niveau du development build iPhone
+
+Le 24 octobre, l’iPhone conservait l’ancien framework Device : le nouveau JS attendait le HUD,
+la finale et la capture d’avatar absents de ce binaire. Export Device, compilation du framework
+et build Debug iPhone réussis ; l’installation remplace `app.grrind.dev` en conservant sa session.
+Le framework de l’app construite porte l’UUID `890E81DC-275E-31BA-A6A5-5DC43B8E1741` et ses
+16 fichiers Data correspondent à l’export. Aperçu enregistré, HUD et victoire observés sur
+l’iPhone, dont un duel local joué naturellement jusqu’au verdict, sans Passer.
+Captures de 1206 × 2622 et 2622 × 1206 px. Le libellé corps/coiffure sous l’aperçu
+est supprimé ; sa description complète reste accessible à VoiceOver.
+
+Types, lint, 587 tests et 29 previews passent. Le parcours `appearances.yaml`, précédé de la
+connexion du compte QA, passe en 5 min 2 s (`2026-10-24_180828`) et couvre les aperçus,
+les huit effets/camps, le PvP naturel, les finales PvE et le retour portrait. Captures inspectées.
+Les exports/intermédiaires Unity de cette compilation sont retirés après copie du framework
+courant et installation ; aucun historique de builds n’est ajouté.
 
 ![Critique centré sur la cible](combat-presentation/critical.png)
 ![Esquive centrée sur le défenseur](combat-presentation/dodge.png)
 ![Victoire et gains de la fixture](combat-presentation/victory-gains.png)
+![Victoire Unity sur iPhone](combat-presentation/iphone-victory.png)
