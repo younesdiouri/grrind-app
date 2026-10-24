@@ -75,7 +75,7 @@ un loot aléatoire. Ne pas assimiler une branche conditionnelle jamais jouée à
 Pour une scène autonome, ou un flow documenté qui doit conserver la session QA :
 
 ```sh
-E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/al-kasal.yaml
+E2E_OFFLINE=1 npm run e2e:ios:flow -- .maestro/alam-scene.yaml
 ```
 
 Ce drapeau supprime la vérification du back, la création de comptes et le reset, pas les éventuels

@@ -9,7 +9,7 @@ Même échelle de réduction (953 / 1254), centrage horizontal et pieds opaques 
 
 Images générées avec ImageGen. Direction artistique : petit golem de basalte gris,
 silhouette trapue, tête et torse fusionnés, yeux et fissures ambre, éclairage de contour
-cyan, illustration peinte de fantasy sombre cohérente avec Al-Kasal. Personnage entier,
+cyan, illustration peinte de fantasy sombre. Personnage entier,
 sans accessoires, texte, décor ni ombre au sol.
 
 Pose de repos utilisée comme référence pour les variantes : attaque avec un coup de
@@ -32,10 +32,6 @@ personnage conservé. Inspection visuelle des trois poses sur fond sombre.
 Les PNG sont téléversés dans l’administration, puis servis par `imageUrls` de l’API.
 Ils ne sont pas importés statiquement par le composant de combat.
 
-Validation : catalogue réel `/api/enemies` en français, deux ennemis actifs au niveau 1,
-six images Al-Kasal/caillou accessibles en HTTP 200 via l’adresse LAN du Mac ; toutes
-RGBA 1024 × 1024 avec transparence. Aucun combat simulé pour cette publication.
-Al-Kasal dispose d’une table de récompense active : 2 à 8 pièces, sans objet.
-Le formulaire admin de loot avec objets échoue actuellement côté backend
-(`Cannot access offset of type App\Admin\Domain\GameItem in isset or empty`,
-`LootTables.php:245`) ; cette erreur est évitée avec la récompense en pièces.
+Le combat Cailloux utilise désormais son modèle Unity par clé `SAND_JACKAL`.
+Les images de ce dossier servent encore aux scénarios HTTP génériques de
+`scripts/combat-presentation-server.mjs` (chargement, échec et délai des illustrations).

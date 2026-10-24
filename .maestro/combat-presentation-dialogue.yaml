@@ -10,7 +10,7 @@ appId: app.grrind.dev
     visible: ".*Toucher pour combattre.*"
     timeout: 20000
 - setOrientation: LANDSCAPE_LEFT
-- assertVisible: ".*Gardien du repos.*"
+- assertVisible: ".*Gardien de test.*"
 - assertVisible: ".*Cette réplique vient de la réponse du combat.*"
 - takeScreenshot: presentation-${SCENARIO}
 - tapOn:
@@ -24,4 +24,5 @@ appId: app.grrind.dev
 - tapOn:
     id: "battle-exit"
 - setOrientation: PORTRAIT
-- assertVisible: "Repos"
+- assertVisible:
+    id: pebble-idle

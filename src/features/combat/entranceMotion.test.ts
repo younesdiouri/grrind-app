@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { combatMotion } from '@/design/tokens';
 import { entranceMotionAt } from './entranceMotion.ts';
 
-describe('arrivée d’Al-Kasal', () => {
+describe('arrivée du combattant illustré', () => {
   it('arrive depuis le bas et devient visible avant de parler', () => {
     const start = entranceMotionAt('entering', -1, false);
     const end = entranceMotionAt('entering', 0, false);

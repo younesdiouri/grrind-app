@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 const battle = JSON.parse(readFileSync(new URL('../fixtures/battle/victoire.json', import.meta.url)));
 const equippedDuel = JSON.parse(readFileSync(new URL('../fixtures/battle/duel-equipped.json', import.meta.url)));
 const images = Object.fromEntries(['idle', 'attack', 'hit'].map((pose) => [pose,
-  readFileSync(new URL(`../assets/images/enemies/al-kasal/${pose}.png`, import.meta.url))]));
+  readFileSync(new URL(`../assets/images/enemies/pebble/v2/${pose}.png`, import.meta.url))]));
 const scenarios = new Set(['complete', 'dialogue', 'missing', 'slow', 'silent', 'legacy', 'effects', 'limit', 'long']);
 const server = createServer((request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;
@@ -21,7 +21,7 @@ const server = createServer((request, response) => {
       `http://127.0.0.1:8099/images/${scenario}/${pose}.png`]));
     response.setHeader('Content-Type', 'application/json');
     const sample = ['effects', 'limit', 'long'].includes(scenario) ? synthetic(scenario) : battle;
-    const enemy = { ...sample.enemy, name: 'Gardien du repos' };
+    const enemy = { ...sample.enemy, key: 'PRESENTATION_TEST_MOB', name: 'Gardien de test' };
     if (scenario === 'legacy') {
       delete enemy.imageUrls;
       delete enemy.introduction;

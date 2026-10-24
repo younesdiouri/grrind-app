@@ -130,7 +130,7 @@ celui qui décide : une mise en scène qui ne tient que sur le cas joyeux ne tie
   [gants dorés](docs/design/golden-boxing-gloves.md),
   [Le Poids Lourd](docs/design/le-poids-lourd-pilot.md) et
   [Les Guinzz](docs/design/les-guinzz-pilot.md) : sources et fabrication 3D.
-- [Illustrations des monstres](docs/design/combat-art-workflow.md) : packs 2D encore utilisés.
+- [Al Kasal Unity](docs/design/al-kasal-unity.md) : paresseux, canapés et arène d’hiver.
 - [Refonte PvE et Ālam dans Unity](docs/design/unity-pve-alam.md) : chantier futur,
   nouveau bestiaire Meshy et retrait complet des anciens sprites.
 

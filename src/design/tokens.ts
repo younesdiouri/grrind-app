@@ -12,7 +12,7 @@ export const guildChat = {
   bubbleWidth: '92%' as const,
 } as const;
 
-/** Mise en scène du prototype Al-Kasal : fractions d'un échange, puis amplitudes en points. */
+/** Mise en scène des combats : fractions d'un échange, puis amplitudes en points. */
 export const combatEffects = {
   width: 250, height: 110, labelSize: 27, rise: 12,
   dodge: '#58E9FF', critical: '#FFD36D', combo: '#D899FF', replay: '#68FFD1',

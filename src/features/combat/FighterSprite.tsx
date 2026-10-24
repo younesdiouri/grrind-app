@@ -9,7 +9,6 @@ import type { Actor, BattleBeat } from './timeline';
 import { ENEMY_IMAGE_TIMEOUT_MS, type FighterArtwork } from './enemyPresentation';
 
 export type { FighterArtwork } from './enemyPresentation';
-export { AL_KASAL } from './bundledMobs';
 
 /** Les poses disponibles se chargent ensemble ; aucune source ne change au milieu d'un coup. */
 export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, signals, lateral = false, staticPreview = false, onReady, onError }: {

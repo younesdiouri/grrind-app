@@ -31,7 +31,7 @@ appId: app.grrind.dev
 # Auth restoration can replace a deep link opened before the navigation stack is mounted.
 - extendedWaitUntil:
     visible:
-      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|al-kasal-idle|battle-combat|battle-exit"
+      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|battle-combat|battle-exit"
     timeout: 30000
 - runFlow:
     file: combat-effect-frame.yaml
@@ -154,7 +154,7 @@ appId: app.grrind.dev
     id: battle-exit
 - extendedWaitUntil:
     visible:
-      id: al-kasal-idle
+      id: pebble-idle
     timeout: 15000
 - takeScreenshot: unity-return-portrait
 - setOrientation: PORTRAIT
@@ -178,7 +178,7 @@ appId: app.grrind.dev
     id: battle-exit
 - extendedWaitUntil:
     visible:
-      id: al-kasal-idle
+      id: pebble-idle
     timeout: 15000
 - setOrientation: PORTRAIT
 - openLink: grrindapp-dev://combat-demo?scenario=victoire&mob=pebble&at=1494
@@ -208,7 +208,7 @@ appId: app.grrind.dev
     id: battle-exit
 - extendedWaitUntil:
     visible:
-      id: al-kasal-idle
+      id: pebble-idle
     timeout: 15000
 - setOrientation: PORTRAIT
 - openLink: grrindapp-dev://combat-demo?scenario=defaiteBoss&mob=pebble&at=2794
@@ -239,7 +239,7 @@ appId: app.grrind.dev
     id: battle-exit
 - extendedWaitUntil:
     visible:
-      id: al-kasal-idle
+      id: pebble-idle
     timeout: 15000
 - setOrientation: PORTRAIT
 - openLink: grrindapp-dev://avatar-3d
@@ -306,6 +306,6 @@ appId: app.grrind.dev
     id: battle-exit
 - extendedWaitUntil:
     visible:
-      id: al-kasal-idle
+      id: pebble-idle
     timeout: 15000
 - setOrientation: PORTRAIT

@@ -69,7 +69,8 @@ production. L’export JS iOS de production passe également.
 
 Le flow `appearances.yaml` passe en 1 min 7 s sur le development build installé. La session QA
 connectée a effectivement parcouru les aperçus Réglages/Sac, les deux personnages Unity en PvP,
-le bilan, le retour, le héros Unity face à Al-Kasal puis l’atelier. Captures inspectées.
+le bilan et le retour. La démonstration mixte face aux anciens sprites d’Al Kasal a été
+retirée dans #269 ; seul son [raid Unity](../design/al-kasal-unity.md) est conservé.
 Le retour portrait est aussi observé sur une capture stabilisée du même code ; la capture du
 dernier flow tombe pendant l’animation de rotation iOS.
 
@@ -78,7 +79,6 @@ deux personnages PvP mesurent environ 631 et 603 px en hauteur, pieds et têtes 
 Le rendu d’aperçu mesure 512 × 640 px ; sa provenance et sa configuration sont à côté de l’asset.
 
 ![Deux personnages Unity en PvP](unity-1v1/pvp.png)
-![Héros Unity face à Al-Kasal](unity-1v1/pve.png)
 ![Aperçu dans les Réglages](unity-1v1/settings.png)
 
 Le candidat iPhone/TestFlight et ses mesures poids/mémoire/chauffe restent à vérifier lors
