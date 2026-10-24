@@ -801,5 +801,6 @@ const styles = StyleSheet.create({
   scoreLabel: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   scoreValue: { ...type.label, color: color.text, letterSpacing: 0 },
   scoreValueRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  exit: { ...type.label, color: color.textMuted, letterSpacing: 0, paddingTop: space.md },
+  exit: { ...type.label, color: color.text, letterSpacing: 0, marginTop: space.sm,
+    paddingHorizontal: space.md, paddingVertical: space.xs, backgroundColor: color.surfaceRaised, borderRadius: radius.pill },
 });

@@ -6,6 +6,7 @@ public sealed class BattleBridge : MonoBehaviour
 {
     public Camera arenaCamera;
     public Material contactShadow;
+    public GameObject combatEnvironment,inspectionFloor;
     FighterPose player,enemy;
 
     [Serializable] public class AvatarConfig {
@@ -44,6 +45,9 @@ public sealed class BattleBridge : MonoBehaviour
             if(config.viewport.width<=0||config.viewport.height<=0)return;
             arenaCamera.rect=new Rect(Mathf.Clamp01(config.viewport.x),Mathf.Clamp01(config.viewport.y),Mathf.Clamp01(config.viewport.width),Mathf.Clamp01(config.viewport.height));
             inspection=config.inspection;
+            if(combatEnvironment!=null)combatEnvironment.SetActive(!inspection);
+            if(inspectionFloor!=null)inspectionFloor.SetActive(inspection);
+            arenaCamera.backgroundColor=inspection?new Color(.0196f,.0314f,.0863f):new Color(.48f,.66f,.77f);
             caillouxFight=config.enemy.model=="cailloux";
             if(player!=null)Destroy(player.gameObject);if(enemy!=null)Destroy(enemy.gameObject);
             player=Create(config.player,true);enemy=Create(config.enemy,false);
