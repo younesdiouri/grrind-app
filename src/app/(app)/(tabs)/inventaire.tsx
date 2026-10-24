@@ -9,7 +9,8 @@ import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { CoinAmount } from '@/components/CoinAmount';
 import { CharacterInventory } from '@/components/CharacterInventory';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
-import { CombatAvatarPreview } from '@/features/combat/CombatAvatarPreview';
+import { AvatarEntry } from '@/features/avatar/AvatarEntry';
+import { useAvatarProfile } from '@/features/avatar/useAvatarProfile';
 import { ItemCard } from '@/components/ItemCard';
 import { SystemFrame } from '@/components/SystemFrame';
 import { decorativeGlow } from '@/design/decorativeGlow';
@@ -66,6 +67,7 @@ import { SHOP_QUERY_KEY } from '@/features/shop/useShop';
  */
 export default function InventoryScreen() {
   const inventory = useInventory();
+  const profile = useAvatarProfile();
   const queryClient = useQueryClient();
 
   /**
@@ -306,7 +308,7 @@ export default function InventoryScreen() {
 
           <Button label="Atelier · fabriquer un équipement" onPress={() => router.push('/atelier')} />
 
-          <CharacterInventory inventory={data} statistics={data.statistics} equipment={
+          <CharacterInventory inventory={data} statistics={data.statistics} onAppearance={() => router.push('/apparence')} equipment={
             <>
           <View style={styles.sectionHead}>
             <View style={styles.sectionCopy}>
@@ -316,7 +318,10 @@ export default function InventoryScreen() {
             <Text style={styles.hint}>Choisis une zone</Text>
           </View>
 
-          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={<CombatAvatarPreview equipment={data.equipment} />} />
+          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={profile.data
+            ? <AvatarEntry avatar={profile.data.avatar} editable onPress={() => router.push('/apparence')} />
+            : profile.isPending ? <ActivityIndicator color={color.accent} />
+            : <Button label="Recharger l’apparence" variant="quiet" onPress={() => void profile.refetch()} />} />
 
           <SystemFrame contentStyle={styles.drawer}>
             <View style={styles.drawerHead}>

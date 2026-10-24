@@ -6,16 +6,21 @@ import { CharacterStatistics } from '@/components/CharacterStatistics';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
 import { CombatAvatarPreview } from '@/features/combat/CombatAvatarPreview';
+import { AvatarEntry } from '@/features/avatar/AvatarEntry';
+import type { Avatar } from '@/features/combat/serverAvatar';
 import { color, opacity, radius, space, type } from '@/design/tokens';
 
 const sections = { equipment: 'Équipement', statistics: 'Statistiques', bag: 'Sac' } as const;
 
 /** Même feuille pour soi et les autres ; les gestes privés restent fournis par l'écran personnel. */
-export function CharacterInventory({ inventory, statistics, equipment, bag }: {
+export function CharacterInventory({ inventory, statistics, equipment, bag, avatar, onAvatarPress, onAppearance }: {
   inventory: components['schemas']['PublicInventory'];
   statistics: components['schemas']['PlayerStatistics'];
   equipment?: ReactNode;
   bag?: ReactNode;
+  avatar?: Avatar;
+  onAvatarPress?(): void;
+  onAppearance?(): void;
 }) {
   const [section, setSection] = useState<keyof typeof sections>('equipment');
   return (
@@ -28,11 +33,14 @@ export function CharacterInventory({ inventory, statistics, equipment, bag }: {
             <Text style={[styles.label, section === key && styles.activeLabel]}>{sections[key]}</Text>
           </Pressable>
         ))}
+        {onAppearance && <Pressable testID="character-tab-appearance" accessibilityRole="button"
+          onPress={onAppearance} style={styles.tab}><Text style={styles.label}>Apparence</Text></Pressable>}
       </View>
       {section === 'statistics' ? <CharacterStatistics statistics={statistics} /> : null}
       {section === 'equipment' ? equipment ?? (
         <>
-          <EquipmentBoard equipment={inventory.equipment} avatar={<CombatAvatarPreview equipment={inventory.equipment} />} />
+          <EquipmentBoard equipment={inventory.equipment} avatar={onAvatarPress
+            ? <AvatarEntry avatar={avatar} onPress={onAvatarPress} /> : <CombatAvatarPreview equipment={inventory.equipment} />} />
           {Object.values(inventory.equipment).every((line) => line === null)
             ? <Text style={styles.note}>Aucun équipement porté.</Text>
             : Object.entries(inventory.equipment).map(([slot, line]) => line === null ? null : <ItemCard key={slot} item={line} equipped />)}

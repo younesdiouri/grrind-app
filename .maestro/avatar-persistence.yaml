@@ -1,0 +1,163 @@
+appId: app.grrind.dev
+tags:
+  - inventory
+  - avatar
+---
+# Start scripts/avatar-qa-proxy.mjs; use E2E_API_URL=http://localhost:8099 for dev and flow.
+# One disposable account, real persistence; the proxy drops the first save before forwarding.
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: "${typeof MAESTRO_AVATAR_EMAIL === 'undefined' ? EMPTY_EMAIL : MAESTRO_AVATAR_EMAIL}"
+- extendedWaitUntil:
+    visible: NIVEAU
+    timeout: 30000
+- tapOn:
+    id: tab-inventaire
+- scrollUntilVisible:
+    element:
+      id: character-tab-appearance
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: character-tab-appearance
+- extendedWaitUntil:
+    visible:
+      id: avatar-3d-ready
+    timeout: 30000
+- tapOn:
+    id: avatar-section-Traits
+- assertVisible:
+    id: avatar-option-faceStyle-square-selected
+- assertVisible:
+    id: avatar-option-noseStyle-wide-selected
+- tapOn: Visage original
+- assertVisible:
+    id: avatar-option-noseStyle-wide-selected
+- tapOn: Nez original
+- tapOn: Visage carré
+- assertVisible:
+    id: avatar-option-noseStyle-original-selected
+- tapOn:
+    id: avatar-section-Corps
+- tapOn: Femme
+- tapOn: Teint foncé
+- tapOn:
+    id: avatar-section-Traits
+- assertVisible:
+    id: avatar-option-faceStyle-original-selected
+- assertVisible:
+    id: avatar-option-noseStyle-original-selected
+- assertNotVisible: Visage carré
+- assertNotVisible: Nez large
+- tapOn:
+    id: avatar-section-Cheveux
+- tapOn: Longs
+- tapOn: Cheveux blonds
+- tapOn:
+    id: avatar-section-Yeux
+- tapOn: Yeux verts
+- tapOn: Enregistrer l’apparence
+- extendedWaitUntil:
+    visible: "Impossible de joindre GRRIND.*"
+    timeout: 15000
+- assertVisible:
+    id: avatar-option-eyeColor-green-selected
+- assertVisible: Modifications non enregistrées
+- tapOn:
+    id: avatar-section-Corps
+- assertVisible:
+    id: avatar-option-body-female-selected
+- assertVisible:
+    id: avatar-option-skinTone-deep-selected
+- takeScreenshot: avatar-save-failure-keeps-draft
+- tapOn: Enregistrer l’apparence
+- extendedWaitUntil:
+    visible: Apparence enregistrée
+    timeout: 15000
+- takeScreenshot: avatar-saved
+- tapOn: Fermer l’apparence
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 15000
+- assertVisible: Femme
+- assertVisible: ".*Teint foncé.*Yeux verts.*"
+- takeScreenshot: avatar-inventory-saved
+- tapOn:
+    id: tab-reglages
+- scrollUntilVisible:
+    element:
+      id: combat-avatar-ready
+    direction: DOWN
+    timeout: 15000
+- assertVisible: Femme
+- assertVisible: ".*Longs.*Cheveux blonds.*"
+- takeScreenshot: avatar-settings-saved
+- scrollUntilVisible:
+    element:
+      text: Se déconnecter
+    direction: UP
+    timeout: 15000
+- tapOn: Se déconnecter
+- extendedWaitUntil:
+    visible:
+      id: login-email
+    timeout: 15000
+# A new process clears the in-memory query cache; the following preview must reread the server.
+- stopApp
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: "${typeof MAESTRO_AVATAR_EMAIL === 'undefined' ? EMPTY_EMAIL : MAESTRO_AVATAR_EMAIL}"
+- extendedWaitUntil:
+    visible: NIVEAU
+    timeout: 30000
+- tapOn:
+    id: tab-inventaire
+- scrollUntilVisible:
+    element:
+      id: character-tab-appearance
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: character-tab-appearance
+- extendedWaitUntil:
+    visible:
+      id: avatar-3d-ready
+    timeout: 30000
+- assertVisible:
+    id: avatar-option-body-female-selected
+- assertVisible:
+    id: avatar-option-skinTone-deep-selected
+- assertVisible: Apparence enregistrée
+- tapOn:
+    id: avatar-section-Cheveux
+- assertVisible:
+    id: avatar-option-hairStyle-long-selected
+- assertVisible:
+    id: avatar-option-hairColor-blond-selected
+- tapOn:
+    id: avatar-section-Yeux
+- assertVisible:
+    id: avatar-option-eyeColor-green-selected
+- takeScreenshot: avatar-after-reconnect
+- tapOn: Fermer l’apparence
