@@ -50,13 +50,18 @@ public sealed class FighterPose : MonoBehaviour
     {
         if(!graph.IsValid())return;
         int selected=Mathf.Clamp(stance,0,clips.Length-1);
+        bool weighted=dumbbell!=null&&dumbbell.item!=null&&dumbbell.item.activeSelf;
+        int rest=weighted?7:0;
+        // The weight uses only the direct and uppercut for attacks; combo is an announcement.
+        if(weighted&&(selected==0||selected==5))selected=7;
+        if(weighted&&selected==6)selected=1;
         // Workshop rest keeps the forward gaze approved in V1; the arena uses the boxing guard.
         if(inspect&&selected==0)selected=7;
         float p=autoplay?Mathf.Repeat(Time.time*.55f,1):Mathf.Clamp01(phase);
-        float blend=selected==0||selected==7?1:Mathf.Min(1,Mathf.Min(p/.09f,(1-p)/.12f));
-        for(int i=0;i<players.Length;i++)mixer.SetInputWeight(i,i==selected?blend:i==0?1-blend:0);
-        players[0].SetTime(p*clips[0].length);
-        if(selected!=0)players[selected].SetTime(ClipPhase(selected,p,contacts)*clips[selected].length);
+        float blend=selected==rest||selected==7?1:Mathf.Min(1,Mathf.Min(p/.09f,(1-p)/.12f));
+        for(int i=0;i<players.Length;i++)mixer.SetInputWeight(i,i==selected?blend:i==rest?1-blend:0);
+        players[rest].SetTime(p*clips[rest].length);
+        if(selected!=rest)players[selected].SetTime(ClipPhase(selected,p,contacts)*clips[selected].length);
         // Apply arena placement after the pose solve.
         actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);graph.Evaluate(0);
         dumbbell?.Apply();

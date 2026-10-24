@@ -16,11 +16,34 @@ test('retention removes old reports but preserves dev state, pinned proofs and s
   writeFileSync(resolve(root, 'dev/native-fingerprint'), 'keep');
   writeFileSync(resolve(root, '2026-10-05_100000/.keep'), '');
   symlinkSync(resolve(root, 'dev'), resolve(root, '2026-10-05_090000'));
-  assert.equal(pruneReports(root, 1), 1);
+  assert.equal(pruneReports(root), 1);
   assert.ok(existsSync(resolve(root, '2026-10-05_120000')));
   assert.equal(existsSync(resolve(root, '2026-10-05_110000')), false);
   assert.equal(readFileSync(resolve(root, 'dev/native-fingerprint'), 'utf8'), 'keep');
   assert.equal(pruneReports(root, 1), 0);
+});
+
+test('retention bounds log size while keeping the end, screenshots and external symlinks', (t) => {
+  const root = mkdtempSync(resolve(tmpdir(), 'grrind-log-retention-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const run = resolve(root, '2026-10-24_100000');
+  mkdirSync(resolve(run, 'flow/logs'), { recursive: true });
+  const log = resolve(run, 'flow/logs/device-simulator.log');
+  const contents = Buffer.concat([Buffer.alloc(5 * 1024 * 1024, 'x'), Buffer.from('\nLast crash details\n')]);
+  writeFileSync(log, contents);
+  writeFileSync(resolve(root, 'external.log'), contents);
+  symlinkSync(resolve(root, 'external.log'), resolve(run, 'flow/logs/external.log'));
+  writeFileSync(resolve(run, 'screenshot.png'), 'capture');
+
+  pruneReports(root);
+
+  const retained = readFileSync(log);
+  assert.ok(retained.length <= 4 * 1024 * 1024);
+  assert.ok(retained.toString().endsWith('\nLast crash details\n'));
+  assert.equal(readFileSync(resolve(root, 'external.log')).length, contents.length);
+  assert.equal(readFileSync(resolve(run, 'screenshot.png'), 'utf8'), 'capture');
+  pruneReports(root);
+  assert.deepEqual(readFileSync(log), retained);
 });
 
 test('iOS launcher only regenerates a changed variant and forwards device arguments', (t) => {

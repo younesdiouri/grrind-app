@@ -25,8 +25,9 @@ appId: app.grrind.dev
       - tapOn:
           id: "battle-dialogue"
 - extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
+    visible:
+      id: battle-exit
+    timeout: 90000
 - assertVisible: ".*Victoire.*"
 - takeScreenshot: 05a-battle-replay
 - tapOn:

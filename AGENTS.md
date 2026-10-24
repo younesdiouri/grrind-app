@@ -63,7 +63,8 @@ not a requirement for each ticket or native development change. Never erase the 
 routine check, or clean DerivedData, DeviceSupport, Pods or pairing data to save report space.
 
 Read [`docs/ai/mobile-qa.md`](docs/ai/mobile-qa.md) before using the harness. Reports are kept in
-`artifacts/e2e/`: five recent sessions and one reset session; `.keep` pins an exceptional proof.
+`artifacts/e2e/`: the latest session and reset only, with each log capped at 4 MiB after a run;
+`.keep` pins an exceptional proof.
 `npm run e2e:ios:clean` prunes reports only, preserving `artifacts/e2e/dev` and Xcode caches.
 Do not store permanent proofs by retaining entire noisy histories. Stop the E2E Metro terminal
 and shut down its Simulator when finished with them; preserve the Metro used on the user's phone.

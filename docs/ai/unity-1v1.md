@@ -3,8 +3,9 @@
 ## Objectif et périmètre
 
 Utiliser les personnages Quaternius sportifs existants dans les combats solo, les duels PvP
-et leurs rejeux. React Native conserve le HUD, Unity présente les personnages et le serveur
-reste la source des coups, statistiques et récompenses. Les anciennes apparences serveur
+et leurs rejeux. Unity présente les personnages, le HUD et les effets du 1v1 depuis #265 ;
+React Native conserve les commandes accessibles et le bilan détaillé. Le serveur reste la
+source des coups, statistiques et récompenses. Les anciennes apparences serveur
 restent lisibles dans les archives, mais leurs sprites ne sont plus chargés en 1v1.
 
 Le héros utilise la tenue sportive existante et l’adversaire PvP sa variante. Les monstres
@@ -52,6 +53,12 @@ Avant `./scripts/unity-ios.sh`, sauvegarder puis fermer l’éditeur Unity : cet
 un export batch qui ne peut pas partager un projet déjà ouvert. Le CLI officiel peut aussi
 appeler `MobileBuild.Device()` et `MobileBuild.Simulator()` dans l’éditeur ouvert ; les étapes
 Xcode et d’assemblage du xcframework restent celles du script.
+
+Le script remplace le framework après assemblage réussi, sans accumuler de sauvegardes.
+Le framework courant dans `modules/grrind-unity/ios/Frameworks` suffit aux builds natifs ;
+`spikes/Unity3D/Builds` contient des exports et intermédiaires régénérables à supprimer
+après validation si l’espace manque. Garder les sources Unity, les sources artistiques,
+leurs références et le dernier development build installé.
 
 ## Preuve du 23 octobre 2026
 

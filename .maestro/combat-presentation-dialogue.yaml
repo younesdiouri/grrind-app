@@ -17,8 +17,9 @@ appId: app.grrind.dev
     id: "battle-dialogue"
 - assertNotVisible: ".*Toucher pour combattre.*"
 - extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
+    visible:
+      id: battle-exit
+    timeout: 90000
 - assertVisible: ".*Victoire.*"
 - tapOn:
     id: "battle-exit"

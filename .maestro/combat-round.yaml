@@ -33,9 +33,12 @@ appId: app.grrind.dev
 # Attendre le verdict naturel : la recherche conditionnelle du dialogue peut déjà avoir
 # consommé la fin d'un combat sans réplique. Un tap tardif sortirait alors du bilan.
 - extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
+    visible:
+      id: battle-exit
+    timeout: 90000
 - assertVisible: ".*Victoire.*"
+- tapOn:
+    id: battle-details
 - repeat:
     times: 6
     commands:

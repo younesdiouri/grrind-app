@@ -105,9 +105,10 @@ Les simulations E2E ne prouvent pas ces intégrations réelles. EAS ne part pas 
 
 Maestro écrit désormais sorties et logs globaux dans `artifacts/e2e/`, le reset dans
 `artifacts/e2e/reset/`. Le rapport JUnit `report.xml` décrit le dernier flow. Après une exécution,
-y compris échouée, seuls les **cinq derniers dossiers horodatés** et **le dernier reset** restent.
-Cette limite de nombre n’est pas une limite stricte d’octets : un run bloqué peut produire un gros
-log. Diagnostiquer ce run, puis nettoyer son historique ; ne pas conserver des dizaines de reprises.
+y compris échouée, seuls le **dernier dossier horodaté** et **le dernier reset** restent.
+Le nettoyage tourne aussi avant le lancement. Chaque journal `.log` conservé est ramené à ses
+**4 derniers Mio**, avec une mention de la coupe. Pendant un run, Maestro peut encore écrire un
+gros log ; cette limite s’applique à la fin. Les captures et métadonnées du dernier run restent.
 
 ```sh
 npm run e2e:ios:clean
@@ -117,6 +118,8 @@ touch artifacts/e2e/<dossier-horodate>/.keep
 
 `.keep` conserve une preuve utile, pas toute une campagne. Pour une preuve durable, conserver
 quelques captures choisies dans la documentation plutôt que tous les journaux du run.
+Placer les nouveaux diagnostics dans le dossier horodaté du run ; éviter les dossiers de captures
+par ticket à côté de l’historique, qui échappent à sa rétention.
 Le nettoyage ne touche pas `artifacts/e2e/dev/` (empreinte, PID/configuration Metro), les fixtures,
 les autres dossiers de travail, les caches Xcode ou les journaux Maestro d’autres projets.
 Les anciens rapports GRRIND dans `~/.maestro/tests` peuvent être retirés une fois identifiés ;
@@ -126,6 +129,8 @@ Les tests unitaires et Maestro terminés ne restent pas en RAM. Metro, Xcode et 
 restent actifs pour accélérer la boucle. À la fin d’une séance E2E : `Ctrl+C` dans son terminal,
 puis `xcrun simctl shutdown "GRRIND E2E"` si le Simulator n’est plus utilisé. Préserver le Metro
 qui sert l’app du téléphone. Ne pas tuer tous les processus Node.
+Réutiliser la fenêtre Device Hub déjà ouverte : plusieurs fenêtres peuvent afficher le même
+appareil simulé, sans qu’un deuxième appareil ait été démarré.
 
 Conserver `~/Library/Developer/Xcode/iOS DeviceSupport` pour l’iOS actuel du téléphone : ce sont
 les symboles système copiés/extraits lors de sa préparation. Conserver DerivedData pour les

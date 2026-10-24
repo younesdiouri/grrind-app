@@ -107,7 +107,7 @@ tags:
     visible:
       id: combat-avatar-ready
     timeout: 15000
-- assertVisible: Femme · Longs
+- assertVisible: Femme.*Longs.*
 - assertVisible: ".*Teint foncé.*Yeux verts.*"
 - takeScreenshot: avatar-inventory-saved
 - tapOn:
@@ -117,7 +117,7 @@ tags:
       id: combat-avatar-ready
     direction: DOWN
     timeout: 15000
-- assertVisible: Femme · Longs
+- assertVisible: Femme.*Longs.*
 - assertVisible: ".*Longs.*Cheveux blonds.*"
 - takeScreenshot: avatar-settings-saved
 - scrollUntilVisible:

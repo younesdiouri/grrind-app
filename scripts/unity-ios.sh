@@ -28,11 +28,16 @@ for target in Simulator Device; do
 done
 frameworks="${UNITY_FRAMEWORKS_DIR:-$(pwd)/modules/grrind-unity/ios/Frameworks}"
 mkdir -p "$frameworks"
-if [ -d "$frameworks/UnityFramework.xcframework" ]; then
-  mv "$frameworks/UnityFramework.xcframework" "$frameworks/UnityFramework.previous.$(date +%s).xcframework"
-fi
-xcodebuild -create-xcframework \
+staged="$frameworks/UnityFramework.next.xcframework"
+rm -rf "$staged"
+# Keep the working framework until its replacement has compiled successfully.
+if ! xcodebuild -create-xcframework \
   -framework "$project/Builds/DerivedDataSimulator/Build/Products/Release-iphonesimulator/UnityFramework.framework" \
   -framework "$project/Builds/DerivedDataDevice/Build/Products/Release-iphoneos/UnityFramework.framework" \
-  -output "$frameworks/UnityFramework.xcframework"
+  -output "$staged"; then
+  rm -rf "$staged"
+  exit 1
+fi
+rm -rf "$frameworks/UnityFramework.xcframework"
+mv "$staged" "$frameworks/UnityFramework.xcframework"
 printf '%s\n' 'Unity iOS framework ready for the shared development build.'

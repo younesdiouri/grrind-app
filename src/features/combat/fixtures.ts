@@ -30,3 +30,9 @@ export const AVATAR_DUEL: Battle = { ...BATTLE_FIXTURES.duel,
       skinTone: 'light', eyeColor: 'green', hairColor: 'blond' },
     equipment: { LEGS: { key: 'LES_GUINZZ_PURPLE', artworkVersion: null },
       WEAPON: { key: 'GOLDEN_BOXING_GLOVES', artworkVersion: null } } } };
+
+export const WEIGHT_DUEL: Battle = { ...AVATAR_DUEL,
+  player: { ...AVATAR_DUEL.player, equipment: { ...AVATAR_DUEL.player.equipment,
+    WEAPON: { key: 'LE_POIDS_LOURD', artworkVersion: null } } },
+  enemy: { ...AVATAR_DUEL.enemy, equipment: { ...AVATAR_DUEL.enemy.equipment,
+    WEAPON: { key: 'LE_POIDS_LOURD', artworkVersion: null } } } };

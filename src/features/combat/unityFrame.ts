@@ -19,7 +19,7 @@ export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted
 export const QUATERNIUS_OPPONENT: UnityAvatar = { ...QUATERNIUS_AVATAR, body: 'female', hairStyle: 'buns',
   skinTone: 'deep', shirtColor: 'coral', pantsColor: 'cyan' };
 export type UnityViewport = { x: number; y: number; width: number; height: number };
-export type UnityActorFrame = { pose: number; phase: number; x: number; visible: boolean };
+export type UnityActorFrame = { pose: number; phase: number; x: number; visible: boolean; reduced: boolean };
 export type UnityInspectorProps = {
   avatar: UnityAvatar; pose: FighterPose; phase: number; animated: boolean;
   view: number; azimuth: number; viewport: UnityViewport; onReady(): void; onError(): void;
@@ -33,7 +33,7 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
   const beat = beatAt(beats, time);
   const motion = fighterMotionAt(beats, side, time, reduced, true);
   const frame = { pose: 0, phase: reduced ? 0 : (Math.max(0, time) % 2500) / 2500,
-    x: width > 0 ? motion.x / width : 0, visible };
+    x: width > 0 ? motion.x / width : 0, visible, reduced };
   if (!beat || beat.kind === 'opening' || beat.kind === 'verdict') return frame;
   const span = beat.until - beat.at;
   if (beat.kind === 'combo') {
@@ -41,18 +41,21 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
     return frame;
   }
   const contact = contactAt(beat);
+  const recovery = beat.at + span * combatMotion.recover;
+  if (time >= recovery) { frame.x = 0; return frame; }
+  const released = Math.max(contact, time - combatMotion.hitStop);
   if (beat.attacker === side) {
     const critical = sampleRamp(signals.critical, contact + (beat.until - contact) / 3) > 0;
     const replay = sampleRamp(signals.replay, beat.at + (contact - beat.at) / 3) > 0;
     frame.pose = critical ? 3 : replay ? 6 : 1;
-    frame.phase = time < contact ? (time - beat.at) / (contact - beat.at) * .5
-      : .5 + (time - contact) / (beat.until - contact) * .5;
+    frame.phase = time < contact ? ((time - beat.at) / (contact - beat.at)) ** 3 * .5
+      : .5 + (released - contact) / (recovery - contact - combatMotion.hitStop) * .5;
   } else if (beat.kind === 'dodge') {
-    frame.pose = 4; frame.phase = (time - beat.at) / span;
-  } else if (time >= contact && time < beat.at + span * combatMotion.recover) {
+    frame.pose = 4; frame.phase = (time - beat.at) / (recovery - beat.at);
+  } else if (time >= contact) {
     frame.pose = 2;
     // Reaction peak meets the fist and HUD at contact, then recovers into the boxing guard.
-    frame.phase = .5 + (time - contact) / (beat.at + span * combatMotion.recover - contact) * .5;
+    frame.phase = .5 + (released - contact) / (recovery - contact - combatMotion.hitStop) * .5;
   }
   if (reduced && frame.pose !== 0) frame.phase = .5;
   return frame;

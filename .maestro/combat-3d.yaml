@@ -1,6 +1,6 @@
 appId: app.grrind.dev
 ---
-# Standalone Unity combat pilot: E2E_OFFLINE=1. Previews remain in appearances.yaml.
+# E2E_OFFLINE=1; node scripts/combat-presentation-server.mjs for the frozen effects.
 - launchApp
 - setOrientation: PORTRAIT
 - runFlow:
@@ -17,11 +17,102 @@ appId: app.grrind.dev
       visible: Close
     commands:
       - tapOn: Close
+# Preserve the existing QA session and dismiss its already-credited reward pages.
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            visible: ".*Toucher pour (voir|continuer).*"
+          commands:
+            - tapOn: ".*Toucher pour (voir|continuer).*"
+            - waitForAnimationToEnd:
+                timeout: 2000
 # Auth restoration can replace a deep link opened before the navigation stack is mounted.
 - extendedWaitUntil:
     visible:
       id: "login-email|tab-accueil|quaternius-ready|pebble-idle|al-kasal-idle|battle-combat|battle-exit"
     timeout: 30000
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: critical-player
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: critical-enemy
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: dodge-player
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: dodge-enemy
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: combo-player
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: combo-enemy
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: replay-player
+- runFlow:
+    file: combat-effect-frame.yaml
+    env:
+      EFFECT: replay-enemy
+# Presentation limit: no fabricated KO or reward.
+- openLink: grrindapp-dev://combat-demo?network=limit&opponent=player
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 15000
+- takeScreenshot: unity-limit-verdict
+- tapOn:
+    id: battle-exit
+# The long fixture leaves enough time to exercise skip without a late tap on Continue.
+- openLink: grrindapp-dev://combat-demo?network=long&opponent=player
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- tapOn: Passer
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 5000
+- takeScreenshot: unity-skip-verdict
+- tapOn:
+    id: battle-exit
+# Natural PvP playback at x2, then the detailed server recap.
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=avatar
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- tapOn: Vitesse ×2
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 45000
+- takeScreenshot: unity-pvp-natural-victory
+- tapOn:
+    id: battle-details
+- assertVisible: Coups portés
+- takeScreenshot: unity-pvp-details
+- tapOn:
+    id: battle-exit
 - openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=avatar&at=3200
 - runFlow:
     when:
@@ -90,7 +181,7 @@ appId: app.grrind.dev
       id: al-kasal-idle
     timeout: 15000
 - setOrientation: PORTRAIT
-- openLink: grrindapp-dev://combat-demo?scenario=victoire&mob=pebble&at=1280
+- openLink: grrindapp-dev://combat-demo?scenario=victoire&mob=pebble&at=1494
 - extendedWaitUntil:
     visible:
       id: battle-dialogue
@@ -120,7 +211,7 @@ appId: app.grrind.dev
       id: al-kasal-idle
     timeout: 15000
 - setOrientation: PORTRAIT
-- openLink: grrindapp-dev://combat-demo?scenario=defaiteBoss&mob=pebble&at=2015
+- openLink: grrindapp-dev://combat-demo?scenario=defaiteBoss&mob=pebble&at=2794
 - extendedWaitUntil:
     visible:
       id: battle-dialogue
@@ -184,7 +275,7 @@ appId: app.grrind.dev
 - extendedWaitUntil:
     visible:
       id: battle-exit
-    timeout: 30000
+    timeout: 90000
 - takeScreenshot: unity-cailloux-natural-recap
 - tapOn:
     id: battle-exit
@@ -192,3 +283,29 @@ appId: app.grrind.dev
     visible:
       id: pebble-idle
     timeout: 15000
+
+# Direct scenario navigation avoids coupling the defeat check to menu scroll position.
+- openLink: grrindapp-dev://combat-demo?scenario=defaiteBoss&mob=pebble
+- extendedWaitUntil:
+    visible:
+      id: battle-dialogue
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- tapOn:
+    id: battle-dialogue
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 90000
+- takeScreenshot: unity-natural-defeat
+- tapOn:
+    id: battle-details
+- assertVisible: Défaite
+- takeScreenshot: unity-defeat-details
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: al-kasal-idle
+    timeout: 15000
+- setOrientation: PORTRAIT

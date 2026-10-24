@@ -9,16 +9,16 @@ tags:
 - setOrientation: PORTRAIT
 - runFlow:
     file: combat-scene-frame.yaml
-    env: { SCENARIO: victoire, AT: "900", NAME: scene-hero-strikes }
+    env: { SCENARIO: victoire, AT: "1494", NAME: scene-hero-strikes }
 - runFlow:
     file: combat-scene-frame.yaml
-    env: { SCENARIO: victoire, AT: "1320", NAME: scene-hero-hit }
+    env: { SCENARIO: victoire, AT: "2794", NAME: scene-hero-hit }
 - runFlow:
     file: combat-scene-frame.yaml
-    env: { SCENARIO: defaiteBoss, AT: "2440", NAME: scene-critical }
+    env: { SCENARIO: defaiteBoss, AT: "5523", NAME: scene-critical }
 - runFlow:
     file: combat-scene-frame.yaml
-    env: { SCENARIO: victoire, AT: "11150", NAME: scene-final-blow }
+    env: { SCENARIO: victoire, AT: "32827", NAME: scene-final-blow }
 - openLink: grrindapp-dev://combat-demo?scenario=duel&at=900
 - extendedWaitUntil:
     visible:

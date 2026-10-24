@@ -5,14 +5,10 @@ import { describe, it } from 'node:test';
 
 import {
   BEATS,
-  BUDGET,
   buildBattleTimeline,
   sampleRamp,
   beatAt,
   countBlowsAt,
-  TEMPO_CEILING,
-  TEMPO_FLOOR,
-  tempoFor,
   type Battle,
   type BattleEvent,
   type Ramp,
@@ -395,31 +391,25 @@ describe('l’ordre de cause à effet du combo', () => {
 });
 
 describe('le tempo', () => {
-  it('reste au plafond sur un combat court — il ne traîne pas', () => {
-    assert.equal(tempoFor(6), TEMPO_CEILING);
+  it('conserve un temps lisible par action même quand le combat est long', () => {
+    for (const count of [6, 45, 400, 10_000]) {
+      const timeline = buildBattleTimeline(fabricated(count));
+      assert.ok(timeline.tempo >= 1200 && timeline.tempo <= 1500);
+      assert.equal(timeline.beats[1].until - timeline.beats[1].at, timeline.tempo);
+    }
   });
 
-  it('descend au plancher sur un combat de deux cents tours — il ne stroboscope pas', () => {
-    assert.equal(tempoFor(400), TEMPO_FLOOR);
-  });
-
-  it('écoule le budget entre les deux bornes', () => {
-    // 45 échanges : 9000 / 45 = 200 ms, entre le plancher et le plafond. C'est la zone où le
-    // budget décide réellement, et elle commence juste au-delà du plus long combat capturable.
-    assert.equal(tempoFor(45), Math.round(BUDGET / 45));
-    assert.ok(tempoFor(45) > TEMPO_FLOOR && tempoFor(45) < TEMPO_CEILING);
-  });
-
-  it('assume de dépasser le budget plutôt que de devenir illisible', () => {
-    // Au plancher, un combat de deux cents tours dure une minute — c'est écrit dans le ticket
-    // et ce test le fige : le rattrapage est le saut, pas un condensé.
-    const timeline = buildBattleTimeline(fabricated(400));
-
-    assert.ok(
-      timeline.duration > BUDGET,
-      'un combat au plancher dépasse le budget, et c’est la décision',
-    );
-    assert.equal(timeline.tempo, TEMPO_FLOOR);
+  it('resserre les combos sans supprimer ni réordonner leurs événements', () => {
+    const timeline = buildBattleTimeline(defaiteBoss);
+    for (let i = 0; i < timeline.beats.length; i++) {
+      const beat = timeline.beats[i];
+      if (beat.kind !== 'combo') continue;
+      assert.equal(beat.until - beat.at, BEATS.combo);
+      const next = timeline.beats[i + 1];
+      assert.ok(next.kind === 'attack' || next.kind === 'dodge');
+      assert.equal(next.attacker, beat.actor);
+      assert.equal(next.until - next.at, BEATS.followup);
+    }
   });
 
   it('garde son temps plein au dernier échange, quel que soit le tempo', () => {

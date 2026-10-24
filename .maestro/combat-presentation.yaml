@@ -31,8 +31,9 @@ tags:
 - assertNotVisible: ".*Toucher pour combattre.*"
 - takeScreenshot: presentation-silent
 - extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
+    visible:
+      id: battle-exit
+    timeout: 90000
 - tapOn:
     id: "battle-exit"
 - setOrientation: PORTRAIT
@@ -44,8 +45,9 @@ tags:
 - setOrientation: LANDSCAPE_LEFT
 - assertNotVisible: ".*Toucher pour combattre.*"
 - extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
+    visible:
+      id: battle-exit
+    timeout: 90000
 - tapOn:
     id: "battle-exit"
 - setOrientation: PORTRAIT

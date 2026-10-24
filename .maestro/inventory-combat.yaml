@@ -24,10 +24,11 @@ tags:
       - tapOn:
           point: "50%,50%"
 - extendedWaitUntil:
-    visible: ".*Touche pour revenir.*"
-    timeout: 30000
+    visible:
+      id: battle-exit
+    timeout: 90000
 - assertVisible: ".*Victoire.*"
 - takeScreenshot: final-enemy-battle-recap
 - tapOn:
-    point: "50%,50%"
+    id: battle-exit
 - assertVisible: "Adversaires"

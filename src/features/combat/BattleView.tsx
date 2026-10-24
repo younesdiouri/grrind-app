@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   type SharedValue,
@@ -31,7 +31,6 @@ import {
   battleResultLabel,
   color,
   combatMotion,
-  combatEffects,
   control,
   duration,
   scale,
@@ -57,41 +56,13 @@ import {
   countBlowsAt,
   type Battle,
   type BattleTally,
-  type Ramp,
   type SideRamps,
 } from './timeline.ts';
 
 /**
- * Le combat, joué.
- *
- * **Une seule horloge.** `clock` est la seule valeur animée de l'écran ; tout le reste en est
- * *dérivé* par `interpolate`, sur des rampes que `buildBattleTimeline` a calculées hors de
- * React. C'est ce qui garantit que les barres, les chiffres et les annonces ne désynchronisent
- * jamais, que le saut est instantané et exact — il suffit de poser l'horloge à la fin — et que
- * l'ensemble tourne sur le thread UI sans un seul rendu React pendant la séquence.
- *
- * **Aucun `setState` dans une boucle.** Les compteurs passent par `useAnimatedProps` sur un
- * `TextInput` : c'est le seul moyen d'écrire du texte depuis un worklet, `Animated.Text`
- * n'animant pas son contenu. Le retour vers JS est réservé à l'haptique, via `scheduleOnRN` :
- * `runOnJS` est déprécié depuis Reanimated 4.
- *
- * **Un `TextInput` animé doit porter une largeur.** Il n'en a aucune d'intrinsèque : sans
- * contrainte il s'effondre, et ce qui le suit se pose par-dessus. C'est ce qui donnait deux
- * nombres superposés au premier essai sur appareil — la valeur était juste, la place manquait.
- *
- * Le duel occupe une arène latérale en paysage : joueur à gauche, adversaire à droite,
- * pieds sur le même sol. Les barres restent en haut ; les annonces s'affichent sous les
- * combattants. La résolution reste celle du serveur, sans commande de combat du joueur.
- *
- * Les dégâts et les effets restent auprès du combattant concerné. Le centre reste libre
- * jusqu'au bilan.
- *
- * ————— Et la fin est un écran, pas un badge ————————————————————————————————————————————
- *
- * Le centre devient le bilan quand le verdict tombe : l'issue en grand, le coup qui a conclu,
- * et ce qui s'est passé en chiffres. C'est la leçon du #79 poussée d'un cran — un écran qui
- * s'arrête sur une pastille de cent pixels ne récompense pas les quinze secondes qu'on vient
- * de regarder.
+ * One presentation clock drives the server replay, Unity and native audio/haptics.
+ * Unity renders the combat HUD, effects and finale; RN owns accessible controls,
+ * the detailed recap and the illustrations still awaiting their 3D migration.
  */
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
@@ -171,8 +142,20 @@ function BattleScene({
   const started = useRef(false);
   const loaded = useRef(new Set<string>());
   const [unityFailed, setUnityFailed] = useState(false);
+  const [screenReader, setScreenReader] = useState(false);
+  useEffect(() => {
+    let current = true;
+    const subscription = AccessibilityInfo.addEventListener('screenReaderChanged', (enabled) => {
+      current = false; setScreenReader(enabled);
+    });
+    void AccessibilityInfo.isScreenReaderEnabled().then((enabled) => {
+      if (current) setScreenReader(enabled);
+    }, () => undefined);
+    return () => { current = false; subscription.remove(); };
+  }, []);
   const useUnity = unityCombatAvailable && !unityFailed;
   const window = useWindowDimensions();
+  const accessibleHud = screenReader || window.fontScale > 1.2;
   const [unityViewport, setUnityViewport] = useState<UnityViewport>({ x: 0, y: 0, width: 1, height: 1 });
   const clock = useSharedValue(0);
   const skipping = useSharedValue(false);
@@ -185,6 +168,7 @@ function BattleScene({
    * d'animation ne passe par `setState`.
    */
   const [done, setDone] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   /** ×1 ou ×2 : seule la durée restante change, l'horloge garde ses instants. */
   const [speed, setSpeed] = useState(1);
 
@@ -210,8 +194,11 @@ function BattleScene({
     if (skipping.get()) return;
     cancelAnimation(clock);
     setDone(false);
+    setShowDetails(false);
     clock.set(0);
-    if (__DEV__ && demo && demoTime !== undefined) { clock.set(demoTime); return; }
+    if (__DEV__ && demo && demoTime !== undefined) {
+      clock.set(demoTime); setDone(demoTime >= timeline.duration); return;
+    }
     run(speed);
   };
 
@@ -318,15 +305,6 @@ function BattleScene({
     opacity: interpolate(clock.value, [verdict.at - 1, verdict.at], [1, 0], Extrapolation.CLAMP),
   }));
 
-  const recapStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      clock.value,
-      [verdict.at, verdict.at + (verdict.until - verdict.at) / 2],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
-  }));
-
   // L'entrée du cadre emprunte l'horloge métier déjà présente. Elle n'allonge ni ne décale
   // aucun battement; avec Réduire les animations — indéterminé compris — le panneau est posé.
   const frameEntryStyle = useAnimatedStyle(() => {
@@ -352,13 +330,6 @@ function BattleScene({
     return { opacity: entrance === 'combat' && clock.get() >= verdict.at ? 0 : motion.opacity,
       transform: [{ translateY: motion.y }, { scale: motion.scale }] };
   });
-  // Le héros entre avec le combat — pendant le dialogue, la scène appartient au mob — et
-  // s'efface au verdict comme lui.
-  const heroStyle = useAnimatedStyle(() => {
-    if (entrance !== 'combat') return { opacity: 0 };
-    const entered = reducedMotion !== false ? 1 : Math.min(1, Math.max(0, clock.get() / duration.enter));
-    return { opacity: clock.get() >= verdict.at ? 0 : entered };
-  });
   const dialogueStyle = useAnimatedStyle(() => ({
     opacity: entranceMotionAt(entrance, clock.get(), reducedMotion !== false).dialogueOpacity,
   }));
@@ -370,12 +341,16 @@ function BattleScene({
       {useUnity && <UnityCombatStage clock={clock} timeline={timeline}
         player={unityPlayer ?? QUATERNIUS_AVATAR} enemy={{ ...(unityEnemy ?? QUATERNIUS_AVATAR), visible: nativeEnemy }}
         viewport={unityViewport} width={unityViewport.width * window.width} playing={entrance === 'combat'} done={done}
+        hud={{ playerName: 'Toi', enemyName, playerHp: battle.player.hp, enemyHp: battle.enemy.hp,
+          won: battle.result === 'VICTORY', limit: battle.endReason === 'ATTACK_LIMIT', hideHud: accessibleHud,
+          coins: !demo && hasBattleReward(battle.rewards) ? battle.rewards.coins.gained : 0,
+          loot: !demo && hasBattleReward(battle.rewards) ? battle.rewards.loot.length : 0 }}
         onReady={() => { fighterReady('player'); if (nativeEnemy) fighterReady('enemy'); }}
         onError={() => setUnityFailed(true)} />}
       <SafeAreaView style={styles.safe}>
       <Animated.View style={[styles.eventFrame, frameEntryStyle]} pointerEvents="box-none">
         <View style={styles.eventContent}>
-          <View style={styles.hud}>
+          <View style={[styles.hud, useUnity && !accessibleHud && styles.unityHudSemantics]}>
             <Fighter clock={clock} side="player" name="Toi" ramps={timeline.player} stats={battle.player} />
             <Text style={styles.versus}>VS</Text>
             <Fighter clock={clock} side="enemy" name={enemyName} ramps={timeline.enemy} stats={battle.enemy} />
@@ -387,7 +362,7 @@ function BattleScene({
                 width: width / window.width, height: height / window.height };
               setUnityViewport((previous) => JSON.stringify(previous) === JSON.stringify(next) ? previous : next);
             } : undefined}
-            effects={entrance === 'combat' && !done}
+            effects={!useUnity && entrance === 'combat' && !done}
             combos={{ PLAYER: timeline.player.comboFlash, ENEMY: timeline.enemy.comboFlash }}>
             {enemyArt && (
               <Animated.View style={[styles.spriteStage, actionsStyle, spriteEntranceStyle]}>
@@ -395,20 +370,8 @@ function BattleScene({
                   signals={{ critical: timeline.player.criticalFlash, dodge: timeline.enemy.dodgeFlash,
                     combo: timeline.enemy.comboFlash, replay: timeline.enemy.replayFlash }}
                   pose={entrance === 'combat' ? undefined : 'idle'} onReady={() => fighterReady('enemy')} onError={onArtworkError} />
-                <DamagePop clock={clock} ramps={timeline.enemy} tone={styles.dealt} />
-                <FighterEffects clock={clock} ramps={timeline.enemy} />
               </Animated.View>
             )}
-            {(
-              <Animated.View style={[styles.heroStage, heroStyle]} pointerEvents="none">
-                <DamagePop clock={clock} ramps={timeline.player} tone={styles.taken} />
-                <FighterEffects clock={clock} ramps={timeline.player} />
-              </Animated.View>
-            )}
-            {!enemyArt && <Animated.View style={[styles.spriteStage, actionsStyle]}>
-              <DamagePop clock={clock} ramps={timeline.enemy} tone={styles.dealt} />
-              <FighterEffects clock={clock} ramps={timeline.enemy} />
-            </Animated.View>}
             {hasIntroduction && entrance !== 'combat' && (
               <Animated.View style={[styles.dialogue, dialogueStyle]}
                 accessibilityElementsHidden={entrance !== 'dialogue'}>
@@ -421,18 +384,26 @@ function BattleScene({
             {useUnity && entrance === 'loading' && <Text style={styles.dialogueHint}>Préparation du combat…</Text>}
 
 
-            <Animated.View style={[styles.layer, recapStyle]} pointerEvents={done ? 'auto' : 'none'}>
+            {done && showDetails && <View style={[styles.layer, styles.details]}>
               <ScrollView testID="battle-recap-scroll" style={styles.recapScroll} contentContainerStyle={styles.recapContent}>
                 <Recap battle={battle} tally={timeline.tally} enemyName={enemyName} demo={demo} />
               </ScrollView>
-              {done && <Pressable testID="battle-exit" accessibilityRole="button" onPress={touch} hitSlop={space.sm}>
-                <Text style={styles.exit}>Touche pour revenir</Text>
-              </Pressable>}
-            </Animated.View>
+            </View>}
+
           </Stage>
 
         </View>
       </Animated.View>
+      {done && <View style={styles.resultControls}>
+        <Pressable testID="battle-details" accessibilityRole="button"
+          accessibilityLabel={`${battleResultLabel[battle.result]}. Voir le bilan et le butin`}
+          accessibilityState={{ expanded: showDetails }} onPress={() => setShowDetails(!showDetails)} style={styles.control}>
+          <Text style={styles.controlLabel}>{showDetails ? 'Revoir la scène' : 'Bilan et butin'}</Text>
+        </Pressable>
+        <Pressable testID="battle-exit" accessibilityRole="button" onPress={touch} style={[styles.control, styles.controlOn]}>
+          <Text style={styles.controlLabel}>Continuer</Text>
+        </Pressable>
+      </View>}
       {!done && <Pressable style={styles.touchSurface} onPress={touch} testID={`battle-${entrance}`}
         accessibilityRole="button" accessibilityLabel={entrance === 'dialogue'
           ? `${enemyName}. ${introduction}. Toucher pour combattre` : 'Passer au bilan'} />}
@@ -460,54 +431,6 @@ function BattleScene({
  * Le chiffre qui jaillit de la cible : il paraît au contact, monte sur son battement et s'éteint
  * avec l'éclat. Les effets restent eux aussi près du combattant concerné.
  */
-function DamagePop({ clock, ramps, tone }: { clock: SharedValue<number>; ramps: SideRamps; tone: { color: string } }) {
-  const reduced = useReducedMotion();
-  const props = useAnimatedProps(() => {
-    const text = `-${Math.round(sampleRamp(ramps.damage, clock.value))}`;
-    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
-  });
-  const style = useAnimatedStyle(() => {
-    const critical = sampleRamp(ramps.criticalFlash, clock.value);
-    return {
-      opacity: sampleRamp(ramps.damageFlash, clock.value),
-      color: critical > 0 ? combatEffects.critical : tone.color,
-      transform: [
-        { translateY: reduced !== false ? 0 : -sampleRamp(ramps.rise, clock.value) * combatMotion.popRise },
-        { scale: 1 + critical * combatMotion.popCritical },
-      ],
-    };
-  });
-  return <AnimatedTextInput editable={false} pointerEvents="none" style={[styles.pop, style]}
-    animatedProps={props} defaultValue="" accessible={false} />;
-}
-
-const EFFECTS = {
-  dodge: { source: require('../../../assets/images/combat-effects/dodge.png'), label: 'ESQUIVE' },
-  critical: { source: require('../../../assets/images/combat-effects/critical.png'), label: 'CRITIQUE !' },
-  combo: { source: require('../../../assets/images/combat-effects/combo.png'), label: 'COMBO' },
-  replay: { source: require('../../../assets/images/combat-effects/replay.png'), label: 'REJOUE !' },
-} as const;
-
-/** Les images existantes suivent la cible du critique ou l’acteur de l’esquive/combo. */
-function FighterEffects({ clock, ramps }: { clock: SharedValue<number>; ramps: SideRamps }) {
-  return <View style={StyleSheet.absoluteFill} pointerEvents="none">
-    {(['critical', 'dodge', 'combo', 'replay'] as const).map((effect) =>
-      <FighterEffect key={effect} effect={effect} clock={clock} flash={ramps[`${effect}Flash`]} />)}
-  </View>;
-}
-
-function FighterEffect({ effect, clock, flash }: { effect: keyof typeof EFFECTS; clock: SharedValue<number>; flash: Ramp }) {
-  const reduced = useReducedMotion();
-  const style = useAnimatedStyle(() => {
-    const lit = sampleRamp(flash, clock.get());
-    return { opacity: lit, transform: [{ scale: reduced !== false ? 1 : scale.from + lit * (1 - scale.from) }] };
-  });
-  return <Animated.View style={[styles.fighterEffect, style]} pointerEvents="none">
-    <Image source={EFFECTS[effect].source} style={StyleSheet.absoluteFill} contentFit="contain"
-      accessibilityLabel={EFFECTS[effect].label} />
-  </Animated.View>;
-}
-
 /**
  * L'écran de fin.
  *
@@ -515,21 +438,8 @@ function FighterEffect({ effect, clock, flash }: { effect: keyof typeof EFFECTS;
  * `timeline.ts` — des sommes sur ce que le serveur a déjà envoyé, dont rien n'est accordé à
  * personne : voir le docblock de `BattleTally` pour la frontière avec la logique de jeu.
  *
- * ————— Le butin paraît ici, pas dans `timeline.ts` (#227) ——————————————————————————————
- *
- * Le bilan est déjà un **état** et non un passage : il paraît avec le verdict et y reste. Le
- * butin s'y range donc à côté du reste plutôt que d'ouvrir un battement de plus après le
- * verdict, ce qui allongerait un écran dont le budget a déjà été mesuré sur appareil
- * (`BUDGET`, quatorze secondes). `buildBattleTimeline` ne sait donc rien de `rewards` — le
- * composant le lit directement sur `battle`, une fois pour toutes.
- *
- * Les objets d'abord, les pièces ensuite : c'est l'ordre du contrat sur `BattleReward`, et le
- * back l'a aligné sur `RewardSummary` exprès pour que `ItemCard` et `CoinAmount`, déjà écrits
- * pour l'écran de récompense, se réutilisent tels quels ici.
- *
- * `hasBattleReward` tranche à elle seule ce qui paraît : une défaite, comme une victoire
- * tranchée par `max_attacks` sans KO, ne rapporte rien, et le back a refusé de dessiner une
- * consolation pour ce cas — ni bourse vide, ni « rien trouvé ».
+ * Le panneau détaillé reste consultable après la finale Unity. Les fiches et la bourse
+ * lisent la réponse serveur ; consulter ou rejouer un combat ne crédite jamais de gain.
  */
 function Recap({ battle, tally, enemyName, demo }: {
   battle: Battle; tally: BattleTally; enemyName: string; demo: boolean;
@@ -704,6 +614,9 @@ const styles = StyleSheet.create({
     paddingTop: space.sm,
     paddingBottom: space.xs,
   },
+  unityHudSemantics: { opacity: 0 },
+  resultControls: { position: 'absolute', bottom: space.sm, alignSelf: 'center', flexDirection: 'row', gap: space.sm, zIndex: ambient.contentLayer + 2 },
+  details: { backgroundColor: arena.scrim, zIndex: ambient.contentLayer + 1, paddingBottom: space.xl },
   hud: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: space.sm },
   versus: { ...type.title, color: color.accent, padding: space.sm,
     backgroundColor: arena.scrim, borderRadius: radius.sm },
@@ -742,10 +655,6 @@ const styles = StyleSheet.create({
   /** L'arène accueille les combattants puis le bilan. */
   stage: { flex: 1, justifyContent: 'center' },
   spriteStage: { position: 'absolute', bottom: arena.groundBottom, right: arena.enemyRight, width: arena.fighterWidth, height: arena.fighterHeight },
-  heroStage: { position: 'absolute', bottom: arena.groundBottom, left: arena.playerLeft, width: arena.fighterWidth, height: arena.fighterHeight },
-  pop: { position: 'absolute', top: '22%', alignSelf: 'center', width: combatMotion.popWidth, padding: 0,
-    ...type.title, textAlign: 'center', fontFamily: typography.display.bold, fontWeight: typography.display.weight.bold,
-    textShadowColor: color.background, textShadowRadius: space.xs, textShadowOffset: { width: 0, height: control.borderWidth } },
   touchSurface: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: ambient.contentLayer },
   controls: { position: 'absolute', bottom: space.xs, alignSelf: 'center', flexDirection: 'row', gap: space.sm,
     zIndex: ambient.contentLayer + 1 },
@@ -772,17 +681,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dealt: { color: color.hpEnemy },
-  taken: { color: color.hpPlayer },
   absorbed: { ...type.label, color: color.textMuted, padding: 0, textAlign: 'center' },
-  word: {
-    ...type.title,
-    color: color.text,
-    fontFamily: typography.display.semibold,
-    fontWeight: typography.display.weight.semibold,
-  },
-  fighterEffect: { position: 'absolute', top: '40%', left: '15%', right: '15%', height: arena.effectHeight },
-
   recapScroll: { width: '100%', maxWidth: arena.recapWidth, backgroundColor: arena.scrim, borderRadius: radius.md },
   recapContent: { padding: space.md },
   recap: { alignItems: 'center', gap: space.xs },
@@ -802,6 +701,5 @@ const styles = StyleSheet.create({
   scoreLabel: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   scoreValue: { ...type.label, color: color.text, letterSpacing: 0 },
   scoreValueRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  exit: { ...type.label, color: color.text, letterSpacing: 0, marginTop: space.sm,
-    paddingHorizontal: space.md, paddingVertical: space.xs, backgroundColor: color.surfaceRaised, borderRadius: radius.pill },
+
 });

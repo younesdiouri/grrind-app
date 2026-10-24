@@ -15,6 +15,7 @@ FLOW_PATH="${1:-.maestro/ios-smoke.yaml}"
 STARTED_AT="$(date +%s)"
 EXPECTED_SETTINGS="port=${METRO_PORT};api=${E2E_API_URL_VALUE}"
 trap 'node scripts/e2e-ios-clean.mjs >&2 || true' EXIT
+node scripts/e2e-ios-clean.mjs
 
 e2e_require_tools
 # Les ateliers de présentation peuvent tourner sans compte ni serveur. Ce mode est explicite

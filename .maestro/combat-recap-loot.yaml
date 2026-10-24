@@ -12,7 +12,9 @@ appId: app.grrind.dev
 - extendedWaitUntil:
     visible:
       id: battle-exit
-    timeout: 30000
+    timeout: 90000
+- tapOn:
+    id: battle-details
 - repeat:
     times: 6
     commands:

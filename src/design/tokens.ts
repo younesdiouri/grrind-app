@@ -24,8 +24,14 @@ export const combatEffects = {
 } as const;
 
 export const combatMotion = {
+  openingDuration: 900,
+  actionDuration: 1300,
+  comboDuration: 360,
+  followupDuration: 900,
+  finalDuration: 1650,
+  verdictDuration: 2400,
   contact: 0.38,
-  recover: 0.82,
+  recover: 0.72,
   hpSettle: 0.2,
   breathPeriod: 2600,
   breath: 2,

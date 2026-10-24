@@ -1,5 +1,5 @@
 import type { components } from '@/api/schema';
-import { combatMotion, duration } from '@/design/tokens';
+import { combatMotion } from '@/design/tokens';
 import { contactAt } from './fighterMotion.ts';
 import { IMPACT, type Impact } from './camera.ts';
 
@@ -31,63 +31,15 @@ export type BattleResult = Battle['result'];
  * seulement à ne pas en faire. C'est le genre de règle qu'on casse en voulant « ranger ».
  */
 
-/**
- * Les temps de la mise en scène, en millisecondes.
- *
- * Comme dans `reward/timeline.ts` : les *durées* sortent de l'échelle du design system,
- * mesurée au spike (#4) sur un iPhone physique ; le *choix* — quel temps pour quel moment —
- * appartient à ce fichier. Le budget, lui, s'écrit en clair, parce qu'il ne décrit pas un
- * geste mais une quantité à écouler.
- */
+/** Presentation timing only; server event order and values stay untouched. */
 export const BEATS = {
-  /**
-   * L'ouverture : les deux combattants se posent avec leurs valeurs.
-   *
-   * C'est le seul moment où on lit le rapport de force — 373 points de vie contre 700, ça se
-   * regarde — et il ne se joue pas au tempo du reste. Allongée après essai sur appareil : le
-   * temps de poser deux noms et quatre chiffres, pas celui d'un geste.
-   */
-  opening: duration.drop,
-  /**
-   * Le dernier échange, celui qui conclut.
-   *
-   * Il garde son temps plein **quel que soit le tempo**. Le coup qui tue est le seul qui
-   * compte, et le jouer à 150 ms parce que le combat était long reviendrait à escamoter la
-   * seule image que le joueur retiendra.
-   */
-  finalBlow: duration.settle,
-  /** Le verdict tombe, et l'écran s'arrête dessus. */
-  verdict: duration.drop,
+  opening: combatMotion.openingDuration,
+  action: combatMotion.actionDuration,
+  combo: combatMotion.comboDuration,
+  followup: combatMotion.followupDuration,
+  finalBlow: combatMotion.finalDuration,
+  verdict: combatMotion.verdictDuration,
 } as const;
-
-/**
- * Le budget d'un combat à l'écran, en millisecondes.
- *
- * **Quatorze secondes, et pas neuf.** Le premier chiffre venait du raisonnement — « au-delà, on
- * regarde une bande dont on connaît l'issue » — et l'appareil l'a démenti : à neuf secondes,
- * un combat de quinze échanges défile trop vite pour qu'on suive **qui** frappe. Le budget ne
- * borne pas l'ennui, il borne la lecture, et la lecture est plus lente qu'on ne l'écrit.
- *
- * C'est une quantité à écouler, pas un geste — d'où sa place ici, en clair, et non dans
- * `tokens.ts` où elle ralentirait autre chose en la modifiant.
- */
-export const BUDGET = 14_000;
-
-/**
- * Les deux bornes du tempo.
- *
- * Le plancher empêche un combat de deux cents tours de devenir un stroboscope ; le plafond
- * empêche un combat de six tours de traîner. Ce sont des durées, donc elles sortent de
- * l'échelle du design system.
- *
- * **Les deux ont été relevées après essai sur appareil.** `line` en plafond et `glint` en
- * plancher étaient calées sur ce qu'un *élément* met à paraître ; un échange n'est pas un
- * élément, c'est une phrase à lire — qui frappe, combien, et sur quelle barre. `settle`, « une
- * carte qui se referme », est la bonne échelle pour ça ; `pop`, « ce qui se pose en prenant
- * son échelle », est le minimum en dessous duquel on ne lit plus, on constate.
- */
-export const TEMPO_FLOOR = duration.pop;
-export const TEMPO_CEILING = duration.settle;
 
 type EventPosition = Pick<BattleEvent, 'atTick' | 'actionIndex' | 'attackIndex'>;
 
@@ -231,26 +183,6 @@ export type BattleTimeline = {
   tally: BattleTally;
 };
 
-/**
- * Le temps que prend un échange, une fois la longueur du combat connue.
- *
- * C'est **la** décision de mise en scène de ce fichier, et elle remplace le condensé du
- * `SyncSummary`. Un lot de séances est une addition dont on peut résumer le milieu sans rien
- * perdre ; un combat est un récit dont le milieu est ce qui fait qu'on y croit. On ne condense
- * donc pas : on joue tout, et le tempo absorbe la longueur.
- *
- * **Au plancher, un combat très long dépasse le budget, et c'est voulu.** Le plancher sert la
- * lisibilité, le budget sert le confort ; quand les deux se contredisent, la lisibilité gagne.
- * Le rattrapage est le saut — toucher l'écran — pas un condensé qu'on vient d'écarter.
- */
-export function tempoFor(exchanges: number): number {
-  if (exchanges <= 0) {
-    return TEMPO_CEILING;
-  }
-
-  return Math.min(TEMPO_CEILING, Math.max(TEMPO_FLOOR, Math.round(BUDGET / exchanges)));
-}
-
 /** L'autre camp. Une esquive se joue chez la cible, pas chez l'attaquant. */
 function opponentOf(actor: Actor): Actor {
   return actor === 'PLAYER' ? 'ENEMY' : 'PLAYER';
@@ -343,7 +275,7 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
     (event) => event.type === 'ATTACK' || event.type === 'DODGE' || event.type === 'COMBO',
   ).length;
 
-  const tempo = tempoFor(exchanges);
+  const tempo = BEATS.action;
 
   const beats: BattleBeat[] = [];
   const blows: number[] = [];
@@ -395,7 +327,9 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
 
     seen += 1;
     // Le dernier échange garde son temps plein, quel que soit le tempo.
-    const span = seen === exchanges && battle.endReason === 'KO' ? Math.max(tempo, BEATS.finalBlow) : tempo;
+    const followup = comboActor !== undefined && comboActor === (event.attacker ?? 'PLAYER');
+    const baseSpan = event.type === 'COMBO' ? BEATS.combo : followup ? BEATS.followup : tempo;
+    const span = seen === exchanges && battle.endReason === 'KO' ? BEATS.finalBlow : baseSpan;
     const until = at + span;
 
     const position = { atTick: event.atTick, actionIndex: event.actionIndex, attackIndex: event.attackIndex };
