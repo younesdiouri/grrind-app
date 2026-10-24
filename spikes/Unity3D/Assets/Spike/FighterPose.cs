@@ -19,6 +19,7 @@ public sealed class FighterPose : MonoBehaviour
     public bool inspect=true,autoplay;
     public Vector3 placement;
     public float facing;
+    public float resultPose;
     PlayableGraph graph;
     AnimationMixerPlayable mixer;
     AnimationClipPlayable[] players;
@@ -50,6 +51,7 @@ public sealed class FighterPose : MonoBehaviour
     {
         if(!graph.IsValid())return;
         int selected=Mathf.Clamp(stance,0,clips.Length-1);
+        if(resultPose!=0)selected=Mathf.Min(7,clips.Length-1);
         // Workshop rest keeps the forward gaze approved in V1; the arena uses the boxing guard.
         if(inspect&&selected==0)selected=7;
         float p=autoplay?Mathf.Repeat(Time.time*.55f,1):Mathf.Clamp01(phase);
@@ -59,6 +61,14 @@ public sealed class FighterPose : MonoBehaviour
         if(selected!=0)players[selected].SetTime(ClipPhase(selected,p,contacts)*clips[selected].length);
         // Apply arena placement after the pose solve.
         actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);graph.Evaluate(0);
+        if(actor.isHuman&&resultPose>0)
+        {
+            LiftArm(HumanBodyBones.LeftUpperArm,HumanBodyBones.LeftLowerArm,HumanBodyBones.LeftHand,1);
+            LiftArm(HumanBodyBones.RightUpperArm,HumanBodyBones.RightLowerArm,HumanBodyBones.RightHand,-1);
+            Bone(HumanBodyBones.Head).localRotation*=Quaternion.Euler(-8*resultPose,0,0);
+        }
+        else if(actor.isHuman&&resultPose<0)
+            Bone(HumanBodyBones.Spine).localRotation*=Quaternion.Euler(-12*resultPose,0,0);
         dumbbell?.Apply();
         actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));
         if(contactShadow!=null)
@@ -82,5 +92,13 @@ public sealed class FighterPose : MonoBehaviour
         return p<=.5f?Mathf.Lerp(0,contact,p*2):Mathf.Lerp(contact,1,(p-.5f)*2);
     }
     public Transform Bone(HumanBodyBones bone)=>actor.isHuman?actor.GetBoneTransform(bone):actor.transform;
+    void LiftArm(HumanBodyBones upperBone,HumanBodyBones lowerBone,HumanBodyBones handBone,float side)
+    {
+        var upper=Bone(upperBone);var lower=Bone(lowerBone);var hand=Bone(handBone);
+        var lift=Quaternion.FromToRotation(lower.position-upper.position,new Vector3(side*.45f,.8f,0));
+        upper.rotation=Quaternion.Slerp(Quaternion.identity,lift,resultPose)*upper.rotation;
+        var bend=Quaternion.FromToRotation(hand.position-lower.position,new Vector3(side*.1f,.8f,0));
+        lower.rotation=Quaternion.Slerp(Quaternion.identity,bend,resultPose)*lower.rotation;
+    }
     void OnDestroy(){if(graph.IsValid())graph.Destroy();}
 }

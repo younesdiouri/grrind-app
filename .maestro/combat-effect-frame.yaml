@@ -1,0 +1,14 @@
+appId: app.grrind.dev
+---
+# Frozen shared clock: inspect the effect on the actual Unity skeleton.
+- openLink: grrindapp-dev://combat-demo?network=effects&opponent=player&frame=${EFFECT}
+- extendedWaitUntil:
+    visible:
+      id: battle-combat
+    timeout: 15000
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: unity-renderer-ready
+- assertNotVisible:
+    id: battle-renderer-unavailable
+- takeScreenshot: unity-${EFFECT}

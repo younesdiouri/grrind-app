@@ -8,6 +8,7 @@ public sealed class BattleBridge : MonoBehaviour
     public Material contactShadow;
     public GameObject combatEnvironment,inspectionFloor;
     FighterPose player,enemy;
+    CombatPresentation presentation;
 
     [Serializable] public class AvatarConfig {
         public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original",faceStyle="original",noseStyle="original";
@@ -22,10 +23,14 @@ public sealed class BattleBridge : MonoBehaviour
         public float azimuth=32;
         public string previewId;
         public int previewWidth=640,previewHeight=640;
+        public CombatPresentation.Configuration hud;
     }
     [Serializable] public class Viewport {public float x,y,width=1,height=1;}
-    [Serializable] public class ActorFrame {public int pose;public float phase,x;public bool visible=true;}
-    [Serializable] public class Frame {public ActorFrame player=new ActorFrame(),enemy=new ActorFrame();}
+    [Serializable] public class ActorFrame {public int pose;public float phase,x;public bool visible=true,reduced;}
+    [Serializable] public class Frame {
+        public ActorFrame player=new ActorFrame(),enemy=new ActorFrame();
+        public CombatPresentation.Frame presentation;
+    }
     bool inspection;
     bool caillouxFight;
     Frame lastFrame;
@@ -41,7 +46,12 @@ public sealed class BattleBridge : MonoBehaviour
     }
     void LateUpdate()
     {
-        if(!inspection&&projectionSurface!=arenaCamera.pixelRect)FrameArena();
+        if(inspection)return;
+        var state=lastFrame?.presentation;
+        arenaCamera.transform.position=CombatCamera+new Vector3((state?.shakeX??0)*.002f,(state?.shakeY??0)*.002f,0);
+        arenaCamera.transform.LookAt(CombatTarget);
+        arenaCamera.fieldOfView=CombatFieldOfView/(state?.zoom??1);
+        if(state!=null||projectionSurface!=arenaCamera.pixelRect)FrameArena();
     }
     public void CaptureAvatar(string json) => (GetComponent<AvatarCapture>() ?? gameObject.AddComponent<AvatarCapture>()).Capture(json);
     public void CancelPreview(string _) => GetComponent<AvatarCapture>()?.Cancel();
@@ -78,6 +88,8 @@ public sealed class BattleBridge : MonoBehaviour
             caillouxFight=config.enemy.model=="cailloux";
             if(player!=null)Destroy(player.gameObject);if(enemy!=null)Destroy(enemy.gameObject);
             player=Create(config.player,true);enemy=Create(config.enemy,false);
+            if(presentation==null)presentation=gameObject.AddComponent<CombatPresentation>();
+            presentation.Setup(inspection?null:config.hud,arenaCamera,player,enemy,combatViewport);
             player.inspect=inspection;
             player.inspectionCamera=inspection?arenaCamera:null;
             player.view=Mathf.Clamp(config.view,0,4);player.azimuth=config.azimuth;
@@ -131,6 +143,7 @@ public sealed class BattleBridge : MonoBehaviour
             var frame=JsonUtility.FromJson<Frame>(json);if(frame==null)return;
             lastFrame=frame;
             Apply(player,frame.player,true);Apply(enemy,frame.enemy,false);
+            presentation?.DrawFrame(frame.presentation);
         }
         catch(Exception e){Debug.LogError("GRRIND avatar frame: "+e.Message);}
     }
@@ -140,7 +153,7 @@ public sealed class BattleBridge : MonoBehaviour
         pose.gameObject.SetActive(frame.visible);pose.stance=Mathf.Clamp(frame.pose,0,7);pose.phase=Mathf.Clamp01(frame.phase);
         // Camera right points towards -X. Input x is a fraction of the arena width.
         pose.placement=inspection?Vector3.zero:new Vector3(CombatX(left)-frame.x*HalfWidth()*2,0,0);
-        if(!inspection&&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
+        if(!inspection&&!frame.reduced&&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
         {
             // This rig advances into striking range at the HUD's contact phase, then returns.
             float approach=1-Mathf.Abs(2*Mathf.Clamp01(frame.phase)-1);

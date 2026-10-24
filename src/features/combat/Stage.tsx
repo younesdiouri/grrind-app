@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
 import type { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { useReducedMotion } from '@/design/useReducedMotion';
@@ -15,14 +15,17 @@ export function Stage({ clock, impacts, points, combos, effects = true, style, c
   onMeasure?: (frame: LayoutRectangle) => void;
 }) {
   const ref = useRef<View>(null);
+  const measure = useCallback(() => {
+    if (onMeasure) ref.current?.measureInWindow((x, y, width, height) => onMeasure({ x, y, width, height }));
+  }, [onMeasure]);
+  // Rotation can update window dimensions after onLayout; refresh the normalized Unity frame.
+  useLayoutEffect(measure, [measure]);
   const reduced = useReducedMotion() !== false;
   const camera = useAnimatedStyle(() => {
     const state = cameraAt(effects ? impacts : [], clock.get(), reduced);
     return { transform: [{ translateX: state.x }, { translateY: state.y }, { scale: state.scale }] };
   });
-  return <Animated.View ref={ref} style={[style, camera]} onLayout={() => {
-    if (onMeasure) ref.current?.measureInWindow((x, y, width, height) => onMeasure({ x, y, width, height }));
-  }}>
+  return <Animated.View ref={ref} style={[style, camera]} onLayout={measure}>
     {children}
     {effects && <ImpactLayer clock={clock} impacts={impacts} points={points} combos={combos} />}
   </Animated.View>;

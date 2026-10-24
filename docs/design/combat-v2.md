@@ -21,6 +21,10 @@ Ils ne retirent aucun PV. Une esquive n’allume jamais la pose blessée ni une 
 Critique et garde utilisent les booléens serveur. Les dégâts apparaissent auprès de la cible,
 sans nombre ni phrase redondants au centre. Le bilan conserve les détails d’armure et de fatigue.
 
+Depuis #265, les effets du 1v1 et ses nombres sont rendus dans Unity sur les positions projetées
+des personnages ; voir [la présentation du combat](combat-presentation.md). La description
+des PNG ci-dessous documente le rendu historique, encore conservé pour les autres scènes.
+
 Les quatre PNG suivent leurs combattants : le critique sur la cible, l’esquive, le combo et la
 relance sur leur acteur. Les sprites de monstres disposent de trois poses de base et, selon
 le pack, quatre variantes ; les modèles sans variante gardent leur pose de base.

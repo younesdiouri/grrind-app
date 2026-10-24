@@ -25,15 +25,18 @@ export default function CombatDemoScreen() {
   const { network, frame, scenario, at, opponent, mob, snapshot } = useLocalSearchParams<{ network?: string; frame?: string; scenario?: string; at?: string; opponent?: string; mob?: string; snapshot?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
   // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
-  if (at && (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel')) {
-    const sample = scenario === 'duel' && snapshot === 'avatar' ? AVATAR_DUEL : BATTLE_FIXTURES[scenario];
+  if (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel' || scenario === 'loot') {
+    const sample = scenario === 'loot' ? BATTLE_FIXTURES.victoireAvecLoot
+      : scenario === 'duel' && snapshot === 'avatar' ? AVATAR_DUEL : BATTLE_FIXTURES[scenario];
     const battle = mob === 'pebble' ? { ...sample, enemy: { ...sample.enemy, key: 'SAND_JACKAL',
       name: PEBBLE.name, introduction: PEBBLE.introduction ?? null, appearance: null } } : sample;
     return <AmbientBackdropProvider>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <View style={styles.screen}>
+      {scenario === 'loot' && <Text style={styles.notice}>DÉMONSTRATION · AUCUN GAIN RÉEL</Text>}
       <BattleView key={at} battle={battle}
-        enemyArt={scenario === 'defaiteBoss' && mob !== 'pebble' ? AL_KASAL : undefined} demo demoTime={Number(at)}
+        enemyArt={scenario === 'defaiteBoss' && mob !== 'pebble' ? AL_KASAL : undefined}
+        demo={scenario !== 'loot'} demoTime={at ? Number(at) : undefined}
         onDismiss={() => router.replace('/combat-demo')} />
     </View>
   </AmbientBackdropProvider>;
@@ -111,6 +114,8 @@ function CombatDemo({ pebble }: { pebble: boolean }) {
             ))}
           </View>}
           <Button label="Jouer une victoire" onPress={() => setScenario('victoire')} />
+          <Button label="Jouer un duel Unity" variant="quiet" onPress={() => router.push('/combat-demo?scenario=duel&snapshot=avatar')} />
+          <Button label="Aperçu victoire et butin" variant="quiet" onPress={() => router.push('/combat-demo?scenario=loot&mob=pebble')} />
           <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />
           <Button label="Jouer une défaite" variant="quiet" onPress={() => setScenario('defaiteBoss')} />
           <Text style={styles.subtitle}>Pendant le combat, touche pour passer au bilan, puis revenir ici.</Text>

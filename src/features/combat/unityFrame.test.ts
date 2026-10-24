@@ -49,3 +49,29 @@ test('skip to verdict leaves no attack or movement running', () => {
   assert.equal(result.x, 0);
   assert.equal(result.visible, false);
 });
+
+test('each ordinary action stays readable even in a very long battle', () => {
+  const ordinary = timeline.beats.filter((beat) => beat.kind === 'attack');
+  assert.ok(ordinary.every((beat) => beat.until - beat.at >= 900));
+  assert.ok(timeline.tempo >= 1200);
+});
+
+test('both fighters return to guard before the following action', () => {
+  for (const beat of timeline.beats) {
+    if (beat.kind !== 'attack' && beat.kind !== 'dodge') continue;
+    const resting = beat.until - 50;
+    for (const side of ['PLAYER', 'ENEMY'] as const) {
+      const frame = unityActorFrame(timeline.beats, side, resting, signals(side), 500, true, false);
+      assert.equal(frame.pose, 0);
+      assert.equal(frame.x, 0);
+    }
+  }
+});
+
+test('Unity holds the actual striking pose briefly at contact', () => {
+  const beat = timeline.beats.find((entry) => entry.kind === 'attack');
+  assert.ok(beat && beat.kind === 'attack');
+  const held = unityActorFrame(timeline.beats, beat.attacker, contactAt(beat) + 40,
+    signals(beat.attacker), 500, true, false);
+  assert.equal(held.phase, .5);
+});

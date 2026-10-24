@@ -59,7 +59,7 @@ tags:
 - extendedWaitUntil:
     visible:
       id: battle-exit
-    timeout: 30000
+    timeout: 90000
 - tapOn:
     id: battle-exit
 - setOrientation: PORTRAIT

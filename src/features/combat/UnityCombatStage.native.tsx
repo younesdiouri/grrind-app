@@ -7,6 +7,10 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { UNITY_POSES, unityActorFrame, type UnityAvatar, type UnityInspectorProps, type UnityViewport } from './unityFrame';
 import type { BattleTimeline } from './timeline';
+import { unityPresentationAt } from './unityPresentation';
+
+export type UnityHud = { playerName: string; enemyName: string; playerHp: number; enemyHp: number;
+  won: boolean; limit: boolean; hideHud: boolean; coins: number; loot: number };
 
 type UnityModule = { isAvailable(): boolean; setFrame(frame: string): Promise<void> };
 const bridge = requireOptionalNativeModule<UnityModule>('GrrindUnity');
@@ -17,17 +21,18 @@ const UnityView = bridge ? requireNativeView<NativeProps>('GrrindUnity') : null;
 export type UnityCombatProps = {
   clock: SharedValue<number>; timeline: BattleTimeline; player: UnityAvatar; enemy: UnityAvatar;
   viewport: UnityViewport; width: number; playing: boolean; done: boolean;
+  hud: UnityHud;
   onReady(): void; onError(): void;
 };
 
 /** One fullscreen Unity runtime underneath the existing RN HUD, never one instance per fighter. */
-export function UnityCombatStage({ clock, timeline, player, enemy, viewport, width, playing, done, onReady, onError }: UnityCombatProps) {
+export function UnityCombatStage({ clock, timeline, player, enemy, viewport, width, playing, done, hud, onReady, onError }: UnityCombatProps) {
   const focused = useIsFocused();
   const [ready, setReady] = useState(false);
   const onErrorRef = useRef(onError);
   useEffect(() => { onErrorRef.current = onError; }, [onError]);
   const reduced = useReducedMotion() !== false;
-  const configuration = JSON.stringify({ player, enemy, viewport });
+  const configuration = JSON.stringify({ player, enemy, viewport, hud });
   const send = useCallback((frame: string) => {
     void bridge?.setFrame(frame).catch(() => onErrorRef.current());
   }, []);
@@ -38,12 +43,14 @@ export function UnityCombatStage({ clock, timeline, player, enemy, viewport, wid
   }, [ready, focused]);
   useAnimatedReaction(
     () => ({ bucket: ready && focused ? Math.floor(clock.get() / 33) : -1,
-      playerVisible: playing && !done && player.visible, enemyVisible: !done && enemy.visible }),
+      playerVisible: playing && player.visible, enemyVisible: enemy.visible, done, reduced, width }),
     (state, previous) => {
       if (state.bucket < 0 || (state.bucket === previous?.bucket && state.playerVisible === previous.playerVisible
-        && state.enemyVisible === previous.enemyVisible)) return;
+        && state.enemyVisible === previous.enemyVisible && state.done === previous.done
+        && state.reduced === previous.reduced && state.width === previous.width)) return;
       const time = clock.get();
       scheduleOnRN(send, JSON.stringify({
+        presentation: unityPresentationAt(timeline, time, done, reduced),
         player: unityActorFrame(timeline.beats, 'PLAYER', time, {
           critical: timeline.enemy.criticalFlash, dodge: timeline.player.dodgeFlash,
           combo: timeline.player.comboFlash, replay: timeline.player.replayFlash,
