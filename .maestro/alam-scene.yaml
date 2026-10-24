@@ -19,8 +19,21 @@ appId: app.grrind.dev
       - tapOn: Close
 - extendedWaitUntil:
     visible:
-      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|al-kasal-idle|battle-combat|battle-exit|unity-raid-ready"
+      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|battle-combat|battle-exit|unity-raid-ready"
     timeout: 30000
+# L'ancienne entrée de l'atelier et sa défaite 1v1 aboutissent au raid Unity.
+- openLink: grrindapp-dev://combat-demo
+- extendedWaitUntil:
+    visible:
+      id: unity-raid-ready
+    timeout: 30000
+- assertNotVisible: Repos
+- takeScreenshot: alam-legacy-entry
+- openLink: grrindapp-dev://combat-demo?scenario=defaiteBoss
+- extendedWaitUntil:
+    visible:
+      id: unity-raid-ready
+    timeout: 15000
 - openLink: grrindapp-dev://alam-demo?at=1950
 - extendedWaitUntil:
     visible:

@@ -67,9 +67,8 @@ import {
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export function BattleView({ battle, enemyArt, ...props }: {
+export function BattleView({ battle, ...props }: {
   battle: Battle;
-  enemyArt?: FighterArtwork;
   unityPlayer?: UnityAvatar;
   unityEnemy?: UnityAvatar;
   demo?: boolean;
@@ -86,8 +85,8 @@ export function BattleView({ battle, enemyArt, ...props }: {
   const enemy = combatEnemy(battle.enemy, BUNDLED_MOBS);
   return <PresentedBattle key={battle.id} {...props} battle={battle}
     unityPlayer={props.unityPlayer ?? combatPlayer(battle.player)}
-    unityEnemy={props.unityEnemy ?? enemy.avatar} artwork={enemy.avatar.visible ? undefined : enemyArt ?? enemy.artwork}
-    introduction={enemyArt?.introduction ?? battle.enemy.introduction ?? undefined} />;
+    unityEnemy={props.unityEnemy ?? enemy.avatar} artwork={enemy.artwork}
+    introduction={battle.enemy.introduction ?? undefined} />;
 }
 
 function PresentedBattle({ artwork, ...props }: {

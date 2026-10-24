@@ -42,8 +42,8 @@ et ses résultats restent dans React Native.
 | `bundledMobs.ts`, résolution d’images dans `enemyPresentation.ts` et branche sprites de `BattleView.tsx` | Résolution explicite des nouveaux mobs 3D |
 | `appearances.ts`, `useAppearances.ts` | Retirés dans #267 avec le dernier consommateur du raid |
 | `assets/images/heroes/retro-strength/` et décor 2D `assets/images/arenas/alam.png` | Retirés dans #267 ; les sprites des autres mobs solo restent à migrer |
-| Ateliers Al-Kasal, démonstrations, fixtures de présentation, flows et scripts de fabrication 2D | Adapter aux nouvelles scènes ou supprimer si devenus inutiles |
-| Docs de l’ancien PvE, dont `al-kasal.md` et `combat-art-workflow.md`, et leurs preuves | Retirer ce qui est remplacé ; conserver la documentation du nouveau pipeline |
+| Ancien atelier 1v1 Al Kasal, sprites, flow et script de fabrication 2D | Retirés dans #269 ; les anciennes entrées ouvrent le raid Unity |
+| Docs du prototype et du pipeline 2D, anciennes preuves Al Kasal | Retirées dans #269 ; documentation Unity conservée |
 
 Les sons, VFX, HUD et fonctions de chronologie partagés sont audités selon leurs usages.
 Tout élément propre à l’ancien PvE sans consommateur est supprimé. Les petites vignettes

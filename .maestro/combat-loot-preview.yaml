@@ -20,7 +20,7 @@ appId: app.grrind.dev
 # Wait for restored navigation before sending the first deep link after a cold Metro start.
 - extendedWaitUntil:
     visible:
-      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|al-kasal-idle|battle-combat|battle-exit"
+      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|battle-combat|battle-exit"
     timeout: 30000
 # Equipped weapon, both attacks, then a natural finale using the same server timeline.
 - openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weight&at=1394
@@ -88,6 +88,6 @@ appId: app.grrind.dev
     id: battle-exit
 - extendedWaitUntil:
     visible:
-      id: al-kasal-idle
+      id: pebble-idle
     timeout: 15000
 - setOrientation: PORTRAIT

@@ -68,7 +68,7 @@ function Showcase() {
             : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Spike local · Visage et nez' : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
-          if (router.canGoBack()) router.back(); else router.replace('/combat-demo');
+          if (router.canGoBack()) router.back(); else router.replace('/combat-demo?mob=pebble');
         }}><Text style={styles.link}>Fermer</Text></Pressable>
       </View>
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>

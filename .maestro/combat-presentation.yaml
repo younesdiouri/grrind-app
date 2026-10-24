@@ -51,4 +51,5 @@ tags:
 - tapOn:
     id: "battle-exit"
 - setOrientation: PORTRAIT
-- assertVisible: "Repos"
+- assertVisible:
+    id: pebble-idle

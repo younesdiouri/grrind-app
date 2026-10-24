@@ -1,6 +1,6 @@
 appId: app.grrind.dev
 ---
-- openLink: grrindapp-dev://combat-demo?scenario=${SCENARIO}&at=${AT}
+- openLink: grrindapp-dev://combat-demo?scenario=${SCENARIO}&mob=pebble&at=${AT}
 - repeat:
     times: 2
     commands:

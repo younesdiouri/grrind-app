@@ -37,9 +37,9 @@ Les compteurs de bilan viennent du serveur, distincts des sommes descriptives de
 
 Les duels utilisent une arène latérale en paysage plein écran, puis rétablissent le portrait.
 Les personnages du 1v1 et du PvP utilisent désormais [Unity](../ai/unity-1v1.md).
-Ālam conserve sa carte surélevée et les miniatures de face issues du snapshot serveur,
-avec le repli Muscu embarqué. Les calques 2D des anciens équipements ont été retirés ;
-les [packs de monstres](combat-art-workflow.md) restent utilisés.
+Ālam utilise désormais le [raid Unity d’Al Kasal](al-kasal-unity.md).
+Les calques 2D des anciens équipements et les sprites d’Al Kasal ont été retirés.
+Le rendu illustré générique reste disponible pour les autres mobs sans modèle Unity.
 
 ## Assets générés
 
@@ -79,7 +79,6 @@ réglages de texte. Le full Release n’est pas requis et n’est jamais lancé 
 
 - TypeScript strict, lint, 512 tests : verts.
 - `api:check` et `previews:check` : verts ; 28 previews dérivées des composants RN.
-- Atelier Al-Kasal : vert, 97 s.
 - Scénarios v2 : verts, 161 s après correction du saut ; huit effets/deux camps, chaîne
   animée, limite et 10 000 tentatives. Captures inspectées dans
   `artifacts/e2e/2026-09-08_134828/combat-v2/takeScreenshot/`.

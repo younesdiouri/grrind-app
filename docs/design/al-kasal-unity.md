@@ -7,6 +7,17 @@ facettées cohérentes avec Cailloux et les sportifs Quaternius. ImageGen fourni
 profil et dos ; Meshy 7.1 reconstruit le modèle texturé à environ 6 000 triangles.
 Les sources, paramètres, crédits et provenance vivent dans `spikes/art-source/al-kasal-sloth/`.
 
+Le nettoyage #269 retire les sprites 2D, l’ancien atelier Al Kasal 1v1, son flow et les
+outils/documents devenus inutiles. Les liens `combat-demo` sans scénario et l’ancienne
+défaite Al Kasal ouvrent `/alam-demo`. L’atelier Cailloux et les duels restent accessibles
+via `combat-demo?mob=pebble` ; les outils HTTP partagés n’utilisent plus aucun asset Al Kasal.
+
+Vérification #269 : types, lint, 587 tests et 29 previews passent. Le seul parcours mobile
+joué est `alam-scene.yaml` : anciennes entrées → raid Unity, frappes, fin et rejeu, vert
+en 78 s (`2026-10-24_215243`). Captures inspectées sur le development build déjà installé,
+sans rebuild natif. Le serveur de présentation conserve ses dix scénarios, trois PNG
+génériques et son échec HTTP 404. Aucun lien vers les anciens fichiers Al Kasal ne subsiste.
+
 Une seule scène Unity paysage présente l’arène d’hiver existante, la neige, Al Kasal
 en fond de scène et ses petits canapés animés. Les membres Quaternius se placent ensemble
 et viennent frapper au corps à corps avec leurs clips existants. Les petits mobs sont des
