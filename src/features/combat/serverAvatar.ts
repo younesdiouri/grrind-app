@@ -14,5 +14,7 @@ export function serverAvatar(avatar: Avatar | null | undefined, equipment: Avata
   return { ...appearance, visible: true, boots: false, headband: false,
     sportShirt: shirt !== 'base', shirtColor: shirt === 'coral' ? 'coral' : 'cyan',
     pantsColor: pants === 'original' ? 'base' : pants, boxingGloves: weapon === 'gloves',
-    dumbbell: weapon === 'dumbbell' || weapon === 'ego' };
+    dumbbell: weapon === 'dumbbell' || weapon === 'ego',
+    weapon: weapon === 'ferPlay' || weapon === 'huilesson' ? weapon : undefined,
+    weaponType: equipment.WEAPON?.weaponType ?? 'FIST' };
 }

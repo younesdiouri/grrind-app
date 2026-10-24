@@ -135,6 +135,7 @@ function droppedItem(
     name: 'Le Poids Lourd',
     rarity: 'COMMON',
     slot: 'WEAPON',
+    weaponType: null,
     modifiers: [],
     priceCoins: 25,
     imageUrl: '',

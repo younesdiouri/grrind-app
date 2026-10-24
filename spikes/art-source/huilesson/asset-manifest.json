@@ -1,0 +1,22 @@
+{
+  "units": "metres",
+  "length_m": 0.76,
+  "grip_diameter_m": 0.025,
+  "triangles": 1677,
+  "vertices": 3491,
+  "materials": 2,
+  "long_axis": "X",
+  "grip": "origin",
+  "texture": "BaseColor.png sRGB 2048",
+  "source_bounds": [
+    0.9511110782623291,
+    0.21033000946044922,
+    1.8999431133270264
+  ],
+  "inferred": [
+    "physical dimensions",
+    "handle centre",
+    "back from generated views"
+  ],
+  "changes": "Scale, axis conversion and25mm grip; original frame topology/UVs retained. Incomplete Meshy strings removed inside head; authored5x7 grid, diameter4.4mm, no decimation."
+}

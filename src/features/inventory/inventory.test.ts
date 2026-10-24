@@ -19,6 +19,7 @@ function line(overrides: Partial<InventoryLine> = {}): InventoryLine {
     name: 'T-shirt sportif — Ardoise',
     rarity: 'COMMON',
     slot: 'CHEST',
+    weaponType: null,
     modifiers: [],
     priceCoins: 10,
     sellPriceCoins: 5,

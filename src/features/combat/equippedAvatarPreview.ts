@@ -3,7 +3,7 @@ import type { components } from '@/api/schema';
 type Equipment = components['schemas']['PublicInventory']['equipment'];
 type Shirt = 'base' | 'slate' | 'coral';
 type Pants = 'original' | 'violet' | 'cyan' | 'coral';
-export type AvatarPreviewKey = `${Shirt}-${Pants}-${'unarmed' | 'gloves' | 'dumbbell' | 'ego'}`;
+export type AvatarPreviewKey = `${Shirt}-${Pants}-${'unarmed' | 'gloves' | 'dumbbell' | 'ego' | 'ferPlay' | 'huilesson'}`;
 
 /** Clés et emplacements serveur, indépendants des noms traduits et des choix de l’atelier. */
 export function equippedModels(equipment: Record<string, Pick<NonNullable<Equipment['WEAPON']>, 'key'> | null | undefined>) {
@@ -14,7 +14,9 @@ export function equippedModels(equipment: Record<string, Pick<NonNullable<Equipm
     : equipment.LEGS?.key === 'LES_GUINZZ_CORAL' ? 'coral' : 'original';
   const weapon = equipment.WEAPON?.key === 'GOLDEN_BOXING_GLOVES' ? 'gloves'
     : equipment.WEAPON?.key === 'LE_POIDS_LOURD' ? 'dumbbell'
-    : equipment.WEAPON?.key === 'HALTER_EGO' ? 'ego' : 'unarmed';
+    : equipment.WEAPON?.key === 'HALTER_EGO' ? 'ego'
+    : equipment.WEAPON?.key === 'FER_PLAY' ? 'ferPlay'
+    : equipment.WEAPON?.key === 'HUILESSON' ? 'huilesson' : 'unarmed';
   return { shirt, pants, weapon } as const;
 }
 

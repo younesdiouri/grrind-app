@@ -36,3 +36,9 @@ export const WEIGHT_DUEL: Battle = { ...AVATAR_DUEL,
     WEAPON: { key: 'LE_POIDS_LOURD', artworkVersion: null } } },
   enemy: { ...AVATAR_DUEL.enemy, equipment: { ...AVATAR_DUEL.enemy.equipment,
     WEAPON: { key: 'LE_POIDS_LOURD', artworkVersion: null } } } };
+
+export const WEAPONS_DUEL: Battle = { ...AVATAR_DUEL,
+  player: { ...AVATAR_DUEL.player, equipment: { ...AVATAR_DUEL.player.equipment,
+    WEAPON: { key: 'FER_PLAY', artworkVersion: null, weaponType: 'SWORD' } } },
+  enemy: { ...AVATAR_DUEL.enemy, equipment: { ...AVATAR_DUEL.enemy.equipment,
+    WEAPON: { key: 'HUILESSON', artworkVersion: null, weaponType: 'SWORD' } } } };

@@ -1,0 +1,22 @@
+{
+  "units": "metres",
+  "length_m": 0.85,
+  "grip_diameter_m": 0.025,
+  "triangles": 1919,
+  "vertices": 3257,
+  "materials": 1,
+  "long_axis": "X",
+  "grip": "origin",
+  "texture": "BaseColor.png sRGB 2048",
+  "source_bounds": [
+    0.7933470010757446,
+    0.2287200391292572,
+    1.900547981262207
+  ],
+  "inferred": [
+    "physical dimensions",
+    "handle centre",
+    "back from generated views"
+  ],
+  "changes": "Uniform scale; rigid axis rotation; handle narrowed to 25mm. Original topology, UVs and winding retained; no decimation after texturing."
+}

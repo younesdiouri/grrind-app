@@ -14,6 +14,7 @@ public sealed class BattleBridge : MonoBehaviour
     [Serializable] public class AvatarConfig {
         public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original",faceStyle="original",noseStyle="original";
         public bool boots=true,visible=true,headband,sportShirt,boxingGloves,dumbbell;
+        public string weapon="",weaponType="FIST";
     }
     [Serializable] public class Configuration
     {
@@ -37,6 +38,7 @@ public sealed class BattleBridge : MonoBehaviour
     }
     bool inspection;
     bool caillouxFight;
+    bool illustratedFight;
     CombatPresentation.Configuration hud;
     bool FinaleLayout => !inspection&&lastFrame?.presentation?.finished==true&&hud!=null
         &&(hud.won?lastFrame.player.visible:lastFrame.enemy.visible);
@@ -117,6 +119,7 @@ public sealed class BattleBridge : MonoBehaviour
             if(inspectionFloor!=null)inspectionFloor.SetActive(inspection);
             arenaCamera.backgroundColor=inspection?new Color(.0196f,.0314f,.0863f):new Color(.48f,.66f,.77f);
             caillouxFight=config.enemy.model=="cailloux";
+            illustratedFight=!config.enemy.visible;
             if(player!=null)Destroy(player.gameObject);if(enemy!=null)Destroy(enemy.gameObject);
             player=Create(config.player,true);enemy=Create(config.enemy,false);
             if(presentation==null)presentation=gameObject.AddComponent<CombatPresentation>();
@@ -143,15 +146,16 @@ public sealed class BattleBridge : MonoBehaviour
         var prefab=Resources.Load<GameObject>(config.model=="cailloux"?"Cailloux":config.body=="female"?"QuaterniusFemale":"QuaterniusShowcase");
         var obj=Instantiate(prefab);
         var pose=obj.GetComponent<FighterPose>();pose.inspect=false;pose.inspectionCamera=null;
+        pose.weaponType=config.weaponType;
         obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
         obj.GetComponent<QuaterniusAppearance>()?.SetHeadband(config.headband);
         obj.GetComponent<QuaterniusAppearance>()?.SetBoxingGloves(config.boxingGloves);
         // shortcut: existing boxing clips can intersect large weights; combat trial explicitly accepted by the author.
-        obj.GetComponent<WeaponGrip>()?.SetEquipped(config.dumbbell);
+        obj.GetComponent<WeaponGrip>()?.Select(config.dumbbell?"dumbbell":config.weapon);
         obj.GetComponent<QuaterniusAppearance>()?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
         obj.GetComponent<QuaterniusAppearance>()?.SelectFace(config.faceStyle, config.noseStyle);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
-        pose.placement=new Vector3(CombatX(left),0,0);pose.facing=left?-65:65;
+        pose.placement=new Vector3(CombatX(left),0,0);pose.facing=Facing(left);
         pose.SetShoes(config.boots);
         if(contactShadow!=null)
         {
@@ -193,15 +197,15 @@ public sealed class BattleBridge : MonoBehaviour
             pose.gameObject.SetActive(frame.visible&&winner);
             float reveal=lastFrame.presentation.reduced?1:Mathf.SmoothStep(0,1,lastFrame.presentation.finale*3);
             pose.placement=Vector3.Lerp(new Vector3(CombatX(left),0,0),Vector3.zero,reveal);
-            pose.facing=Mathf.Lerp(left?-65:65,0,reveal);
+            pose.facing=Mathf.Lerp(Facing(left),0,reveal);
             pose.stance=7;pose.phase=.45f;
             return;
         }
-        pose.facing=inspection?0:left?-65:65;
+        pose.facing=inspection?0:Facing(left);
         pose.gameObject.SetActive(frame.visible);pose.stance=Mathf.Clamp(frame.pose,0,7);pose.phase=Mathf.Clamp01(frame.phase);
         // Camera right points towards -X. Input x is a fraction of the arena width.
         pose.placement=inspection?Vector3.zero:new Vector3(CombatX(left)-frame.x*HalfWidth()*2,0,0);
-        if(!inspection&&!frame.reduced&&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
+        if((caillouxFight||illustratedFight)&&!inspection&&!frame.reduced&&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
         {
             // This rig advances into striking range at the HUD's contact phase, then returns.
             float approach=1-Mathf.Abs(2*Mathf.Clamp01(frame.phase)-1);
@@ -213,7 +217,8 @@ public sealed class BattleBridge : MonoBehaviour
             pose.placement+=(left?Vector3.left:Vector3.right)*travel*approach;
         }
     }
-    float CombatX(bool left)=>(left?1:-1)*(caillouxFight?.625f:HalfWidth()*.5f);
+    float Facing(bool left)=>(left?-1:1)*(caillouxFight||illustratedFight?65:85);
+    float CombatX(bool left)=>(left?1:-1)*(caillouxFight?.625f:illustratedFight?HalfWidth()*.5f:.35f);
     // Half of the visible width on the fighters' plane, for either projection.
     float HalfWidth()
     {

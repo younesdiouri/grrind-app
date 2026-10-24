@@ -167,6 +167,42 @@ appId: app.grrind.dev
 - tapOn: Repos
 - tapOn: Visage
 - takeScreenshot: quaternius-forward-gaze
+# The two long weapons use their own normal/critical gestures and real cylindrical grip.
+- tapOn: Tenue
+- tapOn: Équiper Fer play
+- tapOn: Trois-quarts
+- tapOn: Mouvements
+- tapOn: Figer
+- tapOn: Taille
+- takeScreenshot: fer-play-female-slash
+- tapOn: Estoc
+- takeScreenshot: fer-play-female-stab
+- tapOn: Corps
+- tapOn: Homme
+- takeScreenshot: fer-play-male-stab
+- tapOn: Tenue
+- tapOn: Prise
+- takeScreenshot: fer-play-male-grip
+- tapOn: Équiper Huilesson
+- tapOn: Trois-quarts
+- tapOn: Mouvements
+- tapOn: Taille
+- takeScreenshot: huilesson-male-slash
+- tapOn: Estoc
+- takeScreenshot: huilesson-male-stab
+- tapOn: Corps
+- tapOn: Femme
+- takeScreenshot: huilesson-female-stab
+- tapOn: Tenue
+- tapOn: Prise
+- takeScreenshot: huilesson-female-grip
+- tapOn: Retirer Huilesson
+- assertVisible: Équiper Huilesson
+- takeScreenshot: long-weapon-removed
+- tapOn: Équiper Fer play
+- tapOn: Trois-quarts
+- tapOn: Mouvements
+- tapOn: Repos
 - tapOn: Voir le duel PvP
 - extendedWaitUntil:
     visible:
@@ -184,6 +220,7 @@ appId: app.grrind.dev
     visible:
       id: battle-exit
     timeout: 60000
+- takeScreenshot: weapons-duel-verdict
 - tapOn:
     id: battle-exit
 - extendedWaitUntil:
@@ -191,4 +228,38 @@ appId: app.grrind.dev
       id: quaternius-ready
     timeout: 20000
 - takeScreenshot: quaternius-return-from-pvp
+- setOrientation: PORTRAIT
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=1394
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- takeScreenshot: weapons-duel-fer-play-normal
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=2694
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- takeScreenshot: weapons-duel-huilesson-normal
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=11754
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- takeScreenshot: weapons-duel-huilesson-critical
+- openLink: grrindapp-dev://combat-demo?scenario=duel&snapshot=weapons&at=15654
+- extendedWaitUntil:
+    visible:
+      id: unity-renderer-ready
+    timeout: 20000
+- setOrientation: LANDSCAPE_LEFT
+- takeScreenshot: weapons-duel-fer-play-critical
+- openLink: grrindapp-dev://character-showcase
+- extendedWaitUntil:
+    visible:
+      id: quaternius-ready
+    timeout: 20000
 - setOrientation: PORTRAIT

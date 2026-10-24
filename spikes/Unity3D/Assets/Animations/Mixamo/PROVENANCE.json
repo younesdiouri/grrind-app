@@ -14,8 +14,11 @@
     "BackHandCross": "Back Hand Cross, Target 50",
     "BackHandUppercut": "Boxing Back Hand Uppercut, Target 100",
     "DodgeRetreat": "Boxing Dodge Retreat, In Place enabled",
-    "JabCrossCombo": "Boxing Jab Cross Combo, Target 0"
+    "JabCrossCombo": "Boxing Jab Cross Combo, Target 0",
+    "StableSwordSlash": "Stable Sword Inward Slash, Emphasis 100, Angle 50, Overdrive 50, Character Arm-Space 50, downloaded 2026-10-24",
+    "SwordStab": "Standing Torch Melee Attack Stab, Overdrive 50, Character Arm-Space 50, downloaded 2026-10-24"
   },
   "unity_import": "Humanoid from each source skeleton, no compression. Horizontal root motion extracted and disabled at runtime; arena owns travel. Boxing idle loops with loop pose. Canonical .5 maps to measured contacts in QuaterniusPoc.cs.",
-  "downloaded": "2026-10-21"
+  "downloaded": "2026-10-21",
+  "rejected": "Thrust Slash has a follow-on slash; Quaternius Sword_Dash adds a jump. Kept neither in the shipped library."
 }

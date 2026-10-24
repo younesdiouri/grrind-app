@@ -1,0 +1,10 @@
+{
+  "head_frame_bbox_aligned_iou": 0.6826334695899914,
+  "reference_width_height": 0.5124223602484472,
+  "render_width_height": 0.5017182130584192,
+  "method": "Front head/frame silhouette aligned by bounding box, reference matte threshold min RGB<230; reference shadows included, not world-scale validation",
+  "intentional_change": "Grip narrowed to25mm to fit the authored hand pose",
+  "deviation": "Meshy groove detail differs; racket strings replaced and enlarged for gameplay readability",
+  "outer_envelope_iou": 0.9800033410538768,
+  "envelope_method": "Fill each foreground row between its outermost silhouette pixels; excludes interior string-grid layout from the primary silhouette comparison."
+}

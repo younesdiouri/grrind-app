@@ -30,6 +30,8 @@ public static class QuaterniusPoc
         ImportMixamo();
         BuildCharacter(false);
         BuildCharacter(true);
+        LePoidsLourd.Build();
+        SportsWeapons.Build();
     }
     static void BuildCharacter(bool female)
     {
@@ -306,7 +308,7 @@ public static class QuaterniusPoc
         {
             var pose = instance.GetComponent<FighterPose>();
             if (!pose.actor.isHuman || !pose.actor.avatar.isValid) throw new Exception("Invalid Humanoid");
-            if (pose.clips.Length != 8 || pose.clips.Any(c => c == null) || pose.contacts.Length != pose.clips.Length
+            if (pose.clips.Length < 8 || pose.clips.Any(c => c == null) || pose.contacts.Length != pose.clips.Length
                 || pose.contacts.Any(c => c <= 0 || c >= 1)) throw new Exception("Missing clip/contact mapping");
             if (pose.actor.GetBoneTransform(HumanBodyBones.RightIndexDistal) == null) throw new Exception("Missing fingers");
             var appearance = instance.GetComponent<QuaterniusAppearance>();

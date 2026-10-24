@@ -11,6 +11,8 @@ export type UnityAvatar = Omit<components['schemas']['Avatar'], 'version'> & {
   pantsColor?: 'base' | 'original' | 'violet' | 'cyan' | 'coral';
   boxingGloves?: boolean;
   dumbbell?: boolean;
+  weapon?: 'ferPlay' | 'huilesson';
+  weaponType?: components['schemas']['WeaponType'];
 };
 // Isolated workshop/demo defaults; live snapshots are resolved by serverAvatar.
 export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true,
@@ -40,6 +42,7 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
     if (beat.actor === side) { frame.pose = 5; frame.phase = (time - beat.at) / span; }
     return frame;
   }
+  if (beat.attacker === side) frame.x = 0;
   const contact = contactAt(beat);
   const recovery = beat.at + span * combatMotion.recover;
   if (time >= recovery) { frame.x = 0; return frame; }
