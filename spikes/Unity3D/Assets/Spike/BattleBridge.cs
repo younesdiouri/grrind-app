@@ -20,6 +20,8 @@ public sealed class BattleBridge : MonoBehaviour
         public bool inspection;
         public int view;
         public float azimuth=32;
+        public string previewId;
+        public int previewWidth=640,previewHeight=640;
     }
     [Serializable] public class Viewport {public float x,y,width=1,height=1;}
     [Serializable] public class ActorFrame {public int pose;public float phase,x;public bool visible=true;}
@@ -41,6 +43,8 @@ public sealed class BattleBridge : MonoBehaviour
     {
         if(!inspection&&projectionSurface!=arenaCamera.pixelRect)FrameArena();
     }
+    public void CaptureAvatar(string json) => (GetComponent<AvatarCapture>() ?? gameObject.AddComponent<AvatarCapture>()).Capture(json);
+    public void CancelPreview(string _) => GetComponent<AvatarCapture>()?.Cancel();
     void FrameArena()
     {
         arenaCamera.rect=combatViewport;arenaCamera.ResetAspect();arenaCamera.ResetProjectionMatrix();

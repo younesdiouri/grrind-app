@@ -10,6 +10,7 @@ test('les entrées inventaire/réglages décrivent l’apparence enregistrée et
     noseStyle: 'original' as const, hairStyle: 'long' as const, skinTone: 'deep' as const, hairColor: 'blond' as const };
   const markup = renderToStaticMarkup(createElement(AvatarEntry, { avatar, editable: true, onPress() {} }));
   assert.match(markup, /Femme/);
+  assert.match(markup, /role="img"/);
   assert.match(markup, /Longs/);
   assert.match(markup, /Teint foncé/);
   assert.match(markup, /Cheveux blonds/);
@@ -20,6 +21,7 @@ test('les entrées inventaire/réglages décrivent l’apparence enregistrée et
 test('le profil public propose uniquement la lecture du personnage et les vieux comptes ont un défaut', () => {
   const markup = renderToStaticMarkup(createElement(AvatarEntry, { onPress() {} }));
   assert.match(markup, /Homme/);
+  assert.match(markup, /role="img"/);
   assert.match(markup, /Visage carré/);
   assert.match(markup, /Nez large/);
   assert.match(markup, /Voir le personnage en 3D/);

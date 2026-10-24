@@ -1,6 +1,7 @@
 # Apparence persistée — #254
 
 L’entrée **Apparence** de l’inventaire et des réglages ouvre l’aperçu Unity plein écran.
+Depuis [#263](../avatar-preview/README.md), les cartes affichent également un rendu du personnage enregistré et son décor néon.
 Les options et leurs compatibilités viennent de `/api/avatar-catalog` ; le visage carré
 et le nez large restent indépendants et réservés au corps masculin. Le formulaire
 enregistre uniquement les huit champs de l’avatar via `PATCH /api/me`. La tenue vient

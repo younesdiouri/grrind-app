@@ -871,4 +871,6 @@ export const coinReasonLabel: Record<components['schemas']['CoinTransaction']['r
 };
 
 /** Avatars sportifs : cartes comparables et atelier des poses. */
-export const appearanceArt = { choiceWidth: '47%' as const, choiceHeight: 180, overviewHeight: 300, itemIconSize: 48 } as const;
+export const appearanceArt = { choiceWidth: '47%' as const, choiceHeight: 180, overviewHeight: 380, itemIconSize: 48 } as const;
+export const avatarScene = { flakes: [7, 19, 30, 42, 58, 70, 81, 93], snowSize: 3, snowOpacity: .55,
+  snowColor: '#C5EDFF', drift: 12 } as const;
