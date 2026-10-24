@@ -8,6 +8,7 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { UNITY_POSES, unityActorFrame, type UnityAvatar, type UnityInspectorProps, type UnityViewport } from './unityFrame';
 import type { BattleTimeline } from './timeline';
 import { unityPresentationAt } from './unityPresentation';
+import { raidFrameAt, type UnityRaidProps } from '../alam/unityRaid';
 
 export type UnityHud = { playerName: string; enemyName: string; playerHp: number; enemyHp: number;
   won: boolean; limit: boolean; hideHud: boolean; coins: number; loot: number };
@@ -98,5 +99,30 @@ export function UnityAvatarInspector({ avatar, pose, phase, animated, view, azim
   });
   return UnityView && focused ? <UnityView style={StyleSheet.absoluteFill} pointerEvents="none" accessible={false}
     configuration={configuration} testID={ready ? 'unity-inspector-ready' : 'unity-inspector-loading'}
+    onReady={() => { setReady(true); onReady(); }} onFailure={onError} /> : null;
+}
+
+export function UnityRaidStage({ clock, events, members, finalEncounter, onReady, onError }: UnityRaidProps) {
+  const focused = useIsFocused();
+  const [ready, setReady] = useState(false);
+  const error = useRef(onError);
+  useEffect(() => { error.current = onError; }, [onError]);
+  const reduced = useReducedMotion() !== false;
+  const configuration = JSON.stringify({ scene: 'raid', raid: { members } });
+  const ids = members.map((member) => member.id);
+  const send = useCallback((frame: string) => {
+    void bridge?.setFrame(frame).catch(() => error.current());
+  }, []);
+  useEffect(() => {
+    if (ready || !focused) return;
+    const timeout = setTimeout(() => error.current(), 15_000);
+    return () => clearTimeout(timeout);
+  }, [ready, focused]);
+  useAnimatedReaction(() => ({ bucket: ready && focused ? Math.floor(clock.get() / 33) : -1, reduced }), (state, previous) => {
+    if (state.bucket < 0 || (state.bucket === previous?.bucket && state.reduced === previous.reduced)) return;
+    scheduleOnRN(send, JSON.stringify({ raid: raidFrameAt(events, ids, clock.get(), finalEncounter, reduced) }));
+  });
+  return UnityView && focused ? <UnityView style={StyleSheet.absoluteFill} pointerEvents="none" accessible={false}
+    configuration={configuration} testID={ready ? 'unity-raid-ready' : 'unity-raid-loading'}
     onReady={() => { setReady(true); onReady(); }} onFailure={onError} /> : null;
 }

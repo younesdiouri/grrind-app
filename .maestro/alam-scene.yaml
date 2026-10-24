@@ -1,17 +1,57 @@
 appId: app.grrind.dev
 ---
+# Local Unity pilot: no account, no backend mutation, no reward.
 - launchApp
-- runFlow: alam-session.yaml
-- openLink: grrindapp-dev://alam-demo
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - extendedWaitUntil:
+          visible: Close
+          timeout: 5000
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
 - extendedWaitUntil:
-    visible: "DÉMONSTRATION · AUCUN GAIN RÉEL"
+    visible:
+      id: "login-email|tab-accueil|quaternius-ready|pebble-idle|al-kasal-idle|battle-combat|battle-exit|unity-raid-ready"
     timeout: 30000
-- takeScreenshot: alam-scene-collective
-- assertVisible: Younes
-- assertVisible: Amine
-- assertVisible: Aimane
+- openLink: grrindapp-dev://alam-demo?at=1950
+- extendedWaitUntil:
+    visible:
+      id: unity-raid-ready
+    timeout: 30000
+- setOrientation: LANDSCAPE_LEFT
+- waitForAnimationToEnd
+- assertVisible: "Les petits canapés d’Al Kasal"
+- takeScreenshot: alam-sofa-contact
+- assertVisible: ".*Younes.*Amine.*Aimane.*"
+- openLink: grrindapp-dev://alam-demo?at=13950
+- extendedWaitUntil:
+    visible:
+      id: unity-raid-ready
+    timeout: 15000
+- waitForAnimationToEnd
+- assertVisible: "Al Kasal · la paresse"
+- takeScreenshot: alam-boss-contact
 - tapOn: Couper le son
 - assertVisible: Activer le son
-- takeScreenshot: alam-scene-muted
+- openLink: grrindapp-dev://alam-demo
+- extendedWaitUntil:
+    visible:
+      id: unity-raid-ready
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "La guilde a repoussé la paresse. Démonstration terminée."
+    timeout: 40000
+- takeScreenshot: alam-victory
 - tapOn: Rejouer la scène
-- takeScreenshot: alam-scene-replay
+- assertVisible: "Les petits canapés d’Al Kasal"
+- takeScreenshot: alam-replay
+- tapOn: Fermer
+- waitForAnimationToEnd

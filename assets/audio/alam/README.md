@@ -1,8 +1,9 @@
-# Ambiance ʿĀlam al-Nafs
+# Effets sonores ʿĀlam al-Nafs
 
-Composition originale synthétique créée pour GRRIND : boucle d'ondes carrées, impact et
-apparition de butin. Aucun sample externe ou motif musical emprunté.
+Effets originaux synthétiques créés pour GRRIND : impact et apparition de butin.
+Aucun sample externe. La musique d’ambiance a été retirée à la demande de l’auteur
+le 24 octobre 2026 ; son remplacement sera choisi plus tard.
 
 Régénération déterministe : `node scripts/generate-alam-audio.mjs` depuis la racine.
-PCM mono 16 bits, 22 050 Hz. Le son suit le mode silencieux et s'arrête en arrière-plan.
+PCM mono 16 bits, 22 050 Hz. Les effets s’arrêtent en arrière-plan et peuvent être coupés.
 Aucune permission de microphone ou lecture en arrière-plan n'est nécessaire.

@@ -111,6 +111,7 @@ export default function RootLayout() {
           <Stack.Screen name="character-showcase" options={{ title: 'Avatar Quaternius' }} />
           <Stack.Screen name="avatar-3d" options={{ title: 'Atelier avatar 3D' }} />
           <Stack.Screen name="combat-demo" options={{ title: 'Atelier de combat' }} />
+          <Stack.Screen name="alam-demo" options={{ title: 'Al Kasal · arène d’hiver' }} />
         </Stack.Protected>
       </Stack>
     </QueryClientProvider>

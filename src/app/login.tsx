@@ -74,7 +74,7 @@ export default function LoginScreen() {
 
         <Button label="Se connecter" onPress={() => void submit()} busy={busy} />
 
-        {__DEV__ && <Button label="Essayer Al-Kasal" variant="quiet" onPress={() => router.push('/combat-demo')} />}
+        {__DEV__ && <Button label="Essayer Al-Kasal" variant="quiet" onPress={() => router.push('/alam-demo')} />}
 
         <Button
           label="Créer un compte"
