@@ -1,6 +1,6 @@
 # Clairière d’hiver du combat 1v1
 
-Le combat se déroule sur une clairière enneigée facettée, avec sapins étagés, rochers coiffés de neige et crêtes bleutées en arrière-plan. Les volumes simples et les aplats accompagnent les personnages Quaternius. Le centre reste calme et dégagé ; les silhouettes et le HUD gardent la priorité.
+Le combat se déroule sur une clairière enneigée facettée, avec sapins étagés, rochers coiffés de neige et crêtes bleutées en arrière-plan. Le décor couvre tout l’écran, derrière le HUD. Les volumes simples et les aplats accompagnent les personnages Quaternius. Le centre reste calme et dégagé ; les silhouettes et le HUD gardent la priorité.
 
 Le décor statique vit dans `spikes/Unity3D/Assets/Spike/Winter/` et dans `Arena.unity`, composé avec le CLI officiel Unity. Sa source et sa provenance sont dans `spikes/art-source/winter-arena/`. Le bridge active ce décor uniquement en combat. Le sol de déplacement reste à y=0 ; arbres et rochers sont derrière le couloir, les congères latérales hors de sa largeur. Aucun collider ni calcul de déplacement supplémentaire.
 
@@ -33,3 +33,20 @@ La revue du bilan a relevé un lien de retour trop clair sur la neige. Son fond 
 ![Bilan final et retour contrasté](winter-arena/recap.png)
 
 La validation sur iPhone physique et les mesures de chauffe/mémoire restent à faire lors d’une livraison native. Aucun build EAS de production n’a été lancé.
+
+## Arène plein écran — #261
+
+Le décor doit couvrir toute la surface paysage, derrière les barres de vie et jusqu’aux quatre bords. Le rectangle mesuré par `Stage` reste la référence des proportions, positions et déplacements des acteurs. La caméra étend sa projection autour de ce rectangle, sans étirer l’image ni rapprocher les personnages. L’atelier reprend sa projection et son viewport habituels. Le HUD garde ses fonds sombres pour rester lisible sur le ciel et la neige.
+
+`WinterArenaChecks.ValidateFullscreen()` compare douze points projetés aux coordonnées de l’ancien cadrage, contrôle le rendu plein écran et le retour à la projection orthographique. Les barrières de l’app restent celles de la première itération ; aucune modification du contrat ou du back.
+
+Le contrôle reproduit d’abord l’ancien rendu limité au rectangle. Après correction, les douze points gardent leurs coordonnées à 0,000062 px près, sur trois cadrages. Le test conserve son seuil de 0,1 px. Le calcul reprend les pixels et l’axe optique de la caméra pour conserver les arrondis de rasterisation de Unity ; il se recalcule quand sa surface change. L’atelier retrouve sa projection standard. Les 924 contrôles de déplacement et les deux contrôles de frappe passent également.
+
+La projection suit les API officielles de [Unity 6.3 pour `Camera.projectionMatrix`](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Camera-projectionMatrix.html) et son [rétablissement avec `ResetProjectionMatrix`](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Camera.ResetProjectionMatrix.html). Le rendu utilise toujours une seule caméra d’arène ; aucun décor ni acteur n’est dupliqué. Le typecheck, le lint, les 580 tests et les 29 previews passent.
+
+Les exports iPhone et Simulator et le build Debug incrémental de l’app passent. Après installation, l’UUID du framework (`2EE9A091-058C-3AD2-AA12-5E8392DD4433`) et les SHA-256 des 16 fichiers Data correspondent à l’export. L’empreinte officielle des intrants natifs est enregistrée après cette reconstruction et cette vérification effective, puis `npm run e2e:ios:dev` réutilise ce nouveau binaire.
+
+Le parcours `combat-3d.yaml` passe en 1 min 9 s (`2026-10-24_134109`), avec duel/rejeu, combat complet contre Cailloux, bilan et retour à l’atelier. Les captures montrent du ciel et de la neige jusqu’aux quatre bords ; les fonds sombres du HUD et du VS conservent leur lisibilité. Face à la capture fournie par l’auteur, les pantalons cyan et violet gardent exactement leurs dimensions (244 × 273 et 112 × 274 px), avec un décalage maximal d’un pixel. Le fond et la projection de l’atelier restent distincts du combat. La validation physique sur iPhone reste à effectuer ; aucun build EAS n’a été lancé.
+
+![Arène plein écran, HUD superposé](winter-arena/fullscreen-pvp.png)
+![Bilan sur le décor plein écran](winter-arena/fullscreen-recap.png)

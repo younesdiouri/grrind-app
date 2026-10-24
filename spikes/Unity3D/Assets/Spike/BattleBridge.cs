@@ -27,6 +27,7 @@ public sealed class BattleBridge : MonoBehaviour
     bool inspection;
     bool caillouxFight;
     Frame lastFrame;
+    Rect combatViewport=new Rect(0,0,1,1),projectionSurface;
 
     void Start()
     {
@@ -36,6 +37,27 @@ public sealed class BattleBridge : MonoBehaviour
         GrrindUnitySceneReady();
 #endif
     }
+    void LateUpdate()
+    {
+        if(!inspection&&projectionSurface!=arenaCamera.pixelRect)FrameArena();
+    }
+    void FrameArena()
+    {
+        arenaCamera.rect=combatViewport;arenaCamera.ResetAspect();arenaCamera.ResetProjectionMatrix();
+        float aspect=arenaCamera.aspect;
+        var projection=arenaCamera.projectionMatrix;
+        // Sample the optical axis to retain Unity's raster rounding at viewport edges.
+        var center=arenaCamera.WorldToScreenPoint(arenaCamera.transform.position+arenaCamera.transform.forward);
+        float actorWidth=arenaCamera.pixelWidth,actorHeight=arenaCamera.pixelHeight;
+        arenaCamera.rect=new Rect(0,0,1,1);projectionSurface=arenaCamera.pixelRect;
+        arenaCamera.aspect=aspect;
+        // Preserve the HUD's fighter framing while revealing scenery outside that rectangle.
+        var framing=Matrix4x4.identity;
+        framing.m00=actorWidth/arenaCamera.pixelWidth;framing.m11=actorHeight/arenaCamera.pixelHeight;
+        framing.m03=2*center.x/arenaCamera.pixelWidth-1;
+        framing.m13=2*center.y/arenaCamera.pixelHeight-1;
+        arenaCamera.projectionMatrix=framing*projection;
+    }
     public void Configure(string json)
     {
         try
@@ -43,7 +65,8 @@ public sealed class BattleBridge : MonoBehaviour
             var config=JsonUtility.FromJson<Configuration>(json);
             if(config==null||config.player==null||config.enemy==null)throw new ArgumentException("Missing avatar configuration");
             if(config.viewport.width<=0||config.viewport.height<=0)return;
-            arenaCamera.rect=new Rect(Mathf.Clamp01(config.viewport.x),Mathf.Clamp01(config.viewport.y),Mathf.Clamp01(config.viewport.width),Mathf.Clamp01(config.viewport.height));
+            combatViewport=new Rect(Mathf.Clamp01(config.viewport.x),Mathf.Clamp01(config.viewport.y),Mathf.Clamp01(config.viewport.width),Mathf.Clamp01(config.viewport.height));
+            arenaCamera.rect=combatViewport;arenaCamera.ResetAspect();arenaCamera.ResetProjectionMatrix();
             inspection=config.inspection;
             if(combatEnvironment!=null)combatEnvironment.SetActive(!inspection);
             if(inspectionFloor!=null)inspectionFloor.SetActive(inspection);
@@ -62,6 +85,7 @@ public sealed class BattleBridge : MonoBehaviour
                 arenaCamera.fieldOfView=CombatFieldOfView;
                 arenaCamera.transform.position=CombatCamera;
                 arenaCamera.transform.LookAt(CombatTarget);
+                FrameArena();
             }
             if(lastFrame!=null){Apply(player,lastFrame.player,true);Apply(enemy,lastFrame.enemy,false);}
         }
