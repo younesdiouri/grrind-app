@@ -6,6 +6,47 @@ using UnityEngine;
 
 public static class WinterArenaChecks
 {
+    public static object ValidateFullscreen()
+    {
+        if (!EditorApplication.isPlaying) throw new InvalidOperationException("Check in Play mode");
+        var bridge = UnityEngine.Object.FindFirstObjectByType<BattleBridge>();
+        var reference = new GameObject("Framing reference", typeof(Camera)).GetComponent<Camera>();
+        reference.enabled = false;
+        reference.transform.position = BattleBridge.CombatCamera;
+        reference.transform.LookAt(BattleBridge.CombatTarget);
+        reference.fieldOfView = BattleBridge.CombatFieldOfView;
+        float maximumError = 0;
+        var points = new[] { new Vector3(-1.4f, 0, 0), new Vector3(1.4f, 1.8f, 0),
+            new Vector3(0, 1, 0), new Vector3(-1, 1, .6f) };
+        try
+        {
+            foreach (var rect in new[] { new Rect(.09f, .06f, .82f, .68f), new Rect(.04f, .1f, .9f, .6f), new Rect(0, 0, 1, 1) })
+            {
+                reference.rect = rect;
+                reference.ResetAspect(); reference.ResetProjectionMatrix();
+                bridge.Configure(JsonUtility.ToJson(new BattleBridge.Configuration {
+                    viewport = new BattleBridge.Viewport { x = rect.x, y = rect.y, width = rect.width, height = rect.height }
+                }));
+                if (bridge.arenaCamera.rect != new Rect(0, 0, 1, 1)) throw new Exception("Arena still renders inside a rectangle");
+                if (Mathf.Abs(reference.aspect - bridge.arenaCamera.aspect) > .001f)
+                    throw new Exception("Combat placement lost its original aspect ratio");
+                foreach (var point in points)
+                {
+                    float error = Vector2.Distance(reference.WorldToScreenPoint(point), bridge.arenaCamera.WorldToScreenPoint(point));
+                    maximumError = Mathf.Max(maximumError, error);
+                    if (error > .1f) throw new Exception("Fighter framing moved by " + error + " px");
+                }
+            }
+            bridge.Configure("{\"inspection\":true,\"viewport\":{\"x\":0.1,\"y\":0.2,\"width\":0.8,\"height\":0.6}}");
+            if (bridge.arenaCamera.rect != new Rect(.1f, .2f, .8f, .6f) || !bridge.arenaCamera.orthographic
+                || Mathf.Abs(bridge.arenaCamera.projectionMatrix.m33 - 1) > .001f)
+                throw new Exception("Full-screen projection leaked into the inspector");
+            bridge.Configure("{}");
+            return new { points = points.Length * 3, maximumPixelError = maximumError, inspectorProjectionRestored = true };
+        }
+        finally { UnityEngine.Object.DestroyImmediate(reference.gameObject); }
+    }
+
     public static object ValidateMotion()
     {
         if (!EditorApplication.isPlaying) throw new InvalidOperationException("Check in Play mode after Configure");

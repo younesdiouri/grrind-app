@@ -705,7 +705,8 @@ const styles = StyleSheet.create({
     paddingBottom: space.xs,
   },
   hud: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: space.sm },
-  versus: { ...type.title, color: color.accent, paddingTop: space.sm },
+  versus: { ...type.title, color: color.accent, padding: space.sm,
+    backgroundColor: arena.scrim, borderRadius: radius.sm },
   fighter: { gap: space.xs, width: arena.hudWidth, backgroundColor: arena.scrim, padding: space.sm, borderRadius: radius.sm },
   line: {
     flexDirection: 'row',
