@@ -5,6 +5,9 @@
 static UnityFramework *runtime;
 static BOOL sceneReady;
 static __weak UIView *activeHost;
+static UIView *captureHost;
+static NSString *captureID;
+static void (^captureCompletion)(NSString *, NSError *);
 #endif
 
 @implementation GrrindUnityHost
@@ -25,6 +28,7 @@ static __weak UIView *activeHost;
 + (BOOL)attachTo:(UIView *)view error:(NSError **)error {
   NSAssert(NSThread.isMainThread, @"Unity lifecycle must run on main");
 #if GRRIND_HAS_UNITY
+  if (captureHost && captureHost != view) [self finishCapture:nil message:@"Preview interrupted by fullscreen Unity"];
   if (!runtime) {
     [[NSNotificationCenter defaultCenter] addObserverForName:@"GrrindUnitySceneReady" object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *note) {
       sceneReady = YES;
@@ -80,4 +84,60 @@ static __weak UIView *activeHost;
   if (runtime.appController) [runtime sendMessageToGOWithName:"BattleBridge" functionName:method.UTF8String message:payload.UTF8String];
 #endif
 }
++ (void)captureAvatar:(NSString *)configuration completion:(void (^)(NSString *, NSError *))completion {
+#if GRRIND_HAS_UNITY
+  if (activeHost || captureHost) {
+    completion(nil, [NSError errorWithDomain:@"GRRIND.Unity" code:2 userInfo:@{NSLocalizedDescriptionKey: @"Unity is busy"}]);
+    return;
+  }
+  UIWindow *window = nil;
+  for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+    if (scene.activationState != UISceneActivationStateForegroundActive || ![scene isKindOfClass:UIWindowScene.class]) continue;
+    for (UIWindow *candidate in ((UIWindowScene *)scene).windows) if (candidate.isKeyWindow) window = candidate;
+  }
+  if (!window) { completion(nil, [NSError errorWithDomain:@"GRRIND.Unity" code:3 userInfo:nil]); return; }
+  captureID = NSUUID.UUID.UUIDString;
+  NSString *requestID = captureID;
+  NSMutableDictionary *config = [[NSJSONSerialization JSONObjectWithData:[configuration dataUsingEncoding:NSUTF8StringEncoding] options:0 error:NULL] mutableCopy];
+  config[@"previewId"] = requestID;
+  NSString *payload = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:config options:0 error:NULL] encoding:NSUTF8StringEncoding];
+  // Unity always owns a fullscreen surface. Small cards receive an offscreen render only.
+  captureHost = [[UIView alloc] initWithFrame:window.bounds];
+  captureHost.userInteractionEnabled = NO;
+  [window insertSubview:captureHost atIndex:0];
+  __block id readyObserver = nil;
+  __block id imageObserver = nil;
+  void (^start)(void) = ^{ if ([captureID isEqual:requestID]) [self send:@"CaptureAvatar" payload:payload]; };
+  readyObserver = [NSNotificationCenter.defaultCenter addObserverForName:@"GrrindUnitySceneReady" object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *note) { start(); }];
+  imageObserver = [NSNotificationCenter.defaultCenter addObserverForName:@"GrrindUnityAvatarCaptured" object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *note) {
+    if ([note.userInfo[@"id"] isEqual:requestID] && [captureID isEqual:requestID])
+      [self finishCapture:note.userInfo[@"image"] message:note.userInfo[@"error"]];
+  }];
+  captureCompletion = ^(NSString *image, NSError *error) {
+    [NSNotificationCenter.defaultCenter removeObserver:readyObserver];
+    [NSNotificationCenter.defaultCenter removeObserver:imageObserver];
+    completion(image, error);
+  };
+  NSError *error = nil;
+  if (![self attachTo:captureHost error:&error]) { [self finishCapture:nil message:error.localizedDescription]; return; }
+  if (sceneReady) start();
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    if ([captureID isEqual:requestID]) [self finishCapture:nil message:@"Avatar preview timed out"];
+  });
+#else
+  completion(nil, [NSError errorWithDomain:@"GRRIND.Unity" code:1 userInfo:nil]);
+#endif
+}
+#if GRRIND_HAS_UNITY
++ (void)finishCapture:(NSString *)image message:(NSString *)message {
+  [self send:@"CancelPreview" payload:@""];
+  [self detachFrom:captureHost];
+  [captureHost removeFromSuperview];
+  captureHost = nil; captureID = nil;
+  void (^done)(NSString *, NSError *) = captureCompletion;
+  captureCompletion = nil;
+  NSError *error = image.length ? nil : [NSError errorWithDomain:@"GRRIND.Unity" code:4 userInfo:@{NSLocalizedDescriptionKey: message ?: @"Avatar preview unavailable"}];
+  if (done) done(image, error);
+}
+#endif
 @end

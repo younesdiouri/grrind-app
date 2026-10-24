@@ -5,6 +5,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { color, control, space, type } from '@/design/tokens';
 import { UnityAvatarInspector, unityCombatAvailable } from '@/features/combat/UnityCombatStage';
 import type { UnityAvatar } from '@/features/combat/unityFrame';
+import { AvatarSnow } from './AvatarSnow';
 
 /** One fullscreen Unity surface; the form and navigation remain native app UI. */
 export function AppearanceScene({ avatar, title, children, busy = false }: {
@@ -22,6 +23,8 @@ export function AppearanceScene({ avatar, title, children, busy = false }: {
       view={0} azimuth={25} viewport={{ x: 0, y: (controlsHeight + insets.bottom) / window.height, width: 1,
         height: Math.max(.1, (window.height - controlsHeight - headerHeight - insets.top - insets.bottom) / window.height) }}
       onReady={() => setReady(true)} onError={() => setFailed(true)} />}
+    {ready && !failed && <View pointerEvents="none" style={[StyleSheet.absoluteFill,
+      { top: headerHeight + insets.top, bottom: controlsHeight + insets.bottom }]}><AvatarSnow /></View>}
     <SafeAreaView style={styles.overlay} pointerEvents="box-none">
       <View style={styles.header} onLayout={({ nativeEvent }) => setHeaderHeight(nativeEvent.layout.height)}>
         <View style={styles.heading}>

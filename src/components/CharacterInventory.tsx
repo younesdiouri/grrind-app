@@ -40,7 +40,7 @@ export function CharacterInventory({ inventory, statistics, equipment, bag, avat
       {section === 'equipment' ? equipment ?? (
         <>
           <EquipmentBoard equipment={inventory.equipment} avatar={onAvatarPress
-            ? <AvatarEntry avatar={avatar} onPress={onAvatarPress} /> : <CombatAvatarPreview equipment={inventory.equipment} />} />
+            ? <AvatarEntry avatar={avatar} equipment={inventory.equipment} onPress={onAvatarPress} /> : <CombatAvatarPreview equipment={inventory.equipment} />} />
           {Object.values(inventory.equipment).every((line) => line === null)
             ? <Text style={styles.note}>Aucun équipement porté.</Text>
             : Object.entries(inventory.equipment).map(([slot, line]) => line === null ? null : <ItemCard key={slot} item={line} equipped />)}

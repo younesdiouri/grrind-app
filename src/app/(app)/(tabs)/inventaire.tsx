@@ -319,7 +319,7 @@ export default function InventoryScreen() {
           </View>
 
           <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={profile.data
-            ? <AvatarEntry avatar={profile.data.avatar} editable onPress={() => router.push('/apparence')} />
+            ? <AvatarEntry avatar={profile.data.avatar} equipment={data.equipment} editable onPress={() => router.push('/apparence')} />
             : profile.isPending ? <ActivityIndicator color={color.accent} />
             : <Button label="Recharger l’apparence" variant="quiet" onPress={() => void profile.refetch()} />} />
 

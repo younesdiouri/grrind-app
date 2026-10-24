@@ -7,6 +7,12 @@ public class GrrindUnityModule: Module {
     AsyncFunction("setFrame") { (frame: String) in
       GrrindUnityHost.send("Present", payload: frame)
     }.runOnQueue(.main)
+    AsyncFunction("captureAvatar") { (configuration: String, promise: Promise) in
+      GrrindUnityHost.captureAvatar(configuration) { image, error in
+        if let image { promise.resolve(image) }
+        else { promise.reject("AVATAR_PREVIEW", error?.localizedDescription ?? "Avatar preview unavailable") }
+      }
+    }.runOnQueue(.main)
     View(GrrindUnityView.self) {
       Events("onReady", "onFailure")
       Prop("configuration") { (view: GrrindUnityView, configuration: String) in

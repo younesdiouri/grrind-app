@@ -1,0 +1,13 @@
+{
+  "asset": "Neon avatar clearing",
+  "source": "../Winter meshes from GRRIND (original geometry, see spikes/art-source/winter-arena/PROVENANCE.json)",
+  "authoring": "Unity Pipeline eval_file, Unity 6000.3.26f1",
+  "changes": "Independent night palette, rescaled backdrop, cyan platform; shared by the appearance editor and offscreen avatar previews",
+  "externalAssets": [],
+  "freePacksReviewed": [
+    { "url": "https://kenney.nl/assets/nature-kit", "license": "CC0", "imported": false },
+    { "url": "https://assetstore.unity.com/packages/3d/environments/landscapes/low-poly-simple-nature-pack-162153", "license": "Unity Asset Store EULA", "imported": false }
+  ],
+  "textures": [],
+  "animation": "Eight diamond snowflakes, React Native shared backdrop clock; stopped under Reduce Motion or background"
+}

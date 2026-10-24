@@ -11,6 +11,7 @@ import { color, combatMotion, notificationCategoryLabel, radius, space, type } f
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { signOut } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
+import { useInventory } from '@/features/inventory/useInventory';
 import { AvatarEntry } from '@/features/avatar/AvatarEntry';
 import { avatarProfileKey, useAvatarProfile } from '@/features/avatar/useAvatarProfile';
 import {
@@ -99,11 +100,12 @@ export default function ReglagesScreen() {
   const { access } = useHealthAccess();
   const auth = useAuth();
   const profile = useAvatarProfile();
+  const inventory = useInventory();
   const queryClient = useQueryClient();
   const state = profile.isPending ? { step: 'loading' as const }
     : profile.isError ? { step: 'failed' as const, failure: profile.error }
     : { step: 'ready' as const, profile: profile.data };
-  const retry = () => { void profile.refetch(); };
+  const retry = () => { void profile.refetch(); void inventory.refetch(); };
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
@@ -119,11 +121,11 @@ export default function ReglagesScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Ton personnage</Text>
-        <View style={styles.avatar}>{state.step === 'ready' ? <AvatarEntry avatar={state.profile.avatar}
+        <View style={styles.avatar}>{state.step === 'ready' && inventory.data ? <AvatarEntry avatar={state.profile.avatar} equipment={inventory.data.equipment}
           editable onPress={() => router.push('/apparence')} />
-          : state.step === 'loading' ? <ActivityIndicator color={color.accent} />
+          : state.step === 'loading' || inventory.isPending ? <ActivityIndicator color={color.accent} />
           : <Text style={styles.body}>Personnage indisponible.</Text>}</View>
-        {profile.isError && <Button label="Recharger le personnage" variant="quiet" onPress={retry} />}
+        {(profile.isError || inventory.isError) && <Button label="Recharger le personnage" variant="quiet" onPress={retry} />}
       </View>
       {__DEV__ && <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />}
 
