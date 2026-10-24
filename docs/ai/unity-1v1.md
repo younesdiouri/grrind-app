@@ -54,6 +54,12 @@ un export batch qui ne peut pas partager un projet déjà ouvert. Le CLI officie
 appeler `MobileBuild.Device()` et `MobileBuild.Simulator()` dans l’éditeur ouvert ; les étapes
 Xcode et d’assemblage du xcframework restent celles du script.
 
+Le script remplace le framework après assemblage réussi, sans accumuler de sauvegardes.
+Le framework courant dans `modules/grrind-unity/ios/Frameworks` suffit aux builds natifs ;
+`spikes/Unity3D/Builds` contient des exports et intermédiaires régénérables à supprimer
+après validation si l’espace manque. Garder les sources Unity, les sources artistiques,
+leurs références et le dernier development build installé.
+
 ## Preuve du 23 octobre 2026
 
 Typecheck et lint passent ; 563 tests unitaires et les 29 previews passent. Les exports Unity
