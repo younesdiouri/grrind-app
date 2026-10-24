@@ -1,0 +1,53 @@
+{
+  "asset": "CH_FacialPilotMale",
+  "date": "2026-10-24",
+  "status": "Author approved on Simulator; ready to merge",
+  "scope": "One male face variant and one independently selectable nose; no new body",
+  "geometry_sources": [
+    "spikes/Unity3D/Assets/Characters/QuaterniusPOC/Head.fbx",
+    "spikes/Unity3D/Assets/Characters/Personalization/Male_Sport.fbx"
+  ],
+  "geometry_license": "Derived from existing Quaternius CC0 sources; see their provenance and license files",
+  "concept": {
+    "tool": "Built-in image_gen",
+    "references": [
+      "references/quaternius-poc/v2-app/quaternius-male-band-closeup.png",
+      "spikes/art-source/le-poids-lourd/ref/three-views.png"
+    ],
+    "output": "ref/concept-three-views.png",
+    "prompt": "imagegen-prompt.txt",
+    "role": "Concept proposal; not a screenshot or an approved final asset",
+    "reference_sha256": {
+      "references/quaternius-poc/v2-app/quaternius-male-band-closeup.png": "c54ce0007fc6f56218f65fd1d9dcfbaad2568c95da7896d073be980ba9337e23",
+      "spikes/art-source/le-poids-lourd/ref/three-views.png": "8eb75ba3136b408d4ab55450f9951850d1ddb9e1b0605b6e02041494a21da497"
+    }
+  },
+  "modifications": [
+    "Reshape the original lower jaw and cheek planes in Blender 4.5.14 LTS",
+    "Protect central nose and mouth geometry from the face variant",
+    "Dissolve coplanar cheek edges locally, preserving UV seams and source skin weights",
+    "Add NoseWide shape key to both face alternatives",
+    "Rebind the delivered meshes to the existing male Unity rig by bone name",
+    "Rebuild GPU skinning data for copies with hands masked beneath gloves"
+  ],
+  "target": "Unity 6000.3.26f1 URP; current combat and workshop cameras",
+  "paid_meshy_calls": 0,
+  "verification": [
+    "review/roundtrip.json",
+    "review/compare-front.png",
+    "review/square-profile.png",
+    "review/square-three-quarter.png",
+    "review/poses-contact.png",
+    "review/combat.png",
+    "review/simulator-combinations.png"
+  ],
+  "limits": [
+    "Male facial options only; female geometry unchanged",
+    "Appearance remains local to the workshop until grrind-back#308 and grrind-app#254",
+    "Simulator verified; device framework not rebuilt in this iteration"
+  ],
+  "author_verdict": {
+    "date": "2026-10-24",
+    "quote": "ok je pense que ça peut être mergé comme ça c'est cool on garde au moins cette feature on verra apres si on rajoute des visages etc."
+  }
+}

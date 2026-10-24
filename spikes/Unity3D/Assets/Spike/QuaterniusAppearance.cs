@@ -12,6 +12,24 @@ public sealed class QuaterniusAppearance : MonoBehaviour
         for(int i=0;i<headbands.Length;i++)headbands[i].SetActive(visible&&i==hair);
     }
     public GameObject parted, buzzed, buns, longHair;
+    public SkinnedMeshRenderer[] facialRenderers = System.Array.Empty<SkinnedMeshRenderer>();
+    public Mesh[] originalFaces = System.Array.Empty<Mesh>(), squareFaces = System.Array.Empty<Mesh>();
+    public Mesh[] originalGlovedFaces = System.Array.Empty<Mesh>(), squareGlovedFaces = System.Array.Empty<Mesh>();
+    string selectedFace = "original", selectedNose = "original";
+    bool glovesEquipped;
+
+    public void SelectFace(string face, string nose)
+    {
+        selectedFace = face; selectedNose = nose;
+        for (int i = 0; i < facialRenderers.Length; i++)
+        {
+            var renderer = facialRenderers[i];
+            var faces = glovesEquipped ? (face == "square" ? squareGlovedFaces : originalGlovedFaces)
+                : (face == "square" ? squareFaces : originalFaces);
+            renderer.sharedMesh = faces[i];
+            renderer.SetBlendShapeWeight(renderer.sharedMesh.GetBlendShapeIndex("NoseWide"), nose == "wide" ? 100 : 0);
+        }
+    }
     public GameObject[] fantasyTop = System.Array.Empty<GameObject>();
     public GameObject[] sportTop = System.Array.Empty<GameObject>();
     public Material skinMaterial, handsMaterial, hairMaterial, eyeMaterial, shirtMaterial;
@@ -25,10 +43,12 @@ public sealed class QuaterniusAppearance : MonoBehaviour
 
     public void SetBoxingGloves(bool visible)
     {
+        glovesEquipped = visible;
         if (visible) GetComponent<WeaponGrip>()?.SetEquipped(false);
         foreach (var glove in boxingGloves) glove.SetActive(visible);
         for (int i = 0; i < gloveArms.Length; i++)
             gloveArms[i].sharedMesh = visible ? coveredHandMeshes[i] : bareHandMeshes[i];
+        SelectFace(selectedFace, selectedNose);
     }
 
     public void SetBoots(bool visible)

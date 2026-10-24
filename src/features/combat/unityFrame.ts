@@ -9,6 +9,7 @@ export type UnityAvatar = {
   skinTone?: 'light' | 'tan' | 'brown' | 'deep'; eyeColor?: 'brown' | 'blue' | 'green';
   hairColor?: 'brown' | 'black' | 'blond'; sportShirt?: boolean; shirtColor?: 'cyan' | 'coral';
   pantsColor?: 'original' | 'violet' | 'cyan' | 'coral';
+  faceStyle?: 'original' | 'square'; noseStyle?: 'original' | 'wide';
   boxingGloves?: boolean;
   dumbbell?: boolean;
 };

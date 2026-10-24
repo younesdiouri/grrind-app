@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -45,23 +46,31 @@ public static class GoldenBoxingGloves
             .Where(r => r.name.EndsWith("_Arms") || r.name.EndsWith("_Sport_Skin")).ToArray();
         appearance.bareHandMeshes = appearance.gloveArms.Select(r => r.sharedMesh).ToArray();
         float cut = Mathf.Abs(animator.GetBoneTransform(HumanBodyBones.RightHand).position.x) - .015f;
-        appearance.coveredHandMeshes = appearance.gloveArms.Select(r => {
-            var mesh = UnityEngine.Object.Instantiate(r.sharedMesh);
-            mesh.name = r.name + " covered hands";
-            var vertices = mesh.vertices;
-            for (int sub = 0; sub < mesh.subMeshCount; sub++)
-            {
-                var triangles = mesh.GetTriangles(sub);
-                mesh.SetTriangles(Enumerable.Range(0, triangles.Length / 3).Where(i => Enumerable.Range(0, 3)
-                    .All(j => Mathf.Abs(r.transform.TransformPoint(vertices[triangles[i * 3 + j]]).x) < cut))
-                    .SelectMany(i => new[] { triangles[i * 3], triangles[i * 3 + 1], triangles[i * 3 + 2] }).ToArray(), sub);
-            }
-            string path = Assets + r.name + "_Covered.asset";
-            var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
-            if (existing == null) { AssetDatabase.CreateAsset(mesh, path); return mesh; }
-            EditorUtility.CopySerialized(mesh, existing); UnityEngine.Object.DestroyImmediate(mesh); return existing;
-        }).ToArray();
+        appearance.coveredHandMeshes = appearance.gloveArms.Select(r =>
+            CoveredHands(r, r.sharedMesh, cut, Assets + r.name + "_Covered.asset")).ToArray();
         appearance.SetBoxingGloves(false);
+    }
+
+    public static Mesh CoveredHands(SkinnedMeshRenderer r, Mesh source, float cut, string path)
+    {
+        var mesh = UnityEngine.Object.Instantiate(source);
+        mesh.name = r.name + " covered hands";
+        var vertices = mesh.vertices;
+        for (int sub = 0; sub < mesh.subMeshCount; sub++)
+        {
+            var triangles = mesh.GetTriangles(sub);
+            mesh.SetTriangles(Enumerable.Range(0, triangles.Length / 3).Where(i => Enumerable.Range(0, 3)
+                .All(j => Mathf.Abs(r.transform.TransformPoint(vertices[triangles[i * 3 + j]]).x) < cut))
+                .SelectMany(i => new[] { triangles[i * 3], triangles[i * 3 + 1], triangles[i * 3 + 2] }).ToArray(), sub);
+        }
+        // After pruning triangles, rebuild the GPU skinning data as well as the visible indices.
+        // Without this, the CPU bake is correct but the animated GPU mesh draws long triangles.
+        using (var counts = new NativeArray<byte>(source.GetBonesPerVertex(), Allocator.Temp))
+        using (var weights = new NativeArray<BoneWeight1>(source.GetAllBoneWeights(), Allocator.Temp))
+            mesh.SetBoneWeights(counts, weights);
+        var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (existing == null) { AssetDatabase.CreateAsset(mesh, path); return mesh; }
+        EditorUtility.CopySerialized(mesh, existing); UnityEngine.Object.DestroyImmediate(mesh); return existing;
     }
 
     public static void Validate()
