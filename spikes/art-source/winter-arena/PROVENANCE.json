@@ -1,0 +1,12 @@
+{
+  "asset": "Winter clearing",
+  "authoring": "Original faceted geometry composed with Unity Pipeline run_script, Unity 6000.3.26f1",
+  "source": "Author.cs",
+  "externalAssets": [],
+  "textures": [],
+  "triangles": 1732,
+  "renderers": 9,
+  "colliders": 0,
+  "recreate": "unity command run_script --project-path spikes/Unity3D --caller plugin --skill unity-cli --file ../art-source/winter-arena/Author.cs --entry WinterArenaAuthor.Main",
+  "validation": "In Play mode: BattleBridge.Configure(\"{}\"), wait one frame, then WinterArenaChecks.ValidateMotion()"
+}
