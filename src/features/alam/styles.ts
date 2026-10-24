@@ -15,4 +15,13 @@ export const alamStyles = StyleSheet.create({
   fill: { height: '100%', backgroundColor: color.accent },
   member: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   copy: { flex: 1, gap: space.xs },
+  raidHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: space.md },
+  raidTitle: { ...type.title, color: color.text, textShadowColor: color.background, textShadowRadius: space.sm },
+  raidHeading: { padding: space.sm, gap: space.xs, borderRadius: radius.md, backgroundColor: color.surface },
+  raidPanel: { padding: space.sm, gap: space.sm, borderRadius: radius.md, backgroundColor: color.surface },
+  raidActions: { flexDirection: 'row', gap: space.sm, alignItems: 'center' },
+  raidNarration: { ...type.body, color: color.text, flex: 1 },
+  raidRoster: { ...type.label, color: color.text, backgroundColor: color.surface, padding: space.xs, borderRadius: radius.sm },
+  raidSummary: { position: 'absolute', top: space.md, bottom: space.md, right: space.md, width: '48%',
+    backgroundColor: color.background, borderRadius: radius.md },
 });

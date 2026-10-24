@@ -2,12 +2,7 @@ import type { components } from '@/api/schema';
 
 /** Présentation du raid : aucune cible, durée métier ou probabilité ne vit ici. */
 export const alamMotion = {
-  stageHeight: 300, avatarSize: 48, actorWidth: 80, impulseDuration: 900,
-  travel: 24, beamTravel: 110, beamWidth: 3, beamHeight: 38,
-  impactSize: 72, phaseHeight: 110, pollMaxMs: 30_000,
-  /** Le premier rang du raid (#187) : les cinq plus gros contributeurs, en sprites. */
-  frontRow: 5, heroWidth: 66, heroHeight: 128, bossHeight: 240,
-  impactPoint: { ENEMY: { x: 0.5, y: 0.4 }, PLAYER: { x: 0.5, y: 0.82 } },
+  avatarSize: 48, pollMaxMs: 30_000,
 } as const;
 
 export const guildChat = {
@@ -98,15 +93,6 @@ export const arena = {
   groundBottom: '3%' as const,
   impactPoint: { PLAYER: { x: 0.25, y: 0.55 }, ENEMY: { x: 0.75, y: 0.55 } },
   recapWidth: 640, heroPreviewHeight: 240, effectHeight: 90,
-  raidHeight: 420, raidBossWidth: 150, raidBossHeight: 170,
-  raidHeroWidth: 90, raidHeroHeight: 110,
-  raidSmallWidth: 64, raidSmallHeight: 80,
-  raidBoss: { x: 0.3, y: 0.46 },
-  raidFirstRow: [{ x: 0.78, y: 0.53 }, { x: 0.58, y: 0.62 }, { x: 0.38, y: 0.71 },
-    { x: 0.78, y: 0.77 }, { x: 0.58, y: 0.86 }],
-  raidBackColumns: 4, raidBackX: 0.55, raidBackY: 0.25, raidBackStepX: 0.11, raidBackStepY: 0.08,
-  baseline: 930 / 1024,
-  raidImpactPoint: { ENEMY: { x: 0.3, y: 0.25 }, PLAYER: { x: 0.6, y: 0.65 } },
 } as const;
 
 /**

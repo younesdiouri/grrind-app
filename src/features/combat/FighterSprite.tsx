@@ -11,16 +11,6 @@ import { ENEMY_IMAGE_TIMEOUT_MS, type FighterArtwork } from './enemyPresentation
 export type { FighterArtwork } from './enemyPresentation';
 export { AL_KASAL } from './bundledMobs';
 
-export const DEFAULT_RAID_HERO: FighterArtwork = { name: 'Muscu', poses: {
-  idle: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/idle.png'),
-  attack: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/attack.png'),
-  hit: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/hit.png'),
-  critical: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/critical.png'),
-  dodge: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/dodge.png'),
-  combo: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/combo.png'),
-  replay: require('../../../assets/images/heroes/retro-strength/v3/thumb/front/replay.png'),
-} };
-
 /** Les poses disponibles se chargent ensemble ; aucune source ne change au milieu d'un coup. */
 export function FighterSprite({ artwork, side = 'ENEMY', clock, beats, pose, signals, lateral = false, staticPreview = false, onReady, onError }: {
   artwork: FighterArtwork;

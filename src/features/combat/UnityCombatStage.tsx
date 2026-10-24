@@ -1,6 +1,7 @@
 import type { SharedValue } from 'react-native-reanimated';
 import type { BattleTimeline } from './timeline';
 import type { UnityAvatar, UnityInspectorProps, UnityViewport } from './unityFrame';
+import type { UnityRaidProps } from '../alam/unityRaid';
 
 export const unityCombatAvailable = false;
 export type UnityCombatProps = {
@@ -12,3 +13,4 @@ export type UnityCombatProps = {
 };
 export function UnityCombatStage(_props: UnityCombatProps) { return null; }
 export function UnityAvatarInspector(_props: UnityInspectorProps) { return null; }
+export function UnityRaidStage(_props: UnityRaidProps) { return null; }

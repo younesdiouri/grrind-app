@@ -115,6 +115,7 @@ function CombatDemo({ pebble }: { pebble: boolean }) {
             ))}
           </View>}
           <Button label="Jouer une victoire" onPress={() => setScenario('victoire')} />
+          <Button label="Arène d’hiver · Al Kasal 3D" onPress={() => router.push('/alam-demo')} />
           <Button label="Jouer un duel Unity" variant="quiet" onPress={() => router.push('/combat-demo?scenario=duel&snapshot=avatar')} />
           <Button label="Aperçu victoire et butin" variant="quiet" onPress={() => router.push('/combat-demo?scenario=loot&mob=pebble')} />
           <Button label="Atelier avatar 3D" variant="quiet" onPress={() => router.push('/character-showcase')} />

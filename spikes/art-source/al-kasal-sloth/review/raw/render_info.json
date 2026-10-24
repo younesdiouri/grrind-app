@@ -1,0 +1,65 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/al-kasal-sloth/CR_AlKasal_master.blend",
+  "mode": "material",
+  "engine": "cycles",
+  "bbox_min": [
+    -1.2251886129379272,
+    -0.6699196696281433,
+    0.0
+  ],
+  "bbox_max": [
+    1.2251886129379272,
+    0.6699196696281433,
+    2.5999999046325684
+  ],
+  "size_xyz": [
+    2.4503772258758545,
+    1.3398393392562866,
+    2.5999999046325684
+  ],
+  "objects": [
+    "CR_AlKasal_Body_LOD0"
+  ],
+  "renders": {
+    "front": {
+      "file": "spikes/art-source/al-kasal-sloth/review/raw/material_front.png",
+      "az_el_lens": [
+        0,
+        0,
+        0
+      ],
+      "distance": 5.869919093777618
+    },
+    "side": {
+      "file": "spikes/art-source/al-kasal-sloth/review/raw/material_side.png",
+      "az_el_lens": [
+        90,
+        0,
+        0
+      ],
+      "distance": 6.425188264808469
+    },
+    "back": {
+      "file": "spikes/art-source/al-kasal-sloth/review/raw/material_back.png",
+      "az_el_lens": [
+        180,
+        0,
+        0
+      ],
+      "distance": 5.869919833770851
+    },
+    "threequarter": {
+      "file": "spikes/art-source/al-kasal-sloth/review/raw/material_threequarter.png",
+      "az_el_lens": [
+        35,
+        15,
+        50
+      ],
+      "distance": 5.918394871883922
+    },
+    "gameplay": {
+      "file": "spikes/art-source/al-kasal-sloth/review/raw/material_gameplay_400px.png",
+      "subject_px": 400
+    }
+  }
+}

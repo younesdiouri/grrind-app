@@ -9,7 +9,10 @@ Trois chantiers distincts :
 - **Intégration Unity — app** : [#249](https://github.com/younesdiouri/grrind-app/issues/249).
   Scènes PvE/raid, consommation du contrat et retrait des anciens sprites.
 
-Statut : chantier futur, cadrage du 23 octobre 2026 ; réalisation non démarrée.
+Statut au 24 octobre 2026 : première tranche dans #267, décrite dans
+[Al Kasal — raid Unity V1](al-kasal-unity.md). Le raid utilise maintenant une seule scène
+Unity, un paresseux facetté Meshy et ses canapés, les participants Quaternius et l’arène
+d’hiver. Le contrat existant suffit à cette présentation ; la refonte métier reste séparée.
 
 ## Décision de l’auteur
 
@@ -28,17 +31,17 @@ de l’adversaire PvP reste dans #220.
 ## État actuel et retrait prévu
 
 Le [1v1 utilise déjà Unity](../ai/unity-1v1.md) pour les humains, mais conserve les
-illustrations des mobs. Le raid assemble encore des sprites dans React Native.
-Le bridge de combat actuel présente deux acteurs : le raid à plusieurs participants
-demande une scène adaptée, pas une instance Unity par personnage.
+illustrations de certains mobs. Le raid utilise `RaidScene` dans le même runtime Unity
+que le duel, avec une liste de participants et un mode de scène explicite. Son HUD
+et ses résultats restent dans React Native.
 
 | Existant à remplacer ou auditer | Destination |
 | --- | --- |
-| `src/features/alam/RaidStage.tsx` et les apparences chargées par l’écran du raid | Scène Unity avec les participants et le boss |
-| `src/features/combat/FighterSprite.tsx`, dont le repli `DEFAULT_RAID_HERO` | Retrait après remplacement de tous les appelants |
+| `src/features/alam/RaidStage.tsx` | Remplacé dans #267 par une scène Unity avec participants, boss et petits mobs |
+| `src/features/combat/FighterSprite.tsx` | Repli `DEFAULT_RAID_HERO` retiré dans #267 ; autres mobs solo à migrer |
 | `bundledMobs.ts`, résolution d’images dans `enemyPresentation.ts` et branche sprites de `BattleView.tsx` | Résolution explicite des nouveaux mobs 3D |
-| `appearances.ts`, `useAppearances.ts` et leurs consommateurs de sprites historiques | Retrait du chargement des anciennes apparences 2D |
-| `assets/images/heroes/retro-strength/`, `assets/images/enemies/` et décor 2D `assets/images/arenas/alam.png` | Nouveaux personnages et scène Unity ; suppression des anciens fichiers sans consommateur |
+| `appearances.ts`, `useAppearances.ts` | Retirés dans #267 avec le dernier consommateur du raid |
+| `assets/images/heroes/retro-strength/` et décor 2D `assets/images/arenas/alam.png` | Retirés dans #267 ; les sprites des autres mobs solo restent à migrer |
 | Ateliers Al-Kasal, démonstrations, fixtures de présentation, flows et scripts de fabrication 2D | Adapter aux nouvelles scènes ou supprimer si devenus inutiles |
 | Docs de l’ancien PvE, dont `al-kasal.md` et `combat-art-workflow.md`, et leurs preuves | Retirer ce qui est remplacé ; conserver la documentation du nouveau pipeline |
 

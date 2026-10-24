@@ -1,0 +1,12 @@
+{
+  "outcome": "SUCCEEDED",
+  "task_id": "01a16f10-00fd-7324-acdf-de8cf1a46b2f",
+  "task_type": "multi-image-to-3d",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "model_urls": {
+    "glb": "https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16f10-00fd-7324-acdf-de8cf1a46b2f/output/model.glb"
+  },
+  "consumed_credits": 35,
+  "thumbnail_url": "https://assets.meshy.ai/7875a676-277f-4694-9c95-bca18b63e8d9/tasks/01a16f10-00fd-7324-acdf-de8cf1a46b2f/output/preview.png"
+}

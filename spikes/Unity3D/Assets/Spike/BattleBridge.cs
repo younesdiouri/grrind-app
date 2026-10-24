@@ -9,6 +9,7 @@ public sealed class BattleBridge : MonoBehaviour
     public GameObject combatEnvironment,inspectionFloor;
     FighterPose player,enemy;
     CombatPresentation presentation;
+    RaidScene raid;
 
     [Serializable] public class AvatarConfig {
         public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original",faceStyle="original",noseStyle="original";
@@ -24,12 +25,15 @@ public sealed class BattleBridge : MonoBehaviour
         public string previewId;
         public int previewWidth=640,previewHeight=640;
         public CombatPresentation.Configuration hud;
+        public string scene;
+        public RaidScene.Configuration raid;
     }
     [Serializable] public class Viewport {public float x,y,width=1,height=1;}
     [Serializable] public class ActorFrame {public int pose;public float phase,x;public bool visible=true,reduced;}
     [Serializable] public class Frame {
         public ActorFrame player=new ActorFrame(),enemy=new ActorFrame();
         public CombatPresentation.Frame presentation;
+        public RaidScene.Frame raid;
     }
     bool inspection;
     bool caillouxFight;
@@ -49,6 +53,7 @@ public sealed class BattleBridge : MonoBehaviour
     }
     void LateUpdate()
     {
+        if(raid!=null&&raid.enabled)return;
         if(inspection)return;
         var state=lastFrame?.presentation;
         arenaCamera.transform.position=CombatCamera+new Vector3((state?.shakeX??0)*.002f,(state?.shakeY??0)*.002f,0);
@@ -90,6 +95,20 @@ public sealed class BattleBridge : MonoBehaviour
             var config=JsonUtility.FromJson<Configuration>(json);
             if(config==null||config.player==null||config.enemy==null)throw new ArgumentException("Missing avatar configuration");
             if(config.viewport.width<=0||config.viewport.height<=0)return;
+            if(raid!=null){raid.Clear();raid.enabled=false;}
+            // JsonUtility creates missing nested objects: the scene discriminator is explicit.
+            if(config.scene=="raid")
+            {
+                inspection=false;lastFrame=null;
+                if(player!=null){player.gameObject.SetActive(false);Destroy(player.gameObject);}
+                if(enemy!=null){enemy.gameObject.SetActive(false);Destroy(enemy.gameObject);}
+                if(presentation!=null)presentation.Setup(null,arenaCamera,null,null,new Rect(0,0,1,1));
+                if(combatEnvironment!=null)combatEnvironment.SetActive(true);
+                if(inspectionFloor!=null)inspectionFloor.SetActive(false);
+                arenaCamera.backgroundColor=new Color(.48f,.66f,.77f);
+                raid=GetComponent<RaidScene>()??gameObject.AddComponent<RaidScene>();raid.enabled=true;
+                raid.Setup(config.raid,arenaCamera,contactShadow);return;
+            }
             combatViewport=new Rect(Mathf.Clamp01(config.viewport.x),Mathf.Clamp01(config.viewport.y),Mathf.Clamp01(config.viewport.width),Mathf.Clamp01(config.viewport.height));
             arenaCamera.rect=combatViewport;arenaCamera.ResetAspect();arenaCamera.ResetProjectionMatrix();
             inspection=config.inspection;
@@ -149,6 +168,12 @@ public sealed class BattleBridge : MonoBehaviour
     }
     public void Present(string json)
     {
+        if(raid!=null&&raid.enabled)
+        {
+            try{raid.Draw(JsonUtility.FromJson<Frame>(json)?.raid);}
+            catch(Exception e){Debug.LogError("GRRIND raid frame: "+e.Message);}
+            return;
+        }
         if(player==null||enemy==null)return;
         try
         {

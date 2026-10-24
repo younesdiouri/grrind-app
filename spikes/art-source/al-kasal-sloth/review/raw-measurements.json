@@ -1,0 +1,18 @@
+{
+  "native_dimensions_m": [
+    1.7862610816955566,
+    0.976707935333252,
+    1.8953320980072021
+  ],
+  "dimensions_m": [
+    2.4503772258758545,
+    1.3398393392562866,
+    2.5999999046325684
+  ],
+  "height_m": 2.6,
+  "triangles": 6070,
+  "width_height": 0.9424528187664818,
+  "reference_width_height": 0.935,
+  "topology_modified": false,
+  "rig": "none, whole-body idle and contact reaction only"
+}

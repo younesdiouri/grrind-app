@@ -1,0 +1,29 @@
+{
+  "name": "CR_AlKasal",
+  "engine": "Unity 6000.3.26f1 / iOS",
+  "source": "source.glb",
+  "master": "CR_AlKasal_master.blend",
+  "build": "build/01_prepare_source.py",
+  "export": "../../Unity3D/Assets/Characters/AlKasal/AlKasal.fbx",
+  "prefab": "../../Unity3D/Assets/Resources/AlKasal.prefab",
+  "units": "metres",
+  "blender_axes": "Z up, -Y forward",
+  "unity_axes": "Y up, +Z forward",
+  "triangles": 6070,
+  "dimensions_m": [
+    2.4503772258758545,
+    1.3398393392562866,
+    2.5999999046325684
+  ],
+  "texture": {
+    "path": "../../Unity3D/Assets/Characters/AlKasal/BaseColor.png",
+    "resolution": 2048,
+    "color_space": "sRGB",
+    "role": "base color",
+    "roughness": 0.85,
+    "metallic": 0
+  },
+  "rig": null,
+  "provenance": "PROVENANCE.json",
+  "validation": "review/validate.json"
+}

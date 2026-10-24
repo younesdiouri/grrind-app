@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-// Composition originale synthétique : aucune banque audio ni mélodie empruntée.
+// Effets originaux synthétiques ; la musique du raid a été retirée par l’auteur.
 const rate = 22050;
 function wave(name, seconds, sample) {
   const count = Math.floor(seconds * rate);
@@ -15,11 +15,5 @@ function wave(name, seconds, sample) {
   writeFileSync(`assets/audio/alam/${name}.wav`, buffer);
 }
 mkdirSync('assets/audio/alam', { recursive: true });
-const notes = [146.83, 220, 174.61, 261.63, 146.83, 196, 164.81, 220];
-wave('ambience', 8, (t) => {
-  const beat = Math.floor(t * 4);
-  const envelope = Math.max(0, 1 - (t * 4 - beat)) * 0.2;
-  return Math.sign(Math.sin(t * notes[beat % notes.length] * Math.PI * 2)) * envelope;
-});
 wave('impact', 0.18, (t) => Math.sign(Math.sin(t * (240 - t * 1000) * Math.PI * 2)) * (1 - t / 0.18) * 0.3);
 wave('drop', 0.45, (t) => Math.sign(Math.sin(t * (440 + Math.floor(t * 8) * 220) * Math.PI * 2)) * (1 - t / 0.45) * 0.2);
