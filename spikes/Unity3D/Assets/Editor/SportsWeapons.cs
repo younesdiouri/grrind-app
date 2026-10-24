@@ -33,9 +33,9 @@ public static class SportsWeapons
                 var pose = root.GetComponent<FighterPose>();
                 var slash=Clip("StableSwordSlash");
                 pose.clips = pose.clips.Take(8).Concat(new[] {
-                    Guard(slash), slash, Clip("SwordStab") }).ToArray();
+                    Guard(slash), slash, StabReturn(Clip("SwordStab")) }).ToArray();
                 pose.contacts[1]=pose.contacts[6]=.31f; pose.contacts[3]=.33f;
-                pose.contacts = pose.contacts.Take(8).Concat(new[] { .5f, .17f, .15f }).ToArray();
+                pose.contacts = pose.contacts.Take(8).Concat(new[] { .5f, .17f, .5f }).ToArray();
                 grip.SetEquipped(false);
                 PrefabUtility.SaveAsPrefabAsset(root, path);
             }
@@ -55,6 +55,34 @@ public static class SportsWeapons
                 value=binding.propertyName=="Neck Nod Down-Up"?.35f:binding.propertyName=="Head Nod Down-Up"?.1f:0;
             AnimationUtility.SetEditorCurve(clip,binding,AnimationCurve.Constant(0,1,value));
         }
+        var saved=AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+        if(saved==null){AssetDatabase.CreateAsset(clip,path);return clip;}
+        EditorUtility.CopySerialized(clip,saved);UnityEngine.Object.DestroyImmediate(clip);return saved;
+    }
+    static AnimationClip StabReturn(AnimationClip source)
+    {
+        const string path="Assets/Animations/Mixamo/SwordStabReturn.anim";
+        var clip=UnityEngine.Object.Instantiate(source);clip.name="Sword stab and return";
+        // Retrace the clear thrust. The source recovery swings a long racket through the head.
+        float contact=source.length*.15f;int steps=Mathf.CeilToInt(contact*60);
+        foreach(var binding in AnimationUtility.GetCurveBindings(source)) {
+            var curve=AnimationUtility.GetEditorCurve(source,binding);
+            var keys=new Keyframe[steps*2+1];
+            for(int i=0;i<keys.Length;i++) {
+                float time=contact*i/steps;
+                float sample=i<=steps?time:contact*2-time;
+                float tangent=i==steps?0:(curve.Evaluate(Mathf.Min(contact,sample+.0001f))-
+                    curve.Evaluate(Mathf.Max(0,sample-.0001f)))/
+                    (Mathf.Min(contact,sample+.0001f)-Mathf.Max(0,sample-.0001f));
+                if(i>steps)tangent=-tangent;
+                keys[i]=new Keyframe(time,curve.Evaluate(sample),tangent,tangent);
+            }
+            AnimationUtility.SetEditorCurve(clip,binding,new AnimationCurve(keys));
+        }
+        clip.EnsureQuaternionContinuity();
+        var settings=AnimationUtility.GetAnimationClipSettings(clip);
+        settings.startTime=0;settings.stopTime=contact*2;settings.loopTime=false;
+        AnimationUtility.SetAnimationClipSettings(clip,settings);
         var saved=AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
         if(saved==null){AssetDatabase.CreateAsset(clip,path);return clip;}
         EditorUtility.CopySerialized(clip,saved);UnityEngine.Object.DestroyImmediate(clip);return saved;

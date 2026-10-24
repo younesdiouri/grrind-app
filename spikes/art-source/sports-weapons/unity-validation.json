@@ -1,7 +1,8 @@
 {
   "contacts": 40,
-  "samples": 2100,
+  "samples": 8820,
   "maxCenterGap": 0.313278615,
+  "minHeadClearance": 0.206416,
   "rows": [
     {
       "weapon": "",

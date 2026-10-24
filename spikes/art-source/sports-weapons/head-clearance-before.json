@@ -1,0 +1,226 @@
+[
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 0,
+    "minHeadCenterDistance": 0.7432981,
+    "phase": 0.0
+  },
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 1,
+    "minHeadCenterDistance": 0.34181565,
+    "phase": 0.65
+  },
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 2,
+    "minHeadCenterDistance": 0.3044006,
+    "phase": 0.45
+  },
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 3,
+    "minHeadCenterDistance": 0.228690073,
+    "phase": 0.6
+  },
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 4,
+    "minHeadCenterDistance": 0.228917465,
+    "phase": 0.25
+  },
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 5,
+    "minHeadCenterDistance": 0.7432981,
+    "phase": 0.0
+  },
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 6,
+    "minHeadCenterDistance": 0.34181565,
+    "phase": 0.65
+  },
+  {
+    "body": "male",
+    "weapon": "ferPlay",
+    "stance": 7,
+    "minHeadCenterDistance": 0.6256073,
+    "phase": 0.8
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 0,
+    "minHeadCenterDistance": 0.6869186,
+    "phase": 0.0
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 1,
+    "minHeadCenterDistance": 0.313141465,
+    "phase": 0.7
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 2,
+    "minHeadCenterDistance": 0.301977932,
+    "phase": 0.45
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 3,
+    "minHeadCenterDistance": 0.06297566,
+    "phase": 0.6
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 4,
+    "minHeadCenterDistance": 0.2211808,
+    "phase": 0.75
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 5,
+    "minHeadCenterDistance": 0.6869186,
+    "phase": 0.0
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 6,
+    "minHeadCenterDistance": 0.313141465,
+    "phase": 0.7
+  },
+  {
+    "body": "male",
+    "weapon": "huilesson",
+    "stance": 7,
+    "minHeadCenterDistance": 0.6144312,
+    "phase": 0.8
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 0,
+    "minHeadCenterDistance": 0.6716134,
+    "phase": 0.0
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 1,
+    "minHeadCenterDistance": 0.343055934,
+    "phase": 0.65
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 2,
+    "minHeadCenterDistance": 0.288104236,
+    "phase": 0.45
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 3,
+    "minHeadCenterDistance": 0.242298946,
+    "phase": 0.6
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 4,
+    "minHeadCenterDistance": 0.226433337,
+    "phase": 0.25
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 5,
+    "minHeadCenterDistance": 0.6716134,
+    "phase": 0.0
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 6,
+    "minHeadCenterDistance": 0.343055934,
+    "phase": 0.65
+  },
+  {
+    "body": "female",
+    "weapon": "ferPlay",
+    "stance": 7,
+    "minHeadCenterDistance": 0.5877797,
+    "phase": 0.8
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 0,
+    "minHeadCenterDistance": 0.6216531,
+    "phase": 0.0
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 1,
+    "minHeadCenterDistance": 0.330293983,
+    "phase": 0.65
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 2,
+    "minHeadCenterDistance": 0.2729293,
+    "phase": 0.45
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 3,
+    "minHeadCenterDistance": 0.082131,
+    "phase": 0.6
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 4,
+    "minHeadCenterDistance": 0.206415936,
+    "phase": 0.25
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 5,
+    "minHeadCenterDistance": 0.6216531,
+    "phase": 0.0
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 6,
+    "minHeadCenterDistance": 0.330293983,
+    "phase": 0.65
+  },
+  {
+    "body": "female",
+    "weapon": "huilesson",
+    "stance": 7,
+    "minHeadCenterDistance": 0.5726483,
+    "phase": 0.8
+  }
+]

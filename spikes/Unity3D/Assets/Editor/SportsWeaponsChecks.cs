@@ -19,7 +19,7 @@ public static class SportsWeaponsChecks
         if(!EditorApplication.isPlaying)throw new InvalidOperationException("Validate the actual sampler in Play mode");
         var bridge=UnityEngine.Object.FindFirstObjectByType<BattleBridge>();
         var rows=new System.Collections.Generic.List<object>();
-        int samples=0;float maxGap=0;
+        int samples=0;float maxGap=0,minHeadClearance=float.PositiveInfinity;
         foreach(string weapon in new[]{"","gloves","dumbbell","ferPlay","huilesson"})
         foreach(bool female in new[]{false,true})
         foreach(bool left in new[]{true,false})
@@ -48,13 +48,21 @@ public static class SportsWeaponsChecks
             }
             foreach(float ratio in new[]{2.1f,2.54f,2.9f})
             foreach(int stance in Enumerable.Range(0,7))
-            foreach(float phase in new[]{0f,.25f,.5f,.75f,1f})
+            foreach(float phase in Enumerable.Range(0,21).Select(i=>i/20f))
             {
                 bridge.arenaCamera.aspect=ratio;Present(bridge,left,stance,phase);attacker.SendMessage("LateUpdate");
                 if(Vector3.Distance(attacker.placement,new Vector3(left?.35f:-.35f,0,0))>.0001f)
                     throw new Exception("Attack still moves the actor's placement");
                 if(grip.HeldItem!=null)for(int i=0;i<grip.fingers.Length;i++)
                     if(Quaternion.Angle(grip.fingers[i].localRotation,grip.rotations[i])>.01f)throw new Exception("Grip drift");
+                if(own.weaponType=="SWORD"&&ratio==2.1f) {
+                    var mesh=grip.HeldItem.GetComponentInChildren<MeshFilter>();
+                    var transform=mesh.transform.localToWorldMatrix;var head=attacker.Bone(HumanBodyBones.Head).position;
+                    float distance=mesh.sharedMesh.vertices.Where(v=>v.x<mesh.sharedMesh.bounds.center.x)
+                        .Min(v=>(transform.MultiplyPoint3x4(v)-head).magnitude);
+                    minHeadClearance=Mathf.Min(minHeadClearance,distance);
+                    if(distance<.15f)throw new Exception(weapon+" crosses the head: "+distance+" m, stance "+stance+", phase "+phase);
+                }
                 samples++;
             }
             grip.Select("ferPlay");grip.Select("huilesson");
@@ -63,7 +71,7 @@ public static class SportsWeaponsChecks
             if(grip.HeldItem!=null)throw new Exception("Gloves did not remove the held weapon");
             UnityEngine.Object.DestroyImmediate(attacker.gameObject);UnityEngine.Object.DestroyImmediate(target.gameObject);
         }
-        return new {contacts=rows.Count,samples,maxCenterGap=maxGap,rows};
+        return new {contacts=rows.Count,samples,maxCenterGap=maxGap,minHeadClearance,rows};
     }
     static void Present(BattleBridge bridge,bool left,int stance,float phase)
     {
