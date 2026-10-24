@@ -17,8 +17,10 @@ export default function CharacterShowcaseScreen() {
 }
 
 function Showcase() {
-  const [body, setBody] = useState<UnityAvatar['body']>('female');
-  const [hairStyle, setHairStyle] = useState<UnityAvatar['hairStyle']>('buns');
+  const [body, setBody] = useState<UnityAvatar['body']>('male');
+  const [faceStyle, setFaceStyle] = useState<UnityAvatar['faceStyle']>('square');
+  const [noseStyle, setNoseStyle] = useState<UnityAvatar['noseStyle']>('wide');
+  const [hairStyle, setHairStyle] = useState<UnityAvatar['hairStyle']>('parted');
   const [headband, setHeadband] = useState(true);
   const [section, setSection] = useState('Corps');
   const [skinTone, setSkinTone] = useState<UnityAvatar['skinTone']>('tan');
@@ -42,7 +44,8 @@ function Showcase() {
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const avatar: UnityAvatar = { body, hairStyle, headband: headband && hairStyle !== 'long', boots, visible: true,
-    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves, dumbbell };
+    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves, dumbbell,
+    faceStyle: body === 'male' ? faceStyle : 'original', noseStyle: body === 'male' ? noseStyle : 'original' };
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
@@ -62,7 +65,7 @@ function Showcase() {
         <Text style={styles.title}>ATELIER AVATAR</Text>
         <Text style={styles.subtitle} testID={ready && !failed ? 'quaternius-ready' : undefined}>
           {!unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
-            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Spike local · Gants dorés' : 'Chargement…'}
+            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Spike local · Visage et nez' : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo');
@@ -70,7 +73,7 @@ function Showcase() {
       </View>
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>
         <View style={styles.row}>
-          {['Corps', 'Cheveux', 'Tenue', 'Mouvements'].map(label =>
+          {['Corps', 'Traits', 'Cheveux', 'Tenue', 'Mouvements'].map(label =>
             <Choice key={label} label={label} selected={section === label} onPress={() => setSection(label)} />)}
         </View>
         {section === 'Corps' && <>
@@ -87,6 +90,18 @@ function Showcase() {
           {([{ label: 'Marron', value: 'brown' }, { label: 'Bleus', value: 'blue' }, { label: 'Verts', value: 'green' }] as const).map(({ label, value }) =>
             <Choice key={value} label={`Yeux ${label.toLowerCase()}`} selected={eyeColor === value} onPress={() => setEyeColor(value)} />)}
         </View>
+        </>}
+        {section === 'Traits' && <>
+          {body === 'male' ? <>
+            <View style={styles.row}>
+              <Choice label="Visage original" selected={faceStyle === 'original'} onPress={() => setFaceStyle('original')} />
+              <Choice label="Visage carré" selected={faceStyle === 'square'} onPress={() => setFaceStyle('square')} />
+            </View>
+            <View style={styles.row}>
+              <Choice label="Nez original" selected={noseStyle === 'original'} onPress={() => setNoseStyle('original')} />
+              <Choice label="Nez large" selected={noseStyle === 'wide'} onPress={() => setNoseStyle('wide')} />
+            </View>
+          </> : <Text style={styles.subtitle}>Premier essai sur le personnage homme.</Text>}
         </>}
         {section === 'Cheveux' && <>
         <View style={styles.row}>

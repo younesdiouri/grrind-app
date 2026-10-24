@@ -28,6 +28,21 @@ appId: app.grrind.dev
     timeout: 30000
 - tapOn: Mouvements
 - tapOn: Figer
+- tapOn: Visage
+- tapOn: Traits
+- assertVisible: Visage carré
+- takeScreenshot: facial-pilot-square-wide
+- tapOn: Nez original
+- takeScreenshot: facial-pilot-square-original-nose
+- tapOn: Visage original
+- takeScreenshot: facial-pilot-original
+- tapOn: Nez large
+- takeScreenshot: facial-pilot-original-wide-nose
+- tapOn: Visage carré
+- tapOn: Profil
+- takeScreenshot: facial-pilot-profile
+- tapOn: Visage
+- takeScreenshot: facial-pilot-three-quarter
 - tapOn: Corps
 - tapOn: Femme
 - tapOn: Face

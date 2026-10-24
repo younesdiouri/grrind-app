@@ -1,0 +1,30 @@
+{
+  "CH_FacialPilot_Fantasy_Original": {
+    "max_displacement_mm": 0.0,
+    "vertices": 1494,
+    "triangles": 2940,
+    "uv_sha256": "e51c09f377e34674e54e8bd8e5154a027b67aeeb36045744ba116d497e0af366",
+    "weights_sha256": "c360c9824924802d58d0e7765b4303148860f47c1b8f14116a823fc1f0ed849c"
+  },
+  "CH_FacialPilot_Fantasy_Square": {
+    "max_displacement_mm": 14.422207543071805,
+    "vertices": 1448,
+    "triangles": 2848,
+    "uv_sha256": "6291a3e2f9d00c6144596de6665ee1a7f93dfb88d6f5c7dc1f43d71f6ecc1645",
+    "weights_sha256": "92f25deca5d0bdbcd0d85d03523774ea7b31a8dbbfda5b433882875c69b3b5ea"
+  },
+  "CH_FacialPilot_Sport_Original": {
+    "max_displacement_mm": 0.0,
+    "vertices": 3748,
+    "triangles": 7408,
+    "uv_sha256": "60562bf73e9cb9bbe4cd4d6e9d6463fb684b5c67ee8871b2c96f8ca54892eabd",
+    "weights_sha256": "91617200a9c1e6b81a2ed8119ce794a1537e374b6b90ced92ed5f7fed8b772df"
+  },
+  "CH_FacialPilot_Sport_Square": {
+    "max_displacement_mm": 14.42220451609066,
+    "vertices": 3700,
+    "triangles": 7312,
+    "uv_sha256": "180bce331ce0de38b46cd20fdcd2e86df0b36301f78e940f7595c805d92df455",
+    "weights_sha256": "d0d7aae35a56619168596096108a80e22a94e5d3fc30961931b6f54d934b8e59"
+  }
+}
