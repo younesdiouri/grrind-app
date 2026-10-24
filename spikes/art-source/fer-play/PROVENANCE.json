@@ -1,0 +1,8 @@
+{
+  "tool": "Built-in ImageGen reference, Meshy MCP 0.6.5 / Meshy 7.1, Blender 4.5.14",
+  "date": "2026-10-24",
+  "license": "Generated assets under the existing Meshy subscription/account terms; not CC0",
+  "reference": "ref/three-views.png, generated for GRRIND, style reference Le Poids Lourd",
+  "changes": "Metre scale, 25 mm grip, axis conversion, FBX roundtrip",
+  "task_id": "01a16fa8-e427-72db-beac-2fd2dd86016a"
+}

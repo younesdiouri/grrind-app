@@ -32,6 +32,7 @@ function Showcase() {
   const [boots, setBoots] = useState(true);
   const [boxingGloves, setBoxingGloves] = useState(true);
   const [dumbbell, setDumbbell] = useState(false);
+  const [weapon, setWeapon] = useState<UnityAvatar['weapon']>();
   const [pose, setPose] = useState<FighterPose>('idle');
   const [animated, setAnimated] = useState(true);
   const [azimuth, setAzimuth] = useState(25);
@@ -44,12 +45,14 @@ function Showcase() {
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const avatar: UnityAvatar = { body, hairStyle, headband: headband && hairStyle !== 'long', boots, visible: true,
-    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves, dumbbell,
+    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves, dumbbell, weapon,
+    weaponType: weapon ? 'SWORD' : 'FIST',
     faceStyle: body === 'male' ? faceStyle : 'original', noseStyle: body === 'male' ? noseStyle : 'original' };
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
       unityEnemy={{ ...avatar, body: body === 'male' ? 'female' : 'male', hairStyle: body === 'male' ? 'buns' : 'parted',
+        weapon: weapon === 'ferPlay' ? 'huilesson' : weapon === 'huilesson' ? 'ferPlay' : undefined,
         skinTone: skinTone === 'deep' ? 'light' : 'deep', eyeColor: 'brown', hairColor: 'black',
         shirtColor: shirtColor === 'cyan' ? 'coral' : 'cyan', pantsColor: pantsColor === 'coral' ? 'violet' : 'coral', headband: false, boots: true }}
       onDismiss={() => { setReady(false); setPlaying(false); }} />
@@ -135,19 +138,24 @@ function Showcase() {
           {hairStyle !== 'long' && <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
         </View>
         <View style={styles.row}>
-          <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => { setBoxingGloves(!boxingGloves); setDumbbell(false); }} />
+          <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => { setBoxingGloves(!boxingGloves); setDumbbell(false); setWeapon(undefined); }} />
           <Choice label="Gants" selected={view === 2} onPress={() => { setView(2); setAzimuth(25); }} />
         </View>
         <View style={styles.row}>
-          <Choice label={dumbbell ? 'Retirer l’haltère' : 'Équiper Le Poids Lourd'} selected={dumbbell} onPress={() => { setDumbbell(!dumbbell); setBoxingGloves(false); }} />
+          <Choice label={dumbbell ? 'Retirer l’haltère' : 'Équiper Le Poids Lourd'} selected={dumbbell} onPress={() => { setDumbbell(!dumbbell); setBoxingGloves(false); setWeapon(undefined); }} />
           <Choice label="Prise" selected={view === 2} onPress={() => { setPose('attack'); setAnimated(false); setView(2); setAzimuth(-65); }} />
+        </View>
+        <View style={styles.row}>
+          {([{ label: 'Fer play', value: 'ferPlay' }, { label: 'Huilesson', value: 'huilesson' }] as const).map(item =>
+            <Choice key={item.value} label={weapon === item.value ? `Retirer ${item.label}` : `Équiper ${item.label}`} selected={weapon === item.value}
+              onPress={() => { setWeapon(weapon === item.value ? undefined : item.value); setDumbbell(false); setBoxingGloves(false); }} />)}
         </View>
         {dumbbell && <Text style={styles.subtitle}>Essai atelier · animations à adapter</Text>}
         </>}
         {section === 'Mouvements' && <>
         <View style={styles.row}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.poseList} contentContainerStyle={styles.poseRow}>
-            {([{ label: 'Repos', pose: 'idle' }, { label: 'Direct', pose: 'attack' }, { label: 'Uppercut', pose: 'critical' },
+            {([{ label: 'Repos', pose: 'idle' }, { label: weapon ? 'Taille' : 'Direct', pose: 'attack' }, { label: weapon ? 'Estoc' : 'Uppercut', pose: 'critical' },
               { label: 'Esquive', pose: 'dodge' }, { label: 'Impact', pose: 'hit' }, { label: 'Combo', pose: 'combo' }] as const).map(choice =>
               <Choice key={choice.pose} label={choice.label} selected={pose === choice.pose} onPress={() => setPose(choice.pose)} />)}
           </ScrollView>

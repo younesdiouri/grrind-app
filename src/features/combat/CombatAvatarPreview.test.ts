@@ -19,7 +19,7 @@ describe('CombatAvatarPreview', () => {
   it('affiche la capture correspondant à la réponse serveur et change après retrait', () => {
     const equipment = { ...empty, WEAPON: { key: 'LE_POIDS_LOURD', slot: 'WEAPON' as const,
       kind: 'EQUIPMENT' as const, name: 'Le Poids Lourd', rarity: 'COMMON' as const,
-      modifiers: [], quantity: 1, imageUrl: 'https://example.test/poids.png' } };
+      modifiers: [], weaponType: 'FIST' as const, quantity: 1, imageUrl: 'https://example.test/poids.png' } };
     const equipped = renderToStaticMarkup(createElement(CombatAvatarPreview, { equipment }));
     const gloves = renderToStaticMarkup(createElement(CombatAvatarPreview, { equipment: {
       ...equipment, WEAPON: { ...equipment.WEAPON, key: 'GOLDEN_BOXING_GLOVES', name: 'Gants de boxe dorés' },
@@ -36,7 +36,7 @@ describe('CombatAvatarPreview', () => {
   it('signale honnêtement un objet dont le modèle 3D manque', () => {
     const equipment = { ...empty, FEET: { key: 'FUTURE_BOOTS', slot: 'FEET' as const,
       kind: 'EQUIPMENT' as const, name: 'Bottes futures', rarity: 'COMMON' as const,
-      modifiers: [], quantity: 1, imageUrl: 'https://example.test/shoes.png' } };
+      modifiers: [], weaponType: null, quantity: 1, imageUrl: 'https://example.test/shoes.png' } };
     const markup = renderToStaticMarkup(createElement(CombatAvatarPreview, { equipment }));
     assert.match(markup, /Équipé, sans aperçu 3D : Bottes futures/);
     assert.match(markup, /base-original-unarmed\.png/);

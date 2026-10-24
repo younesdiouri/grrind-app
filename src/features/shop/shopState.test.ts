@@ -14,6 +14,7 @@ function listing(overrides: Partial<Listing> = {}): Listing {
     name: 'Baskets usées',
     rarity: 'COMMON',
     slot: 'FEET',
+    weaponType: null,
     modifiers: [],
     priceCoins: 30,
     imageUrl: 'https://api.grrind.app/game-images/items/worn-running-shoes.png',

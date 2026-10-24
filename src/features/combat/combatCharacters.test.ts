@@ -44,6 +44,18 @@ test('le pantalon équipé reste indépendant du haut et une arme retirée dispa
   assert.equal(shirtOnly.pantsColor, 'base');
 });
 
+test('les armes et leurs mouvements viennent du snapshot, même quand la famille ne suit pas la clé', () => {
+  for (const key of ['FER_PLAY', 'HUILESSON']) {
+    const battle = { ...duelBattle.player, equipment: { WEAPON: { key, artworkVersion: null, weaponType: 'SWORD' as const } } };
+    const player = combatPlayer(battle);
+    assert.equal(player.weapon, key === 'FER_PLAY' ? 'ferPlay' : 'huilesson');
+    assert.equal(player.weaponType, 'SWORD');
+    assert.equal(combatPlayer({ ...battle, equipment: { WEAPON: { ...battle.equipment.WEAPON, weaponType: 'FIST' } } }).weaponType, 'FIST');
+  }
+  assert.equal(combatPlayer(duelBattle.player).weaponType, 'FIST');
+  assert.equal(combatPlayer({ ...duelBattle.player, equipment: {} }).weaponType, 'FIST');
+});
+
 test('un ancien snapshot reçoit le défaut V1 sans aucun équipement de démonstration', () => {
   const player = combatPlayer(duelBattle.player);
   assert.equal(player.body, 'male');
@@ -65,10 +77,14 @@ test('une clé inconnue ou rangée dans le mauvais slot ne fabrique aucun objet 
 });
 
 test('le replay conserve les deux snapshots quand les apparences et équipements changent ensuite', () => {
-  const current: Battle = { ...duelBattle, player: { ...duelBattle.player, avatar, equipment },
-    enemy: { ...duelBattle.enemy, avatar: { ...avatar, body: 'male' as const, faceStyle: 'square' as const }, equipment } };
+  const armed = { ...equipment, WEAPON: { key: 'FER_PLAY', artworkVersion: null, weaponType: 'SWORD' as const } };
+  const current: Battle = { ...duelBattle, player: { ...duelBattle.player, avatar, equipment: armed },
+    enemy: { ...duelBattle.enemy, avatar: { ...avatar, body: 'male' as const, faceStyle: 'square' as const },
+      equipment: { ...armed, WEAPON: { ...armed.WEAPON, key: 'HUILESSON' } } } };
   const replay = structuredClone(current);
   const before = { player: combatPlayer(replay.player), enemy: combatEnemy(replay.enemy) };
+  assert.equal(before.player.weaponType, 'SWORD');
+  assert.equal(before.enemy.avatar.weapon, 'huilesson');
   current.player.avatar.hairStyle = 'buzzed';
   current.player.equipment = {};
   current.enemy.avatar!.faceStyle = 'original';

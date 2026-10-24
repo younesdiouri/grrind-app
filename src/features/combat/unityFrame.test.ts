@@ -75,3 +75,16 @@ test('Unity holds the actual striking pose briefly at contact', () => {
     signals(beat.attacker), 500, true, false);
   assert.equal(held.phase, .5);
 });
+
+test('Unity attacks from its calibrated position without a screen-dependent lunge', () => {
+  for (const beat of timeline.beats) {
+    if (beat.kind !== 'attack' && beat.kind !== 'dodge') continue;
+    for (const width of [500, 900]) {
+      for (const progress of [.1, .5, .8]) {
+        const time: number = beat.at + (beat.until - beat.at) * progress;
+        assert.equal(unityActorFrame(timeline.beats, beat.attacker, time,
+          signals(beat.attacker), width, true, false).x, 0);
+      }
+    }
+  }
+});

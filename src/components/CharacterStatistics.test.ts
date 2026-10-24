@@ -30,7 +30,7 @@ test('la fiche montre chaque total serveur, sa ventilation et les onze statistiq
 test('un objet public ne montre aucun prix et les emplacements publics ne proposent aucun geste', () => {
   const markup = renderToStaticMarkup(createElement(ItemCard, { item: {
     key: 'BOOTS', kind: 'EQUIPMENT', name: 'Bottes', rarity: 'COMMON', slot: 'FEET',
-    modifiers: [], imageUrl: '', quantity: 1,
+    modifiers: [], weaponType: null, imageUrl: '', quantity: 1,
   }, equipped: true }));
   assert.match(markup, /Bottes/);
   assert.match(markup, /ÉQUIPÉ/);

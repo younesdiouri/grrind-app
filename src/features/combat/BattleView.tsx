@@ -405,7 +405,7 @@ function BattleScene({
       </View>}
       {!done && <Pressable style={styles.touchSurface} onPress={touch} testID={`battle-${entrance}`}
         accessibilityRole="button" accessibilityLabel={entrance === 'dialogue'
-          ? `${enemyName}. ${introduction}. Toucher pour combattre` : 'Passer au bilan'} />}
+          ? `${enemyName}. ${introduction}. Toucher pour combattre` : `${enemyName}. Passer au bilan`} />}
       {!useUnity && !done && <View style={[StyleSheet.absoluteFill, styles.rendererNotice]} testID="battle-renderer-unavailable">
         <Text style={styles.rendererNoticeText}>Le rendu 3D est indisponible.</Text>
         <Button label="Voir le bilan" onPress={skip} />

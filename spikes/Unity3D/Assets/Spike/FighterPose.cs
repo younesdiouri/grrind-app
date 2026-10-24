@@ -14,6 +14,7 @@ public sealed class FighterPose : MonoBehaviour
     public Transform contactShadow;
     // Contact time of each clip as a fraction of its length.
     public float[] contacts=Array.Empty<float>();
+    public string weaponType="FIST";
     public int stance,view;
     public float phase=.45f,azimuth=32,headViewOffset=.1f,headViewSize=.23f;
     public bool inspect=true,autoplay;
@@ -51,7 +52,9 @@ public sealed class FighterPose : MonoBehaviour
         if(!graph.IsValid())return;
         int selected=Mathf.Clamp(stance,0,clips.Length-1);
         bool weighted=dumbbell!=null&&dumbbell.item!=null&&dumbbell.item.activeSelf;
-        int rest=weighted?7:0;
+        bool sword=weaponType=="SWORD"&&clips.Length>10;
+        int rest=sword?8:weighted?7:0;
+        if(sword)selected=selected==0||selected==5?8:selected==1||selected==6?9:selected==3?10:selected;
         // The weight uses only the direct and uppercut for attacks; combo is an announcement.
         if(weighted&&(selected==0||selected==5))selected=7;
         if(weighted&&selected==6)selected=1;
@@ -75,8 +78,8 @@ public sealed class FighterPose : MonoBehaviour
         {
             var target=view==1?head.position+Vector3.up*headViewOffset:view==2?Bone(HumanBodyBones.RightHand).position:view==3?(Bone(HumanBodyBones.LeftFoot).position+Bone(HumanBodyBones.RightFoot).position)*.5f:view==4?Bone(HumanBodyBones.Chest).position+Vector3.up*.04f:placement+Vector3.up*.95f;
             inspectionCamera.transform.position=target+Quaternion.Euler(0,azimuth,0)*new Vector3(0,view==0?.6f:.10f,5);
-            inspectionCamera.transform.LookAt(target);inspectionCamera.orthographicSize=view==0?1.1f:view==1?headViewSize:view==4?.38f:view==3?.35f:.23f;
-            if(view==2&&dumbbell!=null&&dumbbell.item!=null&&dumbbell.item.activeSelf)inspectionCamera.orthographicSize=.43f;
+            inspectionCamera.transform.LookAt(target);inspectionCamera.orthographicSize=view==0?(sword?1.35f:1.1f):view==1?headViewSize:view==4?.38f:view==3?.35f:.23f;
+            if(view==2&&dumbbell!=null&&dumbbell.HeldItem!=null)inspectionCamera.orthographicSize=sword?.65f:.43f;
         }
     }
     // Canonical phase .5 is the visible contact/reaction peak, not the middle of the source file.

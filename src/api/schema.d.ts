@@ -1676,6 +1676,11 @@ export interface components {
             discipline: components["schemas"]["Discipline"] | null;
         };
         /**
+         * @description Famille d’animation uniquement : FIST = direct/uppercut critique ; SWORD = taille/estoc critique. Aucun effet sur les dégâts. Mains nues ou archive sans type : FIST.
+         * @enum {string}
+         */
+        WeaponType: "FIST" | "SWORD";
+        /**
          * @description Un objet tombé d'un tirage (#226), de quoi l'afficher **sans requête
          *     supplémentaire** — même geste qu'un titre dans `PlayerTitle`.
          *
@@ -1712,6 +1717,8 @@ export interface components {
              * @enum {string|null}
              */
             slot: "HEAD" | "CHEST" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
+            /** @description FIST ou SWORD sur WEAPON ; null pour les autres objets. */
+            weaponType: components["schemas"]["WeaponType"] | null;
             /** @description Dans l'ordre du catalogue. */
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
@@ -1765,6 +1772,8 @@ export interface components {
              * @enum {string|null}
              */
             slot: "HEAD" | "CHEST" | "LEGS" | "FEET" | "ACCESSORY" | "WEAPON" | null;
+            /** @description FIST ou SWORD sur WEAPON ; null pour les autres objets. */
+            weaponType: components["schemas"]["WeaponType"] | null;
             /** @description Dans l'ordre du catalogue. */
             modifiers: components["schemas"]["DroppedItemModifier"][];
             /**
@@ -2409,13 +2418,14 @@ export interface components {
             /** Format: uri */
             hit: string;
         } | null;
-        /** @description Objets réellement portés au combat, indexés par emplacement (HEAD, FEET…). Clé et version sont figées dans le snapshot des deux joueurs. Un objet dans le sac est absent ; un ancien combat rend {}. Le client ne consulte jamais l’inventaire courant pour un replay. Une artworkVersion nulle signifie qu’aucun calque n’est livré. Les images et compatibilités de chaque version viennent du catalogue graphique. */
+        /** @description Objets réellement portés au combat, indexés par emplacement (HEAD, FEET…). Clé et version sont figées dans le snapshot des deux joueurs. Un objet dans le sac est absent ; un ancien combat rend {}. Le client ne consulte jamais l’inventaire courant pour un replay. weaponType est figé pour les nouveaux combats (null hors WEAPON) ; un ancien snapshot sans ce champ et les mains nues (WEAPON absent) utilisent FIST sans consulter le catalogue courant. Une artworkVersion nulle signifie qu’aucun calque n’est livré. Les images et compatibilités de chaque version viennent du catalogue graphique. */
         BattleEquipment: {
             [key: string]: {
                 /** @example TEMPERED_HEADBAND */
                 key: string;
                 /** @example v1 */
                 artworkVersion: string | null;
+                weaponType?: components["schemas"]["WeaponType"] | null;
             };
         };
         /**

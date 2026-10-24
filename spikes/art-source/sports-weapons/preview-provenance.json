@@ -1,0 +1,15 @@
+{
+  "tool": "Unity official CLI capture_game_view, camera source",
+  "resolution": [
+    512,
+    640
+  ],
+  "model": "QuaterniusShowcase",
+  "view": 0,
+  "azimuth": 25,
+  "phase": 0.35,
+  "weaponType": "SWORD",
+  "combinations": "3 shirts x 4 pants x 2 weapons",
+  "inspection_orthographic_size": 1.35,
+  "generated": "2026-10-24"
+}

@@ -1,0 +1,288 @@
+{
+  "contacts": 40,
+  "samples": 8820,
+  "maxCenterGap": 0.313278615,
+  "minHeadClearance": 0.206416,
+  "rows": [
+    {
+      "weapon": "",
+      "female": false,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.208834618
+    },
+    {
+      "weapon": "",
+      "female": false,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.313278615
+    },
+    {
+      "weapon": "",
+      "female": false,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.2488366
+    },
+    {
+      "weapon": "",
+      "female": false,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.263166934
+    },
+    {
+      "weapon": "",
+      "female": true,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.210629329
+    },
+    {
+      "weapon": "",
+      "female": true,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.301454216
+    },
+    {
+      "weapon": "",
+      "female": true,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.268045634
+    },
+    {
+      "weapon": "",
+      "female": true,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.2755247
+    },
+    {
+      "weapon": "gloves",
+      "female": false,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.0678695962
+    },
+    {
+      "weapon": "gloves",
+      "female": false,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.244009078
+    },
+    {
+      "weapon": "gloves",
+      "female": false,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.159798816
+    },
+    {
+      "weapon": "gloves",
+      "female": false,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.212161168
+    },
+    {
+      "weapon": "gloves",
+      "female": true,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.0963240638
+    },
+    {
+      "weapon": "gloves",
+      "female": true,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.245065629
+    },
+    {
+      "weapon": "gloves",
+      "female": true,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.189379767
+    },
+    {
+      "weapon": "gloves",
+      "female": true,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.231596917
+    },
+    {
+      "weapon": "dumbbell",
+      "female": false,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.0131572075
+    },
+    {
+      "weapon": "dumbbell",
+      "female": false,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.176498935
+    },
+    {
+      "weapon": "dumbbell",
+      "female": false,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.01519192
+    },
+    {
+      "weapon": "dumbbell",
+      "female": false,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.209901616
+    },
+    {
+      "weapon": "dumbbell",
+      "female": true,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.02368814
+    },
+    {
+      "weapon": "dumbbell",
+      "female": true,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.205966979
+    },
+    {
+      "weapon": "dumbbell",
+      "female": true,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.02400495
+    },
+    {
+      "weapon": "dumbbell",
+      "female": true,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.255269885
+    },
+    {
+      "weapon": "ferPlay",
+      "female": false,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.06033682
+    },
+    {
+      "weapon": "ferPlay",
+      "female": false,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.0165942758
+    },
+    {
+      "weapon": "ferPlay",
+      "female": false,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.100734659
+    },
+    {
+      "weapon": "ferPlay",
+      "female": false,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.08804926
+    },
+    {
+      "weapon": "ferPlay",
+      "female": true,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.124757044
+    },
+    {
+      "weapon": "ferPlay",
+      "female": true,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.0573963076
+    },
+    {
+      "weapon": "ferPlay",
+      "female": true,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.14507328
+    },
+    {
+      "weapon": "ferPlay",
+      "female": true,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.136646658
+    },
+    {
+      "weapon": "huilesson",
+      "female": false,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.1995286
+    },
+    {
+      "weapon": "huilesson",
+      "female": false,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.05063366
+    },
+    {
+      "weapon": "huilesson",
+      "female": false,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.109015323
+    },
+    {
+      "weapon": "huilesson",
+      "female": false,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.09252073
+    },
+    {
+      "weapon": "huilesson",
+      "female": true,
+      "left": true,
+      "stance": 1,
+      "centerGap": 0.127677262
+    },
+    {
+      "weapon": "huilesson",
+      "female": true,
+      "left": true,
+      "stance": 3,
+      "centerGap": 0.06939665
+    },
+    {
+      "weapon": "huilesson",
+      "female": true,
+      "left": false,
+      "stance": 1,
+      "centerGap": 0.08108751
+    },
+    {
+      "weapon": "huilesson",
+      "female": true,
+      "left": false,
+      "stance": 3,
+      "centerGap": 0.158851668
+    }
+  ]
+}

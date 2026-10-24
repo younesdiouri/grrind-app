@@ -1,0 +1,11 @@
+{
+  "triangles": 1677,
+  "dimensions_m": [
+    0.7600000277161598,
+    0.0841345265507698,
+    0.3804558366537094
+  ],
+  "materials": 2,
+  "uv": true,
+  "pass_roundtrip": true
+}

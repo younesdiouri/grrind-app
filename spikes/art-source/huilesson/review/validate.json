@@ -1,0 +1,38 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/huilesson/WP_Huilesson_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 1677
+    },
+    "fail": [],
+    "warn": [
+      "WP_Huilesson_LOD0: 2578 doubled vertices within 0.0001"
+    ]
+  },
+  "objects": [
+    {
+      "name": "WP_Huilesson_LOD0",
+      "type": "MESH",
+      "warn": [
+        "2578 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1677,
+        "verts_evaluated": 3491,
+        "verts": 3491,
+        "faces": 1605,
+        "boundary_edges": 3449,
+        "nonmanifold_edges": 0,
+        "islands": 917,
+        "flipped_vs_recalc": 611,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0",
+          "Racket strings"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}

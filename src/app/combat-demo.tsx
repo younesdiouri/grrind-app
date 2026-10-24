@@ -7,7 +7,7 @@ import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { color, combatMotion, space, type } from '@/design/tokens';
 import { BattleView } from '@/features/combat/BattleView';
 import { PEBBLE } from '@/features/combat/bundledMobs';
-import { AVATAR_DUEL, BATTLE_FIXTURES, WEIGHT_DUEL } from '@/features/combat/fixtures';
+import { AVATAR_DUEL, BATTLE_FIXTURES, WEAPONS_DUEL, WEIGHT_DUEL } from '@/features/combat/fixtures';
 import { useAuth } from '@/features/auth/useAuth';
 import { isE2eBuild } from '@/features/health/e2e';
 import { buildBattleTimeline, type Battle } from '@/features/combat/timeline';
@@ -20,13 +20,14 @@ export default function CombatDemoScreen() {
   // Une image figée du combat local, pour les captures : `?scenario=victoire&at=3200`.
   if (scenario === 'victoire' || scenario === 'defaiteBoss' || scenario === 'duel' || scenario === 'loot') {
     const sample = scenario === 'loot' ? BATTLE_FIXTURES.victoireAvecLoot
+      : scenario === 'duel' && snapshot === 'weapons' ? WEAPONS_DUEL
       : scenario === 'duel' && snapshot === 'weight' ? WEIGHT_DUEL
       : scenario === 'duel' && snapshot === 'avatar' ? AVATAR_DUEL : BATTLE_FIXTURES[scenario];
     const battle = mob === 'pebble' ? { ...sample, enemy: { ...sample.enemy, key: 'SAND_JACKAL',
       name: PEBBLE.name, introduction: PEBBLE.introduction ?? null, appearance: null } } : sample;
     return <AmbientBackdropProvider>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
-    <View style={styles.screen}>
+    <View style={styles.screen} testID={`combat-demo-${snapshot ?? scenario}-${at ?? 'live'}`}>
       {scenario === 'loot' && <Text style={styles.notice}>DÉMONSTRATION · AUCUN GAIN RÉEL</Text>}
       <BattleView key={at} battle={battle}
         demo={scenario !== 'loot'} demoTime={at ? Number(at) : undefined}

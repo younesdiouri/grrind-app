@@ -1,0 +1,23 @@
+{
+  "uuid": "84A83F0D-0297-3C45-9FF7-A833707D2B21",
+  "data_files": 16,
+  "hashes_match": true,
+  "sha256": {
+    "Data/Managed/Metadata/global-metadata.dat": "a453fc595e93e6987d4005e8861d419fd86d2210125ed843643343f03970821e",
+    "Data/Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+    "Data/Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed",
+    "Data/Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+    "Data/Resources/unity_builtin_extra": "b7c7923d6fd91fabf2147c2f1d2d49cc40bce2dad370122ae39d1529aece4460",
+    "Data/RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+    "Data/ScriptingAssemblies.json": "f773af6143b46408f4415a50a039524a444412abea2ba854c4234e84029b6e88",
+    "Data/boot.config": "706c3cca4e7d2b96f17039cc526e7636b5e64e448b2d399ec8b6d93c1e42bf1d",
+    "Data/globalgamemanagers": "60ba4943279b3b3b0ba47e0a72f619917e80a905a08fcd6bb587e12c5cf6d157",
+    "Data/globalgamemanagers.assets": "3aaa93a566bc303e5353e8fb24452d9408fcd1a8ab57be5b68d382b0431ee34b",
+    "Data/globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+    "Data/level0": "d0309b539a46df5e5136c1c4e504371a894a9e5d888051b9999ab62e6706a29d",
+    "Data/resources.assets": "fb0b6252a1ea454945b643e0a050c6888b0cdfc73ab098f250c5839ff5a18d49",
+    "Data/resources.assets.resS": "1f980691b48820d83b725dc4f21804ddc0470960e12a1538d9584b4c4a8ac965",
+    "Data/sharedassets0.assets": "4f4d08599600ee7e55c6a99b9741b89184c97aae8e687983ff84f0349fe5a023",
+    "Data/sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968"
+  }
+}

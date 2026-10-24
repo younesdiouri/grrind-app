@@ -1,0 +1,37 @@
+{
+  "blend": "/Users/younesdiouri/Desktop/grrind-app/spikes/art-source/fer-play/WP_FerPlay_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 1919
+    },
+    "fail": [],
+    "warn": [
+      "WP_FerPlay_LOD0: 2294 doubled vertices within 0.0001"
+    ]
+  },
+  "objects": [
+    {
+      "name": "WP_FerPlay_LOD0",
+      "type": "MESH",
+      "warn": [
+        "2294 doubled vertices within 0.0001"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1919,
+        "verts_evaluated": 3257,
+        "verts": 3257,
+        "faces": 1919,
+        "boundary_edges": 3303,
+        "nonmanifold_edges": 0,
+        "islands": 646,
+        "flipped_vs_recalc": 654,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "Material_0"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}

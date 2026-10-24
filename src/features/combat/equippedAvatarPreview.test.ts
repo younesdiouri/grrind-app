@@ -6,7 +6,7 @@ import { equippedAvatarPreview } from './equippedAvatarPreview.ts';
 type Equipment = components['schemas']['PublicInventory']['equipment'];
 const empty: Equipment = { HEAD: null, ACCESSORY: null, CHEST: null, WEAPON: null, LEGS: null, FEET: null };
 function item(key: string, slot: NonNullable<Equipment['WEAPON']>['slot']): NonNullable<Equipment['WEAPON']> {
-  return { key, slot, kind: 'EQUIPMENT', name: key, rarity: 'COMMON', modifiers: [], quantity: 1,
+  return { key, slot, weaponType: slot === 'WEAPON' ? 'FIST' : null, kind: 'EQUIPMENT', name: key, rarity: 'COMMON', modifiers: [], quantity: 1,
     imageUrl: 'https://example.test/item.png' };
 }
 
@@ -23,6 +23,14 @@ describe('l’aperçu équipé du serveur (#243)', () => {
     assert.equal(equippedAvatarPreview({ ...empty, WEAPON: item('HALTER_EGO', 'WEAPON') }).key,
       'base-original-ego');
     assert.deepEqual(equippedAvatarPreview({ ...empty, WEAPON: item('HALTER_EGO', 'WEAPON') }).unsupported, []);
+  });
+  it('montre les deux nouvelles armes avec les vêtements équipés et les retire sans les remplacer', () => {
+    for (const [key, model] of [['FER_PLAY', 'ferPlay'], ['HUILESSON', 'huilesson']]) {
+      const equipment = { ...empty, LEGS: item('LES_GUINZZ_CYAN', 'LEGS'),
+        WEAPON: { ...item(key, 'WEAPON'), weaponType: 'SWORD' as const } };
+      assert.deepEqual(equippedAvatarPreview(equipment), { key: `base-cyan-${model}`, unsupported: [] });
+      assert.equal(equippedAvatarPreview({ ...equipment, WEAPON: null }).key, 'base-cyan-unarmed');
+    }
   });
   it('remplace l’haltère par les gants, puis les retire sans changer les vêtements', () => {
     const equipment = { ...empty, CHEST: item('SPORT_TSHIRT_SLATE', 'CHEST'),
