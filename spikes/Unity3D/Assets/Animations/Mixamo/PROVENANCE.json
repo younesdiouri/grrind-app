@@ -49,5 +49,14 @@
     },
     "fingers": "Mirrored from the existing per-anatomy 25 mm cylindrical grip. Right arm, torso, head and feet preserve the source solve; measured in SportsWeaponsChecks.",
     "release": "Blend out with received-hit/dodge clips; release when unequipped."
+  },
+  "great_sword_guard_fit": {
+    "derived": "Assets/Spike/QuaterniusPOC/Upright sword guard.anim",
+    "source": "GreatSwordIdle original FBX retained",
+    "reason": "Author rejects forward hip hinge and downward idle gaze (#275), approves attacks",
+    "body": "Remove pitch/roll from body quaternion; keep animated yaw",
+    "feet": "Rebase body-relative IK goals by inverse(upright) * original so world foot position and rotation stay fixed",
+    "unchanged": "Source root translation and muscle curves; both attack FBX and contacts",
+    "builder": "SportsWeapons.UprightGuard"
   }
 }

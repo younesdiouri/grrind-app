@@ -116,6 +116,39 @@ public static class SportsWeaponsChecks
             if(Mathf.Abs(winding)<350)throw new Exception("Shaft outside supporting "+finger+": "+winding);
         }
     }
+    public static object ValidateGuard()
+    {
+        if(!EditorApplication.isPlaying)throw new InvalidOperationException("Check the sampled guard in Play mode");
+        var bridge=UnityEngine.Object.FindFirstObjectByType<BattleBridge>();
+        float maxLean=0,maxPitch=0,maxHipOffset=0,maxSupport=0;int samples=0;
+        foreach(bool female in new[]{false,true})
+        foreach(string weapon in new[]{"ferPlay","huilesson"})
+        foreach(bool inspection in new[]{false,true})
+        {
+            bridge.Configure(JsonUtility.ToJson(new BattleBridge.Configuration {
+                inspection=inspection,player=Avatar(weapon,female),enemy=new BattleBridge.AvatarConfig {visible=false}
+            }));
+            var pose=Actor(bridge,"player");pose.autoplay=false;
+            for(int i=0;i<=20;i++)
+            {
+                pose.stance=0;pose.phase=i/20f;pose.SendMessage("LateUpdate");
+                Vector3 hips=pose.transform.InverseTransformPoint(pose.Bone(HumanBodyBones.Hips).position);
+                Vector3 chest=pose.transform.InverseTransformPoint(pose.Bone(HumanBodyBones.Chest).position);
+                Vector3 feet=pose.transform.InverseTransformPoint((pose.Bone(HumanBodyBones.LeftFoot).position
+                    +pose.Bone(HumanBodyBones.RightFoot).position)*.5f);
+                float lean=Mathf.Abs(Mathf.Atan2(chest.z-hips.z,chest.y-hips.y)*Mathf.Rad2Deg);
+                float pitch=Mathf.Abs(Mathf.Asin(pose.Bone(HumanBodyBones.Head).forward.y)*Mathf.Rad2Deg);
+                float hipOffset=Mathf.Abs(hips.z-feet.z);
+                var grip=pose.GetComponent<WeaponGrip>();
+                float support=Vector3.Distance(pose.Bone(HumanBodyBones.LeftHand).position,grip.supportTarget.position);
+                maxLean=Mathf.Max(maxLean,lean);maxPitch=Mathf.Max(maxPitch,pitch);
+                maxHipOffset=Mathf.Max(maxHipOffset,hipOffset);maxSupport=Mathf.Max(maxSupport,support);samples++;
+                if(lean>12||pitch>12||hipOffset>.04f||support>.006f)
+                    throw new Exception($"Bent sword guard: female={female}, inspection={inspection}, phase={pose.phase}, lean={lean}, pitch={pitch}, hip offset={hipOffset}, support={support}");
+            }
+        }
+        return new{samples,maxLean,maxPitch,maxHipOffset,maxSupport};
+    }
     static void Present(BattleBridge bridge,bool left,int stance,float phase)
     {
         var own=new BattleBridge.ActorFrame{pose=stance,phase=phase};
