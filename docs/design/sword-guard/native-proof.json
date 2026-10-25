@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-25",
+  "scope": "Installed app.grrind.dev on GRRIND E2E Simulator iOS 27.0",
+  "hostConfiguration": "Debug",
+  "engineFrameworks": "Simulator and iPhone build PASS; unsigned local frameworks",
+  "uuid": "8F7D6F64-9151-3478-B572-7A3DECFFD9DA",
+  "data_files": 16,
+  "hashes_match": true,
+  "changedDataSince273": [
+    "Data/boot.config",
+    "Data/globalgamemanagers",
+    "Data/resources.assets"
+  ],
+  "sha256": {
+    "Data/Managed/Metadata/global-metadata.dat": "5a2f65d7706299d4b0bbb860c0be64bddf612b2e20bc089bcaac201a87d35cdd",
+    "Data/Managed/Resources/mscorlib.dll-resources.dat": "c5baa176a5b72cd545266340e42102d393a5e43d38c95796bc828918bb95277f",
+    "Data/Managed/mono/4.0/machine.config": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed",
+    "Data/Resources/unity default resources": "77f38f65c548097c4f579ce0050aa658cb334c57c1ce23b60ab970d63f9ce1d0",
+    "Data/Resources/unity_builtin_extra": "b7c7923d6fd91fabf2147c2f1d2d49cc40bce2dad370122ae39d1529aece4460",
+    "Data/RuntimeInitializeOnLoads.json": "44baae1e9489f830aa2652a30d7659cf1fc7e09082ce0940edd3df72dd51f35a",
+    "Data/ScriptingAssemblies.json": "ab0cf0af14a290e0a7465cde5274bcf93a51ae7d9c93f97c5c861d138be767bc",
+    "Data/boot.config": "22d31342ac99b55e4fc13f3be54b88c7078185a4e4840bbed2866e18b3107ca4",
+    "Data/globalgamemanagers": "f3ce1d881dfa76adc369bfaabdd1b1e4b5299a6874473c5dcfa87862a3a483e0",
+    "Data/globalgamemanagers.assets": "768b5b8dd813d4fb0cc9b49b0eaecd0650d10f0afc0e16940598f30b31ac4b0b",
+    "Data/globalgamemanagers.assets.resS": "71fa8d5ee00903a710e4fa9c2f5dad80cb0e3419102e450255ca3e5f1234dc4c",
+    "Data/level0": "70eaecee0966c6636abcecb737846a77680a1701e9b878ff90da8b2ea08d0581",
+    "Data/resources.assets": "2e4817f2bcdf19ad2d4b075248fe1aa7ccfb0d8c8630b612648acf8654b83e1c",
+    "Data/resources.assets.resS": "1f980691b48820d83b725dc4f21804ddc0470960e12a1538d9584b4c4a8ac965",
+    "Data/sharedassets0.assets": "6f17645abb0cb0bb9c91cb6df628453a4e54b22cdb4e18ccb1c19580c5401842",
+    "Data/sharedassets0.assets.resS": "cf6e38a0de541c99451ad50a963447203651aaa30fa33fd5cc99a6ca12e0c968"
+  },
+  "physicalIPhoneChecked": false,
+  "productionDeployment": false,
+  "testflightSubmission": false
+}

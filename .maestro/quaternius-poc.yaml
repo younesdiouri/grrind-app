@@ -173,6 +173,11 @@ appId: app.grrind.dev
 - tapOn: Trois-quarts
 - tapOn: Mouvements
 - tapOn: Figer
+- tapOn: Repos
+- takeScreenshot: fer-play-female-guard
+- tapOn: Profil
+- takeScreenshot: fer-play-female-guard-profile
+- tapOn: Trois-quarts
 - tapOn: Taille
 - takeScreenshot: fer-play-female-normal
 - tapOn: Slash
@@ -186,6 +191,11 @@ appId: app.grrind.dev
 - tapOn: Équiper Huilesson
 - tapOn: Trois-quarts
 - tapOn: Mouvements
+- tapOn: Repos
+- takeScreenshot: huilesson-male-guard
+- tapOn: Profil
+- takeScreenshot: huilesson-male-guard-profile
+- tapOn: Trois-quarts
 - tapOn: Taille
 - takeScreenshot: huilesson-male-normal
 - tapOn: Slash
@@ -230,9 +240,5 @@ appId: app.grrind.dev
 - takeScreenshot: quaternius-return-from-pvp
 - setOrientation: PORTRAIT
 - runFlow: sports-weapons-contacts.yaml
-- openLink: grrindapp-dev://character-showcase
-- extendedWaitUntil:
-    visible:
-      id: quaternius-ready
-    timeout: 20000
+- runFlow: quaternius-preview.yaml
 - setOrientation: PORTRAIT

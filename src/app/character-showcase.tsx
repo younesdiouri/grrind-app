@@ -1,10 +1,11 @@
-import { Redirect, Stack, router } from 'expo-router';
+import { Redirect, Stack, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { Button } from '@/components/Button';
 import { color, control, frame, space, type } from '@/design/tokens';
+import { AvatarPreview } from '@/features/avatar/AvatarPreview';
 import { BattleView } from '@/features/combat/BattleView';
 import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { UnityAvatarInspector, unityCombatAvailable } from '@/features/combat/UnityCombatStage';
@@ -12,11 +13,12 @@ import type { UnityAvatar } from '@/features/combat/unityFrame';
 import type { FighterPose } from '@/features/combat/fighterMotion';
 
 export default function CharacterShowcaseScreen() {
+  const { preview } = useLocalSearchParams<{ preview?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
-  return <AmbientBackdropProvider><Showcase /></AmbientBackdropProvider>;
+  return <AmbientBackdropProvider><Showcase key={preview} preview={preview} /></AmbientBackdropProvider>;
 }
 
-function Showcase() {
+function Showcase({ preview }: { preview?: string }) {
   const [body, setBody] = useState<UnityAvatar['body']>('male');
   const [faceStyle, setFaceStyle] = useState<UnityAvatar['faceStyle']>('square');
   const [noseStyle, setNoseStyle] = useState<UnityAvatar['noseStyle']>('wide');
@@ -59,7 +61,7 @@ function Showcase() {
   </View>;
   return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
-    {unityCombatAvailable && !failed && <UnityAvatarInspector avatar={avatar} pose={pose} phase={.5} animated={animated}
+    {preview !== 'inventory' && unityCombatAvailable && !failed && <UnityAvatarInspector avatar={avatar} pose={pose} phase={.5} animated={animated}
       view={view} azimuth={azimuth} viewport={{ x: 0, y: (controlsHeight + insets.bottom) / window.height, width: 1,
         height: Math.max(.1, (window.height - controlsHeight - headerHeight - insets.top - insets.bottom) / window.height) }}
       onReady={() => setReady(true)} onError={() => setFailed(true)} />}
@@ -67,13 +69,16 @@ function Showcase() {
       <View style={styles.header} onLayout={({ nativeEvent }) => setHeaderHeight(nativeEvent.layout.height)}>
         <Text style={styles.title}>ATELIER AVATAR</Text>
         <Text style={styles.subtitle} testID={ready && !failed ? 'quaternius-ready' : undefined}>
-          {!unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
+          {preview === 'inventory' ? 'Aperçu inventaire' : !unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
             : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Spike local · Visage et nez' : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo?mob=pebble');
         }}><Text style={styles.link}>Fermer</Text></Pressable>
       </View>
+      {preview === 'inventory' && <View style={{ flex: 1 }}>
+        <AvatarPreview avatar={avatar} label="Aperçu inventaire" />
+      </View>}
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>
         <View style={styles.row}>
           {['Corps', 'Traits', 'Cheveux', 'Tenue', 'Mouvements'].map(label =>

@@ -5032,7 +5032,7 @@ MonoBehaviour:
   - {fileID: 7400000, guid: 3eac645856501407391f065d8a582f33, type: 2}
   - {fileID: 7400000, guid: 017e708fbef924a86b7dbca304112cde, type: 2}
   - {fileID: 7400000, guid: 5fed8ac8ead5643b08da5e958ecca3b8, type: 2}
-  - {fileID: -203655887218126122, guid: b0631caadb61f4b0bac35221df2550ef, type: 3}
+  - {fileID: 7400000, guid: 6f66753e0a63b4991b8a246705af7275, type: 2}
   - {fileID: -203655887218126122, guid: a2590615538124e6b8ec97d9a9f9dfdf, type: 3}
   - {fileID: -203655887218126122, guid: d488a0772bfaf47d5b20b83b3a20dc56, type: 3}
   inspectionCamera: {fileID: 0}

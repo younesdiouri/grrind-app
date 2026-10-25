@@ -1,0 +1,741 @@
+{
+  "issue": 275,
+  "authorFeedback": "vraiment top le mouvement ; buste incliné, bassin en arrière et regard bas dans la garde et l’inventaire",
+  "scope": "Guard asset fit only. Attack FBX, contacts, damage, camera and placement unchanged. Development workshop also exercises the actual AvatarPreview native still-capture component.",
+  "source": "Adobe Mixamo GreatSwordIdle FBX Arm-Space 40 kept intact",
+  "fit": "Body quaternion projected onto vertical yaw; body-relative foot position/rotation goals rebased to preserve their original world placement. Source root translation and muscle curves kept. Baked to separate Humanoid clip by SportsWeapons.UprightGuard.",
+  "before": [
+    {
+      "female": false,
+      "weapon": "",
+      "phase": 0,
+      "headPitch": 0.0453647338,
+      "lean": 2.797018,
+      "hipBack": 0.08718178
+    },
+    {
+      "female": false,
+      "weapon": "",
+      "phase": 0.25,
+      "headPitch": -2.80282474,
+      "lean": 6.02009964,
+      "hipBack": -0.03062059
+    },
+    {
+      "female": false,
+      "weapon": "",
+      "phase": 0.5,
+      "headPitch": -0.513575852,
+      "lean": 5.693988,
+      "hipBack": -0.00735569
+    },
+    {
+      "female": false,
+      "weapon": "",
+      "phase": 0.75,
+      "headPitch": -3.58310032,
+      "lean": 7.07538176,
+      "hipBack": 0.0506231934
+    },
+    {
+      "female": false,
+      "weapon": "",
+      "phase": 0.99,
+      "headPitch": 0.259309232,
+      "lean": 2.88507056,
+      "hipBack": 0.087408334
+    },
+    {
+      "female": false,
+      "weapon": "dumbbell",
+      "phase": 0,
+      "headPitch": 2.06754,
+      "lean": 4.5998764,
+      "hipBack": 0.0178439617
+    },
+    {
+      "female": false,
+      "weapon": "dumbbell",
+      "phase": 0.25,
+      "headPitch": 0.655398846,
+      "lean": 5.96258259,
+      "hipBack": 0.0189167745
+    },
+    {
+      "female": false,
+      "weapon": "dumbbell",
+      "phase": 0.5,
+      "headPitch": 2.18146229,
+      "lean": 4.62280369,
+      "hipBack": 0.02130875
+    },
+    {
+      "female": false,
+      "weapon": "dumbbell",
+      "phase": 0.75,
+      "headPitch": 0.5883358,
+      "lean": 5.928899,
+      "hipBack": 0.01762839
+    },
+    {
+      "female": false,
+      "weapon": "dumbbell",
+      "phase": 0.99,
+      "headPitch": 1.68850291,
+      "lean": 4.74305534,
+      "hipBack": 0.01762411
+    },
+    {
+      "female": false,
+      "weapon": "ferPlay",
+      "phase": 0,
+      "headPitch": -24.8421879,
+      "lean": 34.64401,
+      "hipBack": -0.040784657
+    },
+    {
+      "female": false,
+      "weapon": "ferPlay",
+      "phase": 0.25,
+      "headPitch": -24.6439762,
+      "lean": 34.3662872,
+      "hipBack": -0.0483296141
+    },
+    {
+      "female": false,
+      "weapon": "ferPlay",
+      "phase": 0.5,
+      "headPitch": -24.62652,
+      "lean": 33.8225746,
+      "hipBack": -0.0575655624
+    },
+    {
+      "female": false,
+      "weapon": "ferPlay",
+      "phase": 0.75,
+      "headPitch": -24.61747,
+      "lean": 34.3746948,
+      "hipBack": -0.047736682
+    },
+    {
+      "female": false,
+      "weapon": "ferPlay",
+      "phase": 0.99,
+      "headPitch": -24.8472042,
+      "lean": 34.6568375,
+      "hipBack": -0.04088649
+    },
+    {
+      "female": false,
+      "weapon": "huilesson",
+      "phase": 0,
+      "headPitch": -24.8421879,
+      "lean": 34.64401,
+      "hipBack": -0.040784657
+    },
+    {
+      "female": false,
+      "weapon": "huilesson",
+      "phase": 0.25,
+      "headPitch": -24.6439762,
+      "lean": 34.3662872,
+      "hipBack": -0.0483296141
+    },
+    {
+      "female": false,
+      "weapon": "huilesson",
+      "phase": 0.5,
+      "headPitch": -24.62652,
+      "lean": 33.8225746,
+      "hipBack": -0.0575655624
+    },
+    {
+      "female": false,
+      "weapon": "huilesson",
+      "phase": 0.75,
+      "headPitch": -24.61747,
+      "lean": 34.3746948,
+      "hipBack": -0.047736682
+    },
+    {
+      "female": false,
+      "weapon": "huilesson",
+      "phase": 0.99,
+      "headPitch": -24.8472042,
+      "lean": 34.6568375,
+      "hipBack": -0.04088649
+    },
+    {
+      "female": true,
+      "weapon": "",
+      "phase": 0,
+      "headPitch": 0.674358666,
+      "lean": 2.02204466,
+      "hipBack": 0.0848093
+    },
+    {
+      "female": true,
+      "weapon": "",
+      "phase": 0.25,
+      "headPitch": -2.66326785,
+      "lean": 5.614189,
+      "hipBack": -0.0290170461
+    },
+    {
+      "female": true,
+      "weapon": "",
+      "phase": 0.5,
+      "headPitch": -0.226759344,
+      "lean": 5.110502,
+      "hipBack": -0.00730721653
+    },
+    {
+      "female": true,
+      "weapon": "",
+      "phase": 0.75,
+      "headPitch": -3.23069024,
+      "lean": 6.49875975,
+      "hipBack": 0.0497307926
+    },
+    {
+      "female": true,
+      "weapon": "",
+      "phase": 0.99,
+      "headPitch": 0.8823398,
+      "lean": 2.11104441,
+      "hipBack": 0.08504817
+    },
+    {
+      "female": true,
+      "weapon": "dumbbell",
+      "phase": 0,
+      "headPitch": 3.876422,
+      "lean": 2.39561653,
+      "hipBack": 0.0201538168
+    },
+    {
+      "female": true,
+      "weapon": "dumbbell",
+      "phase": 0.25,
+      "headPitch": 2.5852232,
+      "lean": 3.63740015,
+      "hipBack": 0.0217873156
+    },
+    {
+      "female": true,
+      "weapon": "dumbbell",
+      "phase": 0.5,
+      "headPitch": 3.99821639,
+      "lean": 2.41072559,
+      "hipBack": 0.0234864652
+    },
+    {
+      "female": true,
+      "weapon": "dumbbell",
+      "phase": 0.75,
+      "headPitch": 2.51288438,
+      "lean": 3.60896945,
+      "hipBack": 0.0205241442
+    },
+    {
+      "female": true,
+      "weapon": "dumbbell",
+      "phase": 0.99,
+      "headPitch": 3.48780227,
+      "lean": 2.54836464,
+      "hipBack": 0.0199924074
+    },
+    {
+      "female": true,
+      "weapon": "ferPlay",
+      "phase": 0,
+      "headPitch": -24.85977,
+      "lean": 34.2501831,
+      "hipBack": -0.0298283622
+    },
+    {
+      "female": true,
+      "weapon": "ferPlay",
+      "phase": 0.25,
+      "headPitch": -24.6858578,
+      "lean": 33.9894028,
+      "hipBack": -0.0372396633
+    },
+    {
+      "female": true,
+      "weapon": "ferPlay",
+      "phase": 0.5,
+      "headPitch": -24.6846447,
+      "lean": 33.45128,
+      "hipBack": -0.0462104678
+    },
+    {
+      "female": true,
+      "weapon": "ferPlay",
+      "phase": 0.75,
+      "headPitch": -24.64963,
+      "lean": 33.98672,
+      "hipBack": -0.03664782
+    },
+    {
+      "female": true,
+      "weapon": "ferPlay",
+      "phase": 0.99,
+      "headPitch": -24.8636665,
+      "lean": 34.2613754,
+      "hipBack": -0.029923223
+    },
+    {
+      "female": true,
+      "weapon": "huilesson",
+      "phase": 0,
+      "headPitch": -24.85977,
+      "lean": 34.2501831,
+      "hipBack": -0.0298283622
+    },
+    {
+      "female": true,
+      "weapon": "huilesson",
+      "phase": 0.25,
+      "headPitch": -24.6858578,
+      "lean": 33.9894028,
+      "hipBack": -0.0372396633
+    },
+    {
+      "female": true,
+      "weapon": "huilesson",
+      "phase": 0.5,
+      "headPitch": -24.6846447,
+      "lean": 33.45128,
+      "hipBack": -0.0462104678
+    },
+    {
+      "female": true,
+      "weapon": "huilesson",
+      "phase": 0.75,
+      "headPitch": -24.64963,
+      "lean": 33.98672,
+      "hipBack": -0.03664782
+    },
+    {
+      "female": true,
+      "weapon": "huilesson",
+      "phase": 0.99,
+      "headPitch": -24.8636665,
+      "lean": 34.2613754,
+      "hipBack": -0.029923223
+    }
+  ],
+  "red": "Bent sword guard: female=False, inspection=False, phase=0, lean=34.644, pitch=24.84219, hip offset=0.04078467, support=2.220527E-05",
+  "unity": {
+    "guard": {
+      "samples": 168,
+      "maxLean": 9.512197,
+      "maxPitch": 0.473752648,
+      "maxHipOffset": 0.02429244,
+      "maxSupport": 0.00232334319
+    },
+    "motion": {
+      "contacts": 40,
+      "samples": 8820,
+      "maxCenterGap": 0.3132792,
+      "minHeadClearance": 0.206415862,
+      "maxSupportError": 0.00232334225,
+      "maxSourceDrift": 6.28680652e-07,
+      "maxSourceRotationDrift": 0,
+      "rows": [
+        {
+          "weapon": "",
+          "female": false,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.2088354
+        },
+        {
+          "weapon": "",
+          "female": false,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.3132792
+        },
+        {
+          "weapon": "",
+          "female": false,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.248837277
+        },
+        {
+          "weapon": "",
+          "female": false,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.2631675
+        },
+        {
+          "weapon": "",
+          "female": true,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.210629717
+        },
+        {
+          "weapon": "",
+          "female": true,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.301454484
+        },
+        {
+          "weapon": "",
+          "female": true,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.268045843
+        },
+        {
+          "weapon": "",
+          "female": true,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.275525
+        },
+        {
+          "weapon": "gloves",
+          "female": false,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.06787002
+        },
+        {
+          "weapon": "gloves",
+          "female": false,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.244009688
+        },
+        {
+          "weapon": "gloves",
+          "female": false,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.1597992
+        },
+        {
+          "weapon": "gloves",
+          "female": false,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.2121619
+        },
+        {
+          "weapon": "gloves",
+          "female": true,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.09632415
+        },
+        {
+          "weapon": "gloves",
+          "female": true,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.245065868
+        },
+        {
+          "weapon": "gloves",
+          "female": true,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.189379692
+        },
+        {
+          "weapon": "gloves",
+          "female": true,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.231597349
+        },
+        {
+          "weapon": "dumbbell",
+          "female": false,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.0131564
+        },
+        {
+          "weapon": "dumbbell",
+          "female": false,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.176499456
+        },
+        {
+          "weapon": "dumbbell",
+          "female": false,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.0151914926
+        },
+        {
+          "weapon": "dumbbell",
+          "female": false,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.209902018
+        },
+        {
+          "weapon": "dumbbell",
+          "female": true,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.0236881375
+        },
+        {
+          "weapon": "dumbbell",
+          "female": true,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.205967546
+        },
+        {
+          "weapon": "dumbbell",
+          "female": true,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.0240045134
+        },
+        {
+          "weapon": "dumbbell",
+          "female": true,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.255270362
+        },
+        {
+          "weapon": "ferPlay",
+          "female": false,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.183188468
+        },
+        {
+          "weapon": "ferPlay",
+          "female": false,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.105120085
+        },
+        {
+          "weapon": "ferPlay",
+          "female": false,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.2861171
+        },
+        {
+          "weapon": "ferPlay",
+          "female": false,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.210354716
+        },
+        {
+          "weapon": "ferPlay",
+          "female": true,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.116409279
+        },
+        {
+          "weapon": "ferPlay",
+          "female": true,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.033649195
+        },
+        {
+          "weapon": "ferPlay",
+          "female": true,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.252550721
+        },
+        {
+          "weapon": "ferPlay",
+          "female": true,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.141319126
+        },
+        {
+          "weapon": "huilesson",
+          "female": false,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.0187538564
+        },
+        {
+          "weapon": "huilesson",
+          "female": false,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.103138007
+        },
+        {
+          "weapon": "huilesson",
+          "female": false,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.1491962
+        },
+        {
+          "weapon": "huilesson",
+          "female": false,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.229015172
+        },
+        {
+          "weapon": "huilesson",
+          "female": true,
+          "left": true,
+          "stance": 1,
+          "centerGap": 0.0109564075
+        },
+        {
+          "weapon": "huilesson",
+          "female": true,
+          "left": true,
+          "stance": 3,
+          "centerGap": 0.0511485636
+        },
+        {
+          "weapon": "huilesson",
+          "female": true,
+          "left": false,
+          "stance": 1,
+          "centerGap": 0.157373711
+        },
+        {
+          "weapon": "huilesson",
+          "female": true,
+          "left": false,
+          "stance": 3,
+          "centerGap": 0.16078116
+        }
+      ]
+    }
+  },
+  "preservation": {
+    "sampledStates": 124,
+    "guardFootPositionDeltaMetres": 7.825185045682676e-07,
+    "attackBonePositionDeltaMetres": 0,
+    "maxComparedBoneRotationDeltaDegrees": 3.6061199636676066e-05,
+    "comparedAttackPhases": [
+      0.1,
+      0.25,
+      0.5,
+      0.75,
+      0.88
+    ],
+    "bones": [
+      "Hips",
+      "Chest",
+      "Head",
+      "RightHand",
+      "LeftFoot",
+      "RightFoot"
+    ]
+  },
+  "appQA": {
+    "scope": "Rebuilt app.grrind.dev Debug on GRRIND E2E Simulator iOS 27.0; no real iPhone verification",
+    "nativeIdentity": "native-proof.json: matching UUID and all 16 Data hashes, 3 Data files changed since #273",
+    "initialFlow": {
+      "file": ".maestro/quaternius-poc.yaml",
+      "combatSection": "PASS: guard/profile, normal/critical, background return, verdict, portrait return and four frozen weapon contacts completed",
+      "overall": "FAIL on initial dev inventory-preview layout: Corps missing in accessibility tree",
+      "report": "initial-flow-report.xml"
+    },
+    "correction": "Place the actual AvatarPreview in normal column flow inside the dev workshop; give each preview mode a fresh Showcase instance",
+    "focusedRetry": {
+      "file": ".maestro/quaternius-preview.yaml",
+      "status": "PASS",
+      "durationSeconds": 108.132,
+      "report": "preview-flow-report.xml",
+      "captures": [
+        "ios-inventory-preview-fer-play-male.png",
+        "ios-inventory-preview-fer-play-female.png",
+        "ios-inventory-preview-huilesson-female.png",
+        "ios-inventory-preview-huilesson-male.png"
+      ],
+      "review": "All four still images inspected, plus both native guard profiles and actual duel. Preview uses unchanged production AvatarPreview and native captureAvatar at phase .35. No server inventory mutation tested."
+    }
+  },
+  "productionDeployment": false,
+  "testflightSubmission": false,
+  "clientChecks": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "unitTests": 591,
+    "previews": 29
+  },
+  "authorMovementVerdict": "vraiment top le mouvement",
+  "review": "Implementation agent; no independent reviewer or personal author verdict on final guard fit claimed",
+  "visualReview": {
+    "guardAtlas": "guard-views.jpg",
+    "guardViews": 12,
+    "phase": 0.5,
+    "anglesDegrees": [
+      0,
+      25,
+      90
+    ],
+    "bodies": [
+      "male",
+      "female"
+    ],
+    "weapons": [
+      "ferPlay",
+      "huilesson"
+    ],
+    "mixedDuels": [
+      "duel-player-guard.png",
+      "duel-enemy-guard.png"
+    ],
+    "sourceCameraSizes": {
+      "portrait": [
+        512,
+        640
+      ],
+      "duel": [
+        1280,
+        586
+      ]
+    },
+    "captureSession": "Play session restarted and runInBackground enabled after diagnostic actor accumulation. Motion capture asserts <=2 active fighters. Only clean captures retained.",
+    "motionProof": {
+      "files": [
+        "cycles-1x.gif",
+        "cycles-2x.gif"
+      ],
+      "frames": 144,
+      "fps": 24,
+      "source": "Actual RN unityActorFrame/unityPresentationAt and Unity FighterPose, same fixture clock as #273. Official capture_game_view camera; no RN HUD/safe areas.",
+      "cases": [
+        "male Fer play normal",
+        "male Fer play critical",
+        "female Huilesson normal",
+        "female Huilesson critical"
+      ],
+      "GIFSize": [
+        960,
+        494
+      ]
+    }
+  },
+  "headHipAtMiddleDegrees": {
+    "before": 24.568249788874144,
+    "after": 0.25004719218749266
+  }
+}
