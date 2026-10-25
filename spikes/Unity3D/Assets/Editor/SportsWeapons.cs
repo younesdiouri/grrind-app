@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public static class SportsWeapons
 {
@@ -36,6 +37,7 @@ public static class SportsWeapons
                     Clip("GreatSwordIdle"), Clip("GreatSwordDownwardSlash"), Clip("GreatSwordPowerSlash") }).ToArray();
                 pose.contacts[1]=pose.contacts[6]=.31f; pose.contacts[3]=.33f;
                 pose.contacts = pose.contacts.Take(8).Concat(new[] { .5f, .5f, .45f }).ToArray();
+                SupportGrip(root, name == "QuaterniusFemale");
                 grip.SetEquipped(false);
                 PrefabUtility.SaveAsPrefabAsset(root, path);
             }
@@ -45,6 +47,58 @@ public static class SportsWeapons
     }
     static AnimationClip Clip(string name) => AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Mixamo/"+name+".fbx")
         .OfType<AnimationClip>().Single(c=>!c.name.StartsWith("__preview__"));
+    public static void SupportGrip(GameObject root, bool female)
+    {
+        var grip=root.GetComponent<WeaponGrip>();var actor=root.GetComponent<Animator>();
+        var right=actor.GetBoneTransform(HumanBodyBones.RightHand);
+        var left=actor.GetBoneTransform(HumanBodyBones.LeftHand);
+        grip.supportFingers=grip.fingers.Select(r=>left.GetComponentsInChildren<Transform>()
+            .Single(l=>l.name==r.name.Replace("_r","_l"))).ToArray();
+        var fingers=grip.fingers.Concat(grip.supportFingers).ToArray();
+        var originals=fingers.Select(t=>t.localRotation).ToArray();
+        var rightRest=grip.fingers.Select(t=>t.rotation).ToArray();
+        var leftRest=grip.supportFingers.Select(t=>t.rotation).ToArray();
+        var reflection=Matrix4x4.Scale(new Vector3(-1,1,1));
+        try
+        {
+            for(int i=0;i<grip.fingers.Length;i++)grip.fingers[i].localRotation=grip.rotations[i];
+            for(int i=0;i<grip.supportFingers.Length;i++)
+            {
+                var delta=Matrix4x4.Rotate(grip.fingers[i].rotation*Quaternion.Inverse(rightRest[i]));
+                grip.supportFingers[i].rotation=(reflection*delta*reflection).rotation*leftRest[i];
+            }
+            grip.supportRotations=grip.supportFingers.Select(t=>t.localRotation).ToArray();
+            var axis=grip.ferPlay.transform.localRotation*Vector3.left;
+            var socket=grip.ferPlay.transform.localPosition;
+            var leftSocket=left.InverseTransformPoint(reflection.MultiplyPoint3x4(right.TransformPoint(socket)));
+            var leftAxis=left.InverseTransformDirection(reflection.MultiplyVector(right.TransformDirection(axis)));
+            var rotation=Quaternion.Inverse(right.rotation)*left.rotation;
+            rotation=Quaternion.AngleAxis(female?235:225,axis)*Quaternion.FromToRotation(rotation*leftAxis,axis)*rotation;
+            var target=right.Find("Sports support grip");
+            if(target==null){target=new GameObject("Sports support grip").transform;target.SetParent(right,false);}
+            // Palm centres are 10 cm apart. Roll is measured over both complete source strokes.
+            target.SetLocalPositionAndRotation(socket-axis*.10f-rotation*leftSocket,rotation);
+            grip.supportTarget=target;
+            if(grip.supportRig==null){
+                var obj=new GameObject("Sports weapon rig");obj.transform.SetParent(root.transform,false);
+                grip.supportRig=obj.AddComponent<Rig>();
+            }
+            grip.supportRig.weight=0;
+            var constraint=grip.supportRig.GetComponentInChildren<TwoBoneIKConstraint>();
+            if(constraint==null){
+                var obj=new GameObject("Supporting hand");obj.transform.SetParent(grip.supportRig.transform,false);
+                constraint=obj.AddComponent<TwoBoneIKConstraint>();
+            }
+            var data=constraint.data;
+            data.root=actor.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            data.mid=actor.GetBoneTransform(HumanBodyBones.LeftLowerArm);data.tip=left;data.target=target;
+            data.targetPositionWeight=data.targetRotationWeight=1;data.hintWeight=0;
+            data.maintainTargetPositionOffset=data.maintainTargetRotationOffset=false;constraint.data=data;
+            var builder=root.GetComponent<RigBuilder>()??root.AddComponent<RigBuilder>();
+            builder.enabled=false;builder.layers.Clear();builder.layers.Add(new RigLayer(grip.supportRig));
+        }
+        finally{for(int i=0;i<fingers.Length;i++)fingers[i].localRotation=originals[i];}
+    }
     static GameObject Install(GameObject root, GameObject previous, string name)
     {
         if (previous != null) UnityEngine.Object.DestroyImmediate(previous);

@@ -20,3 +20,11 @@ une solution automatique pour toutes les armes. Les gestes du bras sont indépen
 
 La vérification d’enroulement dans `LePoidsLourd.Validate` détecte une poignée en dehors
 des doigts. Elle ne mesure pas les intersections de surface : les captures restent nécessaires.
+
+Pour les Great Sword de Fer play et Huilesson (#273), `SportsWeapons.SupportGrip` reflète ces
+poses pour les quinze phalanges gauches. La cible de soutien est fixée au manche, 10 cm derrière
+la paume droite, avec une rotation calibrée de 225° (homme) ou 235° (femme). Le Two Bone IK
+Constraint d’Animation Rigging 1.4.1 porte uniquement sur le bras gauche ; les clips Mixamo
+utilisent Character Arm-Space 40. `SportsWeaponsChecks` vérifie la prise et la conservation
+du geste droit. Les mesures, vues des deux mains et cycles complets sont dans
+[`docs/design/great-sword-motion`](../../../docs/design/great-sword-motion/validation.json).

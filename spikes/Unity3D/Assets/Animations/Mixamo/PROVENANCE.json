@@ -15,23 +15,39 @@
     "BackHandUppercut": "Boxing Back Hand Uppercut, Target 100",
     "DodgeRetreat": "Boxing Dodge Retreat, In Place enabled",
     "JabCrossCombo": "Boxing Jab Cross Combo, Target 0",
-    "GreatSwordIdle": "Great Sword Idle, Overdrive 50, Character Arm-Space 50, full trim 0–60, downloaded 2026-10-25",
-    "GreatSwordDownwardSlash": "Great Sword Downward Slash, Overdrive 50, Character Arm-Space 50, full trim 0–38, downloaded 2026-10-25",
-    "GreatSwordPowerSlash": "Great Sword Power Slash, Overdrive 50, Character Arm-Space 50, full trim 0–54, downloaded 2026-10-25"
+    "GreatSwordIdle": "Great Sword Idle, Overdrive 50, Character Arm-Space 40, full trim 0–60, downloaded 2026-10-25",
+    "GreatSwordDownwardSlash": "Great Sword Downward Slash, Overdrive 50, Character Arm-Space 40, full trim 0–38, downloaded 2026-10-25",
+    "GreatSwordPowerSlash": "Great Sword Power Slash, Overdrive 50, Character Arm-Space 40, full trim 0–54, downloaded 2026-10-25"
   },
   "unity_import": "Humanoid from each source skeleton, no compression. Horizontal root motion extracted and disabled at runtime; arena owns travel. Boxing / Great Sword idle loops. Canonical .5 maps to measured contacts in QuaterniusPoc.cs (boxing) and SportsWeapons.cs (Great Sword).",
   "downloaded": "2026-10-21",
   "rejected": "Thrust Slash has a follow-on slash; Quaternius Sword_Dash adds a jump. Kept neither in the shipped library.",
   "great_sword_source": "https://www.mixamo.com/#/?page=1&query=great%20sword",
-  "great_sword_export": "FBX for Unity, Without Skin, 30 fps, no keyframe reduction; original downloaded FBX bytes preserved, Humanoid retargeting and root-motion extraction only.",
+  "great_sword_export": "FBX for Unity, Without Skin, 30 fps, no keyframe reduction, Overdrive 50, Character Arm-Space 40, Mirror off, full trim. Downloaded FBX bytes retained. Humanoid import and root extraction; supporting-hand fit is a separate Unity Animation Rigging constraint.",
   "great_sword_sha256": {
-    "GreatSwordIdle": "8badbbb66b31f38822d21f6d5969b41e90eb79bada4bfa0cfa2c5e0087a955d3",
-    "GreatSwordDownwardSlash": "5b94b6e93c3f5d31c58167b42f3b3258e7b8049fc60d9542931d6afac0de7c5b",
-    "GreatSwordPowerSlash": "79acb224813d2996e960b3a4a00cc12e2614834be62988ca2314c66b679357ce"
+    "GreatSwordIdle": "941f487189d5ece5c05932e18016424aedeb6c2cf94477dd7847c2f0eb2c411f",
+    "GreatSwordDownwardSlash": "8123e4fadae381cb2afde56075f6bdd81dc1a2cc80e1b8055203af88d9d1942e",
+    "GreatSwordPowerSlash": "d403ab4c48a299f545b1a0b2087c85bceb5ea2cab84343516f55831beb97e7c6"
   },
   "retired_clips": {
     "StableSwordSlash": "Stable Sword Inward Slash, Emphasis 100, Angle 50, Overdrive 50, Character Arm-Space 50, downloaded 2026-10-24",
     "SwordStab": "Standing Torch Melee Attack Stab, Overdrive 50, Character Arm-Space 50, downloaded 2026-10-24"
   },
-  "retired_reason": "Rejected by author on 2026-10-25 (#273). Generated SwordGuard / SwordStabReturn and the old sword sources removed; history remains in #272. Great Sword variants are a G0 pilot, not an approved final replacement."
+  "retired_reason": "Rejected by author on 2026-10-25 (#273). Old sword sources and generated guard/inverted recovery removed; history remains in #272. Great Sword Downward/Power gestures selected by author: « Go ».",
+  "great_sword_pilot_sha256": {
+    "GreatSwordIdle": "8badbbb66b31f38822d21f6d5969b41e90eb79bada4bfa0cfa2c5e0087a955d3",
+    "GreatSwordDownwardSlash": "5b94b6e93c3f5d31c58167b42f3b3258e7b8049fc60d9542931d6afac0de7c5b",
+    "GreatSwordPowerSlash": "79acb224813d2996e960b3a4a00cc12e2614834be62988ca2314c66b679357ce"
+  },
+  "great_sword_support": {
+    "package": "com.unity.animation.rigging@1.4.1",
+    "constraint": "TwoBoneIK on supporting left arm only",
+    "palm_spacing_metres": 0.1,
+    "grip_roll_degrees": {
+      "male": 225,
+      "female": 235
+    },
+    "fingers": "Mirrored from the existing per-anatomy 25 mm cylindrical grip. Right arm, torso, head and feet preserve the source solve; measured in SportsWeaponsChecks.",
+    "release": "Blend out with received-hit/dodge clips; release when unequipped."
+  }
 }

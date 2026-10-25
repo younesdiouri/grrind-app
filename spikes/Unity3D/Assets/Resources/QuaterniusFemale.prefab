@@ -2204,6 +2204,37 @@ Transform:
   - {fileID: 3320874910489054658}
   m_Father: {fileID: 2777309231652236992}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3447005778154673039
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1958667231262060864}
+  m_Layer: 0
+  m_Name: Sports support grip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1958667231262060864
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3447005778154673039}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.00000033946384, y: -0.107759655, z: -0.44899788, w: -0.8870112}
+  m_LocalPosition: {x: 0.08722887, y: 0.020817012, z: -0.107836105}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7970956728703473382}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3580313466937486106
 GameObject:
   m_ObjectHideFlags: 0
@@ -2236,6 +2267,53 @@ Transform:
   - {fileID: 7358884728080017274}
   m_Father: {fileID: 6184652756570233397}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3932030487168217363
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6791471170096301362}
+  - component: {fileID: 6831476725999339328}
+  m_Layer: 0
+  m_Name: Sports weapon rig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6791471170096301362
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3932030487168217363}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 320715854891962007}
+  m_Father: {fileID: 7232166061195058221}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6831476725999339328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3932030487168217363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
+  m_Weight: 0
+  m_Effectors: []
 --- !u!1 &3933186565829554508
 GameObject:
   m_ObjectHideFlags: 0
@@ -4065,6 +4143,7 @@ Transform:
   - {fileID: 4064789471873151727}
   - {fileID: 53725180743900077}
   - {fileID: 734226842244930534}
+  - {fileID: 1958667231262060864}
   m_Father: {fileID: 1646207277745177262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6667881088931223418
@@ -4537,6 +4616,62 @@ Transform:
   - {fileID: 7440891789371952877}
   m_Father: {fileID: 551542601953630240}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7470635215202734839
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 320715854891962007}
+  - component: {fileID: 7147326993243514867}
+  m_Layer: 0
+  m_Name: Supporting hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &320715854891962007
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7470635215202734839}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6791471170096301362}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7147326993243514867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7470635215202734839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
+  m_Weight: 1
+  m_Data:
+    m_Root: {fileID: 374150051070852789}
+    m_Mid: {fileID: 8379032282088039773}
+    m_Tip: {fileID: 4825071109987357714}
+    m_Target: {fileID: 1958667231262060864}
+    m_Hint: {fileID: 0}
+    m_TargetPositionWeight: 1
+    m_TargetRotationWeight: 1
+    m_HintWeight: 0
+    m_MaintainTargetPositionOffset: 0
+    m_MaintainTargetRotationOffset: 0
 --- !u!1 &7508247336569231087
 GameObject:
   m_ObjectHideFlags: 0
@@ -4678,6 +4813,7 @@ GameObject:
   - component: {fileID: 9076494231884881741}
   - component: {fileID: 7952890022034898261}
   - component: {fileID: 5206938537163570425}
+  - component: {fileID: 4054464595539525877}
   m_Layer: 0
   m_Name: QuaterniusFemale
   m_TagString: Untagged
@@ -4716,6 +4852,7 @@ Transform:
   - {fileID: 5991741134591417377}
   - {fileID: 2686909918766869005}
   - {fileID: 9203515825795301131}
+  - {fileID: 6791471170096301362}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &6796534696351400257
@@ -4895,6 +5032,56 @@ MonoBehaviour:
   - {x: 0.30231455, y: 0.9391544, z: 0.1478972, w: -0.06871316}
   - {x: -0.23123986, y: -0.011223023, z: 0.11473896, w: -0.9660421}
   - {x: -0.3506975, y: -0.02823808, z: 0.16941679, w: -0.92060417}
+  supportRig: {fileID: 6831476725999339328}
+  supportTarget: {fileID: 1958667231262060864}
+  supportFingers:
+  - {fileID: 2064951687246447197}
+  - {fileID: 3070046677731617236}
+  - {fileID: 1561111556141376728}
+  - {fileID: 1217920257503633580}
+  - {fileID: 881200228840645403}
+  - {fileID: 1675312403560271046}
+  - {fileID: 7385487025462490091}
+  - {fileID: 5652689160249539865}
+  - {fileID: 5243010602322125161}
+  - {fileID: 4334897996340548971}
+  - {fileID: 5730925975380072280}
+  - {fileID: 7037564508443116696}
+  - {fileID: 1499071977511060004}
+  - {fileID: 4475899207986640984}
+  - {fileID: 3978601440686593640}
+  supportRotations:
+  - {x: 0.4880191, y: -0.48446202, z: 0.51454175, w: 0.51223105}
+  - {x: -0.8052358, y: -0.06746184, z: 0.053830784, w: -0.58664006}
+  - {x: 0.6920189, y: -0.01701834, z: 0.016720548, w: 0.72148496}
+  - {x: 0.47103032, y: -0.4660977, z: 0.5312885, w: 0.5278408}
+  - {x: -0.7337488, y: -0.04084555, z: 0.03908351, w: -0.677065}
+  - {x: 0.65422523, y: -0.00022267619, z: 0.0044128913, w: 0.75628686}
+  - {x: 0.39500698, y: -0.4442742, z: 0.54749906, w: 0.58892673}
+  - {x: -0.8008907, y: 0.021187957, z: -0.022111576, w: -0.59802693}
+  - {x: 0.6635799, y: 0.0041370536, z: -0.0015157079, w: 0.7480925}
+  - {x: 0.43759823, y: -0.44995448, z: 0.5456914, w: 0.5552205}
+  - {x: -0.7079384, y: -0.009202817, z: 0.0061847344, w: -0.70618725}
+  - {x: 0.6278338, y: 0.0016667655, z: 0.0040392256, w: 0.7783353}
+  - {x: -0.30231446, y: 0.9391544, z: 0.14789703, w: 0.068713084}
+  - {x: 0.23123987, y: -0.011223119, z: 0.11473888, w: 0.96604204}
+  - {x: 0.350698, y: -0.02823815, z: 0.16941687, w: 0.9206038}
+--- !u!114 &4054464595539525877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7748413982013286817}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff0960ef4ea6e04eac66b4a7fd2189d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigBuilder
+  m_RigLayers:
+  - m_Rig: {fileID: 6831476725999339328}
+    m_Active: 1
+  m_Effectors: []
 --- !u!1 &7767621515329195868
 GameObject:
   m_ObjectHideFlags: 0
