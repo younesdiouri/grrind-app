@@ -1007,6 +1007,7 @@ Transform:
   - {fileID: 8731525573036497311}
   - {fileID: 4501608949507801119}
   - {fileID: 6522052560039115258}
+  - {fileID: 1651869882490582115}
   m_Father: {fileID: 4546829740756087644}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2023639149188383455
@@ -1701,6 +1702,109 @@ Transform:
   - {fileID: 4312292724729192029}
   m_Father: {fileID: 5198635637232004209}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3091100691718250007
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 665235376268053137}
+  - component: {fileID: 5928984229267502023}
+  m_Layer: 0
+  m_Name: Supporting hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &665235376268053137
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3091100691718250007}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6695890674267542917}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5928984229267502023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3091100691718250007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
+  m_Weight: 1
+  m_Data:
+    m_Root: {fileID: 3783758484154444672}
+    m_Mid: {fileID: 9023891866829095067}
+    m_Tip: {fileID: 5599906512766593592}
+    m_Target: {fileID: 1651869882490582115}
+    m_Hint: {fileID: 0}
+    m_TargetPositionWeight: 1
+    m_TargetRotationWeight: 1
+    m_HintWeight: 0
+    m_MaintainTargetPositionOffset: 0
+    m_MaintainTargetRotationOffset: 0
+--- !u!1 &3118485860740574598
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6695890674267542917}
+  - component: {fileID: 1546800583981773018}
+  m_Layer: 0
+  m_Name: Sports weapon rig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6695890674267542917
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3118485860740574598}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 665235376268053137}
+  m_Father: {fileID: 5291555190439229493}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1546800583981773018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3118485860740574598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
+  m_Weight: 0
+  m_Effectors: []
 --- !u!1 &3367758739495063884
 GameObject:
   m_ObjectHideFlags: 0
@@ -3908,6 +4012,37 @@ Transform:
   - {fileID: 3783758484154444672}
   m_Father: {fileID: 4644681511910387800}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7040926055440167241
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1651869882490582115}
+  m_Layer: 0
+  m_Name: Sports support grip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1651869882490582115
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7040926055440167241}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.0000012597943, y: -0.089308575, z: -0.3721165, w: -0.92387956}
+  m_LocalPosition: {x: 0.10733446, y: 0.019893885, z: -0.10761366}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3665411710102803923}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7123828640201179655
 GameObject:
   m_ObjectHideFlags: 0
@@ -4746,6 +4881,7 @@ GameObject:
   - component: {fileID: 7508926980593016045}
   - component: {fileID: 6699869014797263388}
   - component: {fileID: 335662535759760730}
+  - component: {fileID: 6320007517694484406}
   m_Layer: 0
   m_Name: QuaterniusShowcase
   m_TagString: Untagged
@@ -4784,6 +4920,7 @@ Transform:
   - {fileID: 880399073449353953}
   - {fileID: 2619885819359685627}
   - {fileID: 2518599391529971229}
+  - {fileID: 6695890674267542917}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &6987011227669192539
@@ -4895,9 +5032,9 @@ MonoBehaviour:
   - {fileID: 7400000, guid: 3eac645856501407391f065d8a582f33, type: 2}
   - {fileID: 7400000, guid: 017e708fbef924a86b7dbca304112cde, type: 2}
   - {fileID: 7400000, guid: 5fed8ac8ead5643b08da5e958ecca3b8, type: 2}
-  - {fileID: 7400000, guid: 2ab927843e49b4315a8c1eeaa82d3ee0, type: 2}
-  - {fileID: -203655887218126122, guid: 693ee30fc1f1a4836bd35b19f851d5c7, type: 3}
-  - {fileID: 7400000, guid: 36d261652022540aaa145ba32ddbdb32, type: 2}
+  - {fileID: -203655887218126122, guid: b0631caadb61f4b0bac35221df2550ef, type: 3}
+  - {fileID: -203655887218126122, guid: a2590615538124e6b8ec97d9a9f9dfdf, type: 3}
+  - {fileID: -203655887218126122, guid: d488a0772bfaf47d5b20b83b3a20dc56, type: 3}
   inspectionCamera: {fileID: 0}
   shoes:
   - {fileID: 5512400630652804502}
@@ -4913,8 +5050,8 @@ MonoBehaviour:
   - 0.31
   - 0.5
   - 0.5
-  - 0.17
   - 0.5
+  - 0.45
   weaponType: FIST
   stance: 0
   view: 0
@@ -4973,6 +5110,56 @@ MonoBehaviour:
   - {x: 0.2520842, y: 0.9587713, z: 0.11090072, w: -0.07008671}
   - {x: -0.32175583, y: -0.009972492, z: 0.11818386, w: -0.9393649}
   - {x: -0.2956768, y: -0.038134817, z: 0.19164963, w: -0.93508905}
+  supportRig: {fileID: 1546800583981773018}
+  supportTarget: {fileID: 1651869882490582115}
+  supportFingers:
+  - {fileID: 5240583207304126764}
+  - {fileID: 8141501499170899784}
+  - {fileID: 5022764894174585846}
+  - {fileID: 7645168750846845014}
+  - {fileID: 6572304830141606219}
+  - {fileID: 8413230166857635168}
+  - {fileID: 726248083823520858}
+  - {fileID: 6365554275946312591}
+  - {fileID: 1643824767364916084}
+  - {fileID: 414695387611849632}
+  - {fileID: 8071064625384539840}
+  - {fileID: 3140530368998164047}
+  - {fileID: 8970725717049638347}
+  - {fileID: 3138862199335321621}
+  - {fileID: 2965707020001487818}
+  supportRotations:
+  - {x: 0.50143045, y: -0.46673638, z: 0.52638847, w: 0.50362664}
+  - {x: -0.84888506, y: -0.060716156, z: 0.04932742, w: -0.5227567}
+  - {x: 0.7270887, y: -0.021139678, z: 0.019466734, w: 0.68594176}
+  - {x: 0.4780636, y: -0.45677674, z: 0.53790295, w: 0.5229442}
+  - {x: -0.7691142, y: -0.038652837, z: 0.03757343, w: -0.636834}
+  - {x: 0.6843067, y: -0.0022181869, z: 0.0059867334, w: 0.72916645}
+  - {x: 0.38522545, y: -0.45646417, z: 0.5365591, w: 0.59610915}
+  - {x: -0.797067, y: 0.019118346, z: -0.020273926, w: -0.60324776}
+  - {x: 0.6617025, y: 0.003501435, z: -0.0010519498, w: 0.7497576}
+  - {x: 0.4384037, y: -0.44891956, z: 0.546505, w: 0.5546223}
+  - {x: -0.72306484, y: -0.008735683, z: 0.0062747905, w: -0.6906964}
+  - {x: 0.64052254, y: 0.0015523903, z: 0.0038300082, w: 0.76792824}
+  - {x: -0.2520844, y: 0.9587713, z: 0.11090067, w: 0.07008656}
+  - {x: 0.3217563, y: -0.009972926, z: 0.11818367, w: 0.93936473}
+  - {x: 0.29567754, y: -0.03813516, z: 0.19164926, w: 0.9350888}
+--- !u!114 &6320007517694484406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8250348727961730497}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff0960ef4ea6e04eac66b4a7fd2189d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigBuilder
+  m_RigLayers:
+  - m_Rig: {fileID: 1546800583981773018}
+    m_Active: 1
+  m_Effectors: []
 --- !u!1 &8328546879646832327
 GameObject:
   m_ObjectHideFlags: 0

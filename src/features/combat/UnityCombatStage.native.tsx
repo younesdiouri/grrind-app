@@ -44,22 +44,24 @@ export function UnityCombatStage({ clock, timeline, player, enemy, viewport, wid
   }, [ready, focused]);
   useAnimatedReaction(
     () => ({ bucket: ready && focused ? Math.floor(clock.get() / 33) : -1,
-      playerVisible: playing && player.visible, enemyVisible: enemy.visible, done, reduced, width }),
+      playerVisible: playing && player.visible, enemyVisible: enemy.visible,
+      playerWeaponType: player.weaponType ?? 'FIST', enemyWeaponType: enemy.weaponType ?? 'FIST', done, reduced, width }),
     (state, previous) => {
       if (state.bucket < 0 || (state.bucket === previous?.bucket && state.playerVisible === previous.playerVisible
         && state.enemyVisible === previous.enemyVisible && state.done === previous.done
-        && state.reduced === previous.reduced && state.width === previous.width)) return;
+        && state.reduced === previous.reduced && state.width === previous.width
+        && state.playerWeaponType === previous.playerWeaponType && state.enemyWeaponType === previous.enemyWeaponType)) return;
       const time = clock.get();
       scheduleOnRN(send, JSON.stringify({
         presentation: unityPresentationAt(timeline, time, done, reduced),
         player: unityActorFrame(timeline.beats, 'PLAYER', time, {
           critical: timeline.enemy.criticalFlash, dodge: timeline.player.dodgeFlash,
           combo: timeline.player.comboFlash, replay: timeline.player.replayFlash,
-        }, width, state.playerVisible, reduced),
+        }, width, state.playerVisible, reduced, state.playerWeaponType),
         enemy: unityActorFrame(timeline.beats, 'ENEMY', time, {
           critical: timeline.player.criticalFlash, dodge: timeline.enemy.dodgeFlash,
           combo: timeline.enemy.comboFlash, replay: timeline.enemy.replayFlash,
-        }, width, state.enemyVisible, reduced),
+        }, width, state.enemyVisible, reduced, state.enemyWeaponType),
       }));
     },
   );

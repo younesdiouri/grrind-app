@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.Playables;
 
 // Quaternius Humanoid clips sampled by the front clock; no combat simulation here.
@@ -25,6 +26,7 @@ public sealed class FighterPose : MonoBehaviour
     AnimationClipPlayable[] players;
     Transform head;
     WeaponGrip dumbbell;
+    RigBuilder rigBuilder;
 
     public void SetShoes(bool visible)
     {
@@ -45,7 +47,8 @@ public sealed class FighterPose : MonoBehaviour
             players[i]=AnimationClipPlayable.Create(graph,clips[i]);players[i].SetApplyFootIK(actor.isHuman);
             graph.Connect(players[i],0,mixer,i);
         }
-        AnimationPlayableOutput.Create(graph,"Avatar",actor).SetSourcePlayable(mixer);graph.Play();
+        AnimationPlayableOutput.Create(graph,"Avatar",actor).SetSourcePlayable(mixer);
+        rigBuilder=GetComponent<RigBuilder>();rigBuilder?.Build(graph);graph.Play();
     }
     void LateUpdate()
     {
@@ -66,8 +69,13 @@ public sealed class FighterPose : MonoBehaviour
         players[rest].SetTime(p*clips[rest].length);
         if(selected!=rest)players[selected].SetTime(ClipPhase(selected,p,contacts)*clips[selected].length);
         // Apply arena placement after the pose solve.
-        actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);graph.Evaluate(0);
-        dumbbell?.Apply();
+        actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);
+        // Keep the supporting hand on the handle; release it with the received-hit/dodge clip.
+        float support=sword&&dumbbell!=null&&dumbbell.TwoHanded
+            ?(selected==8||selected==9||selected==10?1:1-blend):0;
+        if(rigBuilder!=null){dumbbell.supportRig.weight=support;rigBuilder.SyncLayers();}
+        graph.Evaluate(0);
+        dumbbell?.Apply(support);
         actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));
         if(contactShadow!=null)
         {
@@ -90,5 +98,5 @@ public sealed class FighterPose : MonoBehaviour
         return p<=.5f?Mathf.Lerp(0,contact,p*2):Mathf.Lerp(contact,1,(p-.5f)*2);
     }
     public Transform Bone(HumanBodyBones bone)=>actor.isHuman?actor.GetBoneTransform(bone):actor.transform;
-    void OnDestroy(){if(graph.IsValid())graph.Destroy();}
+    void OnDestroy(){rigBuilder?.Clear();if(graph.IsValid())graph.Destroy();}
 }

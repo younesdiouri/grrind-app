@@ -30,7 +30,7 @@ export const UNITY_POSES: Record<FighterPose, number> = { idle: 0, attack: 1, hi
 
 /** Same server timeline and contact as the HUD; phase .5 is the contact in each clip. */
 export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, signals: PoseSignals,
-  width: number, visible: boolean, reduced: boolean): UnityActorFrame {
+  width: number, visible: boolean, reduced: boolean, weaponType: UnityAvatar['weaponType'] = 'FIST'): UnityActorFrame {
   'worklet';
   const beat = beatAt(beats, time);
   const motion = fighterMotionAt(beats, side, time, reduced, true);
@@ -51,7 +51,8 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
     const critical = sampleRamp(signals.critical, contact + (beat.until - contact) / 3) > 0;
     const replay = sampleRamp(signals.replay, beat.at + (contact - beat.at) / 3) > 0;
     frame.pose = critical ? 3 : replay ? 6 : 1;
-    frame.phase = time < contact ? ((time - beat.at) / (contact - beat.at)) ** 3 * .5
+    const prepared = (time - beat.at) / (contact - beat.at);
+    frame.phase = time < contact ? (weaponType === 'SWORD' ? prepared : prepared ** 3) * .5
       : .5 + (released - contact) / (recovery - contact - combatMotion.hitStop) * .5;
   } else if (beat.kind === 'dodge') {
     frame.pose = 4; frame.phase = (time - beat.at) / (recovery - beat.at);

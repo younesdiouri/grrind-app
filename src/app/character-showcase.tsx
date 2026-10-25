@@ -155,7 +155,7 @@ function Showcase() {
         {section === 'Mouvements' && <>
         <View style={styles.row}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.poseList} contentContainerStyle={styles.poseRow}>
-            {([{ label: 'Repos', pose: 'idle' }, { label: weapon ? 'Taille' : 'Direct', pose: 'attack' }, { label: weapon ? 'Estoc' : 'Uppercut', pose: 'critical' },
+            {([{ label: 'Repos', pose: 'idle' }, { label: weapon ? 'Taille' : 'Direct', pose: 'attack' }, { label: weapon ? 'Slash' : 'Uppercut', pose: 'critical' },
               { label: 'Esquive', pose: 'dodge' }, { label: 'Impact', pose: 'hit' }, { label: 'Combo', pose: 'combo' }] as const).map(choice =>
               <Choice key={choice.pose} label={choice.label} selected={pose === choice.pose} onPress={() => setPose(choice.pose)} />)}
           </ScrollView>
