@@ -175,8 +175,8 @@ appId: app.grrind.dev
 - tapOn: Figer
 - tapOn: Taille
 - takeScreenshot: fer-play-female-slash
-- tapOn: Estoc
-- takeScreenshot: fer-play-female-stab
+- tapOn: Slash
+- takeScreenshot: fer-play-female-slash
 - tapOn: Corps
 - tapOn: Homme
 - takeScreenshot: fer-play-male-stab
@@ -188,8 +188,8 @@ appId: app.grrind.dev
 - tapOn: Mouvements
 - tapOn: Taille
 - takeScreenshot: huilesson-male-slash
-- tapOn: Estoc
-- takeScreenshot: huilesson-male-stab
+- tapOn: Slash
+- takeScreenshot: huilesson-male-slash
 - tapOn: Corps
 - tapOn: Femme
 - takeScreenshot: huilesson-female-stab

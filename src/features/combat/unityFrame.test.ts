@@ -76,6 +76,23 @@ test('Unity holds the actual striking pose briefly at contact', () => {
   assert.equal(held.phase, .5);
 });
 
+test('sword windup advances steadily while fists keep their explosive timing and common contact', () => {
+  for (const beat of timeline.beats) {
+    if (beat.kind !== 'attack') continue;
+    const contact = contactAt(beat);
+    const halfway = beat.at + (contact - beat.at) / 2;
+    const frame = (time: number, weaponType: 'FIST' | 'SWORD') => unityActorFrame(
+      timeline.beats, beat.attacker, time, signals(beat.attacker), 500, true, false, weaponType);
+    assert.equal(frame(halfway, 'SWORD').phase, .25);
+    assert.ok(frame(halfway, 'FIST').phase < .1);
+    for (const family of ['FIST', 'SWORD'] as const) {
+      assert.equal(frame(contact, family).phase, .5);
+      assert.equal(frame(contact + 40, family).phase, .5);
+      assert.equal(frame(contact, family).x, 0);
+    }
+  }
+});
+
 test('Unity attacks from its calibrated position without a screen-dependent lunge', () => {
   for (const beat of timeline.beats) {
     if (beat.kind !== 'attack' && beat.kind !== 'dodge') continue;

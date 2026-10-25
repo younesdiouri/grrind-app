@@ -1,0 +1,339 @@
+{
+  "issue": 273,
+  "stage": "G0 movement pilot, not final art validation",
+  "sources": "Original Adobe Mixamo FBX Unity / Without Skin / 30fps / no keyframe reduction; Remy, full trim, Arm-Space 50, Overdrive 50",
+  "contactSourceFractions": {
+    "normal": 0.5,
+    "critical": 0.45
+  },
+  "canonicalContact": 0.5,
+  "motionProof": {
+    "fps": 24,
+    "sourceSize": [
+      1280,
+      586
+    ],
+    "viewport": [
+      0.04,
+      0.1,
+      0.9,
+      0.6
+    ],
+    "sampling": "Actual RN unityActorFrame and unityPresentationAt; actual Unity FighterPose; installed capture_game_view camera tool. PNG composition only. No overlay HUD or RN safe areas.",
+    "clips": [
+      "Great Sword Downward Slash",
+      "Great Sword Power Slash"
+    ],
+    "cases": "male Fer play attacking female Huilesson",
+    "rootSeparationMetres": 0.7
+  },
+  "geometryOnlyChecks": {
+    "contacts": 40,
+    "samples": 8820,
+    "maxCenterGap": 0.349620461,
+    "minHeadClearance": 0.206416,
+    "rows": [
+      {
+        "weapon": "",
+        "female": false,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.208834618
+      },
+      {
+        "weapon": "",
+        "female": false,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.313278615
+      },
+      {
+        "weapon": "",
+        "female": false,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.2488366
+      },
+      {
+        "weapon": "",
+        "female": false,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.263166934
+      },
+      {
+        "weapon": "",
+        "female": true,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.210629329
+      },
+      {
+        "weapon": "",
+        "female": true,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.301454216
+      },
+      {
+        "weapon": "",
+        "female": true,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.268045634
+      },
+      {
+        "weapon": "",
+        "female": true,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.2755247
+      },
+      {
+        "weapon": "gloves",
+        "female": false,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.0678695962
+      },
+      {
+        "weapon": "gloves",
+        "female": false,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.244009078
+      },
+      {
+        "weapon": "gloves",
+        "female": false,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.159798816
+      },
+      {
+        "weapon": "gloves",
+        "female": false,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.212161168
+      },
+      {
+        "weapon": "gloves",
+        "female": true,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.0963240638
+      },
+      {
+        "weapon": "gloves",
+        "female": true,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.245065629
+      },
+      {
+        "weapon": "gloves",
+        "female": true,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.189379767
+      },
+      {
+        "weapon": "gloves",
+        "female": true,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.231596917
+      },
+      {
+        "weapon": "dumbbell",
+        "female": false,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.0131572075
+      },
+      {
+        "weapon": "dumbbell",
+        "female": false,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.176498935
+      },
+      {
+        "weapon": "dumbbell",
+        "female": false,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.01519192
+      },
+      {
+        "weapon": "dumbbell",
+        "female": false,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.209901616
+      },
+      {
+        "weapon": "dumbbell",
+        "female": true,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.02368814
+      },
+      {
+        "weapon": "dumbbell",
+        "female": true,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.205966979
+      },
+      {
+        "weapon": "dumbbell",
+        "female": true,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.02400495
+      },
+      {
+        "weapon": "dumbbell",
+        "female": true,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.255269885
+      },
+      {
+        "weapon": "ferPlay",
+        "female": false,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.247379184
+      },
+      {
+        "weapon": "ferPlay",
+        "female": false,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.06632514
+      },
+      {
+        "weapon": "ferPlay",
+        "female": false,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.349620461
+      },
+      {
+        "weapon": "ferPlay",
+        "female": false,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.19444041
+      },
+      {
+        "weapon": "ferPlay",
+        "female": true,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.189053118
+      },
+      {
+        "weapon": "ferPlay",
+        "female": true,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.01999557
+      },
+      {
+        "weapon": "ferPlay",
+        "female": true,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.314118922
+      },
+      {
+        "weapon": "ferPlay",
+        "female": true,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.1270668
+      },
+      {
+        "weapon": "huilesson",
+        "female": false,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.102398217
+      },
+      {
+        "weapon": "huilesson",
+        "female": false,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.07922018
+      },
+      {
+        "weapon": "huilesson",
+        "female": false,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.1883502
+      },
+      {
+        "weapon": "huilesson",
+        "female": false,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.210047051
+      },
+      {
+        "weapon": "huilesson",
+        "female": true,
+        "left": true,
+        "stance": 1,
+        "centerGap": 0.03632879
+      },
+      {
+        "weapon": "huilesson",
+        "female": true,
+        "left": true,
+        "stance": 3,
+        "centerGap": 0.04426156
+      },
+      {
+        "weapon": "huilesson",
+        "female": true,
+        "left": false,
+        "stance": 1,
+        "centerGap": 0.164223775
+      },
+      {
+        "weapon": "huilesson",
+        "female": true,
+        "left": false,
+        "stance": 3,
+        "centerGap": 0.14974232
+      }
+    ]
+  },
+  "limits": [
+    "Supporting hand does not stay on handle after Humanoid retargeting",
+    "Center distances do not certify surface collisions",
+    "Unity pilot, no new iOS binary verification"
+  ],
+  "discardedExperiments": [
+    "Native hand IK and Animation Rigging constraints: supporting target exceeds left arm reach; removed completely",
+    "Mixamo rejected original and renamed rig; mesh-only uploads also rejected. No uploaded copy replaces the game rig."
+  ],
+  "clientChecks": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "unitTests": 591,
+    "previews": 29
+  },
+  "authorMovementVerdict": "PENDING",
+  "G3": "NOT PASSED supporting-hand fit",
+  "G4": "NOT PASSED",
+  "G5": "NOT RUN",
+  "productionDeployment": false,
+  "testflightSubmission": false
+}
