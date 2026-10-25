@@ -87,5 +87,5 @@ Chaque barrière bloque la suivante ; un échec renvoie à l'étape qui l'a prod
    cadrage et à l'éclairage du combat, à la résolution de l'iPhone. Réponse de l'auteur
    consignée mot pour mot. Le verdict V1 autorise sa conservation et la suppression des
    anciennes pistes ; il ne valide pas d'avance les nouveaux items ou le féminin.
-6. **G5 — App.** Flow `.maestro/avatar-3d.yaml` via Metro, captures inspectées, selon
+6. **G5 — App.** Build sur l'iPhone de l'auteur, qui vérifie dans l'app, selon
    `docs/ai/mobile-qa.md`. Rebuild natif seulement si le framework Unity a changé.
