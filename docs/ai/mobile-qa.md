@@ -1,7 +1,8 @@
 # QA mobile iOS
 
-La boucle quotidienne utilise un development build déjà installé et Metro. On valide le
-comportement changé, puis on regarde les captures. Les règles communes sont dans `AGENTS.md`.
+La boucle quotidienne utilise un development build déjà installé et Metro. Ce qui se voit
+(écran, rendu Unity, animation, art) se juge par l’auteur sur l’iPhone ; Maestro couvre ce que
+l’œil ne voit pas (#285). Les règles communes sont dans `AGENTS.md`.
 
 ## Prérequis
 
@@ -49,13 +50,13 @@ Maestro. Le code de sortie signale l’échec. Ne pas utiliser ce reset sur un S
 
 | Changement | Vérification mobile |
 | --- | --- |
-| Présentation d’un écran | Un atelier/flow existant adapté, captures inspectées |
-| Navigation commune / intégration | `ios-smoke.yaml` : connexion, accueil, un combat, retour |
+| Présentation d’un écran, rendu Unity, postures, effets, art | Validations éditeur Unity si Unity change ; l’auteur juge sur iPhone, la PR dit quoi regarder |
+| Session, authentification | `ios-smoke.yaml` : connexion, accueil, un combat, retour |
 | Santé, import, récompense, diagnostics | `health-sync.yaml` : empty puis multiple |
-| Combat serveur, historique et rejeu | `combat-real.yaml` |
-| Postures et effets du combat | `combat-v2.yaml` ou l’atelier concerné |
-| Inventaire et profil public | `inventory-profile.yaml`, puis actions seulement si modifiées |
-| Guilde/chat | Le flow correspondant au comportement changé |
+| Combat serveur, historique et rejeu (flux serveur) | `combat-real.yaml` |
+| Inventaire et profil public (flux serveur) | `inventory-profile.yaml`, puis actions seulement si modifiées |
+| Guilde/chat (flux serveur) | Le flow correspondant au comportement changé |
+| Avant une sortie TestFlight | `ios-smoke.yaml` |
 | Scripts du harnais uniquement | `npm run test:ios:tools`, puis un flow si sa conduite change |
 | Documentation / tests seuls | Aucun Simulator ni build |
 
@@ -149,5 +150,6 @@ réinitialise les singletons ; aucun reboot/second clearState n’est nécessair
 
 Avant push : typecheck, lint et unit tests une fois sur le code final. Previews seulement si le
 rendu/tokens change, API seulement si le contrat change, outils iOS si le harnais change. Pour un
-écran/parcours modifié, le flow pertinent doit être vert et ses captures réellement inspectées.
+écran ou un rendu modifié, l’auteur vérifie sur iPhone ; pour un flux invisible, le flow
+pertinent doit être vert. Pas de balayage exhaustif ni de GIF de preuve sans défaut à diagnostiquer.
 Ne pas ajouter de tests qui recopient la logique testée ou figent des détails décoratifs.

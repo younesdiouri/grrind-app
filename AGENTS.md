@@ -39,10 +39,15 @@ builds, repeated E2E runs, or speculative tests.
   (`npm run e2e:ios:dev`, Metro 8082, `EXPO_PUBLIC_E2E=1`) run the same GRRIND dev binary
   (`app.grrind.dev`); E2E behaviour lives in the JS bundle only. Switching devices does not
   regenerate `ios/`. Never reintroduce a separate native E2E variant.
-- For mobile UI/user-flow changes, reuse `npm run e2e:ios:dev`, choose one relevant existing
-  flow, then run `npm run e2e:ios:flow -- .maestro/<flow>.yaml` after a coherent change and
-  inspect its screenshots. Existing captures can supply the baseline; run a baseline only
-  when needed to reproduce a bug or when no useful reference exists.
+- Visual and Unity changes (screens, styles, rendering, animation, art, combat staging) are
+  judged by the author on the real iPhone, not by Maestro. Run the existing Unity editor
+  validations when Unity changes, ship the build to the phone, and say in the PR what the
+  author should look at. No exhaustive sweeps, proof GIFs or screenshot batches unless
+  diagnosing a defect the author saw.
+- Maestro is for what the eye cannot see: session/auth, `health-sync` (import, idempotency),
+  server-driven inventory or guild flows when their server flow changes, and the smoke before
+  a TestFlight release. Run one relevant flow (`npm run e2e:ios:flow -- .maestro/<flow>.yaml`)
+  after a coherent change; flows stay available on request.
 - Keep the Metro bundle stable while Maestro runs; even a comment edit can reset module state
   through Fast Refresh. Finish source edits before starting the verification.
 - Rerun only after a change, a failure being diagnosed, or an unresolved concern. Do not run

@@ -180,10 +180,12 @@ npm run api:check        # si le contrat change
 npm run test:ios:tools   # si le harnais iOS change
 ```
 
-Pour un écran ou une navigation : réutiliser le development build avec Metro, jouer **un flow
-pertinent après un ensemble cohérent de changements**, puis regarder les captures. Une capture
-existante suffit comme baseline ; ne la rejouer que pour reproduire un défaut ou combler une
-référence absente. Ne pas empiler smoke, combat, apparences et tous les ateliers sur une retouche.
+Ce qui se voit se juge **sur l'iPhone de l'auteur** : écran, rendu Unity, animation, art,
+mise en scène. Les validations éditeur Unity tournent si Unity change, puis la PR dit quoi
+regarder sur le téléphone. Pas de balayage exhaustif ni de GIF de preuve, sauf pour diagnostiquer
+un défaut observé. Maestro garde ce que l'œil ne voit pas : session, santé et idempotence, flux
+serveur de l'inventaire ou des guildes quand ils changent, et le smoke avant TestFlight.
+Mesuré le 2026-10-25 : tests, typecheck et lint font 10 s à eux trois, un flow Maestro 4 à 5 min (#285).
 
 Le smoke couvre connexion → accueil → un combat → retour. La santé et ses récompenses ont
 `.maestro/health-sync.yaml`, l’inventaire et les guildes leurs propres flows. Le full local et
