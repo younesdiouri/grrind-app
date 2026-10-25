@@ -28,7 +28,8 @@ public sealed class AvatarCapture : MonoBehaviour
         bridge.Configure(json);
         bridge.Present("{\"player\":{\"phase\":0.35},\"enemy\":{\"visible\":false}}");
         int width = Mathf.Clamp(config.previewWidth, 128, 1024), height = Mathf.Clamp(config.previewHeight, 128, 1024);
-        target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+        // Same anti-aliasing as the live inspector, or saved previews show stair-stepped edges.
+        target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32) { antiAliasing = Mathf.Max(1, QualitySettings.antiAliasing) };
         bridge.arenaCamera.targetTexture = target;
         bridge.arenaCamera.ResetAspect();
         // Let Destroy and FighterPose.LateUpdate finish before reading the URP camera's render.
