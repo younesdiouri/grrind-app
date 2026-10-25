@@ -43,6 +43,7 @@ public sealed class BattleBridge : MonoBehaviour
     bool FinaleLayout => !inspection&&lastFrame?.presentation?.finished==true&&hud!=null
         &&(hud.won?lastFrame.player.visible:lastFrame.enemy.visible);
     Frame lastFrame;
+    Material sky;
     Rect combatViewport=new Rect(0,0,1,1),projectionSurface;
 
     void Start()
@@ -107,7 +108,7 @@ public sealed class BattleBridge : MonoBehaviour
                 if(presentation!=null)presentation.Setup(null,arenaCamera,null,null,new Rect(0,0,1,1));
                 if(combatEnvironment!=null)combatEnvironment.SetActive(true);
                 if(inspectionFloor!=null)inspectionFloor.SetActive(false);
-                arenaCamera.backgroundColor=new Color(.48f,.66f,.77f);
+                Ambience(false);
                 raid=GetComponent<RaidScene>()??gameObject.AddComponent<RaidScene>();raid.enabled=true;
                 raid.Setup(config.raid,arenaCamera,contactShadow);return;
             }
@@ -117,7 +118,7 @@ public sealed class BattleBridge : MonoBehaviour
             hud=config.hud;
             if(combatEnvironment!=null)combatEnvironment.SetActive(!inspection);
             if(inspectionFloor!=null)inspectionFloor.SetActive(inspection);
-            arenaCamera.backgroundColor=inspection?new Color(.0196f,.0314f,.0863f):new Color(.48f,.66f,.77f);
+            Ambience(inspection);
             caillouxFight=config.enemy.model=="cailloux";
             illustratedFight=!config.enemy.visible;
             if(player!=null)Destroy(player.gameObject);if(enemy!=null)Destroy(enemy.gameObject);
@@ -140,6 +141,16 @@ public sealed class BattleBridge : MonoBehaviour
             if(lastFrame!=null){Apply(player,lastFrame.player,true);Apply(enemy,lastFrame.enemy,false);}
         }
         catch(Exception e){Debug.LogError("GRRIND avatar configuration: "+e.Message);}
+    }
+    // Night clearing for the inspector, winter day for the fights. Fog fades the scenery into the horizon.
+    void Ambience(bool night)
+    {
+        // A per-bridge instance keeps the scene's sky asset untouched by Play mode.
+        if(sky==null&&RenderSettings.skybox!=null)RenderSettings.skybox=sky=new Material(RenderSettings.skybox);
+        Color top=night?new Color(.012f,.02f,.06f):new Color(.36f,.56f,.74f);
+        Color horizon=night?new Color(.07f,.1f,.22f):new Color(.8f,.91f,.96f);
+        if(sky!=null){sky.SetColor("_TopColor",top);sky.SetColor("_HorizonColor",horizon);}
+        arenaCamera.backgroundColor=horizon;RenderSettings.fogColor=horizon;
     }
     FighterPose Create(AvatarConfig config,bool left)
     {
