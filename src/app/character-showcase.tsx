@@ -13,12 +13,12 @@ import type { UnityAvatar } from '@/features/combat/unityFrame';
 import type { FighterPose } from '@/features/combat/fighterMotion';
 
 export default function CharacterShowcaseScreen() {
+  const { preview } = useLocalSearchParams<{ preview?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
-  return <AmbientBackdropProvider><Showcase /></AmbientBackdropProvider>;
+  return <AmbientBackdropProvider><Showcase key={preview} preview={preview} /></AmbientBackdropProvider>;
 }
 
-function Showcase() {
-  const { preview } = useLocalSearchParams<{ preview?: string }>();
+function Showcase({ preview }: { preview?: string }) {
   const [body, setBody] = useState<UnityAvatar['body']>('male');
   const [faceStyle, setFaceStyle] = useState<UnityAvatar['faceStyle']>('square');
   const [noseStyle, setNoseStyle] = useState<UnityAvatar['noseStyle']>('wide');
@@ -61,10 +61,7 @@ function Showcase() {
   </View>;
   return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
-    {preview === 'inventory' ? <View style={{ position: 'absolute', left: 0, right: 0,
-      top: headerHeight + insets.top, bottom: controlsHeight + insets.bottom }}>
-      <AvatarPreview avatar={avatar} label="Aperçu inventaire" />
-    </View> : unityCombatAvailable && !failed && <UnityAvatarInspector avatar={avatar} pose={pose} phase={.5} animated={animated}
+    {preview !== 'inventory' && unityCombatAvailable && !failed && <UnityAvatarInspector avatar={avatar} pose={pose} phase={.5} animated={animated}
       view={view} azimuth={azimuth} viewport={{ x: 0, y: (controlsHeight + insets.bottom) / window.height, width: 1,
         height: Math.max(.1, (window.height - controlsHeight - headerHeight - insets.top - insets.bottom) / window.height) }}
       onReady={() => setReady(true)} onError={() => setFailed(true)} />}
@@ -79,6 +76,9 @@ function Showcase() {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo?mob=pebble');
         }}><Text style={styles.link}>Fermer</Text></Pressable>
       </View>
+      {preview === 'inventory' && <View style={{ flex: 1 }}>
+        <AvatarPreview avatar={avatar} label="Aperçu inventaire" />
+      </View>}
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>
         <View style={styles.row}>
           {['Corps', 'Traits', 'Cheveux', 'Tenue', 'Mouvements'].map(label =>

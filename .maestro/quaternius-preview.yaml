@@ -1,0 +1,62 @@
+appId: app.grrind.dev
+---
+# Native inventory AvatarPreview inside the dev workshop, E2E_OFFLINE=1; no backend account.
+- launchApp
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+- runFlow:
+    when:
+      visible: Close
+    commands:
+      - tapOn: Close
+- openLink: grrindapp-dev://character-showcase?preview=inventory
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 30000
+- tapOn: Corps
+- tapOn: Homme
+- tapOn: Tenue
+- runFlow:
+    when:
+      visible: Équiper Fer play
+    commands:
+      - tapOn: Équiper Fer play
+- tapOn: Mouvements
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 15000
+- takeScreenshot: inventory-preview-fer-play-male
+- tapOn: Corps
+- tapOn: Femme
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 15000
+- takeScreenshot: inventory-preview-fer-play-female
+- tapOn: Tenue
+- tapOn: Équiper Huilesson
+- tapOn: Mouvements
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 15000
+- takeScreenshot: inventory-preview-huilesson-female
+- tapOn: Corps
+- tapOn: Homme
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 15000
+- takeScreenshot: inventory-preview-huilesson-male
+- openLink: grrindapp-dev://character-showcase?preview=live
+- extendedWaitUntil:
+    visible:
+      id: quaternius-ready
+    timeout: 20000
+- setOrientation: PORTRAIT

@@ -648,7 +648,30 @@
       "RightFoot"
     ]
   },
-  "appQA": "PENDING",
+  "appQA": {
+    "scope": "Rebuilt app.grrind.dev Debug on GRRIND E2E Simulator iOS 27.0; no real iPhone verification",
+    "nativeIdentity": "native-proof.json: matching UUID and all 16 Data hashes, 3 Data files changed since #273",
+    "initialFlow": {
+      "file": ".maestro/quaternius-poc.yaml",
+      "combatSection": "PASS: guard/profile, normal/critical, background return, verdict, portrait return and four frozen weapon contacts completed",
+      "overall": "FAIL on initial dev inventory-preview layout: Corps missing in accessibility tree",
+      "report": "initial-flow-report.xml"
+    },
+    "correction": "Place the actual AvatarPreview in normal column flow inside the dev workshop; give each preview mode a fresh Showcase instance",
+    "focusedRetry": {
+      "file": ".maestro/quaternius-preview.yaml",
+      "status": "PASS",
+      "durationSeconds": 108.132,
+      "report": "preview-flow-report.xml",
+      "captures": [
+        "ios-inventory-preview-fer-play-male.png",
+        "ios-inventory-preview-fer-play-female.png",
+        "ios-inventory-preview-huilesson-female.png",
+        "ios-inventory-preview-huilesson-male.png"
+      ],
+      "review": "All four still images inspected, plus both native guard profiles and actual duel. Preview uses unchanged production AvatarPreview and native captureAvatar at phase .35. No server inventory mutation tested."
+    }
+  },
   "productionDeployment": false,
   "testflightSubmission": false,
   "clientChecks": {

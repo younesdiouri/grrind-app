@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="GRRIND E2E - iOS 27.0 - 236B6829-DCFF-4048-B4D4-430D9A97F840" tests="1" failures="1" time="280.107" timestamp="2026-10-25T09:50:16">
+    <testcase id="quaternius-poc" name="quaternius-poc" classname="quaternius-poc" file=".maestro/quaternius-poc.yaml" time="280.076" timestamp="2026-10-25T09:50:16" status="ERROR">
+      <failure>Element not found: Text matching regex: Corps</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
