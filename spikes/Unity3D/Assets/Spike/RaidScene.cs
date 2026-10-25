@@ -173,7 +173,7 @@ public sealed class RaidScene : MonoBehaviour
             obj.GetComponent<MeshRenderer>().sharedMaterial=impactMaterial;sparks[i]=obj.transform;
         }
     }
-    Transform Shadow(Transform owner,Material material,Vector2 size)
+    public static Transform Shadow(Transform owner,Material material,Vector2 size)
     {
         if(material==null)return null;
         var obj=GameObject.CreatePrimitive(PrimitiveType.Quad);Destroy(obj.GetComponent<Collider>());
