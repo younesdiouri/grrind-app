@@ -85,6 +85,8 @@ public static class FacialPilot
             PrefabUtility.SaveAsPrefabAsset(root, path);
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
+        // The male covered hands now come from the facial meshes; drop the gloves' intermediate copy.
+        AssetDatabase.DeleteAsset("Assets/Characters/GoldenBoxingGloves/Male_Sport_Skin_Covered.asset");
         AssetDatabase.SaveAssets();
         FacialPilotChecks.Validate();
     }

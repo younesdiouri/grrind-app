@@ -124,6 +124,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _HitFlash: 0
+    - _IrisScale: 1
     - _Metal: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
@@ -131,7 +132,7 @@ Material:
     - _QueueOffset: 0
     - _RampCenter: 0
     - _RampSteps: 2
-    - _ReceiveShadows: 1
+    - _ReceiveShadows: 0
     - _RimPower: 3.5
     - _RimStrength: 0.3
     - _Smoothness: 0.15

@@ -61,8 +61,10 @@ public sealed class BattleBridge : MonoBehaviour
         if(inspection)return;
         var state=lastFrame?.presentation;
         // The HUD shakes in points; at .006 m per point a normal blow moves the camera 3 cm.
-        arenaCamera.transform.position=CombatCamera+new Vector3((state?.shakeX??0)*.006f,(state?.shakeY??0)*.006f,0);
-        arenaCamera.transform.LookAt(CombatTarget);
+        // The verdict closes in on the winner's bust: the only shot where a face is big enough to read.
+        float close=FinaleLayout?(state.reduced?1:Mathf.SmoothStep(0,1,state.finale*3)):0;
+        arenaCamera.transform.position=Vector3.Lerp(CombatCamera,VictoryCamera,close)+new Vector3((state?.shakeX??0)*.006f,(state?.shakeY??0)*.006f,0);
+        arenaCamera.transform.LookAt(Vector3.Lerp(CombatTarget,VictoryTarget,close));
         arenaCamera.fieldOfView=CombatFieldOfView/(state?.zoom??1);
         if(state!=null||projectionSurface!=arenaCamera.pixelRect)FrameArena();
     }
@@ -239,6 +241,7 @@ public sealed class BattleBridge : MonoBehaviour
     public const float CombatFieldOfView=30;
     public static readonly Vector3 CombatCamera=new Vector3(0,1.55f,4.25f);
     public static readonly Vector3 CombatTarget=new Vector3(0,.92f,0);
+    static readonly Vector3 VictoryCamera=new Vector3(0,1.52f,1.65f),VictoryTarget=new Vector3(0,1.38f,0);
 #if UNITY_IOS && !UNITY_EDITOR
     [DllImport("__Internal")] static extern void GrrindUnitySceneReady();
 #endif

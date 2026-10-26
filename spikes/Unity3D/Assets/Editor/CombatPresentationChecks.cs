@@ -40,9 +40,11 @@ public static class CombatPresentationChecks
                 Require(winner.placement.sqrMagnitude < .0001f && Mathf.Abs(winner.facing) < .01f, "Winner is centered and faces the camera");
                 Require(winner.stance == 9, "Finale holds the victory pose");
                 bridge.SendMessage("LateUpdate");
-                var floor = bridge.arenaCamera.WorldToViewportPoint(winner.placement);
+                // The verdict is a bust close-up (#282): chest above the controls, head below the gains.
+                var chest = bridge.arenaCamera.WorldToViewportPoint(winner.actor.GetBoneTransform(HumanBodyBones.Chest).position);
                 var head = bridge.arenaCamera.WorldToViewportPoint(winner.actor.GetBoneTransform(HumanBodyBones.Head).position);
-                Require(floor.y > .10f && head.y < .70f, "Finale keeps feet above the controls and head below the gains for both stage heights");
+                Require(chest.y > .10f && head.y < .70f && head.y > chest.y,
+                    $"Finale frames the winner's bust between the controls and the gains (chest {chest.y:F2}, head {head.y:F2}, stage {stageHeight})");
 
                 frame.presentation.finale = .5f;
                 bridge.Present(JsonUtility.ToJson(frame));

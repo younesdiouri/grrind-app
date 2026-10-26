@@ -10,6 +10,7 @@ Shader "GRRIND/Painted Toon"
         _EyeMode ("Quaternius eye atlas", Float) = 0
         _IrisTint ("Iris tint", Color) = (1, 1, 1, 1)
         _EyeSkinTint ("Eyelid tint", Color) = (1, 1, 1, 1)
+        _IrisScale ("Iris scale", Range(1, 1.4)) = 1
         _Ambient ("Ambient strength", Range(0, 3)) = 1.3
         _RampCenter ("Ramp centre", Range(-1, 1)) = 0
         _RampSteps ("Ramp steps (0 = smooth)", Range(0, 4)) = 2
@@ -19,6 +20,7 @@ Shader "GRRIND/Painted Toon"
         _MatCap ("Metal MatCap", 2D) = "gray" {}
         _MetalMask ("Metal mask", 2D) = "white" {}
         _Metal ("Metal", Range(0, 1)) = 0
+        _ReceiveShadows ("Receive shadows", Range(0, 1)) = 1
         _Cull ("Cull", Float) = 2
         _HitFlash ("Hit flash", Range(0, 1)) = 0
     }
@@ -36,6 +38,7 @@ Shader "GRRIND/Painted Toon"
             half4 _IrisTint;
             half4 _EyeSkinTint;
             half _EyeMode;
+            half _IrisScale;
             half _Ambient;
             half _RampCenter;
             half _RampSteps;
@@ -43,6 +46,7 @@ Shader "GRRIND/Painted Toon"
             half _RimPower;
             half _RimStrength;
             half _Metal;
+            half _ReceiveShadows;
             half _Cull;
             half _HitFlash;
         CBUFFER_END
@@ -96,15 +100,22 @@ Shader "GRRIND/Painted Toon"
 
             half4 Fragment(Varyings input, half facing : VFACE) : SV_Target
             {
-                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
+                // A larger iris reads as a larger eye without moving the lids.
+                float2 uv = _EyeMode > .5 ? .5 + (input.uv - .5) / _IrisScale : input.uv;
+                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv) * _BaseColor;
                 if (_EyeMode > .5)
                 {
                     // The source atlas has a central iris and painted skin around the sclera.
-                    half iris = 1 - smoothstep(.098, .112, distance(input.uv, float2(.5, .5)));
+                    half radius = distance(uv, float2(.5, .5));
+                    half iris = 1 - smoothstep(.098, .112, radius);
                     half value = max(albedo.r, max(albedo.g, albedo.b));
                     half pigment = smoothstep(.012, .035, value) * (1 - smoothstep(.55, .8, value));
                     half eyelid = (1 - iris) * smoothstep(.08, .16, albedo.r - albedo.g);
                     albedo.rgb *= lerp(half3(1,1,1), _IrisTint.rgb, iris * pigment);
+                    // Contrast: a richer iris and a dark limbal ring around it.
+                    half grey = dot(albedo.rgb, half3(.3, .59, .11));
+                    albedo.rgb = lerp(albedo.rgb, lerp(grey.xxx, albedo.rgb, 1.35), iris);
+                    albedo.rgb *= 1 - .45 * iris * smoothstep(.075, .1, radius);
                     albedo.rgb *= lerp(half3(1,1,1), _EyeSkinTint.rgb, eyelid);
                 }
                 // Double-sided cloth shows its back face inside sleeves: light it from that side.
@@ -115,14 +126,15 @@ Shader "GRRIND/Painted Toon"
                 half bands = lambert * max(_RampSteps, 1);
                 half edge = fwidth(bands) * .75 + 1e-3;
                 half stepped = (floor(bands) + smoothstep(.5 - edge, .5 + edge, frac(bands))) / max(_RampSteps, 1);
-                half ramp = (_RampSteps > .5 ? stepped : smoothstep(.3, .7, lambert)) * light.shadowAttenuation;
+                // Bodies skip self-shadowing: an arm's shadow smears across a shirt; they still cast on the ground.
+                half ramp = (_RampSteps > .5 ? stepped : smoothstep(.3, .7, lambert)) * lerp(1, light.shadowAttenuation, _ReceiveShadows);
                 half3 colour = albedo.rgb * lerp(SampleSH(normal) * _Ambient, light.color, ramp);
                 // MatCap metal: the hue comes from the MatCap, the texture keeps its detail as value.
                 half metal = _Metal * SAMPLE_TEXTURE2D(_MetalMask, sampler_BaseMap, input.uv).r;
                 float2 matcapUV = mul((float3x3)UNITY_MATRIX_V, normal).xy * .49 + .5;
                 half value = saturate(dot(albedo.rgb, half3(.3, .59, .11)) * 1.8);
-                half3 shine = SAMPLE_TEXTURE2D(_MatCap, sampler_MatCap, matcapUV).rgb * value * lerp(.65, 1, ramp);
-                colour = lerp(colour, shine, metal);
+                half3 matcap = SAMPLE_TEXTURE2D(_MatCap, sampler_MatCap, matcapUV).rgb;
+                colour = lerp(colour, matcap * value * lerp(.65, 1, ramp), metal);
                 float3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 half rim = pow(1 - saturate(dot(normal, view)), _RimPower) * _RimStrength;
                 // ImpactFx whitens the struck fighter on the contact frame.
