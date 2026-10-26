@@ -107,10 +107,12 @@ Material:
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _EyeMode: 0
+    - _Facets: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _HitFlash: 0
+    - _IrisScale: 1
     - _Metal: 0
     - _Metallic: 0
     - _OcclusionStrength: 1

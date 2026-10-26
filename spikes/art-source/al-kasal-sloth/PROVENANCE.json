@@ -5,9 +5,21 @@
   "triangles": 6070,
   "texture": "One 2048px sRGB base color, roughness 0.85, metallic 0",
   "task_id": "01a16f10-00fd-7324-acdf-de8cf1a46b2f",
-  "reference_silhouette_IoU": 0.910,
+  "reference_silhouette_IoU": 0.91,
   "width_height_difference": 0.008,
   "rig": "None required for the V1 boss: whole-body idle sway and recoil at melee contact",
-  "inferred": ["2.6m boss scale", "slipper soles", "whole-body motion"],
-  "approval": "User requested an autonomous V1 to review on Simulator; personal artistic acceptance pending"
+  "inferred": [
+    "2.6m boss scale",
+    "slipper soles",
+    "whole-body motion"
+  ],
+  "approval": "User requested an autonomous V1 to review on Simulator; personal artistic acceptance pending",
+  "faceted": {
+    "ticket": "#295",
+    "script": "spikes/art-source/faceted-garments/facet_skin.py (all mode, ratio .25, islands welded first)",
+    "file": "spikes/Unity3D/Assets/Characters/AlKasal/AlKasal_Faceted.fbx",
+    "triangles": "6070 -> 1568",
+    "height_m": 2.6,
+    "changes": "Collapse decimation, flat face normals, UVs and BaseColor.png kept. AlKasal.fbx stays as the source. Author chose lookdev B (texture kept) over a 7-colour palette that erased the face, 2026-10-26."
+  }
 }
