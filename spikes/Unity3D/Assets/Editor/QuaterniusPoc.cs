@@ -67,7 +67,8 @@ public static class QuaterniusPoc
         feet.transform.localRotation = body.transform.localRotation;
         feet.transform.localScale = body.transform.localScale;
         var bare = feet.AddComponent<SkinnedMeshRenderer>();
-        bare.sharedMesh = Section(body, original, female ? "Female bare feet" : "Bare feet", v => v.y < .43f);
+        var bareName = female ? "Female bare feet" : "Bare feet";
+        bare.sharedMesh = MeshCut.Keep(body, original, bareName, v => v.y < .43f, Output + bareName + ".asset");
         bare.bones = body.bones; bare.rootBone = body.rootBone; bare.sharedMaterial = skin;
         bare.localBounds = body.localBounds;
         UnityEngine.Object.DestroyImmediate(body.gameObject);
@@ -110,17 +111,8 @@ public static class QuaterniusPoc
         guinzzRenderer.quality = SkinQuality.Bone4;
         appearance.guinzzMaterial = guinzzMaterials[0];
         appearance.guinzzFullMesh = guinzzRenderer.sharedMesh;
-        var bootMesh = UnityEngine.Object.Instantiate(guinzzRenderer.sharedMesh);
-        var guinzzVertices = bootMesh.vertices;
-        for (int sub = 0; sub < bootMesh.subMeshCount; sub++)
-        {
-            var triangles = bootMesh.GetTriangles(sub);
-            bootMesh.SetTriangles(Enumerable.Range(0, triangles.Length / 3).Where(i => Enumerable.Range(0, 3)
-                .All(j => guinzzRenderer.transform.TransformPoint(guinzzVertices[triangles[i * 3 + j]]).y >= .397f))
-                .SelectMany(i => new[] { triangles[i * 3], triangles[i * 3 + 1], triangles[i * 3 + 2] }).ToArray(), sub);
-        }
-        var bootMeshPath = "Assets/Characters/LesGuinzz/" + bodyName + "_Boots.asset";
-        AssetDatabase.DeleteAsset(bootMeshPath); AssetDatabase.CreateAsset(bootMesh, bootMeshPath);
+        var bootMesh = MeshCut.Keep(guinzzRenderer, guinzzRenderer.sharedMesh, guinzzRenderer.sharedMesh.name + "(Clone)",
+            v => v.y >= .397f, "Assets/Characters/LesGuinzz/" + bodyName + "_Boots.asset");
         appearance.guinzzBootMesh = bootMesh;
         var sport = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/Personalization/" + bodyName + "_Sport.fbx"));
         var sportParts = sport.GetComponentsInChildren<SkinnedMeshRenderer>();
@@ -194,7 +186,7 @@ public static class QuaterniusPoc
         ValidatePrefab(prefabPath);
     }
 
-    static AnimationClip Mixamo(string name) => AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Mixamo/" + name + ".fbx")
+    public static AnimationClip Mixamo(string name) => AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Mixamo/" + name + ".fbx")
         .OfType<AnimationClip>().Single(c => !c.name.StartsWith("__preview__"));
 
     static AnimationClip FittedMixamo(string sourceName)
@@ -225,7 +217,7 @@ public static class QuaterniusPoc
         return saved;
     }
 
-    static void ImportMixamo()
+    public static void ImportMixamo()
     {
         foreach (var path in Directory.GetFiles("Assets/Animations/Mixamo", "*.fbx"))
         {
@@ -242,7 +234,7 @@ public static class QuaterniusPoc
                 clip.lockRootPositionXZ = false;
                 clip.keepOriginalOrientation = true;
                 clip.heightFromFeet = true;
-                clip.loopTime = clip.loopPose = clip.name == "BoxingIdle";
+                clip.loopTime = clip.loopPose = clip.name == "BoxingIdle" || clip.name == "GreatSwordIdle";
             }
             importer.clipAnimations = clips;
             importer.SaveAndReimport();
@@ -273,19 +265,6 @@ public static class QuaterniusPoc
         material.SetColor("_BaseColor", Color.white); material.SetColor("_ShadowTint", new Color(.72f, .72f, .72f));
         material.SetFloat("_RimStrength", .06f); material.SetFloat("_OutlineWidth", .0007f);
         EditorUtility.SetDirty(material); return material;
-    }
-    static Mesh Section(SkinnedMeshRenderer renderer, Mesh original, string name, Func<Vector3, bool> keep)
-    {
-        var mesh = UnityEngine.Object.Instantiate(original); mesh.name = name;
-        var vertices = original.vertices;
-        var triangles = original.triangles;
-        var selected = Enumerable.Range(0, triangles.Length / 3).Where(i => Enumerable.Range(0, 3)
-            .All(j => keep(renderer.transform.TransformPoint(vertices[triangles[i * 3 + j]]))))
-            .SelectMany(i => new[] { triangles[i * 3], triangles[i * 3 + 1], triangles[i * 3 + 2] }).ToArray();
-        if (selected.Length == 0) throw new Exception("Empty mesh section " + name);
-        mesh.subMeshCount = 1; mesh.triangles = selected;
-        var path = Output + name + ".asset";
-        AssetDatabase.DeleteAsset(path); AssetDatabase.CreateAsset(mesh, path); return mesh;
     }
     static GameObject Hair(string path, GameObject root, System.Collections.Generic.Dictionary<string, Transform> bones, Material material)
     {

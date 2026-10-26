@@ -158,27 +158,18 @@ public sealed class BattleBridge : MonoBehaviour
         var obj=Instantiate(prefab);
         var pose=obj.GetComponent<FighterPose>();pose.inspect=false;pose.inspectionCamera=null;
         pose.weaponType=config.weaponType;
-        obj.GetComponent<QuaterniusAppearance>()?.SelectHair(config.hairStyle);
-        obj.GetComponent<QuaterniusAppearance>()?.SetHeadband(config.headband);
-        obj.GetComponent<QuaterniusAppearance>()?.SetBoxingGloves(config.boxingGloves);
+        var appearance=obj.GetComponent<QuaterniusAppearance>();
+        appearance?.SelectHair(config.hairStyle);
+        appearance?.SetHeadband(config.headband);
+        appearance?.SetBoxingGloves(config.boxingGloves);
         // shortcut: existing boxing clips can intersect large weights; combat trial explicitly accepted by the author.
         obj.GetComponent<WeaponGrip>()?.Select(config.dumbbell?"dumbbell":config.weapon);
-        obj.GetComponent<QuaterniusAppearance>()?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
-        obj.GetComponent<QuaterniusAppearance>()?.SelectFace(config.faceStyle, config.noseStyle);
+        appearance?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
+        appearance?.SelectFace(config.faceStyle, config.noseStyle);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=Facing(left);
         pose.SetShoes(config.boots);
-        if(contactShadow!=null)
-        {
-            var blob=GameObject.CreatePrimitive(PrimitiveType.Quad);
-            Destroy(blob.GetComponent<Collider>());
-            blob.name="Contact shadow";
-            blob.transform.SetParent(obj.transform,false);
-            blob.transform.localScale=new Vector3(.75f,.42f,1);
-            blob.transform.rotation=Quaternion.Euler(90,0,0);
-            blob.GetComponent<MeshRenderer>().sharedMaterial=contactShadow;
-            pose.contactShadow=blob.transform;
-        }
+        pose.contactShadow=RaidScene.Shadow(obj.transform,contactShadow,new Vector2(.75f,.42f));
         obj.SetActive(config.visible);return pose;
     }
     public void Present(string json)

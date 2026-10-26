@@ -73,7 +73,7 @@ public sealed class FighterPose : MonoBehaviour
         // Keep the supporting hand on the handle; release it with the received-hit/dodge clip.
         float support=sword&&dumbbell!=null&&dumbbell.TwoHanded
             ?(selected==8||selected==9||selected==10?1:1-blend):0;
-        if(rigBuilder!=null){dumbbell.supportRig.weight=support;rigBuilder.SyncLayers();}
+        if(rigBuilder!=null&&dumbbell?.supportRig!=null){dumbbell.supportRig.weight=support;rigBuilder.SyncLayers();}
         graph.Evaluate(0);
         dumbbell?.Apply(support);
         actor.transform.SetPositionAndRotation(placement,Quaternion.Euler(0,facing,0));

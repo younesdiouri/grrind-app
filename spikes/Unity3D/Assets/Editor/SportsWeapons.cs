@@ -9,20 +9,7 @@ public static class SportsWeapons
     public static void Build()
     {
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-        foreach (var name in new[] { "GreatSwordIdle", "GreatSwordDownwardSlash", "GreatSwordPowerSlash" })
-        {
-            var importer = (ModelImporter)AssetImporter.GetAtPath("Assets/Animations/Mixamo/"+name+".fbx");
-            importer.animationType=ModelImporterAnimationType.Human;
-            importer.avatarSetup=ModelImporterAvatarSetup.CreateFromThisModel;
-            importer.animationCompression=ModelImporterAnimationCompression.Off;
-            var settings=importer.defaultClipAnimations;
-            foreach(var clip in settings) {
-                clip.name=name;clip.lockRootRotation=clip.lockRootHeightY=true;clip.lockRootPositionXZ=false;
-                clip.keepOriginalOrientation=true;clip.heightFromFeet=true;
-                clip.loopTime=clip.loopPose=name=="GreatSwordIdle";
-            }
-            importer.clipAnimations=settings;importer.SaveAndReimport();
-        }
+        QuaterniusPoc.ImportMixamo();
         var guard = UprightGuard();
         foreach (var name in new[] { "QuaterniusShowcase", "QuaterniusFemale" })
         {
@@ -35,7 +22,7 @@ public static class SportsWeapons
                 grip.huilesson = Install(root, grip.huilesson, "Huilesson");
                 var pose = root.GetComponent<FighterPose>();
                 pose.clips = pose.clips.Take(8).Concat(new[] {
-                    guard, Clip("GreatSwordDownwardSlash"), Clip("GreatSwordPowerSlash") }).ToArray();
+                    guard, QuaterniusPoc.Mixamo("GreatSwordDownwardSlash"), QuaterniusPoc.Mixamo("GreatSwordPowerSlash") }).ToArray();
                 pose.contacts[1]=pose.contacts[6]=.31f; pose.contacts[3]=.33f;
                 pose.contacts = pose.contacts.Take(8).Concat(new[] { .5f, .5f, .45f }).ToArray();
                 SupportGrip(root, name == "QuaterniusFemale");
@@ -46,11 +33,9 @@ public static class SportsWeapons
         }
         AssetDatabase.SaveAssets();
     }
-    static AnimationClip Clip(string name) => AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Mixamo/"+name+".fbx")
-        .OfType<AnimationClip>().Single(c=>!c.name.StartsWith("__preview__"));
     public static AnimationClip UprightGuard()
     {
-        var source=Clip("GreatSwordIdle");var clip=UnityEngine.Object.Instantiate(source);
+        var source=QuaterniusPoc.Mixamo("GreatSwordIdle");var clip=UnityEngine.Object.Instantiate(source);
         clip.name="Quaternius upright sword guard";
         var names=new[]{"RootQ","LeftFootT","LeftFootQ","RightFootT","RightFootQ"}
             .SelectMany(n=>(n.EndsWith("T")?"xyz":"xyzw").Select(a=>n+"."+a)).ToArray();
