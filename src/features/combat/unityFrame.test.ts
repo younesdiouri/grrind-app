@@ -105,3 +105,18 @@ test('Unity attacks from its calibrated position without a screen-dependent lung
     }
   }
 });
+
+test('the blow freezes at contact for its hit-stop, longer when heavy, then still recovers in its beat', () => {
+  const attacks = timeline.beats.filter((beat) => beat.kind === 'attack');
+  const normal = attacks.find((beat) => !beat.heavy);
+  const heavy = attacks.find((beat) => beat.heavy);
+  assert.ok(normal && heavy);
+  for (const [beat, stop] of [[normal, combatMotion.hitStop], [heavy, combatMotion.hitStopHeavy]] as const) {
+    const contact = contactAt(beat);
+    const at = (time: number) => unityActorFrame(timeline.beats, beat.attacker, time, signals(beat.attacker), 500, true, false);
+    assert.equal(at(contact + stop - 1).phase, .5);
+    assert.ok(at(contact + stop + 20).phase > .5);
+    assert.ok(at(beat.at + (beat.until - beat.at) * combatMotion.recover - 1).phase > .99);
+  }
+  assert.ok(combatMotion.hitStopHeavy > combatMotion.hitStop);
+});

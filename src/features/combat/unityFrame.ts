@@ -1,5 +1,5 @@
 import { combatMotion } from '@/design/tokens';
-import { contactAt, fighterMotionAt, type FighterPose, type PoseSignals } from './fighterMotion.ts';
+import { contactAt, fighterMotionAt, hitStopOf, type FighterPose, type PoseSignals } from './fighterMotion.ts';
 import { beatAt, sampleRamp } from './sampling.ts';
 import type { Actor, BattleBeat } from './timeline.ts';
 import type { components } from '@/api/schema';
@@ -46,20 +46,21 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
   const contact = contactAt(beat);
   const recovery = beat.at + span * combatMotion.recover;
   if (time >= recovery) { frame.x = 0; return frame; }
-  const released = Math.max(contact, time - combatMotion.hitStop);
+  const stop = hitStopOf(beat);
+  const released = Math.max(contact, time - stop);
   if (beat.attacker === side) {
     const critical = sampleRamp(signals.critical, contact + (beat.until - contact) / 3) > 0;
     const replay = sampleRamp(signals.replay, beat.at + (contact - beat.at) / 3) > 0;
     frame.pose = critical ? 3 : replay ? 6 : 1;
     const prepared = (time - beat.at) / (contact - beat.at);
     frame.phase = time < contact ? (weaponType === 'SWORD' ? prepared : prepared ** 3) * .5
-      : .5 + (released - contact) / (recovery - contact - combatMotion.hitStop) * .5;
+      : .5 + (released - contact) / (recovery - contact - stop) * .5;
   } else if (beat.kind === 'dodge') {
     frame.pose = 4; frame.phase = (time - beat.at) / (recovery - beat.at);
   } else if (time >= contact) {
     frame.pose = 2;
     // Reaction peak meets the fist and HUD at contact, then recovers into the boxing guard.
-    frame.phase = .5 + (released - contact) / (recovery - contact - combatMotion.hitStop) * .5;
+    frame.phase = .5 + (released - contact) / (recovery - contact - stop) * .5;
   }
   if (reduced && frame.pose !== 0) frame.phase = .5;
   return frame;

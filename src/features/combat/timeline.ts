@@ -56,6 +56,8 @@ export type BattleBeat = EventPosition & (
       damage: number;
       /** La part absorbée, en plus des dégâts portés. Zéro quand le défenseur n'a pas d'armure. */
       mitigated: number;
+      /** Coup critique ou coup final : l'arrêt sur le coup dure plus longtemps (#278). */
+      heavy?: boolean;
     }
   /**
    * La cible a esquivé : aucun point de vie ne bouge.
@@ -381,9 +383,9 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
       if (battle.endReason === 'KO' && remaining === 0) tally.lastBlow = { by: attacker, damage };
 
       blows.push(illustrated ? contact : until);
-      impacts.push({ at: illustrated ? contact : until, target: opponentOf(attacker),
-        strength: battle.endReason === 'KO' && remaining === 0 ? IMPACT.final : event.critical ? IMPACT.critical : IMPACT.blow });
-      beats.push({ ...position, kind: 'attack', at, until, index, attacker, damage, mitigated });
+      const strength = battle.endReason === 'KO' && remaining === 0 ? IMPACT.final : event.critical ? IMPACT.critical : IMPACT.blow;
+      impacts.push({ at: illustrated ? contact : until, target: opponentOf(attacker), strength });
+      beats.push({ ...position, kind: 'attack', at, until, index, attacker, damage, mitigated, heavy: strength > IMPACT.blow });
     } else if (event.type === 'DODGE') {
       const attacker = event.attacker ?? 'PLAYER';
       const dodger = opponentOf(attacker);

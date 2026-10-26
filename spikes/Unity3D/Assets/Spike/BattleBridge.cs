@@ -59,7 +59,8 @@ public sealed class BattleBridge : MonoBehaviour
         if(raid!=null&&raid.enabled)return;
         if(inspection)return;
         var state=lastFrame?.presentation;
-        arenaCamera.transform.position=CombatCamera+new Vector3((state?.shakeX??0)*.002f,(state?.shakeY??0)*.002f,0);
+        // The HUD shakes in points; at .006 m per point a normal blow moves the camera 3 cm.
+        arenaCamera.transform.position=CombatCamera+new Vector3((state?.shakeX??0)*.006f,(state?.shakeY??0)*.006f,0);
         arenaCamera.transform.LookAt(CombatTarget);
         arenaCamera.fieldOfView=CombatFieldOfView/(state?.zoom??1);
         if(state!=null||projectionSurface!=arenaCamera.pixelRect)FrameArena();
@@ -187,6 +188,7 @@ public sealed class BattleBridge : MonoBehaviour
             lastFrame=frame;
             Apply(player,frame.player,true);Apply(enemy,frame.enemy,false);
             presentation?.DrawFrame(frame.presentation);
+            (GetComponent<ImpactFx>()??gameObject.AddComponent<ImpactFx>()).Draw(player,enemy,frame);
         }
         catch(Exception e){Debug.LogError("GRRIND avatar frame: "+e.Message);}
     }
