@@ -66,7 +66,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: f1ed51620a8f2445cbda9402f3e1f836, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetalMask:
@@ -124,6 +124,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _HitFlash: 0
+    - _IrisScale: 1
     - _Metal: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
@@ -131,9 +132,10 @@ Material:
     - _QueueOffset: 0
     - _RampCenter: 0
     - _RampSteps: 2
-    - _ReceiveShadows: 1
+    - _ReceiveShadows: 0
     - _RimPower: 3.5
     - _RimStrength: 0.3
+    - _Sheen: 0.7
     - _Smoothness: 0.15
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

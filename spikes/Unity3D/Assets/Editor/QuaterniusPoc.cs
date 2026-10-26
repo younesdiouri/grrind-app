@@ -54,9 +54,12 @@ public static class QuaterniusPoc
         var skin = Material(female ? "Female skin" : "Skin dark", female ? Added + "T_Superhero_Female_Dark_BaseColor.png" : Source + "T_Superhero_Male_Dark.png");
         var hair = Material("Hair", Added + "T_Hair_1_BaseColor.png");
         var eyes = Material("Eyes", Source + "T_Eye_Brown.png");
-        eyes.SetFloat("_EyeMode", 1);
+        eyes.SetFloat("_EyeMode", 1); eyes.SetFloat("_IrisScale", 1.13f);
+        // Skin is not faceted (DA rule): a smooth ramp, the bands stay on clothes and scenery.
+        skin.SetFloat("_RampSteps", 0); eyes.SetFloat("_RampSteps", 0);
         foreach (var renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>())
             renderer.sharedMaterial = renderer.name == "Eyes" ? eyes : renderer.name == "Eyebrows" ? hair : skin;
+        ThickerBrows(root.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name == "Eyebrows"), output);
         var body = root.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name.Equals("Superhero_" + bodyName, StringComparison.OrdinalIgnoreCase));
         var original = body.sharedMesh;
         var feet = new GameObject("Bare feet");
@@ -76,6 +79,7 @@ public static class QuaterniusPoc
         appearance.buns = Hair(Source + "Hair_Buns_Rigged.fbx", root, bones, hair);
         appearance.longHair = Hair("Assets/Characters/Personalization/Hair_Long.fbx", root, bones, hair);
         appearance.skinMaterial = skin;
+        appearance.lightSkin = AssetDatabase.LoadAssetAtPath<Texture2D>(Source + (female ? "T_Superhero_Female_Light_BaseColor.png" : "T_Superhero_Male_Ligh.png"));
         appearance.hairMaterial = hair; appearance.eyeMaterial = eyes;
         // Flat slate joggers: the athlete default, in the palette of the sneakers.
         var trousers = Material("Athlete trousers", null);
@@ -87,6 +91,8 @@ public static class QuaterniusPoc
             string path = "Assets/Characters/LesGuinzz/" + part + ".mat";
             var mat = ToonMaterials.At(path);
             mat.SetColor("_BaseColor", part == "fabric" ? new Color(.43f,.16f,.72f) : part == "panel" ? new Color(.05f,.85f,.9f) : new Color(.045f,.055f,.09f));
+            mat.SetFloat("_ReceiveShadows", 0);
+            if (part != "cuffs") ToonMaterials.Satin(mat, .7f); // Lycra shines like the gold and steel items.
             return mat;
         }).ToArray();
         var sourceGuinzz = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz.fbx").GetComponentInChildren<SkinnedMeshRenderer>();
@@ -98,7 +104,7 @@ public static class QuaterniusPoc
         var shirtPath = Output + "Sport shirt " + bodyName + ".mat";
         var shirt = ToonMaterials.At(shirtPath);
         shirt.SetFloat("_Cull", 0); // Thin cotton renders on both sides inside open sleeves.
-        shirt.SetColor("_BaseColor", Color.white);
+        shirt.SetColor("_BaseColor", Color.white); shirt.SetFloat("_ReceiveShadows", 0);
         shirt.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Characters/Personalization/" + bodyName + "_Tshirt_BaseColor.png"));
         appearance.shirtMaterial = shirt;
         foreach (var part in sportParts)
@@ -232,7 +238,29 @@ public static class QuaterniusPoc
         var material = ToonMaterials.At(path);
         material.SetTexture("_BaseMap", texture == null ? null : AssetDatabase.LoadAssetAtPath<Texture2D>(texture));
         material.SetColor("_BaseColor", Color.white);
+        // A body never receives its own shadow: an arm's shadow smears across the shirt like paint.
+        material.SetFloat("_ReceiveShadows", 0);
         return material;
+    }
+    // Each brow grows 30 % taller around its own centre; the head's bind pose keeps it on the skin.
+    static void ThickerBrows(SkinnedMeshRenderer brows, string output)
+    {
+        var mesh = UnityEngine.Object.Instantiate(brows.sharedMesh);
+        mesh.name = "Thicker eyebrows";
+        // FBX meshes carry an axis conversion: scale in world space, then return to mesh space.
+        var world = mesh.vertices.Select(v => brows.transform.TransformPoint(v)).ToArray();
+        foreach (bool left in new[] { true, false })
+        {
+            var side = Enumerable.Range(0, world.Length).Where(i => (world[i].x > 0) == left).ToArray();
+            float centre = side.Average(i => world[i].y);
+            foreach (int i in side) world[i].y = centre + (world[i].y - centre) * 1.3f;
+        }
+        mesh.vertices = world.Select(v => brows.transform.InverseTransformPoint(v)).ToArray(); mesh.RecalculateBounds();
+        var path = output + "Thicker eyebrows.asset";
+        var saved = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (saved == null) AssetDatabase.CreateAsset(mesh, path);
+        else { EditorUtility.CopySerialized(mesh, saved); UnityEngine.Object.DestroyImmediate(mesh); mesh = saved; }
+        brows.sharedMesh = mesh;
     }
     static GameObject Hair(string path, GameObject root, System.Collections.Generic.Dictionary<string, Transform> bones, Material material)
     {

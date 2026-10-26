@@ -41,11 +41,14 @@ Material:
     - _Cull: 2
     - _EyeMode: 0
     - _HitFlash: 0
+    - _IrisScale: 1
     - _Metal: 0
     - _RampCenter: 0
     - _RampSteps: 2
+    - _ReceiveShadows: 0
     - _RimPower: 3.5
     - _RimStrength: 0.3
+    - _Sheen: 0
     m_Colors:
     - _BaseColor: {r: 0.2, g: 0.23, b: 0.3, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

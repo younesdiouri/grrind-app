@@ -8,8 +8,9 @@ import type { UnityAvatar } from '@/features/combat/unityFrame';
 import { AvatarSnow } from './AvatarSnow';
 
 /** One fullscreen Unity surface; the form and navigation remain native app UI. */
-export function AppearanceScene({ avatar, title, children, busy = false }: {
-  avatar: UnityAvatar; title: string; children: ReactNode; busy?: boolean;
+/** `view` 1 frames the head: face, hair and eyes are chosen up close. */
+export function AppearanceScene({ avatar, title, children, busy = false, view = 0 }: {
+  avatar: UnityAvatar; title: string; children: ReactNode; busy?: boolean; view?: 0 | 1;
 }) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -20,7 +21,7 @@ export function AppearanceScene({ avatar, title, children, busy = false }: {
   return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     {unityCombatAvailable && !failed && <UnityAvatarInspector avatar={avatar} pose="idle" phase={.5} animated
-      view={0} azimuth={25} viewport={{ x: 0, y: (controlsHeight + insets.bottom) / window.height, width: 1,
+      view={view} azimuth={view === 1 ? 15 : 25} viewport={{ x: 0, y: (controlsHeight + insets.bottom) / window.height, width: 1,
         height: Math.max(.1, (window.height - controlsHeight - headerHeight - insets.top - insets.bottom) / window.height) }}
       onReady={() => setReady(true)} onError={() => setFailed(true)} />}
     {ready && !failed && <View pointerEvents="none" style={[StyleSheet.absoluteFill,
