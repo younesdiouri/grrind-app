@@ -3,8 +3,7 @@ using UnityEngine;
 /** 3D side of a blow, sampled from the RN clock like the HUD: no local timer, no game rule. */
 public sealed class ImpactFx : MonoBehaviour
 {
-    static readonly int HitFlash=Shader.PropertyToID("_HitFlash"),RimColor=Shader.PropertyToID("_RimColor"),
-        RimStrength=Shader.PropertyToID("_RimStrength");
+    static readonly int HitFlash=Shader.PropertyToID("_HitFlash");
     static readonly Color Mint=CombatPresentation.Mint,Pink=CombatPresentation.Pink,
         Cyan=CombatPresentation.Cyan,Amber=new Color(1,.77f,.25f);
     const int SparkCount=10;
@@ -22,8 +21,8 @@ public sealed class ImpactFx : MonoBehaviour
         float strength=0,progress=1;FighterPose target=null;
         if(state.player.impact>0){target=player;strength=state.player.impact;progress=state.player.impactProgress;}
         else if(state.enemy.impact>0){target=enemy;strength=state.enemy.impact;progress=state.enemy.impactProgress;}
-        Flash(player,target==player?Pulse(progress):0,Mint);
-        Flash(enemy,target==enemy?Pulse(progress):0,Pink);
+        Flash(player,target==player?Pulse(progress):0);
+        Flash(enemy,target==enemy?Pulse(progress):0);
         var origin=target!=null&&target.gameObject.activeInHierarchy
             ?target.Bone(HumanBodyBones.Chest).position:Vector3.zero;
         for(int i=0;i<SparkCount;i++)
@@ -47,8 +46,7 @@ public sealed class ImpactFx : MonoBehaviour
     // The flash peaks on the contact frame and is gone before the hit-stop ends.
     static float Pulse(float progress)=>Mathf.Pow(Mathf.Clamp01(1-progress*3),2);
 
-    // The rim carries the team colour of the HUD on the body and on what it holds.
-    void Flash(FighterPose pose,float amount,Color team)
+    void Flash(FighterPose pose,float amount)
     {
         if(pose==null)return;
         if(!bodies.TryGetValue(pose,out var renderers))bodies[pose]=renderers=pose.GetComponentsInChildren<Renderer>(true);
@@ -59,9 +57,8 @@ public sealed class ImpactFx : MonoBehaviour
             for(int i=0;i<renderer.sharedMaterials.Length;i++)
             {
                 renderer.GetPropertyBlock(block,i);
-                if(block.GetFloat(HitFlash)==amount&&block.GetColor(RimColor)==team)continue;
-                block.SetFloat(HitFlash,amount);block.SetColor(RimColor,team);block.SetFloat(RimStrength,.25f);
-                renderer.SetPropertyBlock(block,i);
+                if(block.GetFloat(HitFlash)==amount)continue;
+                block.SetFloat(HitFlash,amount);renderer.SetPropertyBlock(block,i);
             }
         }
     }

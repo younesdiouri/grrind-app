@@ -1,6 +1,6 @@
 // One lighting model for fighters, items, mobs and scenery: the texture carries its painted
 // light, the shader adds a stepped ramp from the main light and its shadow, the sky ambient,
-// a team rim and a MatCap for metal. No PBR, no reflection probe.
+// a neutral rim and a MatCap for metal. No PBR, no reflection probe.
 Shader "GRRIND/Painted Toon"
 {
     Properties
