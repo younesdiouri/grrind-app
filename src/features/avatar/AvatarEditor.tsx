@@ -58,14 +58,23 @@ export function AvatarEditor({ profile, equipment, catalog }: { profile: UserPro
       {busy ? 'Enregistrement…' : dirty ? 'Modifications non enregistrées' : 'Apparence enregistrée'}
     </Text>
     {failure && <Text style={styles.error} accessibilityRole="alert">{fieldErrors || messageFor(failure)}</Text>}
-    <Button label="Enregistrer l’apparence" onPress={() => void submit()} busy={busy} disabled={!dirty} />
-    {dirty && <Button label="Annuler les modifications" variant="quiet" disabled={busy}
-      onPress={() => { setDraft(saved); setFailure(null); }} />}
+    {/* Both actions always take the same room: the 3D viewport above never changes height. */}
+    <View style={styles.actions}>
+      <View style={styles.action}>
+        <Button label="Annuler" variant="quiet" disabled={busy || !dirty} accessibilityLabel="Annuler les modifications"
+          onPress={() => { setDraft(saved); setFailure(null); }} />
+      </View>
+      <View style={styles.action}>
+        <Button label="Enregistrer" accessibilityLabel="Enregistrer l’apparence" onPress={() => void submit()} busy={busy} disabled={!dirty} />
+      </View>
+    </View>
   </AppearanceScene>;
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.sm },
+  actions: { flexDirection: 'row', gap: space.sm },
+  action: { flex: 1 },
   choice: { minHeight: control.backSize, justifyContent: 'center', padding: space.sm,
     borderWidth: control.borderWidth, borderColor: color.border, borderRadius: frame.standard.radius },
   selected: { borderColor: color.accent },

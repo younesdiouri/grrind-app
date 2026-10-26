@@ -41,13 +41,6 @@ public static class ToonMaterials
         material.SetFloat("_Metal", 1);
     }
 
-    // Stretch fabric (Les Guinzz): the colour stays, a satin highlight runs along the folds.
-    public static void Satin(Material material, float strength)
-    {
-        material.SetTexture("_MatCap", MatCap("Satin"));
-        material.SetFloat("_Sheen", strength);
-    }
-
     // A 256 px studio sphere: dark floor, bright horizon band, a soft key highlight top left.
     static Texture2D MatCap(string name)
     {
@@ -55,9 +48,7 @@ public static class ToonMaterials
         var existing = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         if (existing != null) return existing;
         Color dark, mid, light;
-        // Satin is additive in the shader: black except a soft sheen and the horizon band.
-        if (name == "Satin") { dark = Color.black; mid = new Color(.06f, .06f, .07f); light = new Color(.85f, .87f, .9f); }
-        else if (name == "Gold") { dark = new Color(.5f, .32f, .08f); mid = new Color(1, .78f, .26f); light = new Color(1.3f, 1.2f, .8f); }
+        if (name == "Gold") { dark = new Color(.5f, .32f, .08f); mid = new Color(1, .78f, .26f); light = new Color(1.3f, 1.2f, .8f); }
         else { dark = new Color(.1f, .11f, .13f); mid = new Color(.55f, .6f, .66f); light = new Color(1.3f, 1.32f, 1.35f); }
         const int size = 256;
         var texture = new Texture2D(size, size, TextureFormat.RGB24, false);
@@ -68,7 +59,7 @@ public static class ToonMaterials
                 var n = new Vector3(u, v, Mathf.Sqrt(Mathf.Max(0, 1 - u * u - v * v)));
                 float sky = Mathf.SmoothStep(0, 1, n.y * .5f + .5f);
                 float horizon = Mathf.Exp(-Mathf.Pow((n.y - .1f) / .12f, 2)) * .6f;
-                float key = Mathf.Pow(Mathf.Max(0, Vector3.Dot(n, new Vector3(-.45f, .55f, .7f).normalized)), name == "Satin" ? 6 : 24);
+                float key = Mathf.Pow(Mathf.Max(0, Vector3.Dot(n, new Vector3(-.45f, .55f, .7f).normalized)), 24);
                 var colour = Color.Lerp(dark, mid, sky) + (light - mid) * Mathf.Clamp01(horizon + key);
                 texture.SetPixel(x, y, colour);
             }

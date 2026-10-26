@@ -20,7 +20,6 @@ Shader "GRRIND/Painted Toon"
         _MatCap ("Metal MatCap", 2D) = "gray" {}
         _MetalMask ("Metal mask", 2D) = "white" {}
         _Metal ("Metal", Range(0, 1)) = 0
-        _Sheen ("Satin sheen", Range(0, 1)) = 0
         _ReceiveShadows ("Receive shadows", Range(0, 1)) = 1
         _Cull ("Cull", Float) = 2
         _HitFlash ("Hit flash", Range(0, 1)) = 0
@@ -47,7 +46,6 @@ Shader "GRRIND/Painted Toon"
             half _RimPower;
             half _RimStrength;
             half _Metal;
-            half _Sheen;
             half _ReceiveShadows;
             half _Cull;
             half _HitFlash;
@@ -137,8 +135,6 @@ Shader "GRRIND/Painted Toon"
                 half value = saturate(dot(albedo.rgb, half3(.3, .59, .11)) * 1.8);
                 half3 matcap = SAMPLE_TEXTURE2D(_MatCap, sampler_MatCap, matcapUV).rgb;
                 colour = lerp(colour, matcap * value * lerp(.65, 1, ramp), metal);
-                // Satin keeps the fabric's hue and adds the MatCap highlight on top (lycra, nylon).
-                colour += albedo.rgb * matcap * _Sheen;
                 float3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 half rim = pow(1 - saturate(dot(normal, view)), _RimPower) * _RimStrength;
                 // ImpactFx whitens the struck fighter on the contact frame.

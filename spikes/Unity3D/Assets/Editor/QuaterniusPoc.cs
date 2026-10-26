@@ -92,7 +92,6 @@ public static class QuaterniusPoc
             var mat = ToonMaterials.At(path);
             mat.SetColor("_BaseColor", part == "fabric" ? new Color(.43f,.16f,.72f) : part == "panel" ? new Color(.05f,.85f,.9f) : new Color(.045f,.055f,.09f));
             mat.SetFloat("_ReceiveShadows", 0);
-            if (part != "cuffs") ToonMaterials.Satin(mat, .7f); // Lycra shines like the gold and steel items.
             return mat;
         }).ToArray();
         var sourceGuinzz = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz.fbx").GetComponentInChildren<SkinnedMeshRenderer>();

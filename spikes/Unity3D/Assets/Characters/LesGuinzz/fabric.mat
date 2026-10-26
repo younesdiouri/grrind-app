@@ -66,7 +66,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCap:
-        m_Texture: {fileID: 2800000, guid: f1ed51620a8f2445cbda9402f3e1f836, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetalMask:
@@ -135,7 +135,6 @@ Material:
     - _ReceiveShadows: 0
     - _RimPower: 3.5
     - _RimStrength: 0.3
-    - _Sheen: 0.7
     - _Smoothness: 0.15
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
