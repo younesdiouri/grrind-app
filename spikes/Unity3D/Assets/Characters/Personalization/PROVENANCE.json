@@ -42,5 +42,16 @@
       "joggers": 500
     },
     "changes": "Symmetric collapse decimation with colour borders and hems kept; t-shirt pushed 10 mm out, legwear 4 mm except where the t-shirt covers it (raycast), which sinks 8 mm under it; flat face normals; skin, armature and weights unchanged."
+  },
+  "faceted_skin": {
+    "ticket": "#299",
+    "script": "spikes/art-source/faceted-garments/facet_skin.py",
+    "files": {
+      "Male_Body_Faceted.fbx": "Superhero_Male_FullBody.fbx, shins only (legs mode, ratio .4); source of the bare legs",
+      "Female_Body_Faceted.fbx": "Superhero_Female_FullBody.fbx, same",
+      "Female_Sport_Faceted.fbx": "Female_Sport_Skin decimated in place (all mode, ratio .25, 7330 -> 3980 triangles)",
+      "../FacialPilot/MaleSportFace_Faceted.fbx": "MaleSportFace.fbx Original and Square faces (all mode, ratio .25, ~7400 -> ~4200 triangles), NoseWide re-targeted by nearest original vertex"
+    },
+    "changes": "Symmetric collapse decimation of the free region; open rims and fingers kept; flat face normals; weights limited to 4. Native sources unchanged. Author chose lookdev C (everything faceted, face included) on 2026-10-26."
   }
 }

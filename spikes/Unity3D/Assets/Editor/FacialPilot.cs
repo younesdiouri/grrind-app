@@ -26,7 +26,7 @@ public static class FacialPilot
             for (int i = 0; i < 1; i++)
             {
                 const string role = "Sport";
-                string sourcePath = "Assets/Characters/FacialPilot/Male" + role + "Face.fbx";
+                string sourcePath = "Assets/Characters/FacialPilot/Male" + role + "Face_Faceted.fbx";
                 var importer = (ModelImporter)AssetImporter.GetAtPath(sourcePath);
                 importer.isReadable = true;
                 importer.importBlendShapes = true;

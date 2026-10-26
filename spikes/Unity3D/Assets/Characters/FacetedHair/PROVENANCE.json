@@ -1,0 +1,14 @@
+{
+  "source": "Quaternius Universal Base Characters (Hair_SimpleParted_Rigged, Hair_Buns_Rigged), QuaterniusPOC Hair_Buzzed / Female_Hair_Buzzed, Personalization/Hair_Long",
+  "license": "CC0-1.0; license preserved in ../Quaternius/",
+  "ticket": "#299",
+  "script": "spikes/art-source/faceted-garments/facet_skin.py (all mode, ratio .35)",
+  "triangles": {
+    "Hair_SimpleParted_Rigged": "1301 -> 567",
+    "Hair_Buzzed": "830 -> 420",
+    "Female_Hair_Buzzed": "3348 -> 1428",
+    "Hair_Buns_Rigged": "3284 -> 1274",
+    "Hair_Long": "2906 -> 1188"
+  },
+  "changes": "Collapse decimation with open rims kept, flat face normals; armature and weights unchanged. Sources unchanged."
+}
