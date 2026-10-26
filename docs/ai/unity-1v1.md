@@ -54,6 +54,11 @@ un export batch qui ne peut pas partager un projet déjà ouvert. Le CLI officie
 appeler `MobileBuild.Device()` et `MobileBuild.Simulator()` dans l’éditeur ouvert ; les étapes
 Xcode et d’assemblage du xcframework restent celles du script.
 
+La QA visuelle se fait sur iPhone (#285) : `UNITY_IOS_TARGETS=Device ./scripts/unity-ios.sh`
+n'exporte que l'appareil, en deux fois moins de temps, sans les ~4,5 Go d'export et de
+DerivedData Simulator. La tranche Simulator du framework courant est reprise telle quelle :
+Maestro voit alors l'ancienne scène, et un run complet s'impose avant un flow qui en dépend.
+
 Le script remplace le framework après assemblage réussi, sans accumuler de sauvegardes.
 Le framework courant dans `modules/grrind-unity/ios/Frameworks` suffit aux builds natifs ;
 `spikes/Unity3D/Builds` contient des exports et intermédiaires régénérables à supprimer
