@@ -8,6 +8,8 @@
 /[Rr]ecordings/
 /Assets/[Rr]ecordings/
 /Assets/[Rr]ecordings.meta
+/Assets/[Tt]emp/
+/Assets/[Tt]emp.meta
 /Assets/Resources/PerformanceTestRun*.json*
 .vs/
 *.csproj
