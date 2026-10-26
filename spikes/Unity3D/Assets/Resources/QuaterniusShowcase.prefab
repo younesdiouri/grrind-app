@@ -1744,7 +1744,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
   m_Weight: 1
   m_Data:
@@ -1801,7 +1801,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
   m_Weight: 0
   m_Effectors: []
@@ -5035,6 +5035,8 @@ MonoBehaviour:
   - {fileID: 7400000, guid: 6f66753e0a63b4991b8a246705af7275, type: 2}
   - {fileID: -203655887218126122, guid: a2590615538124e6b8ec97d9a9f9dfdf, type: 3}
   - {fileID: -203655887218126122, guid: d488a0772bfaf47d5b20b83b3a20dc56, type: 3}
+  - {fileID: 937510309337268382, guid: 197ad96334c03492994775f9a192dcf2, type: 3}
+  - {fileID: -4234491588545506125, guid: 197ad96334c03492994775f9a192dcf2, type: 3}
   inspectionCamera: {fileID: 0}
   shoes:
   - {fileID: 5512400630652804502}
@@ -5052,7 +5054,22 @@ MonoBehaviour:
   - 0.5
   - 0.5
   - 0.45
+  - 0.08
+  - 0.3
   weaponType: FIST
+  movesets:
+  - family: FIST
+    rest: 0
+    clips: 00000000010000000200000003000000040000000500000006000000070000000b0000000c000000
+    twoHanded: 
+  - family: SWORD
+    rest: 8
+    clips: 0800000009000000020000000a000000040000000800000009000000070000000b0000000c000000
+    twoHanded: 08000000090000000a000000
+  - family: WEIGHT
+    rest: 7
+    clips: 07000000010000000200000003000000040000000700000001000000070000000b0000000c000000
+    twoHanded: 
   stance: 0
   view: 0
   phase: 0.45
@@ -5154,7 +5171,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fff0960ef4ea6e04eac66b4a7fd2189d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigBuilder
   m_RigLayers:
   - m_Rig: {fileID: 1546800583981773018}

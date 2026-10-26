@@ -202,13 +202,16 @@ public sealed class BattleBridge : MonoBehaviour
             float reveal=lastFrame.presentation.reduced?1:Mathf.SmoothStep(0,1,lastFrame.presentation.finale*3);
             pose.placement=Vector3.Lerp(new Vector3(CombatX(left),0,0),Vector3.zero,reveal);
             pose.facing=Mathf.Lerp(Facing(left),0,reveal);
-            pose.stance=7;pose.phase=.45f;
+            // Victory raises the fist with the reveal and holds it.
+            pose.stance=9;pose.phase=reveal*.5f;
             return;
         }
         pose.facing=inspection?0:Facing(left);
-        pose.gameObject.SetActive(frame.visible);pose.stance=Mathf.Clamp(frame.pose,0,7);pose.phase=Mathf.Clamp01(frame.phase);
+        pose.gameObject.SetActive(frame.visible);pose.stance=Mathf.Clamp(frame.pose,0,8);pose.phase=Mathf.Clamp01(frame.phase);
         // Camera right points towards -X. Input x is a fraction of the arena width.
         pose.placement=inspection?Vector3.zero:new Vector3(CombatX(left)-frame.x*HalfWidth()*2,0,0);
+        // The knock-out falls clear of the winner's feet.
+        if(frame.pose==8&&!inspection)pose.placement+=(left?Vector3.right:Vector3.left)*.5f*Mathf.InverseLerp(.5f,.8f,frame.phase);
         if((caillouxFight||illustratedFight)&&!inspection&&!frame.reduced&&(frame.pose==1||frame.pose==3||frame.pose==5||frame.pose==6))
         {
             // This rig advances into striking range at the HUD's contact phase, then returns.

@@ -43,11 +43,12 @@ test('a dodge belongs to the defender, with reduced motion preserving a fixed po
   assert.notEqual(unityActorFrame(timeline.beats, beat.attacker, time, signals(beat.attacker), 500, true, false).pose, 4);
 });
 
-test('skip to verdict leaves no attack or movement running', () => {
-  const result = unityActorFrame(timeline.beats, 'PLAYER', timeline.duration, signals('PLAYER'), 0, false, false);
-  assert.equal(result.pose, 0);
-  assert.equal(result.x, 0);
-  assert.equal(result.visible, false);
+test('skip to verdict leaves the winner at rest and the knocked-out fighter down (#279)', () => {
+  const winner = unityActorFrame(timeline.beats, 'ENEMY', timeline.duration, signals('ENEMY'), 0, false, false);
+  assert.equal(winner.pose, 0);
+  assert.equal(winner.x, 0);
+  const loser = unityActorFrame(timeline.beats, 'PLAYER', timeline.duration, signals('PLAYER'), 0, false, false);
+  assert.deepEqual([loser.pose, loser.phase, loser.x, loser.visible], [8, 1, 0, false]);
 });
 
 test('each ordinary action stays readable even in a very long battle', () => {
@@ -61,6 +62,8 @@ test('both fighters return to guard before the following action', () => {
     if (beat.kind !== 'attack' && beat.kind !== 'dodge') continue;
     const resting = beat.until - 50;
     for (const side of ['PLAYER', 'ENEMY'] as const) {
+      // The knock-out does not get back up (#279).
+      if (beat.kind === 'attack' && beat.final && side !== beat.attacker) continue;
       const frame = unityActorFrame(timeline.beats, side, resting, signals(side), 500, true, false);
       assert.equal(frame.pose, 0);
       assert.equal(frame.x, 0);

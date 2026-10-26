@@ -16,6 +16,10 @@ public sealed class FighterPose : MonoBehaviour
     // Contact time of each clip as a fraction of its length.
     public float[] contacts=Array.Empty<float>();
     public string weaponType="FIST";
+    // Which clip each posture plays, per weapon family: the dumbbell is WEIGHT whatever its type.
+    // Postures 0-6 come from the RN timeline; 7 workshop gaze, 8 knock-out, 9 victory.
+    [Serializable] public class Moveset {public string family;public int rest;public int[] clips;public int[] twoHanded=Array.Empty<int>();}
+    public Moveset[] movesets=Array.Empty<Moveset>();
     public int stance,view;
     public float phase=.45f,azimuth=32,headViewOffset=.1f,headViewSize=.23f;
     public bool inspect=true,autoplay;
@@ -53,18 +57,17 @@ public sealed class FighterPose : MonoBehaviour
     void LateUpdate()
     {
         if(!graph.IsValid())return;
-        int selected=Mathf.Clamp(stance,0,clips.Length-1);
         bool weighted=dumbbell!=null&&dumbbell.item!=null&&dumbbell.item.activeSelf;
-        bool sword=weaponType=="SWORD"&&clips.Length>10;
-        int rest=sword?8:weighted?7:0;
-        if(sword)selected=selected==0||selected==5?8:selected==1||selected==6?9:selected==3?10:selected;
-        // The weight uses only the direct and uppercut for attacks; combo is an announcement.
-        if(weighted&&(selected==0||selected==5))selected=7;
-        if(weighted&&selected==6)selected=1;
+        bool sword=weaponType=="SWORD";
+        string family=weighted?"WEIGHT":weaponType;
+        var set=Array.Find(movesets,m=>m.family==family)??movesets[0];
+        int rest=set.rest,selected=set.clips[Mathf.Clamp(stance,0,set.clips.Length-1)];
         // Workshop rest keeps the forward gaze approved in V1; the arena uses the boxing guard.
         if(inspect&&selected==0)selected=7;
         float p=autoplay?Mathf.Repeat(Time.time*.55f,1):Mathf.Clamp01(phase);
-        float blend=selected==rest||selected==7?1:Mathf.Min(1,Mathf.Min(p/.09f,(1-p)/.12f));
+        // A knock-out and a victory end the fight: they hold their last frame instead of returning to guard.
+        bool held=stance>=8;
+        float blend=selected==rest||selected==7?1:Mathf.Min(1,Mathf.Min(p/.09f,held?1:(1-p)/.12f));
         for(int i=0;i<players.Length;i++)mixer.SetInputWeight(i,i==selected?blend:i==rest?1-blend:0);
         players[rest].SetTime(p*clips[rest].length);
         if(selected!=rest)players[selected].SetTime(ClipPhase(selected,p,contacts)*clips[selected].length);
@@ -72,7 +75,7 @@ public sealed class FighterPose : MonoBehaviour
         actor.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);
         // Keep the supporting hand on the handle; release it with the received-hit/dodge clip.
         float support=sword&&dumbbell!=null&&dumbbell.TwoHanded
-            ?(selected==8||selected==9||selected==10?1:1-blend):0;
+            ?(Array.IndexOf(set.twoHanded,selected)>=0?1:1-blend):0;
         if(rigBuilder!=null&&dumbbell?.supportRig!=null){dumbbell.supportRig.weight=support;rigBuilder.SyncLayers();}
         graph.Evaluate(0);
         dumbbell?.Apply(support);
