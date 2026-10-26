@@ -12,15 +12,15 @@ public static class ServerEquipmentChecks
             try
             {
                 var appearance = actor.GetComponent<QuaterniusAppearance>();
-                appearance.Customize("tan", "brown", "brown", false, "cyan", "cyan");
-                if (!appearance.guinzz.activeSelf || appearance.fantasyTrousers.activeSelf || appearance.sportTrousers.activeSelf)
+                appearance.Customize("tan", "brown", "brown", "base", "cyan");
+                if (!appearance.guinzz.activeSelf || appearance.sportTrousers.activeSelf)
                     throw new Exception(name + ": equipped trousers depend on the shirt");
-                appearance.Customize("tan", "brown", "brown", true, "coral", "base");
-                if (!appearance.fantasyTrousers.activeSelf || appearance.guinzz.activeSelf || appearance.sportTrousers.activeSelf)
+                appearance.Customize("tan", "brown", "brown", "coral", "base");
+                if (appearance.guinzz.activeSelf || !appearance.sportTrousers.activeSelf)
                     throw new Exception(name + ": a shirt fabricated equipped trousers");
-                appearance.Customize("tan", "brown", "brown", false, "cyan", "base");
-                if (!appearance.fantasyTrousers.activeSelf || appearance.guinzz.activeSelf)
-                    throw new Exception(name + ": removing equipment did not restore base trousers");
+                appearance.Customize("tan", "brown", "brown", "base", "base");
+                if (!appearance.sportTrousers.activeSelf || appearance.guinzz.activeSelf)
+                    throw new Exception(name + ": removing equipment did not restore the athlete trousers");
             }
             finally { UnityEngine.Object.DestroyImmediate(actor); }
         }

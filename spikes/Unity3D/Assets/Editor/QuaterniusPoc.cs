@@ -42,7 +42,7 @@ public static class QuaterniusPoc
         Directory.CreateDirectory(output);
         Directory.CreateDirectory("Assets/Resources");
         AssetDatabase.Refresh();
-        foreach (var path in new[] { Source + "Superhero_" + bodyName + "_FullBody.fbx", Added + bodyName + "_Peasant.fbx", Added + "Hair_Buzzed.fbx" })
+        foreach (var path in new[] { Source + "Superhero_" + bodyName + "_FullBody.fbx", Added + "Hair_Buzzed.fbx" })
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
             importer.isReadable = true;
@@ -52,8 +52,6 @@ public static class QuaterniusPoc
         root.name = "Quaternius " + bodyName;
         var bones = root.GetComponentsInChildren<Transform>().ToDictionary(t => t.name);
         var skin = Material(female ? "Female skin" : "Skin dark", female ? Added + "T_Superhero_Female_Dark_BaseColor.png" : Source + "T_Superhero_Male_Dark.png");
-        var hands = Material(female ? "Female hands" : "Hands dark", Added + "T_Regular_" + bodyName + "_Dark_BaseColor.png");
-        var cloth = Material("Fantasy cloth", Added + "T_Peasant_BaseColor.png");
         var hair = Material("Hair", Added + "T_Hair_1_BaseColor.png");
         var eyes = Material("Eyes", Source + "T_Eye_Brown.png");
         eyes.SetFloat("_EyeMode", 1);
@@ -72,31 +70,18 @@ public static class QuaterniusPoc
         bare.bones = body.bones; bare.rootBone = body.rootBone; bare.sharedMaterial = skin;
         bare.localBounds = body.localBounds;
         UnityEngine.Object.DestroyImmediate(body.gameObject);
-        AssetDatabase.DeleteAsset(Output + "Head.asset");
-        var fantasyHead = Hair(Added + (female ? "FemaleHead.fbx" : "Head.fbx"), root, bones, skin);
-        var outfit = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Added + bodyName + "_Peasant.fbx"));
-        var outfitParts = outfit.GetComponentsInChildren<SkinnedMeshRenderer>();
-        foreach (var part in outfitParts)
-        {
-            part.transform.SetParent(root.transform, true);
-            part.bones = part.bones.Select(b => bones[b.name]).ToArray();
-            part.rootBone = bones[part.rootBone.name];
-            part.sharedMaterials = part.sharedMaterials.Select(m => m.name.Contains("Regular") ? hands : cloth).ToArray();
-            part.updateWhenOffscreen = true;
-        }
-        UnityEngine.Object.DestroyImmediate(outfit);
         var appearance = root.AddComponent<QuaterniusAppearance>();
         appearance.parted = Hair(Source + "Hair_SimpleParted_Rigged.fbx", root, bones, hair);
         appearance.buzzed = Hair(Added + (female ? "Female_Hair_Buzzed.fbx" : "Hair_Buzzed.fbx"), root, bones, hair);
         appearance.buns = Hair(Source + "Hair_Buns_Rigged.fbx", root, bones, hair);
         appearance.longHair = Hair("Assets/Characters/Personalization/Hair_Long.fbx", root, bones, hair);
-        appearance.skinMaterial = skin; appearance.handsMaterial = hands;
+        appearance.skinMaterial = skin;
         appearance.hairMaterial = hair; appearance.eyeMaterial = eyes;
-        appearance.fantasyTop = outfitParts.Where(p => p.name.EndsWith("_Body") || p.name.EndsWith("_Arms"))
-            .Select(p => p.gameObject).Append(fantasyHead).ToArray();
-        appearance.fantasyTrousers = outfitParts.Single(p => p.name.EndsWith("_Legs")).gameObject;
-        appearance.sportTrousers = Hair("Assets/Characters/Personalization/" + bodyName + "_SportTrousers.fbx", root, bones, cloth);
-        appearance.guinzz = Hair("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz.fbx", root, bones, cloth);
+        // Flat slate joggers: the athlete default, in the palette of the sneakers.
+        var trousers = Material("Athlete trousers", null);
+        trousers.SetColor("_BaseColor", new Color(.2f, .23f, .3f));
+        appearance.sportTrousers = Hair("Assets/Characters/Personalization/" + bodyName + "_SportTrousers.fbx", root, bones, trousers);
+        appearance.guinzz = Hair("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz.fbx", root, bones, trousers);
         var guinzzRenderer = appearance.guinzz.GetComponent<SkinnedMeshRenderer>();
         var guinzzMaterials = new[] { "fabric", "panel", "cuffs" }.Select(part => {
             string path = "Assets/Characters/LesGuinzz/" + part + ".mat";
@@ -108,10 +93,6 @@ public static class QuaterniusPoc
         guinzzRenderer.sharedMaterials = sourceGuinzz.sharedMaterials.Select(m => guinzzMaterials[m.name.Contains("panel") ? 1 : m.name.Contains("cuffs") ? 2 : 0]).ToArray();
         guinzzRenderer.quality = SkinQuality.Bone4;
         appearance.guinzzMaterial = guinzzMaterials[0];
-        appearance.guinzzFullMesh = guinzzRenderer.sharedMesh;
-        var bootMesh = MeshCut.Keep(guinzzRenderer, guinzzRenderer.sharedMesh, guinzzRenderer.sharedMesh.name + "(Clone)",
-            v => v.y >= .397f, "Assets/Characters/LesGuinzz/" + bodyName + "_Boots.asset");
-        appearance.guinzzBootMesh = bootMesh;
         var sport = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/Personalization/" + bodyName + "_Sport.fbx"));
         var sportParts = sport.GetComponentsInChildren<SkinnedMeshRenderer>();
         var shirtPath = Output + "Sport shirt " + bodyName + ".mat";
@@ -131,7 +112,7 @@ public static class QuaterniusPoc
         appearance.sportTop = sportParts.Select(p => p.gameObject).ToArray();
         foreach (var part in sportParts) part.quality = SkinQuality.Bone4;
         UnityEngine.Object.DestroyImmediate(sport);
-        appearance.Customize("tan", "brown", "brown", false, "cyan");
+        appearance.Customize("tan", "brown", "brown");
         appearance.SelectHair(female ? "buns" : "parted");
         var pose = root.AddComponent<FighterPose>();
         pose.actor = root.GetComponent<Animator>();
@@ -149,9 +130,7 @@ public static class QuaterniusPoc
         pose.clips = new[] { FittedMixamo("BoxingIdle"), FittedMixamo("BackHandCross"), clips.Single(c => c.name == "Armature|Idle_Shield_Break"),
             FittedMixamo("BackHandUppercut"), FittedMixamo("DodgeRetreat"), FittedMixamo("JabCrossCombo"), FittedMixamo("BackHandCross"), idle };
         pose.contacts = new[] { .5f, .30f, .28f, .37f, .15f, .30f, .30f, .5f };
-        pose.shoes = new[] { outfitParts.Single(p => p.name == bodyName + "_Peasant_Feet").transform };
-        pose.bareFeet = feet;
-        pose.SetShoes(true);
+        AthleteSneakers.Install(root, bare);
         pose.facing = 0; pose.azimuth = 25; pose.inspect = true;
         pose.headViewOffset = .1f; pose.headViewSize = .25f;
         hair.SetColor("_BaseColor", new Color(.17f, .085f, .04f));
@@ -287,37 +266,24 @@ public static class QuaterniusPoc
                     || appearance.buzzed.activeSelf != (style == "buzzed") || appearance.buns.activeSelf != (style == "buns"))
                     throw new Exception("Hair selection failed");
             }
-            foreach (bool equipped in new[] { false, true })
-            {
-                pose.SetShoes(equipped);
-                if (pose.shoes.Any(s => s.gameObject.activeSelf != equipped) || pose.bareFeet.activeSelf == equipped)
-                    throw new Exception("Boot selection failed");
-                if (appearance.guinzz.GetComponent<SkinnedMeshRenderer>().sharedMesh != (equipped ? appearance.guinzzBootMesh : appearance.guinzzFullMesh))
-                    throw new Exception("Guinzz boot coverage failed");
-            }
+            AthleteSneakers.Validate(instance);
             foreach (var renderer in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                 if (renderer.bones.Any(b => b == null) || renderer.sharedMaterials.Any(m => m == null)) throw new Exception("Missing binding/material");
-            foreach (bool sport in new[] { true, false })
-            {
-                appearance.Customize("deep", "blue", "blond", sport, "coral");
-                if (appearance.sportTop.Length != 2 || appearance.fantasyTop.Length != 3
-                    || appearance.sportTop.Any(p => p.activeSelf != sport) || appearance.fantasyTop.Any(p => p.activeSelf == sport))
-                    throw new Exception("Sport top replacement failed");
-            }
+            appearance.Customize("deep", "blue", "blond");
+            if (appearance.sportTop.Length != 2 || appearance.sportTop.Any(p => !p.activeSelf)
+                || instance.GetComponentsInChildren<SkinnedMeshRenderer>(true).Any(r => r.name.Contains("Peasant")))
+                throw new Exception("The athlete top must be the only outfit");
             var sportSkin = appearance.sportTop.Single(p => p.name.EndsWith("_Sport_Skin")).GetComponent<SkinnedMeshRenderer>();
-            foreach (string pants in new[] { "original", "violet", "cyan", "coral" })
+            foreach (string pants in new[] { "base", "violet", "cyan", "coral" })
             {
-                appearance.Customize("deep", "blue", "blond", true, "coral", pants);
-                if (appearance.guinzz.activeSelf != (pants != "original") || appearance.sportTrousers.activeSelf != (pants == "original"))
+                appearance.Customize("deep", "blue", "blond", "coral", pants);
+                if (appearance.guinzz.activeSelf != (pants != "base") || appearance.sportTrousers.activeSelf != (pants == "base"))
                     throw new Exception("Guinzz replacement failed: " + pants);
                 var renderer = appearance.guinzz.GetComponent<SkinnedMeshRenderer>();
                 if (renderer.sharedMesh.subMeshCount != renderer.sharedMaterials.Length || renderer.quality != SkinQuality.Bone4)
                     throw new Exception("Guinzz material or skinning mismatch");
             }
-            appearance.Customize("deep", "blue", "blond", false, "coral", "violet");
-            if (appearance.guinzz.activeSelf || appearance.sportTrousers.activeSelf || !appearance.fantasyTrousers.activeSelf)
-                throw new Exception("Guinzz leaked into fantasy outfit");
-            appearance.Customize("deep", "blue", "blond", true, "coral");
+            appearance.Customize("deep", "blue", "blond", "coral");
             if (sportSkin.sharedMaterials.Any(m => m != appearance.skinMaterial))
                 throw new Exception("Sport anatomy must use the skin material");
             var skinRenderer = instance.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r => r.sharedMaterial == appearance.skinMaterial);
@@ -326,7 +292,7 @@ public static class QuaterniusPoc
             var peer = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(path));
             try
             {
-                peer.GetComponent<QuaterniusAppearance>().Customize("light", "green", "black", true, "cyan");
+                peer.GetComponent<QuaterniusAppearance>().Customize("light", "green", "black", "cyan");
                 skinRenderer.GetPropertyBlock(properties, 0);
                 if (!Mathf.Approximately(properties.GetColor("_BaseColor").r, .37f)
                     || appearance.skinMaterial.GetColor("_BaseColor") != Color.white)

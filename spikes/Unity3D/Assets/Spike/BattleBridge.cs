@@ -13,8 +13,8 @@ public sealed class BattleBridge : MonoBehaviour
     RaidScene raid;
 
     [Serializable] public class AvatarConfig {
-        public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="cyan",pantsColor="original",faceStyle="original",noseStyle="original";
-        public bool boots=true,visible=true,headband,sportShirt,boxingGloves,dumbbell;
+        public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="base",pantsColor="base",faceStyle="original",noseStyle="original";
+        public bool visible=true,headband,boxingGloves,dumbbell;
         public string weapon="",weaponType="FIST";
     }
     [Serializable] public class Configuration
@@ -168,11 +168,10 @@ public sealed class BattleBridge : MonoBehaviour
         appearance?.SetBoxingGloves(config.boxingGloves);
         // shortcut: existing boxing clips can intersect large weights; combat trial explicitly accepted by the author.
         obj.GetComponent<WeaponGrip>()?.Select(config.dumbbell?"dumbbell":config.weapon);
-        appearance?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.sportShirt, config.shirtColor, config.pantsColor);
+        appearance?.Customize(config.skinTone, config.eyeColor, config.hairColor, config.shirtColor, config.pantsColor);
         appearance?.SelectFace(config.faceStyle, config.noseStyle);
         foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=inspection;
         pose.placement=new Vector3(CombatX(left),0,0);pose.facing=Facing(left);
-        pose.SetShoes(config.boots);
         pose.contactShadow=RaidScene.Shadow(obj.transform,contactShadow,new Vector2(.75f,.42f));
         obj.SetActive(config.visible);return pose;
     }

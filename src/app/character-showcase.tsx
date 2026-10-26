@@ -28,10 +28,8 @@ function Showcase({ preview }: { preview?: string }) {
   const [skinTone, setSkinTone] = useState<UnityAvatar['skinTone']>('tan');
   const [eyeColor, setEyeColor] = useState<UnityAvatar['eyeColor']>('blue');
   const [hairColor, setHairColor] = useState<UnityAvatar['hairColor']>('brown');
-  const [sportShirt, setSportShirt] = useState(true);
   const [shirtColor, setShirtColor] = useState<UnityAvatar['shirtColor']>('cyan');
   const [pantsColor, setPantsColor] = useState<UnityAvatar['pantsColor']>('violet');
-  const [boots, setBoots] = useState(true);
   const [boxingGloves, setBoxingGloves] = useState(true);
   const [dumbbell, setDumbbell] = useState(false);
   const [weapon, setWeapon] = useState<UnityAvatar['weapon']>();
@@ -46,8 +44,8 @@ function Showcase({ preview }: { preview?: string }) {
   const [controlsHeight, setControlsHeight] = useState(260);
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const avatar: UnityAvatar = { body, hairStyle, headband: headband && hairStyle !== 'long', boots, visible: true,
-    skinTone, eyeColor, hairColor, sportShirt, shirtColor, pantsColor, boxingGloves, dumbbell, weapon,
+  const avatar: UnityAvatar = { body, hairStyle, headband: headband && hairStyle !== 'long', visible: true,
+    skinTone, eyeColor, hairColor, shirtColor, pantsColor, boxingGloves, dumbbell, weapon,
     weaponType: weapon ? 'SWORD' : 'FIST',
     faceStyle: body === 'male' ? faceStyle : 'original', noseStyle: body === 'male' ? noseStyle : 'original' };
   if (playing) return <View style={styles.screen}>
@@ -56,7 +54,7 @@ function Showcase({ preview }: { preview?: string }) {
       unityEnemy={{ ...avatar, body: body === 'male' ? 'female' : 'male', hairStyle: body === 'male' ? 'buns' : 'parted',
         weapon: weapon === 'ferPlay' ? 'huilesson' : weapon === 'huilesson' ? 'ferPlay' : undefined,
         skinTone: skinTone === 'deep' ? 'light' : 'deep', eyeColor: 'brown', hairColor: 'black',
-        shirtColor: shirtColor === 'cyan' ? 'coral' : 'cyan', pantsColor: pantsColor === 'coral' ? 'violet' : 'coral', headband: false, boots: true }}
+        shirtColor: shirtColor === 'cyan' ? 'coral' : 'cyan', pantsColor: pantsColor === 'coral' ? 'violet' : 'coral', headband: false }}
       onDismiss={() => { setReady(false); setPlaying(false); }} />
   </View>;
   return <View style={styles.screen}>
@@ -126,20 +124,16 @@ function Showcase({ preview }: { preview?: string }) {
         </>}
         {section === 'Tenue' && <>
         <View style={styles.row}>
-          <Choice label="Fantasy" selected={!sportShirt} onPress={() => setSportShirt(false)} />
-          <Choice label="T-shirt sport" selected={sportShirt} onPress={() => setSportShirt(true)} />
-          {sportShirt && <>
-            <Choice label="Ardoise" selected={shirtColor === 'cyan'} onPress={() => setShirtColor('cyan')} />
-            <Choice label="Corail" selected={shirtColor === 'coral'} onPress={() => setShirtColor('coral')} />
-          </>}
+          <Choice label="Blanc" selected={shirtColor === 'base'} onPress={() => setShirtColor('base')} />
+          <Choice label="Ardoise" selected={shirtColor === 'cyan'} onPress={() => setShirtColor('cyan')} />
+          <Choice label="Corail" selected={shirtColor === 'coral'} onPress={() => setShirtColor('coral')} />
         </View>
-        {sportShirt && <View style={styles.row}>
-          {([{ label: 'Pantalon original', value: 'original' }, { label: 'Guinzz violet', value: 'violet' },
+        <View style={styles.row}>
+          {([{ label: 'Jogging', value: 'base' }, { label: 'Guinzz violet', value: 'violet' },
             { label: 'Guinzz cyan', value: 'cyan' }, { label: 'Guinzz corail', value: 'coral' }] as const).map(({ label, value }) =>
             <Choice key={value} label={label} selected={pantsColor === value} onPress={() => setPantsColor(value)} />)}
-        </View>}
+        </View>
         <View style={styles.row}>
-          <Choice label={boots ? 'Retirer les bottes' : 'Équiper les bottes'} selected={boots} onPress={() => setBoots(!boots)} />
           {hairStyle !== 'long' && <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
         </View>
         <View style={styles.row}>

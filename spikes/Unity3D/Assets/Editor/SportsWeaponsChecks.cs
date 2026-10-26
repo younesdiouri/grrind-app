@@ -13,7 +13,7 @@ public static class SportsWeaponsChecks
         .GetField(side,BindingFlags.Instance|BindingFlags.NonPublic).GetValue(bridge);
     static BattleBridge.AvatarConfig Avatar(string weapon,bool female) => new BattleBridge.AvatarConfig {
         body=female?"female":"male",weapon=weapon,weaponType=weapon=="ferPlay"||weapon=="huilesson"?"SWORD":"FIST",
-        dumbbell=weapon=="dumbbell",boxingGloves=weapon=="gloves",sportShirt=true,boots=false
+        dumbbell=weapon=="dumbbell",boxingGloves=weapon=="gloves"
     };
     public static object Validate()
     {

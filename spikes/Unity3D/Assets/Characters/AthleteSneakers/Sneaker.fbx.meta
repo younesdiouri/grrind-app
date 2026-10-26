@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: 40dc3364c4dd64857b9d3ce411638cb9
+guid: f7a7b42bb14f8416293bfa97566c48e3
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
   externalObjects: {}
   materials:
-    materialImportMode: 2
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -31,7 +31,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1

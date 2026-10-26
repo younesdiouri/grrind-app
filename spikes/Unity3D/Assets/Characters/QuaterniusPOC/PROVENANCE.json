@@ -6,27 +6,15 @@
       "archive": "Universal Base Characters[Standard] (1).zip",
       "sha256": "fdbf1804c90dfc1ea03e992bff7da2dfd1a79318e13270a660180f9308455f40",
       "url": "https://quaternius.com/packs/universalbasecharacters.html"
-    },
-    {
-      "archive": "Modular Character Outfits - Fantasy[Standard].zip",
-      "sha256": "c3468b18871cc8c8f05ab14df7712baf22cb9f389cbd870babf130e595187f70",
-      "url": "https://quaternius.com/packs/modularcharacteroutfitsfantasy.html"
     }
   ],
   "selectedFiles": [
-    "Male_Peasant.fbx",
     "T_Hair_1_BaseColor.png",
-    "Head.fbx",
     "Hair_Buzzed.fbx",
-    "T_Peasant_BaseColor.png",
-    "T_Regular_Male_Dark_BaseColor.png",
-    "Female_Peasant.fbx",
-    "FemaleHead.fbx",
-    "T_Regular_Female_Dark_BaseColor.png",
     "T_Superhero_Female_Dark_BaseColor.png",
     "Female_Hair_Buzzed.fbx"
   ],
-  "changes": "Male and female Peasant clothing with original Quaternius rigs, fingers and skin. Heads isolated and neck extended in Blender. Three source hairstyles (parted, buzzed, buns). Boots swap against original bare feet. Custom Meshy headband provenance lives in ../BandeauEclair/PROVENANCE.json.",
+  "changes": "Original Quaternius rigs, fingers and skin. Three source hairstyles (parted, buzzed, buns). The Fantasy Peasant outfit, its heads and boots were removed on 2026-10-26 (#281): the athlete outfit is the default. Custom Meshy headband provenance lives in ../BandeauEclair/PROVENANCE.json.",
   "scope": "Two tested bodies, three hair options and one headband; no universal wardrobe or server persistence.",
   "animations": {
     "source": "https://quaternius.itch.io/universal-animation-library-2",

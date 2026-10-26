@@ -17,14 +17,15 @@ public static class FacialPilot
             appearance.gloveArms = root.GetComponentsInChildren<SkinnedMeshRenderer>(true)
                 .Where(r => r.name.EndsWith("_Arms") || r.name.EndsWith("_Sport_Skin")).ToArray();
             appearance.bareHandMeshes = appearance.gloveArms.Select(r => r.sharedMesh).ToArray();
-            appearance.facialRenderers = new SkinnedMeshRenderer[2];
-            appearance.originalFaces = new Mesh[2];
-            appearance.squareFaces = new Mesh[2];
-            appearance.originalGlovedFaces = new Mesh[2];
-            appearance.squareGlovedFaces = new Mesh[2];
-            for (int i = 0; i < 2; i++)
+            appearance.facialRenderers = new SkinnedMeshRenderer[1];
+            appearance.originalFaces = new Mesh[1];
+            appearance.squareFaces = new Mesh[1];
+            appearance.originalGlovedFaces = new Mesh[1];
+            appearance.squareGlovedFaces = new Mesh[1];
+            // Only the athlete head remains since the Quaternius peasant outfit left the game (#281).
+            for (int i = 0; i < 1; i++)
             {
-                string role = i == 0 ? "Fantasy" : "Sport";
+                const string role = "Sport";
                 string sourcePath = "Assets/Characters/FacialPilot/Male" + role + "Face.fbx";
                 var importer = (ModelImporter)AssetImporter.GetAtPath(sourcePath);
                 importer.isReadable = true;
@@ -37,7 +38,7 @@ public static class FacialPilot
                 var renderers = source.GetComponentsInChildren<SkinnedMeshRenderer>();
                 var original = renderers.Single(r => r.name.EndsWith("_Original"));
                 var square = renderers.Single(r => r.name.EndsWith("_Square"));
-                var parts = i == 0 ? appearance.fantasyTop : appearance.sportTop;
+                var parts = appearance.sportTop;
                 var old = parts.SelectMany(p => p.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                     .Single(r => r.sharedMaterial == appearance.skinMaterial);
                 if (original.sharedMesh.GetBlendShapeIndex("NoseWide") < 0 || square.sharedMesh.GetBlendShapeIndex("NoseWide") < 0)

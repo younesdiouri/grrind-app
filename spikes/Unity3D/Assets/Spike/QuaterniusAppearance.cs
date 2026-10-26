@@ -30,13 +30,11 @@ public sealed class QuaterniusAppearance : MonoBehaviour
             renderer.SetBlendShapeWeight(renderer.sharedMesh.GetBlendShapeIndex("NoseWide"), nose == "wide" ? 100 : 0);
         }
     }
-    public GameObject[] fantasyTop = System.Array.Empty<GameObject>();
     public GameObject[] sportTop = System.Array.Empty<GameObject>();
-    public Material skinMaterial, handsMaterial, hairMaterial, eyeMaterial, shirtMaterial;
-    public GameObject fantasyTrousers, sportTrousers;
+    public Material skinMaterial, hairMaterial, eyeMaterial, shirtMaterial;
+    public GameObject sportTrousers;
     public GameObject guinzz;
     public Material guinzzMaterial;
-    public Mesh guinzzFullMesh, guinzzBootMesh;
     public GameObject[] boxingGloves = System.Array.Empty<GameObject>();
     public SkinnedMeshRenderer[] gloveArms = System.Array.Empty<SkinnedMeshRenderer>();
     public Mesh[] bareHandMeshes = System.Array.Empty<Mesh>(), coveredHandMeshes = System.Array.Empty<Mesh>();
@@ -51,11 +49,6 @@ public sealed class QuaterniusAppearance : MonoBehaviour
         SelectFace(selectedFace, selectedNose);
     }
 
-    public void SetBoots(bool visible)
-    {
-        guinzz.GetComponent<SkinnedMeshRenderer>().sharedMesh = visible ? guinzzBootMesh : guinzzFullMesh;
-    }
-
     public void SelectHair(string style)
     {
         parted.SetActive(style != "buzzed" && style != "buns" && style != "long");
@@ -66,14 +59,13 @@ public sealed class QuaterniusAppearance : MonoBehaviour
         SetHeadband(equipped);
     }
 
-    public void Customize(string tone, string iris, string hairColor, bool sport, string shirtColor, string pantsColor = "original")
+    // The athlete outfit is the default: a white t-shirt and slate joggers until the server equips
+    // the slate ("cyan", the painted texture) or coral t-shirt and the Guinzz leggings.
+    public void Customize(string tone, string iris, string hairColor, string shirtColor = "base", string pantsColor = "base")
     {
-        foreach (var obj in fantasyTop) obj.SetActive(!sport);
-        foreach (var obj in sportTop) obj.SetActive(sport);
-        bool baseTrousers = pantsColor == "base" || (!sport && pantsColor == "original");
-        fantasyTrousers.SetActive(baseTrousers);
-        sportTrousers.SetActive(!baseTrousers && pantsColor == "original");
-        guinzz.SetActive(pantsColor != "base" && pantsColor != "original");
+        bool leggings = pantsColor == "violet" || pantsColor == "cyan" || pantsColor == "coral";
+        sportTrousers.SetActive(!leggings);
+        guinzz.SetActive(leggings);
         // Local prototype palette over the painted source; no account persistence.
         Color skin = tone == "light" ? new Color(1.4f, 1.65f, 1.85f) : tone == "brown" ? new Color(.66f, .52f, .43f)
             : tone == "deep" ? new Color(.37f, .27f, .23f) : Color.white;
@@ -87,10 +79,10 @@ public sealed class QuaterniusAppearance : MonoBehaviour
             {
                 var mat = materials[i];
                 var block = new MaterialPropertyBlock();
-                if (mat == skinMaterial || mat == handsMaterial) block.SetColor("_BaseColor", skin);
+                if (mat == skinMaterial) block.SetColor("_BaseColor", skin);
                 else if (mat == hairMaterial) block.SetColor("_BaseColor", hairTint);
                 else if (mat == shirtMaterial) block.SetColor("_BaseColor", shirtColor == "coral"
-                    ? new Color(1.35f, .82f, .66f) : Color.white);
+                    ? new Color(1.35f, .82f, .66f) : shirtColor == "cyan" ? Color.white : new Color(1.55f, 1.55f, 1.6f));
                 else if (mat == guinzzMaterial) block.SetColor("_BaseColor", pantsColor == "coral"
                     ? new Color(1f, .27f, .23f) : pantsColor == "cyan" ? new Color(.035f, .55f, .7f) : new Color(.43f, .16f, .72f));
                 else if (mat == eyeMaterial) { block.SetColor("_IrisTint", eyes); block.SetColor("_EyeSkinTint", skin); }
