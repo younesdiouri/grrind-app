@@ -13,14 +13,15 @@ public static class AlKasalAssets
     static void BuildBoss()
     {
         const string folder="Assets/Characters/AlKasal/";
-        var importer=(ModelImporter)AssetImporter.GetAtPath(folder+"AlKasal.fbx");
+        // #295: the Meshy sloth decimated into facets by facet_skin.py (all mode, ratio .25), texture unchanged.
+        var importer=(ModelImporter)AssetImporter.GetAtPath(folder+"AlKasal_Faceted.fbx");
         importer.importCameras=false;importer.importLights=false;importer.importAnimation=false;
         importer.materialImportMode=ModelImporterMaterialImportMode.None;importer.SaveAndReimport();
         var material=ToonMaterials.At(folder+"Sloth.mat");
         material.SetTexture("_BaseMap",AssetDatabase.LoadAssetAtPath<Texture2D>(folder+"BaseColor.png"));
         material.SetColor("_BaseColor",Color.white);
         var root=new GameObject("AlKasal");
-        var body=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(folder+"AlKasal.fbx"),root.transform);
+        var body=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(folder+"AlKasal_Faceted.fbx"),root.transform);
         try
         {
             root.name="AlKasal";

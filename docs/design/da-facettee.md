@@ -20,8 +20,10 @@ Plus de tenue Peasant (« pas finie », hors DA) ni de pieds nus.
 - Arêtes vives, **un seul biseau** de 3 mm (`segments = 1`, limite d'angle ~35°) : la lumière
   accroche le chanfrein, l'objet ne devient pas une goutte arrondie.
 - Shading plat, normales par face. Budget : ~600 triangles par chaussure, ≤ 2 000 par objet tenu.
-- Aucune texture bruitée : des matériaux de palette unis. Les props Meshy existants restent tels
-  quels jusqu'à leur reprise (Al Kasal, canapés : ticket séparé).
+- Aucune texture bruitée : des matériaux de palette unis. Exception assumée (#295) : Al Kasal
+  garde sa texture peinte, posée sur un mesh facetté (`facet_skin.py`) ; la palette unie effaçait
+  son visage. Les canapés, déjà en blocs de couleurs unies, restent tels quels.
+- Personnages (#299) : peau, visage et coiffures facettés par décimation, rig et poids intacts.
 
 ## Palette
 

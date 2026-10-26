@@ -5,6 +5,7 @@
 # the faces and expressions of #282; "legs" facets only the shins, below the cut of the bare legs at 43 cm (QuaterniusPoc).
 import sys
 import bpy
+import bmesh
 from mathutils.kdtree import KDTree
 
 source, output, keep, ratio, mode = sys.argv[sys.argv.index("--") + 1:]
@@ -27,6 +28,12 @@ for obj in bpy.context.scene.objects:
         tree.balance()
         keys = {k.name: [k.data[i].co - basis.data[i].co for i in range(len(mesh.vertices))] for k in mesh.shape_keys.key_blocks[1:]}
         bpy.ops.object.shape_key_remove(all=True)
+    # Meshy exports split their UV islands into loose pieces: weld them, or every edge reads as a rim.
+    welded = bmesh.new()
+    welded.from_mesh(mesh)
+    bmesh.ops.remove_doubles(welded, verts=welded.verts, dist=1e-5)
+    welded.to_mesh(mesh)
+    welded.free()
     # Protected: the openings under the clothes, the fingers (they would melt), and in body mode the
     # head and neck.
     groups = {g.index: g.name for g in obj.vertex_groups}
@@ -66,8 +73,9 @@ for obj in bpy.context.scene.objects:
     for polygon in mesh.polygons:
         polygon.use_smooth = all(i in head for i in polygon.vertices)
     obj.vertex_groups.remove(obj.vertex_groups["Collapse"])
-    bpy.ops.object.vertex_group_limit_total(limit=4)
-    bpy.ops.object.vertex_group_normalize_all()
+    if obj.vertex_groups:  # a static mesh (the raid boss) has no weights to limit
+        bpy.ops.object.vertex_group_limit_total(limit=4)
+        bpy.ops.object.vertex_group_normalize_all()
     print("FACETS", obj.name, before, "->", sum(len(p.vertices) - 2 for p in mesh.polygons), "keys", list(keys))
 for obj in bpy.context.scene.objects:
     obj.select_set(obj.type in ("MESH", "ARMATURE"))
