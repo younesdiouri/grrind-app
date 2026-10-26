@@ -39,7 +39,8 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
   const frame = { pose: 0, phase: reduced ? 0 : (Math.max(0, time) % 2500) / 2500,
     x: width > 0 ? motion.x / width : 0, visible, reduced };
   const knockout = beats.find((entry) => entry.kind === 'attack' && entry.final && entry.attacker !== side);
-  if (knockout && time >= contactAt(knockout) && (!beat || beat === knockout || beat.kind === 'verdict')) {
+  // Compared by time, not identity: worklets receive copies of the beats.
+  if (knockout && time >= contactAt(knockout) && (!beat || beat.at >= knockout.at)) {
     // Down from the knock-out to the verdict, falling in half a second once the hit-stop ends;
     // the finale then shows the winner alone.
     const fallen = Math.max(0, time - contactAt(knockout) - hitStopOf(knockout)) / 1000;
