@@ -36,21 +36,21 @@ def verts(bm, points):
 bpy.ops.wm.read_factory_settings(use_empty=True)
 mesh = bpy.data.meshes.new("Sneaker")
 bm = bmesh.new()
-SOLE, NEON, TRIM, UPPER = range(4)
+SOLE, STRIPE, TRIM, UPPER = range(4)
 
-# Sole: a chunky slab with a neon band proud of its side.
+# Sole: a chunky slab with a stripe proud of its side.
 bottom = verts(bm, ring(1, 0))
-neon_low = verts(bm, ring(1, .011))
-neon_low_out = verts(bm, ring(1.025, .011))
-neon_high_out = verts(bm, ring(1.025, .019))
-neon_high = verts(bm, ring(1, .019))
+stripe_low = verts(bm, ring(1, .011))
+stripe_low_out = verts(bm, ring(1.025, .011))
+stripe_high_out = verts(bm, ring(1.025, .019))
+stripe_high = verts(bm, ring(1, .019))
 sole_top = verts(bm, ring(1, .034))
 bm.faces.new(list(reversed(bottom))).material_index = SOLE
-band(bm, bottom, neon_low, SOLE)
-band(bm, neon_low, neon_low_out, NEON)
-band(bm, neon_low_out, neon_high_out, NEON)
-band(bm, neon_high_out, neon_high, NEON)
-band(bm, neon_high, sole_top, SOLE)
+band(bm, bottom, stripe_low, SOLE)
+band(bm, stripe_low, stripe_low_out, STRIPE)
+band(bm, stripe_low_out, stripe_high_out, STRIPE)
+band(bm, stripe_high_out, stripe_high, STRIPE)
+band(bm, stripe_high, sole_top, SOLE)
 
 # Upper: a two-tone shell inset from the sole, closed at the collar.
 base = verts(bm, ring(.96, .034))
@@ -66,7 +66,7 @@ bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
 bm.to_mesh(mesh)
 bm.free()
 
-for name, colour in (("Sole", (.9, .93, .95, 1)), ("Neon", (.21, .89, 1, 1)), ("Trim", (.32, .37, .46, 1)), ("Upper", (.1, .12, .19, 1))):
+for name, colour in (("Sole", (.9, .93, .95, 1)), ("Stripe", (.32, .37, .46, 1)), ("Trim", (.32, .37, .46, 1)), ("Upper", (.1, .12, .19, 1))):
     material = bpy.data.materials.new(name)
     material.diffuse_color = colour
     mesh.materials.append(material)

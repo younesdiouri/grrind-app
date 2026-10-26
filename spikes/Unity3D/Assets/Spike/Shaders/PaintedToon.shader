@@ -19,7 +19,6 @@ Shader "GRRIND/Painted Toon"
         _MatCap ("Metal MatCap", 2D) = "gray" {}
         _MetalMask ("Metal mask", 2D) = "white" {}
         _Metal ("Metal", Range(0, 1)) = 0
-        [HDR] _EmissionColor ("Neon emission", Color) = (0, 0, 0, 1)
         _Cull ("Cull", Float) = 2
         _HitFlash ("Hit flash", Range(0, 1)) = 0
     }
@@ -44,7 +43,6 @@ Shader "GRRIND/Painted Toon"
             half _RimPower;
             half _RimStrength;
             half _Metal;
-            half4 _EmissionColor;
             half _Cull;
             half _HitFlash;
         CBUFFER_END
@@ -129,8 +127,6 @@ Shader "GRRIND/Painted Toon"
                 half rim = pow(1 - saturate(dot(normal, view)), _RimPower) * _RimStrength;
                 // ImpactFx whitens the struck fighter on the contact frame.
                 colour = lerp(colour + _RimColor.rgb * rim, half3(1, .97, .92), _HitFlash * .5);
-                // Neon strips stay lit whatever the light, and cross the bloom threshold.
-                colour += _EmissionColor.rgb;
                 return half4(MixFog(colour, input.fog), 1);
             }
             ENDHLSL

@@ -6,7 +6,7 @@ Il demande de garder cette seule base et de supprimer les anciens essais.
 Le POC #229 / PR #230 est fusionné ; nettoyage : #221.
 
 > Depuis #281 (2026-10-26), la tenue Peasant, ses têtes et ses bottes sont retirées du jeu : la tenue
-> athlète (t-shirt, jogging, baskets facettées) est le défaut. Voir `da-facettee-neon.md`.
+> athlète (t-shirt, jogging, baskets facettées) est le défaut. Voir `da-facettee.md`.
 
 ## Essayer
 

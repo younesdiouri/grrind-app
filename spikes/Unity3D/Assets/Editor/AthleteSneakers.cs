@@ -8,7 +8,7 @@ public static class AthleteSneakers
 {
     const string Folder = "Assets/Characters/AthleteSneakers/";
     static readonly (string name, Color colour)[] Parts =
-        { ("Sole", new Color(.9f, .93f, .95f)), ("Neon", new Color(.21f, .89f, 1)), ("Trim", new Color(.32f, .37f, .46f)), ("Upper", new Color(.1f, .12f, .19f)) };
+        { ("Sole", new Color(.9f, .93f, .95f)), ("Stripe", new Color(.32f, .37f, .46f)), ("Trim", new Color(.32f, .37f, .46f)), ("Upper", new Color(.1f, .12f, .19f)) };
 
     public static void Install(GameObject root, SkinnedMeshRenderer bareFeet)
     {
@@ -25,8 +25,6 @@ public static class AthleteSneakers
         var materials = Parts.Select(part => {
             var material = ToonMaterials.At(Folder + part.name + ".mat");
             material.SetColor("_BaseColor", part.colour);
-            // Above the bloom threshold (1.3): the strip glows, the rest of the shoe stays matte.
-            material.SetColor("_EmissionColor", part.name == "Neon" ? part.colour * 4f : Color.black);
             return material;
         }).ToArray();
         var animator = root.GetComponent<Animator>();

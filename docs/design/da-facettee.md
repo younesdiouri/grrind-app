@@ -1,4 +1,4 @@
-# DA facettée néon — feuille de style
+# DA facettée — feuille de style
 
 Fixée par le pilote #281 (baskets athlète) ; l'éclairage vient de #280. Elle s'applique à tout ce
 qu'on ajoute au combat : équipement, armes, mobs, décor.
@@ -30,16 +30,14 @@ Plus de tenue Peasant (« pas finie », hors DA) ni de pieds nus.
 | Base claire (semelle, t-shirt) | `#E6EDF2` |
 | Ardoise (jogging, renforts) | `#333D4D` / `#525E75` |
 | Nuit (tige, structure) | `#1A1F30` |
-| Néon joueur / accent | cyan `#35E4FF` |
 | Équipes du HUD | menthe `#75FFB2`, rose `#FF5ACD` — réservées au HUD |
 
-## Émissif
+## Pas de néon
 
-- Une **bande** néon par pièce, pas un liseré partout : sur la semelle d'une chaussure, le long du
-  tranchant d'une arme, sur l'arête maîtresse d'une épaulière.
-- Matériau à part (`Neon`) avec `_EmissionColor` au-dessus du seuil de bloom (1,3) : couleur × 4.
-  Le bloom de l'arène fait le halo, le shader ne l'imite pas.
-- Pas de rim coloré d'équipe sur les corps : essayé en #280, refusé sur iPhone.
+Essayé sur la semelle des baskets (#281) : invisible au cadrage du combat sur l'arène d'hiver, et
+l'auteur n'en voit pas l'utilité dans cette DA. Pas d'émissif sur l'équipement ni les armes ; les
+accents passent par la couleur unie et le biseau. Pas de rim coloré d'équipe non plus (refusé en
+#280) : menthe et rose restent au HUD.
 
 ## Métal
 
