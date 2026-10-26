@@ -42,7 +42,7 @@ public static class QuaterniusPoc
         Directory.CreateDirectory(output);
         Directory.CreateDirectory("Assets/Resources");
         AssetDatabase.Refresh();
-        foreach (var path in new[] { Source + "Superhero_" + bodyName + "_FullBody.fbx", Added + "Hair_Buzzed.fbx" })
+        foreach (var path in new[] { Source + "Superhero_" + bodyName + "_FullBody.fbx", Added + "Hair_Buzzed.fbx", "Assets/Characters/Personalization/" + bodyName + "_Body_Faceted.fbx" })
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
             importer.isReadable = true;
@@ -55,13 +55,12 @@ public static class QuaterniusPoc
         var hair = Material("Hair", Added + "T_Hair_1_BaseColor.png");
         var eyes = Material("Eyes", Source + "T_Eye_Brown.png");
         eyes.SetFloat("_EyeMode", 1); eyes.SetFloat("_IrisScale", 1.13f);
-        // Skin is not faceted (DA rule): a smooth ramp, the bands stay on clothes and scenery.
+        // A smooth ramp: since #299 the facets of the skin come from its flat-shaded mesh, not from bands.
         skin.SetFloat("_RampSteps", 0); eyes.SetFloat("_RampSteps", 0);
         foreach (var renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>())
             renderer.sharedMaterial = renderer.name == "Eyes" ? eyes : renderer.name == "Eyebrows" ? hair : skin;
         ThickerBrows(root.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name == "Eyebrows"), output);
         var body = root.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name.Equals("Superhero_" + bodyName, StringComparison.OrdinalIgnoreCase));
-        var original = body.sharedMesh;
         var feet = new GameObject("Bare feet");
         feet.transform.SetParent(body.transform.parent, false);
         feet.transform.localPosition = body.transform.localPosition;
@@ -69,15 +68,21 @@ public static class QuaterniusPoc
         feet.transform.localScale = body.transform.localScale;
         var bare = feet.AddComponent<SkinnedMeshRenderer>();
         var bareName = female ? "Female bare feet" : "Bare feet";
-        bare.sharedMesh = MeshCut.Keep(body, original, bareName, v => v.y < .43f, Output + bareName + ".asset");
-        bare.bones = body.bones; bare.rootBone = body.rootBone; bare.sharedMaterial = skin;
+        // #299: the bare legs come from the faceted body, bound by bone name like the clothes.
+        var faceted = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/Personalization/" + bodyName + "_Body_Faceted.fbx"));
+        var legs = faceted.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name.Equals("Superhero_" + bodyName, StringComparison.OrdinalIgnoreCase));
+        bare.sharedMesh = MeshCut.Keep(legs, legs.sharedMesh, bareName, v => v.y < .43f, Output + bareName + ".asset");
+        bare.bones = legs.bones.Select(b => bones[b.name]).ToArray(); bare.rootBone = bones[legs.rootBone.name]; bare.sharedMaterial = skin;
+        UnityEngine.Object.DestroyImmediate(faceted);
         bare.localBounds = body.localBounds;
         UnityEngine.Object.DestroyImmediate(body.gameObject);
         var appearance = root.AddComponent<QuaterniusAppearance>();
-        appearance.parted = Hair(Source + "Hair_SimpleParted_Rigged.fbx", root, bones, hair);
-        appearance.buzzed = Hair(Added + (female ? "Female_Hair_Buzzed.fbx" : "Hair_Buzzed.fbx"), root, bones, hair);
-        appearance.buns = Hair(Source + "Hair_Buns_Rigged.fbx", root, bones, hair);
-        appearance.longHair = Hair("Assets/Characters/Personalization/Hair_Long.fbx", root, bones, hair);
+        // #299: every hairstyle is faceted like the body (facet_skin.py on the Quaternius sources).
+        const string FacetedHair = "Assets/Characters/FacetedHair/";
+        appearance.parted = Hair(FacetedHair + "Hair_SimpleParted_Rigged.fbx", root, bones, hair);
+        appearance.buzzed = Hair(FacetedHair + (female ? "Female_Hair_Buzzed.fbx" : "Hair_Buzzed.fbx"), root, bones, hair);
+        appearance.buns = Hair(FacetedHair + "Hair_Buns_Rigged.fbx", root, bones, hair);
+        appearance.longHair = Hair(FacetedHair + "Hair_Long.fbx", root, bones, hair);
         appearance.skinMaterial = skin;
         appearance.lightSkin = AssetDatabase.LoadAssetAtPath<Texture2D>(Source + (female ? "T_Superhero_Female_Light_BaseColor.png" : "T_Superhero_Male_Ligh.png"));
         appearance.hairMaterial = hair; appearance.eyeMaterial = eyes;
