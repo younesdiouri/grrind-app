@@ -50,7 +50,7 @@ Maestro. Le code de sortie signale l’échec. Ne pas utiliser ce reset sur un S
 
 | Changement | Vérification mobile |
 | --- | --- |
-| Présentation d’un écran, rendu Unity, postures, effets, art | Validations éditeur Unity si Unity change ; l’auteur juge sur iPhone, la PR dit quoi regarder |
+| Présentation d’un écran, rendu Unity, postures, effets, art | Validations éditeur Unity si Unity change ; `UNITY_IOS_TARGETS=Device ./scripts/unity-ios.sh` (sans les ~4,5 Go Simulator, #286) ; l’auteur juge sur iPhone, la PR dit quoi regarder |
 | Session, authentification | `ios-smoke.yaml` : connexion, accueil, un combat, retour |
 | Santé, import, récompense, diagnostics | `health-sync.yaml` : empty puis multiple |
 | Combat serveur, historique et rejeu (flux serveur) | `combat-real.yaml` |
