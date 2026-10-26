@@ -25,6 +25,7 @@ public static class SportsWeapons
                     guard, QuaterniusPoc.Mixamo("GreatSwordDownwardSlash"), QuaterniusPoc.Mixamo("GreatSwordPowerSlash") }).ToArray();
                 pose.contacts[1]=pose.contacts[6]=.31f; pose.contacts[3]=.33f;
                 pose.contacts = pose.contacts.Take(8).Concat(new[] { .5f, .5f, .45f }).ToArray();
+                Movesets(pose);
                 SupportGrip(root, name == "QuaterniusFemale");
                 grip.SetEquipped(false);
                 PrefabUtility.SaveAsPrefabAsset(root, path);
@@ -32,6 +33,23 @@ public static class SportsWeapons
             finally { PrefabUtility.UnloadPrefabContents(root); }
         }
         AssetDatabase.SaveAssets();
+    }
+    // UAL2 shares the Quaternius skeleton: no fitting, unlike Mixamo. Contacts come from chest
+    // and hand sweeps (#279): the knock-back recoils at .08, the victory fist is up at .3.
+    // Melee_Hook lunges through the target and Sword_Block does not read as a parry at the
+    // combat framing: both were tried and left out.
+    public static void Movesets(FighterPose pose)
+    {
+        var ual2=AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Quaternius/UAL2Clean.fbx").OfType<AnimationClip>().ToArray();
+        AnimationClip Ual2(string name)=>ual2.Single(c=>c.name=="Armature|"+name);
+        pose.clips=pose.clips.Take(11).Concat(new[]{Ual2("Hit_Knockback"),Ual2("Yes")}).ToArray();
+        pose.contacts=pose.contacts.Take(11).Concat(new[]{.08f,.3f}).ToArray();
+        pose.movesets=new[]{
+            new FighterPose.Moveset{family="FIST",rest=0,clips=new[]{0,1,2,3,4,5,6,7,11,12}},
+            // Great Sword gestures approved in #273; the support hand holds only during them.
+            new FighterPose.Moveset{family="SWORD",rest=8,clips=new[]{8,9,2,10,4,8,9,7,11,12},twoHanded=new[]{8,9,10}},
+            // The weight uses only the direct and uppercut for attacks; combo is an announcement.
+            new FighterPose.Moveset{family="WEIGHT",rest=7,clips=new[]{7,1,2,3,4,7,1,7,11,12}}};
     }
     public static AnimationClip UprightGuard()
     {

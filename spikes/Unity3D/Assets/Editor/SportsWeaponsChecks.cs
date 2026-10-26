@@ -29,6 +29,13 @@ public static class SportsWeaponsChecks
             bridge.Configure(JsonUtility.ToJson(new BattleBridge.Configuration {player=left?own:other,enemy=left?other:own}));
             var attacker=Actor(bridge,left?"player":"enemy");var target=Actor(bridge,left?"enemy":"player");
             var grip=attacker.GetComponent<WeaponGrip>();
+            foreach(string family in new[]{"FIST","SWORD","WEIGHT"})
+            {
+                var set=Array.Find(attacker.movesets,m=>m.family==family);
+                if(set==null||set.clips.Length!=10||set.clips.Append(set.rest).Any(i=>i<0||i>=attacker.clips.Length
+                    ||attacker.clips[i]==null||attacker.contacts[i]<=0||attacker.contacts[i]>=1))
+                    throw new Exception("Incomplete "+family+" moveset");
+            }
             if(own.weaponType=="SWORD"&&(grip.supportRig==null||grip.supportFingers.Length!=15))
                 throw new Exception("Missing supporting-hand grip");
             foreach(int stance in new[]{1,3})
@@ -50,11 +57,13 @@ public static class SportsWeaponsChecks
                 if(gap>.36f)throw new Exception(JsonUtility.ToJson(new Failure{weapon=weapon,female=female,left=left,stance=stance,gap=gap}));
             }
             foreach(float ratio in new[]{2.1f,2.54f,2.9f})
-            foreach(int stance in Enumerable.Range(0,7))
+            // Bridge postures, knock-out included (#279).
+            foreach(int stance in Enumerable.Range(0,9))
             foreach(float phase in Enumerable.Range(0,21).Select(i=>i/20f))
             {
                 bridge.arenaCamera.aspect=ratio;Present(bridge,left,stance,phase);attacker.SendMessage("LateUpdate");
-                if(Vector3.Distance(attacker.placement,new Vector3(left?.35f:-.35f,0,0))>.0001f)
+                // Only the knock-out slides clear of the winner's feet.
+                if(stance!=8&&Vector3.Distance(attacker.placement,new Vector3(left?.35f:-.35f,0,0))>.0001f)
                     throw new Exception("Attack still moves the actor's placement");
                 if(grip.HeldItem!=null)for(int i=0;i<grip.fingers.Length;i++)
                     if(Quaternion.Angle(grip.fingers[i].localRotation,grip.rotations[i])>.01f)throw new Exception("Grip drift");

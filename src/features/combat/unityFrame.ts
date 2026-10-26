@@ -27,6 +27,8 @@ export type UnityInspectorProps = {
   view: number; azimuth: number; viewport: UnityViewport; onReady(): void; onError(): void;
 };
 export const UNITY_POSES: Record<FighterPose, number> = { idle: 0, attack: 1, hit: 2, critical: 3, dodge: 4, combo: 5, replay: 6 };
+/** Unity-only posture (#279): the knock-out stays down until the verdict. */
+const KNOCKED_OUT = 8;
 
 /** Same server timeline and contact as the HUD; phase .5 is the contact in each clip. */
 export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, signals: PoseSignals,
@@ -36,6 +38,14 @@ export function unityActorFrame(beats: BattleBeat[], side: Actor, time: number, 
   const motion = fighterMotionAt(beats, side, time, reduced, true);
   const frame = { pose: 0, phase: reduced ? 0 : (Math.max(0, time) % 2500) / 2500,
     x: width > 0 ? motion.x / width : 0, visible, reduced };
+  const knockout = beats.find((entry) => entry.kind === 'attack' && entry.final && entry.attacker !== side);
+  // Compared by time, not identity: worklets receive copies of the beats.
+  if (knockout && time >= contactAt(knockout) && (!beat || beat.at >= knockout.at)) {
+    // Down from the knock-out to the verdict, falling in half a second once the hit-stop ends;
+    // the finale then shows the winner alone.
+    const fallen = Math.max(0, time - contactAt(knockout) - hitStopOf(knockout)) / 1000;
+    return { ...frame, pose: KNOCKED_OUT, phase: reduced ? 1 : Math.min(1, .5 + fallen), x: 0 };
+  }
   if (!beat || beat.kind === 'opening' || beat.kind === 'verdict') return frame;
   const span = beat.until - beat.at;
   if (beat.kind === 'combo') {

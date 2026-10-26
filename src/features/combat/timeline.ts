@@ -58,6 +58,8 @@ export type BattleBeat = EventPosition & (
       mitigated: number;
       /** Coup critique ou coup final : l'arrêt sur le coup dure plus longtemps (#278). */
       heavy?: boolean;
+      /** Le coup qui met KO : la cible reste au sol jusqu'au verdict (#279). */
+      final?: boolean;
     }
   /**
    * La cible a esquivé : aucun point de vie ne bouge.
@@ -385,7 +387,8 @@ export function buildBattleTimeline(battle: Battle, { illustrated = false } = {}
       blows.push(illustrated ? contact : until);
       const strength = battle.endReason === 'KO' && remaining === 0 ? IMPACT.final : event.critical ? IMPACT.critical : IMPACT.blow;
       impacts.push({ at: illustrated ? contact : until, target: opponentOf(attacker), strength });
-      beats.push({ ...position, kind: 'attack', at, until, index, attacker, damage, mitigated, heavy: strength > IMPACT.blow });
+      beats.push({ ...position, kind: 'attack', at, until, index, attacker, damage, mitigated, heavy: strength > IMPACT.blow,
+        final: strength === IMPACT.final });
     } else if (event.type === 'DODGE') {
       const attacker = event.attacker ?? 'PLAYER';
       const dodger = opponentOf(attacker);
