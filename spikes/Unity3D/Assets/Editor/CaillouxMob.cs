@@ -25,16 +25,9 @@ public static class CaillouxMob
         }
         importer.clipAnimations = settings;
         importer.SaveAndReimport();
-        var material = AssetDatabase.LoadAssetAtPath<Material>(Folder + "Stone.mat");
-        if (material == null)
-        {
-            material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            AssetDatabase.CreateAsset(material, Folder + "Stone.mat");
-        }
+        var material = ToonMaterials.At(Folder + "Stone.mat");
         material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Folder + "BaseColor.png"));
         material.SetColor("_BaseColor", Color.white);
-        material.SetFloat("_Metallic", 0); material.SetFloat("_Smoothness", .15f);
-        EditorUtility.SetDirty(material);
         var clips = AssetDatabase.LoadAllAssetsAtPath(Folder + "Cailloux.fbx").OfType<AnimationClip>()
             .Where(c => !c.name.StartsWith("__preview__", StringComparison.Ordinal)).ToArray();
         var root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Folder + "Cailloux.fbx"));

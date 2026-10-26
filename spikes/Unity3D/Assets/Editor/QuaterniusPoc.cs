@@ -100,11 +100,9 @@ public static class QuaterniusPoc
         var guinzzRenderer = appearance.guinzz.GetComponent<SkinnedMeshRenderer>();
         var guinzzMaterials = new[] { "fabric", "panel", "cuffs" }.Select(part => {
             string path = "Assets/Characters/LesGuinzz/" + part + ".mat";
-            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (mat == null) { mat = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(mat, path); }
+            var mat = ToonMaterials.At(path);
             mat.SetColor("_BaseColor", part == "fabric" ? new Color(.43f,.16f,.72f) : part == "panel" ? new Color(.05f,.85f,.9f) : new Color(.045f,.055f,.09f));
-            mat.SetFloat("_Smoothness", .15f); mat.SetFloat("_Metallic", 0);
-            EditorUtility.SetDirty(mat); return mat;
+            return mat;
         }).ToArray();
         var sourceGuinzz = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz.fbx").GetComponentInChildren<SkinnedMeshRenderer>();
         guinzzRenderer.sharedMaterials = sourceGuinzz.sharedMaterials.Select(m => guinzzMaterials[m.name.Contains("panel") ? 1 : m.name.Contains("cuffs") ? 2 : 0]).ToArray();
@@ -117,17 +115,10 @@ public static class QuaterniusPoc
         var sport = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/Personalization/" + bodyName + "_Sport.fbx"));
         var sportParts = sport.GetComponentsInChildren<SkinnedMeshRenderer>();
         var shirtPath = Output + "Sport shirt " + bodyName + ".mat";
-        var shirt = AssetDatabase.LoadAssetAtPath<Material>(shirtPath);
-        if (shirt == null) { shirt = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(shirt, shirtPath); }
-        shirt.shader = Shader.Find("Universal Render Pipeline/Lit");
+        var shirt = ToonMaterials.At(shirtPath);
         shirt.SetFloat("_Cull", 0); // Thin cotton renders on both sides inside open sleeves.
         shirt.SetColor("_BaseColor", Color.white);
         shirt.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Characters/Personalization/" + bodyName + "_Tshirt_BaseColor.png"));
-        shirt.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Characters/Personalization/" + bodyName + "_Tshirt_Normal.png"));
-        shirt.SetTexture("_MetallicGlossMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Characters/Personalization/" + bodyName + "_Tshirt_MetallicSmoothness.png"));
-        shirt.SetFloat("_BumpScale", .55f); shirt.SetFloat("_Metallic", 0); shirt.SetFloat("_Smoothness", .75f);
-        shirt.EnableKeyword("_NORMALMAP"); shirt.EnableKeyword("_METALLICSPECGLOSSMAP");
-        EditorUtility.SetDirty(shirt);
         appearance.shirtMaterial = shirt;
         foreach (var part in sportParts)
         {
@@ -166,7 +157,7 @@ public static class QuaterniusPoc
         hair.SetColor("_BaseColor", new Color(.17f, .085f, .04f));
         var light = new GameObject("Soft showcase key", typeof(Light)).GetComponent<Light>();
         light.transform.SetParent(root.transform, false);
-        light.type = LightType.Directional; light.intensity = 1.5f; light.transform.localRotation = Quaternion.Euler(35, 150, 0);
+        light.type = LightType.Directional; light.intensity = 1.5f; light.shadows = LightShadows.Hard; light.shadowStrength = .6f; light.transform.localRotation = Quaternion.Euler(35, 150, 0);
         // The inspection camera follows a crouching head; static imported bounds
         // otherwise cull its eyes/hair while their vertices are still in view.
         foreach (var renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true)) renderer.updateWhenOffscreen = true;
@@ -259,12 +250,10 @@ public static class QuaterniusPoc
     static Material Material(string name, string texture)
     {
         var path = Output + name + ".mat";
-        var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-        if (material == null) { material = new Material(Shader.Find("GRRIND/Painted Toon")); AssetDatabase.CreateAsset(material, path); }
+        var material = ToonMaterials.At(path);
         material.SetTexture("_BaseMap", texture == null ? null : AssetDatabase.LoadAssetAtPath<Texture2D>(texture));
-        material.SetColor("_BaseColor", Color.white); material.SetColor("_ShadowTint", new Color(.72f, .72f, .72f));
-        material.SetFloat("_RimStrength", .06f); material.SetFloat("_OutlineWidth", .0007f);
-        EditorUtility.SetDirty(material); return material;
+        material.SetColor("_BaseColor", Color.white);
+        return material;
     }
     static GameObject Hair(string path, GameObject root, System.Collections.Generic.Dictionary<string, Transform> bones, Material material)
     {

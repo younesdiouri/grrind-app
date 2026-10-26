@@ -10,12 +10,10 @@ public static class LePoidsLourd
     public static void Build()
     {
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-        var material = AssetDatabase.LoadAssetAtPath<Material>(Folder + "Gold.mat");
-        if (material == null) { material = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(material, Folder + "Gold.mat"); }
+        var material = ToonMaterials.At(Folder + "Gold.mat");
         material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Folder + "BaseColor.png"));
         material.SetColor("_BaseColor", Color.white);
-        material.SetFloat("_Metallic", .15f); material.SetFloat("_Smoothness", .3f);
-        EditorUtility.SetDirty(material);
+        ToonMaterials.Metal(material, Folder, "Gold");
         foreach (var name in new[] { "QuaterniusShowcase", "QuaterniusFemale" })
         {
             bool female = name == "QuaterniusFemale";

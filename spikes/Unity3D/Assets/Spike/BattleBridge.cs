@@ -7,6 +7,7 @@ public sealed class BattleBridge : MonoBehaviour
     public Camera arenaCamera;
     public Material contactShadow;
     public GameObject combatEnvironment,inspectionFloor;
+    public Light key;
     FighterPose player,enemy;
     CombatPresentation presentation;
     RaidScene raid;
@@ -100,6 +101,8 @@ public sealed class BattleBridge : MonoBehaviour
             if(config==null||config.player==null||config.enemy==null)throw new ArgumentException("Missing avatar configuration");
             if(config.viewport.width<=0||config.viewport.height<=0)return;
             if(raid!=null){raid.Clear();raid.enabled=false;}
+            // The shadow map covers the duel (8 m); the wide raid keeps contact shadows only.
+            if(key!=null)key.shadows=config.scene=="raid"?LightShadows.None:LightShadows.Hard;
             // JsonUtility creates missing nested objects: the scene discriminator is explicit.
             if(config.scene=="raid")
             {

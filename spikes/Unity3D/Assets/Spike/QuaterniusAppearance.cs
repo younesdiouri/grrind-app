@@ -94,8 +94,6 @@ public sealed class QuaterniusAppearance : MonoBehaviour
                 else if (mat == guinzzMaterial) block.SetColor("_BaseColor", pantsColor == "coral"
                     ? new Color(1f, .27f, .23f) : pantsColor == "cyan" ? new Color(.035f, .55f, .7f) : new Color(.43f, .16f, .72f));
                 else if (mat == eyeMaterial) { block.SetColor("_IrisTint", eyes); block.SetColor("_EyeSkinTint", skin); }
-                // Cut skin has open seams: an inverted hull draws stray lines across them.
-                if (mat == skinMaterial && renderer.name.EndsWith("_Skin")) block.SetFloat("_OutlineWidth", 0);
                 renderer.SetPropertyBlock(block, i);
             }
         }

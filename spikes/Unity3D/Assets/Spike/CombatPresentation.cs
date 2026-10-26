@@ -35,7 +35,7 @@ public sealed class CombatPresentation : MonoBehaviour
         public FacetedGraphic[] shards;
         public SkinnedMeshRenderer body;
     }
-    static readonly Color Cyan=Hex("35E4FF"),Mint=Hex("75FFB2"),Pink=Hex("FF5ACD"),
+    public static readonly Color Cyan=Hex("35E4FF"),Mint=Hex("75FFB2"),Pink=Hex("FF5ACD"),
         Amber=Hex("FFD36D"),Violet=Hex("A98BFF"),White=Hex("EAF6FF"),Night=Hex("0B1124");
     Configuration config;
     Frame frame;
