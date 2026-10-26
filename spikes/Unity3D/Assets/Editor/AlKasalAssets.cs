@@ -16,10 +16,9 @@ public static class AlKasalAssets
         var importer=(ModelImporter)AssetImporter.GetAtPath(folder+"AlKasal.fbx");
         importer.importCameras=false;importer.importLights=false;importer.importAnimation=false;
         importer.materialImportMode=ModelImporterMaterialImportMode.None;importer.SaveAndReimport();
-        var material=AssetDatabase.LoadAssetAtPath<Material>(folder+"Sloth.mat");
-        if(material==null){material=new Material(Shader.Find("Universal Render Pipeline/Lit"));AssetDatabase.CreateAsset(material,folder+"Sloth.mat");}
+        var material=ToonMaterials.At(folder+"Sloth.mat");
         material.SetTexture("_BaseMap",AssetDatabase.LoadAssetAtPath<Texture2D>(folder+"BaseColor.png"));
-        material.SetColor("_BaseColor",Color.white);material.SetFloat("_Smoothness",.15f);material.SetFloat("_Metallic",0);
+        material.SetColor("_BaseColor",Color.white);
         var root=new GameObject("AlKasal");
         var body=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(folder+"AlKasal.fbx"),root.transform);
         try
@@ -51,8 +50,9 @@ public static class AlKasalAssets
             {
                 var old=renderer.sharedMaterial;
                 string matPath="Assets/Characters/Canape/"+old.name+".mat";
-                var material=AssetDatabase.LoadAssetAtPath<Material>(matPath);
-                if(material==null){material=new Material(Shader.Find("Universal Render Pipeline/Lit"));material.color=old.color;material.SetFloat("_Smoothness",.1f);AssetDatabase.CreateAsset(material,matPath);}
+                bool created=AssetDatabase.LoadAssetAtPath<Material>(matPath)==null;
+                var material=ToonMaterials.At(matPath);
+                if(created)material.SetColor("_BaseColor",old.color);
                 renderer.sharedMaterial=material;
             }
             PrefabUtility.SaveAsPrefabAsset(root,"Assets/Resources/Canape.prefab");

@@ -146,23 +146,17 @@ public static class SportsWeapons
         string folder = "Assets/Characters/" + name + "/";
         var importer = (ModelImporter)AssetImporter.GetAtPath(folder + name + ".fbx");
         importer.isReadable = true; importer.SaveAndReimport();
-        var mat = AssetDatabase.LoadAssetAtPath<Material>(folder + "Item.mat");
-        if (mat == null) { mat = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(mat, folder + "Item.mat"); }
+        var mat = ToonMaterials.At(folder + "Item.mat");
         mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(folder + "BaseColor.png"));
-        mat.SetFloat("_Smoothness", .2f); mat.SetFloat("_Metallic", name == "FerPlay" ? .15f : 0);
-        EditorUtility.SetDirty(mat);
+        ToonMaterials.Metal(mat, folder, name == "FerPlay" ? "Steel" : "Gold");
         var grip = root.GetComponent<WeaponGrip>();
         var obj = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(folder + name + ".fbx"), grip.item.transform.parent, false);
         obj.name = name;
         obj.transform.localPosition = grip.item.transform.localPosition;
         // FBX converts the Blender +X tip to Unity -X; the dumbbell is symmetric.
         obj.transform.localRotation = grip.item.transform.localRotation * Quaternion.Euler(0,180,0);
-        var strings = AssetDatabase.LoadAssetAtPath<Material>(folder + "Strings.mat");
-        if (name == "Huilesson" && strings == null) {
-            strings = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            strings.SetColor("_BaseColor",new Color(.84f,.79f,.64f)); strings.SetFloat("_Smoothness",.1f);
-            AssetDatabase.CreateAsset(strings,folder+"Strings.mat");
-        }
+        var strings = name == "Huilesson" ? ToonMaterials.At(folder + "Strings.mat") : null;
+        strings?.SetColor("_BaseColor", new Color(.84f,.79f,.64f));
         var renderer = obj.GetComponentInChildren<MeshRenderer>();
         renderer.sharedMaterials = renderer.sharedMaterials.Select(m => m.name.Contains("Racket strings") ? strings : mat).ToArray();
         obj.SetActive(false); return obj;

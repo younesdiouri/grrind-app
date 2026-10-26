@@ -26,12 +26,10 @@ public static class GoldenBoxingGloves
         var appearance = root.GetComponent<QuaterniusAppearance>();
         appearance.SetBoxingGloves(false);
         foreach (var old in appearance.boxingGloves) UnityEngine.Object.DestroyImmediate(old);
-        var material = AssetDatabase.LoadAssetAtPath<Material>(Assets + "Gold.mat");
-        if (material == null) { material = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(material, Assets + "Gold.mat"); }
+        var material = ToonMaterials.At(Assets + "Gold.mat");
         material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Assets + "BaseColor.png"));
         material.SetColor("_BaseColor", Color.white);
-        material.SetFloat("_Metallic", .15f); material.SetFloat("_Smoothness", .3f);
-        EditorUtility.SetDirty(material);
+        ToonMaterials.Metal(material, Assets, "Gold");
         var animator = root.GetComponent<Animator>();
         appearance.boxingGloves = new[] { HumanBodyBones.RightHand, HumanBodyBones.LeftHand }.Select(bone => {
             var side = bone == HumanBodyBones.RightHand ? "r" : "l";

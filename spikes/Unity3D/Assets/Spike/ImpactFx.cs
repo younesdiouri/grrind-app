@@ -4,8 +4,8 @@ using UnityEngine;
 public sealed class ImpactFx : MonoBehaviour
 {
     static readonly int HitFlash=Shader.PropertyToID("_HitFlash");
-    static readonly Color Mint=new Color(.46f,1,.7f),Pink=new Color(1,.35f,.8f),
-        Cyan=new Color(.21f,.89f,1),Amber=new Color(1,.77f,.25f);
+    static readonly Color Mint=CombatPresentation.Mint,Pink=CombatPresentation.Pink,
+        Cyan=CombatPresentation.Cyan,Amber=new Color(1,.77f,.25f);
     const int SparkCount=10;
     Transform[] sparks;
     Material spark,trail;

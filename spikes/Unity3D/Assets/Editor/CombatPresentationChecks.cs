@@ -38,7 +38,7 @@ public static class CombatPresentationChecks
                 var winner = won ? player : enemy;
                 Require(winner.gameObject.activeSelf && !((won ? enemy : player).gameObject.activeSelf), "Only the winner remains");
                 Require(winner.placement.sqrMagnitude < .0001f && Mathf.Abs(winner.facing) < .01f, "Winner is centered and faces the camera");
-                Require(winner.stance == 7, "Finale uses the existing neutral pose");
+                Require(winner.stance == 9, "Finale holds the victory pose");
                 bridge.SendMessage("LateUpdate");
                 var floor = bridge.arenaCamera.WorldToViewportPoint(winner.placement);
                 var head = bridge.arenaCamera.WorldToViewportPoint(winner.actor.GetBoneTransform(HumanBodyBones.Head).position);
