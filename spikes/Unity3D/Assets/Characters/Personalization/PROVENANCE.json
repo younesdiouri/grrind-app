@@ -17,5 +17,30 @@
   "historical_rejections": "Meshy PBR projection produced missed/interior ray hits; first authored cotton lost its grain below8bit quantization. Rejected proofs retained separately and do not validate current textures.",
   "motion_revision": "685504540f41",
   "motion_validation": "432 dense states for the common arm fit;54 additional persisted combo states with zero hand/tee, arm/arm or pants/tee crossings.68 current Editor views reviewed by Astra. Hidden pants/hem contacts classified in exact-phase four-angle clay/ID views. Female additional hem-weight candidate abandoned because it did not improve the internal fold.",
-  "simulator_review": "references/quaternius-poc/anatomy-review/685504540f41/simulator/review.md"
+  "simulator_review": "references/quaternius-poc/anatomy-review/685504540f41/simulator/review.md",
+  "meshy_retexture": {
+    "ticket": "#298",
+    "task": "01a1795f-0aa5-7435-82dd-0bdd13be69f6",
+    "credits": 10,
+    "input": "spikes/art-source/meshy-retexture/Male_Tshirt.glb (bind pose, original GameUV)",
+    "output": "Male_Tshirt_Meshy.png, 2048 px base colour, original UVs kept",
+    "license": "Meshy output terms of the user's account",
+    "note": "Replaces the heather base colour on the male body only; the female keeps hers until its own retexture.",
+    "status": "Superseded on 2026-10-26 by faceted garments (lookdev B); texture removed, record kept in spikes/art-source/meshy-retexture/tasks.json"
+  },
+  "faceted": {
+    "ticket": "#298",
+    "script": "spikes/art-source/faceted-garments/facet.py",
+    "files": [
+      "Male_Sport_Faceted.fbx",
+      "Female_Sport_Faceted.fbx",
+      "Male_SportTrousers_Faceted.fbx",
+      "Female_SportTrousers_Faceted.fbx"
+    ],
+    "triangles": {
+      "t-shirt": 1400,
+      "joggers": 500
+    },
+    "changes": "Symmetric collapse decimation with colour borders and hems kept; t-shirt pushed 10 mm out, legwear 4 mm except where the t-shirt covers it (raycast), which sinks 8 mm under it; flat face normals; skin, armature and weights unchanged."
+  }
 }

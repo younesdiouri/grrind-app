@@ -19,5 +19,15 @@
       "max_z_m": 1.1497045755386353,
       "max_influences": 4
     }
+  },
+  "faceted": {
+    "ticket": "#298",
+    "script": "spikes/art-source/faceted-garments/facet.py",
+    "files": [
+      "Male_LesGuinzz_Faceted.fbx",
+      "Female_LesGuinzz_Faceted.fbx"
+    ],
+    "triangles": 900,
+    "changes": "Symmetric collapse decimation with colour borders and hems kept; t-shirt pushed 10 mm out, legwear 4 mm except where the t-shirt covers it (raycast), which sinks 8 mm under it; flat face normals; skin, armature and weights unchanged."
   }
 }

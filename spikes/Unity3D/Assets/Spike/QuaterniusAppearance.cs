@@ -61,7 +61,7 @@ public sealed class QuaterniusAppearance : MonoBehaviour
         SetHeadband(equipped);
     }
 
-    // The painted cotton is a mid grey: tints are the target colour over that grey (coral #FF6B57).
+    // Faceted clothes carry no texture since #298: the tint is the colour itself (coral #FF6B57, slate, white).
     // The athlete outfit is the default: a white t-shirt and slate joggers until the server equips
     // the slate ("cyan", the painted texture) or coral t-shirt and the Guinzz leggings.
     public void Customize(string tone, string iris, string hairColor, string shirtColor = "base", string pantsColor = "base")
@@ -87,7 +87,7 @@ public sealed class QuaterniusAppearance : MonoBehaviour
                 // Brows read darker than the hair so the face keeps its expression from afar.
                 else if (mat == hairMaterial) block.SetColor("_BaseColor", renderer.name == "Eyebrows" ? hairTint * .55f : hairTint);
                 else if (mat == shirtMaterial) block.SetColor("_BaseColor", shirtColor == "coral"
-                    ? new Color(1.8f, .76f, .62f) : shirtColor == "cyan" ? Color.white : new Color(1.55f, 1.55f, 1.6f));
+                    ? new Color(1f, .42f, .34f) : shirtColor == "cyan" ? new Color(.42f, .48f, .57f) : new Color(.92f, .94f, .96f));
                 else if (mat == guinzzMaterial) block.SetColor("_BaseColor", pantsColor == "coral"
                     ? new Color(1f, .27f, .23f) : pantsColor == "cyan" ? new Color(.035f, .55f, .7f) : new Color(.43f, .16f, .72f));
                 else if (mat == eyeMaterial) { block.SetColor("_IrisTint", eyes); block.SetColor("_EyeSkinTint", skin); }

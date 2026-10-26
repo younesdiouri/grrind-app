@@ -41,6 +41,13 @@ public static class ToonMaterials
         material.SetFloat("_Metal", 1);
     }
 
+    // Faceted clothes read their facets through a matte clay MatCap, like the steel on the iron.
+    public static void Facets(Material material, float strength)
+    {
+        material.SetTexture("_MatCap", MatCap("Clay"));
+        material.SetFloat("_Facets", strength);
+    }
+
     // A 256 px studio sphere: dark floor, bright horizon band, a soft key highlight top left.
     static Texture2D MatCap(string name)
     {
@@ -48,7 +55,9 @@ public static class ToonMaterials
         var existing = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         if (existing != null) return existing;
         Color dark, mid, light;
-        if (name == "Gold") { dark = new Color(.5f, .32f, .08f); mid = new Color(1, .78f, .26f); light = new Color(1.3f, 1.2f, .8f); }
+        // Clay: matte, lit from above, darker below; no highlight (multiplied in the shader).
+        if (name == "Clay") { dark = new Color(.32f, .3f, .34f); mid = new Color(.62f, .62f, .64f); light = new Color(.72f, .72f, .74f); }
+        else if (name == "Gold") { dark = new Color(.5f, .32f, .08f); mid = new Color(1, .78f, .26f); light = new Color(1.3f, 1.2f, .8f); }
         else { dark = new Color(.1f, .11f, .13f); mid = new Color(.55f, .6f, .66f); light = new Color(1.3f, 1.32f, 1.35f); }
         const int size = 256;
         var texture = new Texture2D(size, size, TextureFormat.RGB24, false);
@@ -59,7 +68,7 @@ public static class ToonMaterials
                 var n = new Vector3(u, v, Mathf.Sqrt(Mathf.Max(0, 1 - u * u - v * v)));
                 float sky = Mathf.SmoothStep(0, 1, n.y * .5f + .5f);
                 float horizon = Mathf.Exp(-Mathf.Pow((n.y - .1f) / .12f, 2)) * .6f;
-                float key = Mathf.Pow(Mathf.Max(0, Vector3.Dot(n, new Vector3(-.45f, .55f, .7f).normalized)), 24);
+                float key = Mathf.Pow(Mathf.Max(0, Vector3.Dot(n, new Vector3(-.45f, .55f, .7f).normalized)), name == "Clay" ? 2 : 24);
                 var colour = Color.Lerp(dark, mid, sky) + (light - mid) * Mathf.Clamp01(horizon + key);
                 texture.SetPixel(x, y, colour);
             }

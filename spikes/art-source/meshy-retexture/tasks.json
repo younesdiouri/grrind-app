@@ -1,0 +1,87 @@
+{
+  "ticket": "https://github.com/younesdiouri/grrind-app/issues/298",
+  "tasks": [
+    {
+      "id": "01a1794a-d458-72fd-bb89-82fee4766404",
+      "type": "retexture",
+      "input": "Male_Tshirt.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "result": "Rejected: near-white prompt gave an almost blank texture; tints overexposed it"
+    },
+    {
+      "id": "01a1794a-dfc5-7463-904b-d46a56ae6704",
+      "type": "retexture",
+      "input": "Male_LesGuinzz.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "result": "Rejected: little visible change"
+    },
+    {
+      "id": "01a1795f-0aa5-7435-82dd-0bdd13be69f6",
+      "type": "retexture",
+      "input": "Male_Tshirt.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds",
+      "result": "Kept on the male t-shirt (pilot); collar painted below the real neckline"
+    },
+    {
+      "id": "01a1795f-14cb-7563-a32e-fb72cb41f6ab",
+      "type": "retexture",
+      "input": "Male_LesGuinzz.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds",
+      "result": "Rejected: dark patches at the knees"
+    },
+    {
+      "id": "01a17982-c78e-7666-b57d-137ee2faa8fd",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: A stylized PBR",
+      "input": "Unity render of the current male outfit"
+    },
+    {
+      "id": "01a17982-cb7b-7506-a695-7d7484193840",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: B faceted low-poly",
+      "input": "Unity render of the current male outfit"
+    },
+    {
+      "id": "01a17982-ce97-74b7-92ad-3a5d1a850cd4",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: C cel-shading",
+      "input": "Unity render of the current male outfit"
+    },
+    {
+      "id": "01a17982-d124-70f7-96f2-8c5919f76dad",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: D hand-painted",
+      "input": "Unity render of the current male outfit"
+    }
+  ]
+}
