@@ -1,0 +1,49 @@
+{
+  "ticket": "https://github.com/younesdiouri/grrind-app/issues/298",
+  "tasks": [
+    {
+      "id": "01a1794a-d458-72fd-bb89-82fee4766404",
+      "type": "retexture",
+      "input": "Male_Tshirt.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "result": "Rejected: near-white prompt gave an almost blank texture; tints overexposed it"
+    },
+    {
+      "id": "01a1794a-dfc5-7463-904b-d46a56ae6704",
+      "type": "retexture",
+      "input": "Male_LesGuinzz.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "result": "Rejected: little visible change"
+    },
+    {
+      "id": "01a1795f-0aa5-7435-82dd-0bdd13be69f6",
+      "type": "retexture",
+      "input": "Male_Tshirt.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds"
+    },
+    {
+      "id": "01a1795f-14cb-7563-a32e-fb72cb41f6ab",
+      "type": "retexture",
+      "input": "Male_LesGuinzz.glb",
+      "ai_model": "latest (meshy-7)",
+      "texture_resolution": "2k",
+      "enable_original_uv": true,
+      "credits": 10,
+      "date": "2026-10-26",
+      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds"
+    }
+  ]
+}

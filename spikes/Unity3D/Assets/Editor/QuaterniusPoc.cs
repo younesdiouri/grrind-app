@@ -17,12 +17,13 @@ public static class QuaterniusPoc
     {
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         foreach (var body in new[] { "Male", "Female" })
-        foreach (var map in new[] { "BaseColor", "Normal", "MetallicSmoothness" })
+        foreach (var map in new[] { "BaseColor", "Normal", "MetallicSmoothness", "Meshy" })
         {
             var name = body + "_Tshirt_" + map + ".png";
             var texture = (TextureImporter)AssetImporter.GetAtPath("Assets/Characters/Personalization/" + name);
+            if (texture == null) continue; // A body without its Meshy shirt yet keeps the heather.
             texture.textureType = name.Contains("Normal") ? TextureImporterType.NormalMap : TextureImporterType.Default;
-            texture.sRGBTexture = name.Contains("BaseColor");
+            texture.sRGBTexture = name.Contains("BaseColor") || name.Contains("Meshy");
             texture.maxTextureSize = 2048; texture.mipmapEnabled = true; texture.anisoLevel = 4;
             texture.textureCompression = TextureImporterCompression.CompressedHQ;
             texture.SaveAndReimport();
@@ -104,7 +105,10 @@ public static class QuaterniusPoc
         var shirt = ToonMaterials.At(shirtPath);
         shirt.SetFloat("_Cull", 0); // Thin cotton renders on both sides inside open sleeves.
         shirt.SetColor("_BaseColor", Color.white); shirt.SetFloat("_ReceiveShadows", 0);
-        shirt.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Characters/Personalization/" + bodyName + "_Tshirt_BaseColor.png"));
+        // #298: the Meshy retexture (seams, ribbing, mesh panels) replaces the bare heather once it exists for this body.
+        string meshyShirt = "Assets/Characters/Personalization/" + bodyName + "_Tshirt_Meshy.png";
+        shirt.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(File.Exists(meshyShirt) ? meshyShirt
+            : "Assets/Characters/Personalization/" + bodyName + "_Tshirt_BaseColor.png"));
         appearance.shirtMaterial = shirt;
         foreach (var part in sportParts)
         {
