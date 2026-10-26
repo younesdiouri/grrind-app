@@ -10,8 +10,6 @@ public sealed class FighterPose : MonoBehaviour
     public Animator actor;
     public AnimationClip[] clips;
     public Camera inspectionCamera;
-    public Transform[] shoes=Array.Empty<Transform>();
-    public GameObject bareFeet;
     public Transform contactShadow;
     // Contact time of each clip as a fraction of its length.
     public float[] contacts=Array.Empty<float>();
@@ -32,12 +30,6 @@ public sealed class FighterPose : MonoBehaviour
     WeaponGrip dumbbell;
     RigBuilder rigBuilder;
 
-    public void SetShoes(bool visible)
-    {
-        foreach(var shoe in shoes)shoe.gameObject.SetActive(visible);
-        if(bareFeet!=null)bareFeet.SetActive(!visible);
-        GetComponent<QuaterniusAppearance>()?.SetBoots(visible);
-    }
     void Awake()
     {
         dumbbell=GetComponent<WeaponGrip>();

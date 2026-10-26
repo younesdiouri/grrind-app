@@ -59,7 +59,7 @@ public static class GoldenBoxingGloves
             try
             {
                 var a = root.GetComponent<QuaterniusAppearance>();
-                if (a.boxingGloves.Length != 2 || a.gloveArms.Length != 2) throw new Exception(name + ": missing gloves or arms");
+                if (a.boxingGloves.Length != 2 || a.gloveArms.Length != 1) throw new Exception(name + ": missing gloves or the athlete arms");
                 a.SetBoxingGloves(true);
                 for (int i = 0; i < a.gloveArms.Length; i++)
                     if (a.gloveArms[i].sharedMesh != a.coveredHandMeshes[i] || a.coveredHandMeshes[i].triangles.Length >= a.bareHandMeshes[i].triangles.Length)

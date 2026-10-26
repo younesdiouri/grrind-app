@@ -1,0 +1,7 @@
+{
+  "tool": "Blender 4.5 script spikes/art-source/athlete-sneakers/sneaker.py",
+  "date": "2026-10-26",
+  "license": "Authored for GRRIND, no third-party source",
+  "triangles": 608,
+  "changes": "One left shoe exported to FBX; Unity mirrors it for the right foot, scales it to each bare foot and skins its front to the ball bone (AthleteSneakers.cs). No texture: four flat palette materials. A neon stripe was tried and dropped on 2026-10-26: invisible on the winter arena."
+}

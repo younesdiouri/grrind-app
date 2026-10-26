@@ -51,12 +51,12 @@ public sealed class RaidScene : MonoBehaviour
             obj.name=config.members[i].name;
             var appearance=obj.GetComponent<QuaterniusAppearance>();
             appearance?.SelectHair(female?"buns":"parted");
-            appearance?.Customize(i%3==0?"deep":"tan","brown","brown",true,i%2==0?"cyan":"coral",i%2==0?"violet":"cyan");
+            appearance?.Customize(i%3==0?"deep":"tan","brown","brown",i%2==0?"cyan":"coral",i%2==0?"violet":"cyan");
             appearance?.SetBoxingGloves(true);appearance?.SetHeadband(false);
             obj.GetComponent<WeaponGrip>()?.SetEquipped(false);
             foreach(var light in obj.GetComponentsInChildren<Light>())light.enabled=false;
             var pose=obj.GetComponent<FighterPose>();
-            pose.inspect=false;pose.inspectionCamera=null;pose.SetShoes(true);
+            pose.inspect=false;pose.inspectionCamera=null;
             pose.contactShadow=Shadow(obj.transform,contactShadow,new Vector2(.75f,.42f));
             heroes[i]=pose;
         }

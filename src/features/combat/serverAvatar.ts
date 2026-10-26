@@ -11,8 +11,8 @@ export type AvatarEquipment = components['schemas']['BattleEquipment'] | compone
 export function serverAvatar(avatar: Avatar | null | undefined, equipment: AvatarEquipment = {}): UnityAvatar {
   const appearance = avatar?.version === 1 ? avatar : DEFAULT_AVATAR;
   const { shirt, pants, weapon } = equippedModels(equipment);
-  return { ...appearance, visible: true, boots: false, headband: false,
-    sportShirt: shirt !== 'base', shirtColor: shirt === 'coral' ? 'coral' : 'cyan',
+  return { ...appearance, visible: true, headband: false,
+    shirtColor: shirt === 'coral' ? 'coral' : shirt === 'slate' ? 'cyan' : 'base',
     pantsColor: pants === 'original' ? 'base' : pants, boxingGloves: weapon === 'gloves',
     dumbbell: weapon === 'dumbbell' || weapon === 'ego',
     weapon: weapon === 'ferPlay' || weapon === 'huilesson' ? weapon : undefined,

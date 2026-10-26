@@ -23,11 +23,9 @@ test('le joueur et le rival utilisent chacun leur avatar et les vêtements de le
   assert.equal(player.eyeColor, 'green');
   assert.equal(player.hairColor, 'black');
   assert.equal(player.faceStyle, 'original');
-  assert.equal(player.sportShirt, true);
   assert.equal(player.shirtColor, 'coral');
   assert.equal(player.pantsColor, 'cyan');
   assert.equal(player.boxingGloves, true);
-  assert.equal(player.boots, false);
   assert.equal(player.headband, false);
   const enemy = combatEnemy({ ...duelBattle.enemy, appearance: null, avatar, equipment });
   assert.deepEqual(enemy.avatar, player);
@@ -36,11 +34,11 @@ test('le joueur et le rival utilisent chacun leur avatar et les vêtements de le
 
 test('le pantalon équipé reste indépendant du haut et une arme retirée disparaît', () => {
   const player = combatPlayer({ ...duelBattle.player, avatar, equipment: { LEGS: equipment.LEGS } });
-  assert.equal(player.sportShirt, false);
+  assert.equal(player.shirtColor, 'base');
   assert.equal(player.pantsColor, 'cyan');
   assert.equal(player.boxingGloves, false);
   const shirtOnly = combatPlayer({ ...duelBattle.player, avatar, equipment: { CHEST: equipment.CHEST } });
-  assert.equal(shirtOnly.sportShirt, true);
+  assert.equal(shirtOnly.shirtColor, 'coral');
   assert.equal(shirtOnly.pantsColor, 'base');
 });
 
@@ -62,8 +60,8 @@ test('un ancien snapshot reçoit le défaut V1 sans aucun équipement de démons
   assert.equal(player.faceStyle, 'square');
   assert.equal(player.noseStyle, 'wide');
   assert.equal(player.boxingGloves, false);
-  assert.equal(player.boots, false);
-  assert.equal(player.sportShirt, false);
+  assert.equal(player.shirtColor, 'base');
+  assert.equal(player.pantsColor, 'base');
 });
 
 test('une clé inconnue ou rangée dans le mauvais slot ne fabrique aucun objet Unity', () => {
@@ -72,7 +70,6 @@ test('une clé inconnue ou rangée dans le mauvais slot ne fabrique aucun objet 
     FEET: { key: 'FUTURE_BOOTS', artworkVersion: null },
   } });
   assert.equal(player.boxingGloves, false);
-  assert.equal(player.boots, false);
   assert.equal(player.headband, false);
 });
 

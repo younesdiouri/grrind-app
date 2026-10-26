@@ -6,17 +6,18 @@ import type { components } from '@/api/schema';
 
 export type UnityAvatar = Omit<components['schemas']['Avatar'], 'version'> & {
   model?: 'cailloux';
-  boots: boolean; headband: boolean; visible: boolean;
-  sportShirt?: boolean; shirtColor?: 'cyan' | 'coral';
-  pantsColor?: 'base' | 'original' | 'violet' | 'cyan' | 'coral';
+  headband: boolean; visible: boolean;
+  // Unity names the slate t-shirt "cyan"; "base" is the white athlete default.
+  shirtColor?: 'base' | 'cyan' | 'coral';
+  pantsColor?: 'base' | 'violet' | 'cyan' | 'coral';
   boxingGloves?: boolean;
   dumbbell?: boolean;
   weapon?: 'ferPlay' | 'huilesson';
   weaponType?: components['schemas']['WeaponType'];
 };
 // Isolated workshop/demo defaults; live snapshots are resolved by serverAvatar.
-export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', boots: true, headband: false, visible: true,
-  skinTone: 'tan', eyeColor: 'brown', hairColor: 'brown', sportShirt: true, shirtColor: 'cyan',
+export const QUATERNIUS_AVATAR: UnityAvatar = { body: 'male', hairStyle: 'parted', headband: false, visible: true,
+  skinTone: 'tan', eyeColor: 'brown', hairColor: 'brown', shirtColor: 'cyan',
   pantsColor: 'violet', boxingGloves: true, faceStyle: 'original', noseStyle: 'original' };
 export const QUATERNIUS_OPPONENT: UnityAvatar = { ...QUATERNIUS_AVATAR, body: 'female', hairStyle: 'buns',
   skinTone: 'deep', shirtColor: 'coral', pantsColor: 'cyan' };

@@ -16,7 +16,7 @@ public static class FacialPilotChecks
             if (select == null) throw new Exception("Male avatar cannot select its face and nose independently");
             var renderers = actor.GetComponentsInChildren<SkinnedMeshRenderer>(true)
                 .Where(r => r.sharedMesh.GetBlendShapeIndex("NoseWide") >= 0).ToArray();
-            if (renderers.Length != 2) throw new Exception("Expected one facial renderer per outfit");
+            if (renderers.Length != 1) throw new Exception("Expected the athlete facial renderer");
             foreach (var face in new[] { "original", "square" })
             {
                 select.Invoke(appearance, new object[] { face, "original" });
