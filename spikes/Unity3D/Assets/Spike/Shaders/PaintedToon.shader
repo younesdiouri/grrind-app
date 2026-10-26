@@ -17,6 +17,7 @@ Shader "GRRIND/Painted Toon"
         _RimStrength ("Rim strength", Range(0, 1)) = 0.35
         _OutlineColor ("Outline", Color) = (0.07, 0.06, 0.1, 1)
         _OutlineWidth ("Outline width", Range(0, 0.01)) = 0.0018
+        _HitFlash ("Hit flash", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -40,6 +41,7 @@ Shader "GRRIND/Painted Toon"
             half _RimPower;
             half _RimStrength;
             float _OutlineWidth;
+            half _HitFlash;
         CBUFFER_END
 
         TEXTURE2D(_BaseMap);
@@ -102,7 +104,8 @@ Shader "GRRIND/Painted Toon"
                 half3 colour = albedo.rgb * lerp(_ShadowTint.rgb, light.color, ramp);
                 float3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 half rim = pow(1 - saturate(dot(normal, view)), _RimPower) * _RimStrength;
-                return half4(colour + _RimColor.rgb * rim, 1);
+                // ImpactFx whitens the struck fighter on the contact frame.
+                return half4(lerp(colour + _RimColor.rgb * rim, half3(1, .97, .92), _HitFlash * .5), 1);
             }
             ENDHLSL
         }

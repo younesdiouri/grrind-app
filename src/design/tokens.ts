@@ -54,6 +54,8 @@ export const combatMotion = {
   bubbleTailRotation: '45deg' as const,
   /** Le corps se fige au contact : c'est ce qui donne son poids au coup (#187). */
   hitStop: 70,
+  /** Un critique ou le coup final se fige plus longtemps. */
+  hitStopHeavy: 110,
   /** La scène tremble au contact ; un critique double l'amplitude, le coup final la triple. */
   shake: 5,
   shakeDuration: 260,

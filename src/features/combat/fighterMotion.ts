@@ -24,6 +24,12 @@ export function contactAt(beat: Pick<BattleBeat, 'at' | 'until'>): number {
   return beat.at + Math.round((beat.until - beat.at) * combatMotion.contact);
 }
 
+/** Combien de temps le geste reste figé après le contact. */
+export function hitStopOf(beat: BattleBeat): number {
+  'worklet';
+  return beat.kind === 'attack' && beat.heavy ? combatMotion.hitStopHeavy : combatMotion.hitStop;
+}
+
 /**
  * Le geste d'un combattant à `time`, vu depuis **son** camp.
  *
@@ -46,7 +52,7 @@ export function fighterMotionAt(beats: BattleBeat[], self: Actor, time: number, 
   const contact = contactAt(beat);
   const recovery = beat.at + (beat.until - beat.at) * combatMotion.recover;
   const landed = time >= contact && time < recovery;
-  const held = time < contact ? time : Math.max(contact, time - combatMotion.hitStop);
+  const held = time < contact ? time : Math.max(contact, time - hitStopOf(beat));
   // L'élan atteint son maximum au contact ; le retour prend le reste du battement.
   const force = held < contact
     ? (held - beat.at) / (contact - beat.at)
