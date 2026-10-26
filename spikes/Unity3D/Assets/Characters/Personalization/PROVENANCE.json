@@ -38,9 +38,9 @@
       "Female_SportTrousers_Faceted.fbx"
     ],
     "triangles": {
-      "t-shirt": 900,
+      "t-shirt": 1400,
       "joggers": 500
     },
-    "changes": "Blender collapse decimation with colour borders and hems kept, cloth pushed 4 mm outward, flat face normals; skin, armature and weights from the source FBX unchanged."
+    "changes": "Symmetric collapse decimation with colour borders and hems kept; t-shirt pushed 10 mm out, legwear 4 mm except where the t-shirt covers it (raycast), which sinks 8 mm under it; flat face normals; skin, armature and weights unchanged."
   }
 }

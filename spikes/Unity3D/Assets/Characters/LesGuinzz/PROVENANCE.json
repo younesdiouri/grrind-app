@@ -27,6 +27,7 @@
       "Male_LesGuinzz_Faceted.fbx",
       "Female_LesGuinzz_Faceted.fbx"
     ],
-    "triangles": 700
+    "triangles": 900,
+    "changes": "Symmetric collapse decimation with colour borders and hems kept; t-shirt pushed 10 mm out, legwear 4 mm except where the t-shirt covers it (raycast), which sinks 8 mm under it; flat face normals; skin, armature and weights unchanged."
   }
 }
