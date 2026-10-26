@@ -25,6 +25,22 @@
     "input": "spikes/art-source/meshy-retexture/Male_Tshirt.glb (bind pose, original GameUV)",
     "output": "Male_Tshirt_Meshy.png, 2048 px base colour, original UVs kept",
     "license": "Meshy output terms of the user's account",
-    "note": "Replaces the heather base colour on the male body only; the female keeps hers until its own retexture."
+    "note": "Replaces the heather base colour on the male body only; the female keeps hers until its own retexture.",
+    "status": "Superseded on 2026-10-26 by faceted garments (lookdev B); texture removed, record kept in spikes/art-source/meshy-retexture/tasks.json"
+  },
+  "faceted": {
+    "ticket": "#298",
+    "script": "spikes/art-source/faceted-garments/facet.py",
+    "files": [
+      "Male_Sport_Faceted.fbx",
+      "Female_Sport_Faceted.fbx",
+      "Male_SportTrousers_Faceted.fbx",
+      "Female_SportTrousers_Faceted.fbx"
+    ],
+    "triangles": {
+      "t-shirt": 900,
+      "joggers": 500
+    },
+    "changes": "Blender collapse decimation with colour borders and hems kept, cloth pushed 4 mm outward, flat face normals; skin, armature and weights from the source FBX unchanged."
   }
 }

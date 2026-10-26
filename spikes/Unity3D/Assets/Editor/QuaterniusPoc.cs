@@ -17,13 +17,12 @@ public static class QuaterniusPoc
     {
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         foreach (var body in new[] { "Male", "Female" })
-        foreach (var map in new[] { "BaseColor", "Normal", "MetallicSmoothness", "Meshy" })
+        foreach (var map in new[] { "BaseColor", "Normal", "MetallicSmoothness" })
         {
             var name = body + "_Tshirt_" + map + ".png";
             var texture = (TextureImporter)AssetImporter.GetAtPath("Assets/Characters/Personalization/" + name);
-            if (texture == null) continue; // A body without its Meshy shirt yet keeps the heather.
             texture.textureType = name.Contains("Normal") ? TextureImporterType.NormalMap : TextureImporterType.Default;
-            texture.sRGBTexture = name.Contains("BaseColor") || name.Contains("Meshy");
+            texture.sRGBTexture = name.Contains("BaseColor");
             texture.maxTextureSize = 2048; texture.mipmapEnabled = true; texture.anisoLevel = 4;
             texture.textureCompression = TextureImporterCompression.CompressedHQ;
             texture.SaveAndReimport();
@@ -84,31 +83,29 @@ public static class QuaterniusPoc
         appearance.hairMaterial = hair; appearance.eyeMaterial = eyes;
         // Flat slate joggers: the athlete default, in the palette of the sneakers.
         var trousers = Material("Athlete trousers", null);
-        trousers.SetColor("_BaseColor", new Color(.2f, .23f, .3f));
-        appearance.sportTrousers = Hair("Assets/Characters/Personalization/" + bodyName + "_SportTrousers.fbx", root, bones, trousers);
-        appearance.guinzz = Hair("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz.fbx", root, bones, trousers);
+        trousers.SetColor("_BaseColor", new Color(.2f, .23f, .3f)); ToonMaterials.Facets(trousers, 1);
+        appearance.sportTrousers = Hair("Assets/Characters/Personalization/" + bodyName + "_SportTrousers_Faceted.fbx", root, bones, trousers);
+        appearance.guinzz = Hair("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz_Faceted.fbx", root, bones, trousers);
         var guinzzRenderer = appearance.guinzz.GetComponent<SkinnedMeshRenderer>();
         var guinzzMaterials = new[] { "fabric", "panel", "cuffs" }.Select(part => {
             string path = "Assets/Characters/LesGuinzz/" + part + ".mat";
             var mat = ToonMaterials.At(path);
             mat.SetColor("_BaseColor", part == "fabric" ? new Color(.43f,.16f,.72f) : part == "panel" ? new Color(.05f,.85f,.9f) : new Color(.045f,.055f,.09f));
-            mat.SetFloat("_ReceiveShadows", 0);
+            mat.SetFloat("_ReceiveShadows", 0); ToonMaterials.Facets(mat, 1);
             return mat;
         }).ToArray();
-        var sourceGuinzz = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz.fbx").GetComponentInChildren<SkinnedMeshRenderer>();
+        var sourceGuinzz = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/LesGuinzz/" + bodyName + "_LesGuinzz_Faceted.fbx").GetComponentInChildren<SkinnedMeshRenderer>();
         guinzzRenderer.sharedMaterials = sourceGuinzz.sharedMaterials.Select(m => guinzzMaterials[m.name.Contains("panel") ? 1 : m.name.Contains("cuffs") ? 2 : 0]).ToArray();
         guinzzRenderer.quality = SkinQuality.Bone4;
         appearance.guinzzMaterial = guinzzMaterials[0];
-        var sport = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/Personalization/" + bodyName + "_Sport.fbx"));
+        var sport = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/Personalization/" + bodyName + "_Sport_Faceted.fbx"));
         var sportParts = sport.GetComponentsInChildren<SkinnedMeshRenderer>();
         var shirtPath = Output + "Sport shirt " + bodyName + ".mat";
         var shirt = ToonMaterials.At(shirtPath);
         shirt.SetFloat("_Cull", 0); // Thin cotton renders on both sides inside open sleeves.
         shirt.SetColor("_BaseColor", Color.white); shirt.SetFloat("_ReceiveShadows", 0);
-        // #298: the Meshy retexture (seams, ribbing, mesh panels) replaces the bare heather once it exists for this body.
-        string meshyShirt = "Assets/Characters/Personalization/" + bodyName + "_Tshirt_Meshy.png";
-        shirt.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(File.Exists(meshyShirt) ? meshyShirt
-            : "Assets/Characters/Personalization/" + bodyName + "_Tshirt_BaseColor.png"));
+        // #298: clothes are faceted like the gear and the scenery; the light reads the facets, no painted texture.
+        shirt.SetTexture("_BaseMap", null); ToonMaterials.Facets(shirt, 1);
         appearance.shirtMaterial = shirt;
         foreach (var part in sportParts)
         {

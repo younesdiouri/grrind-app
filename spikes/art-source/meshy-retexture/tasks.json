@@ -32,7 +32,8 @@
       "enable_original_uv": true,
       "credits": 10,
       "date": "2026-10-26",
-      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds"
+      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds",
+      "result": "Kept on the male t-shirt (pilot); collar painted below the real neckline"
     },
     {
       "id": "01a1795f-14cb-7563-a32e-fb72cb41f6ab",
@@ -43,7 +44,44 @@
       "enable_original_uv": true,
       "credits": 10,
       "date": "2026-10-26",
-      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds"
+      "prompt": "medium grey, bold seams, ribbing, mesh panels, deep painted folds",
+      "result": "Rejected: dark patches at the knees"
+    },
+    {
+      "id": "01a17982-c78e-7666-b57d-137ee2faa8fd",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: A stylized PBR",
+      "input": "Unity render of the current male outfit"
+    },
+    {
+      "id": "01a17982-cb7b-7506-a695-7d7484193840",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: B faceted low-poly",
+      "input": "Unity render of the current male outfit"
+    },
+    {
+      "id": "01a17982-ce97-74b7-92ad-3a5d1a850cd4",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: C cel-shading",
+      "input": "Unity render of the current male outfit"
+    },
+    {
+      "id": "01a17982-d124-70f7-96f2-8c5919f76dad",
+      "type": "image-to-image",
+      "ai_model": "nano-banana-2",
+      "credits": 6,
+      "date": "2026-10-26",
+      "purpose": "lookdev concept: D hand-painted",
+      "input": "Unity render of the current male outfit"
     }
   ]
 }

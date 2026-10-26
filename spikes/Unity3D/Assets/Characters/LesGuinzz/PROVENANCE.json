@@ -19,5 +19,14 @@
       "max_z_m": 1.1497045755386353,
       "max_influences": 4
     }
+  },
+  "faceted": {
+    "ticket": "#298",
+    "script": "spikes/art-source/faceted-garments/facet.py",
+    "files": [
+      "Male_LesGuinzz_Faceted.fbx",
+      "Female_LesGuinzz_Faceted.fbx"
+    ],
+    "triangles": 700
   }
 }

@@ -28,7 +28,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: b15bdd4f7d0be46e1a2d650aca546625, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetalMask:
@@ -40,6 +40,7 @@ Material:
     - _Ambient: 1.3
     - _Cull: 2
     - _EyeMode: 0
+    - _Facets: 1
     - _HitFlash: 0
     - _IrisScale: 1
     - _Metal: 0
