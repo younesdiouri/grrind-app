@@ -279,6 +279,14 @@ function BattleScene({
     void setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(() => undefined);
   }, []);
   const impactSound = useAudioPlayer(require('../../../assets/audio/alam/impact.wav'));
+  const refereeWhistle = useAudioPlayer(require('../../../assets/audio/combat/referee-whistle.wav'));
+  const whistle = useCallback(() => {
+    void refereeWhistle.seekTo(0).then(() => refereeWhistle.play()).catch(() => undefined);
+  }, [refereeWhistle]);
+  useAnimatedReaction(
+    () => entrance === 'combat' && clock.get() >= combatMotion.refereeWhistleAt && clock.get() < combatMotion.openingDuration,
+    (start, previous) => { if (start && previous === false && !skipping.get()) scheduleOnRN(whistle); },
+  );
   const strike = useCallback((strength: number) => {
     if (reducedMotion === false) {
       void Haptics.impactAsync(strength > IMPACT.blow ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium)

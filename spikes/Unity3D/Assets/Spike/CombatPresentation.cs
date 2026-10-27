@@ -25,6 +25,7 @@ public sealed class CombatPresentation : MonoBehaviour
         public int active;
         public bool finished,reduced;
         public float finale,shakeX,shakeY,zoom=1;
+        public float time,opening=-1;
     }
     sealed class FighterUI
     {
@@ -33,7 +34,6 @@ public sealed class CombatPresentation : MonoBehaviour
         public TextMeshProUGUI name,value,damage,effect;
         public CanvasGroup calloutAlpha;
         public FacetedGraphic[] shards;
-        public SkinnedMeshRenderer body;
     }
     public static readonly Color Cyan=Hex("35E4FF"),Mint=Hex("75FFB2"),Pink=Hex("FF5ACD"),
         Amber=Hex("FFD36D"),Violet=Hex("A98BFF"),White=Hex("EAF6FF"),Night=Hex("0B1124");
@@ -46,6 +46,7 @@ public sealed class CombatPresentation : MonoBehaviour
     RectTransform safe,root,finale;
     FighterUI playerUI,enemyUI;
     TextMeshProUGUI duel,turn,title,subtitle,gains;
+    TextMeshProUGUI countdown;
     CanvasGroup resultAlpha;
     TMP_FontAsset font;
     FacetedGraphic[] confetti;
@@ -59,8 +60,6 @@ public sealed class CombatPresentation : MonoBehaviour
         playerUI.plate.gameObject.SetActive(!value.hideHud);enemyUI.plate.gameObject.SetActive(!value.hideHud);
         duel.gameObject.SetActive(!value.hideHud);
         playerUI.name.text=value.playerName;enemyUI.name.text=value.enemyName;
-        playerUI.body=left.actor.GetComponentInChildren<SkinnedMeshRenderer>();
-        enemyUI.body=right.actor.GetComponentInChildren<SkinnedMeshRenderer>();
         title.text=value.won?"VICTOIRE":"DÉFAITE";
         title.color=value.won?Mint:Pink;
         subtitle.text=value.limit?"LIMITE ATTEINTE":value.won?"BIEN JOUÉ !":"LE PROCHAIN SERA LE TIEN";
@@ -81,6 +80,7 @@ public sealed class CombatPresentation : MonoBehaviour
         enemyUI=BuildFighter("Enemy",new Vector2(.565f,.81f),new Vector2(.975f,.97f),Pink);
         duel=Label("Duel",safe,new Vector2(.45f,.91f),new Vector2(.55f,.97f),"DUEL",22,Cyan);
         turn=Label("Turn",safe,new Vector2(.35f,.74f),new Vector2(.65f,.80f),"PRÊTS ?",23,White);
+        countdown=Label("Referee countdown",safe,new Vector2(.36f,.66f),new Vector2(.64f,.83f),"",82,Amber);
         finale=Rect("Result",safe,new Vector2(.30f,.78f),new Vector2(.70f,.98f));
         resultAlpha=finale.gameObject.AddComponent<CanvasGroup>();resultAlpha.alpha=0;
         Plate("Result shadow",finale,Vector2.zero,Vector2.one,WithAlpha(Night,.94f));
@@ -143,6 +143,12 @@ public sealed class CombatPresentation : MonoBehaviour
         duel.gameObject.SetActive(!frame.finished);
         turn.text=frame.finished?"":frame.active==1?"À TOI DE JOUER":frame.active==2?"L’ADVERSAIRE ATTAQUE":"PRÊTS ?";
         turn.color=frame.active==1?Mint:frame.active==2?Pink:White;
+        bool opening=frame.opening>=0&&!frame.finished&&player.gameObject.activeSelf;
+        float seconds=frame.opening*3.4f;
+        turn.alpha=opening?0:1;
+        countdown.text=!opening?"":seconds<.8f?"3":seconds<1.6f?"2":seconds<2.4f?"1":seconds<2.9f?"FIGHT !":"";
+        countdown.color=seconds<2.4f?Amber:Mint;
+        countdown.rectTransform.localScale=Vector3.one*(frame.reduced?1:1+.07f*Mathf.Sin(Mathf.Repeat(seconds,.8f)/.8f*Mathf.PI));
         float reveal=frame.reduced?1:Mathf.Clamp01(frame.finale*4);
         resultAlpha.alpha=frame.finished?reveal:0;
         finale.localScale=Vector3.one*(frame.reduced?1:1+.12f*Mathf.Sin(reveal*Mathf.PI));
@@ -171,17 +177,14 @@ public sealed class CombatPresentation : MonoBehaviour
         ui.value.text=Mathf.RoundToInt(state.hp)+" / "+maxHp+" PV";
         ui.edge.color=WithAlpha(color,frame.active==side&&!frame.finished?1:.4f);
         // Project after FighterPose solved the skeleton, including the lunge and dodge.
-        Vector3 center=actor.actor.isHuman
-            ?Vector3.Lerp(actor.Bone(HumanBodyBones.Hips).position,actor.Bone(HumanBodyBones.Head).position,.55f)
-            :ui.body!=null?ui.body.bounds.center:actor.placement+Vector3.up*.65f;
+        Vector3 center=Vector3.Lerp(actor.Bone(HumanBodyBones.Hips).position,actor.Bone(HumanBodyBones.Head).position,.55f);
         Vector3 body=actor.gameObject.activeInHierarchy
             ?arena.WorldToScreenPoint(center)
             :new Vector3(Screen.width*(viewport.x+viewport.width*(side==1?.25f:.75f)),Screen.height*(viewport.y+viewport.height*.52f),1);
         var point=new Vector2(body.x/canvas.scaleFactor,body.y/canvas.scaleFactor);
         ui.callout.anchoredPosition=point;
         Vector3 head=actor.gameObject.activeInHierarchy
-            ?arena.WorldToScreenPoint(actor.actor.isHuman?actor.Bone(HumanBodyBones.Head).position+Vector3.up*.2f
-                :ui.body!=null?new Vector3(center.x,ui.body.bounds.max.y+.12f,center.z):center+Vector3.up*.4f)
+            ?arena.WorldToScreenPoint(actor.Bone(HumanBodyBones.Head).position+Vector3.up*.2f)
             :body+Vector3.up*(Screen.height*viewport.height*.25f);
         ui.damage.rectTransform.anchoredPosition=new Vector2(head.x/canvas.scaleFactor,head.y/canvas.scaleFactor+28+state.rise*42);
         ui.burst.anchoredPosition=point;

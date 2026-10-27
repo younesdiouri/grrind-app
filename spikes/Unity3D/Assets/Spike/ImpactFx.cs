@@ -1,6 +1,7 @@
 using UnityEngine;
 
 /** 3D side of a blow, sampled from the RN clock like the HUD: no local timer, no game rule. */
+[DefaultExecutionOrder(110)]
 public sealed class ImpactFx : MonoBehaviour
 {
     static readonly int HitFlash=Shader.PropertyToID("_HitFlash");
@@ -11,11 +12,27 @@ public sealed class ImpactFx : MonoBehaviour
     Material spark,trail;
     MaterialPropertyBlock block;
     readonly System.Collections.Generic.Dictionary<FighterPose,Renderer[]> bodies=new();
+    FighterPose player,enemy;
+    BattleBridge.Frame frame;
+    bool pending;
 
-    public void Draw(FighterPose player,FighterPose enemy,BattleBridge.Frame frame)
+    public void Draw(FighterPose left,FighterPose right,BattleBridge.Frame value)
     {
+        if(player!=left||enemy!=right)bodies.Clear();
+        player=left;enemy=right;frame=value;pending=true;
+    }
+    // Bone sockets are valid after FighterPose sampled the current contact, never the preceding frame.
+    void LateUpdate()
+    {
+        if(!pending&&player!=null&&enemy!=null)return;
+        pending=false;
         var state=frame?.presentation;
-        if(state==null)return;
+        if(state==null||player==null||enemy==null)
+        {
+            if(sparks!=null)foreach(var item in sparks)if(item.gameObject.activeSelf)item.gameObject.SetActive(false);
+            if(block!=null){Flash(player,0);Flash(enemy,0);}
+            return;
+        }
         Build();
         // A strength above 1 is a critical or the final blow, as in the HUD shards.
         float strength=0,progress=1;FighterPose target=null;
@@ -24,7 +41,7 @@ public sealed class ImpactFx : MonoBehaviour
         Flash(player,target==player?Pulse(progress):0);
         Flash(enemy,target==enemy?Pulse(progress):0);
         var origin=target!=null&&target.gameObject.activeInHierarchy
-            ?target.Bone(HumanBodyBones.Chest).position:Vector3.zero;
+            ?Contact(target,target==player?enemy:player):Vector3.zero;
         for(int i=0;i<SparkCount;i++)
         {
             bool lit=target!=null&&!state.reduced&&progress<1;
@@ -41,6 +58,16 @@ public sealed class ImpactFx : MonoBehaviour
         spark.color=(strength>1?Amber:Cyan)*3;
         Trail(player,frame.player,Mint,state.reduced);
         Trail(enemy,frame.enemy,Pink,state.reduced);
+    }
+
+    static Vector3 Contact(FighterPose target,FighterPose striker)
+    {
+        var hand=striker.Bone(HumanBodyBones.RightHand).position;
+        var center=target.Bone(HumanBodyBones.Chest).position;
+        var head=target.Bone(HumanBodyBones.Head).position;
+        var body=target.Bone(HumanBodyBones.Hips).position+Vector3.up*.15f;
+        if((head-hand).sqrMagnitude<(center-hand).sqrMagnitude)center=head;
+        return (body-hand).sqrMagnitude<(center-hand).sqrMagnitude?body:center;
     }
 
     // The flash peaks on the contact frame and is gone before the hit-stop ends.

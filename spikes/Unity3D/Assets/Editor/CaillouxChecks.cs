@@ -27,6 +27,18 @@ public static class CaillouxChecks
         int samples = 0;
         try
         {
+            bridge.Present(JsonUtility.ToJson(new BattleBridge.Frame {
+                player = new BattleBridge.ActorFrame { pose = 1, phase = .5f },
+                enemy = new BattleBridge.ActorFrame { pose = 2, phase = .5f },
+                presentation = new CombatPresentation.Frame { enemy = new CombatPresentation.FighterState { impact = 1, impactProgress = 0 } }
+            }));
+            Solve(player); Solve(enemy);
+            var effects = bridge.GetComponent<ImpactFx>(); effects.SendMessage("LateUpdate", SendMessageOptions.DontRequireReceiver);
+            var sockets = new[] { enemy.Bone(HumanBodyBones.Chest).position, enemy.Bone(HumanBodyBones.Head).position,
+                enemy.Bone(HumanBodyBones.Hips).position + Vector3.up * .15f };
+            var sparks = effects.GetComponentsInChildren<Transform>().Where(t => t.name == "Contact spark").ToArray();
+            if (sparks.Length == 0 || sparks.Any(s => sockets.Min(p => Vector3.Distance(p,s.position)) > .15f))
+                throw new Exception("Impact sparks lag behind the actual Cailloux contact pose");
             for (int stance = 0; stance <= 9; stance++)
             {
                 Vector3[] first = null;

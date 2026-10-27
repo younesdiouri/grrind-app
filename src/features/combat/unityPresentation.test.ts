@@ -8,6 +8,18 @@ import { unityPresentationAt } from './unityPresentation.ts';
 const battle: Battle = JSON.parse(readFileSync(new URL('../../../fixtures/battle/defaite-boss.json', import.meta.url), 'utf8'));
 const timeline = buildBattleTimeline(battle, { illustrated: true });
 
+test('referee opening and audience use the replay clock, and skip suppresses the countdown', () => {
+  const opening = timeline.beats[0];
+  assert.equal(opening.kind, 'opening');
+  const midway = (opening.at + opening.until) / 2;
+  assert.equal(unityPresentationAt(timeline, midway, false).opening, .5);
+  assert.equal(unityPresentationAt(timeline, midway, false).time, midway / 1000);
+  assert.equal(unityPresentationAt(timeline, opening.until, false).opening, -1);
+  assert.equal(unityPresentationAt(timeline, midway, true).opening, -1);
+  assert.equal(unityPresentationAt(timeline, 0, false).opening, 0);
+  assert.equal(unityPresentationAt(timeline, midway, false, true).opening, .5);
+});
+
 test('Unity shows exact server damage on the defender at contact and preserves final HP on skip', () => {
   const beat = timeline.beats.find((b) => b.kind === 'attack');
   assert.ok(beat?.kind === 'attack');

@@ -19,21 +19,16 @@ appId: app.grrind.dev
       - tapOn: Close
 - openLink: grrindapp-dev://reglages
 - extendedWaitUntil:
-    visible: "Ton personnage|Se connecter"
+    visible: "Santé|Se connecter"
     timeout: 30000
+- assertNotVisible: "Ton personnage|Atelier avatar 3D"
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: Ton personnage
+      visible: Santé
     commands:
-      - scrollUntilVisible:
-          element:
-            id: combat-avatar-ready
-          direction: DOWN
-          timeout: 30000
       - assertNotVisible:
           id: hero-picker
-      - takeScreenshot: unity-settings-avatar
       - tapOn:
           id: hud-inventory
       - scrollUntilVisible:
