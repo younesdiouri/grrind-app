@@ -18,7 +18,7 @@ Peu de texte ; la rareté se voit en couleur et s’annonce à VoiceOver.
 - [x] Prix et effets serveur, fermeture possible pendant l’attente sans résultat perdu.
 - [x] Actualisation du solde et du sac avec les mutations idempotentes existantes.
 - [x] Preview du vrai composant, états vide/verrouillé/possédé, vérifications puis Metro iPhone.
-- [ ] Validation visuelle par l’auteur.
+- [x] Validation visuelle par l’auteur : « Ok vraiment bien tu peux push ».
 
 ## Périmètre technique et vérification
 
@@ -52,3 +52,8 @@ les cartes, puis la fiche avant achat. Le jugement visuel sur iPhone reste à l�
 Ni Maestro ni build EAS/TestFlight : flux serveur, projet natif et Unity inchangés.
 
 Docs consultées avant code : Expo SDK 57 et ses pages `sdk/svg/` et `sdk/image/`.
+
+## Feu vert de l’auteur
+
+Le 27 octobre 2026, l’auteur valide le rendu et autorise le push. Livraison par PR vers
+`main` suivant le workflow du dépôt, sans nouveau build.
