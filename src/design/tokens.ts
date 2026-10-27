@@ -664,6 +664,19 @@ export const characterSheet = {
   enemyPortraitHeight: 160,
 } as const;
 
+/** Cases RPG sur trois colonnes, lisibles dès 320 pt de largeur d’écran. */
+export const inventoryArt = {
+  columns: 3,
+  iconSize: 64,
+  detailIconSize: 128,
+  nameHeight: 34,
+  raritySize: 11,
+  markerSize: 20,
+  sheetMaxHeight: '90%' as const,
+  sheetMaxWidth: 520,
+  scrim: 'rgba(5, 8, 22, 0.84)',
+} as const;
+
 /**
  * Les couleurs des quatre caractéristiques qui reçoivent de l'XP — `Attribute`, jamais
  * `AttributeState` : Vitality n'a **pas** de couleur, et c'est délibéré (#69). Les quatre

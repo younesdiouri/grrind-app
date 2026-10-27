@@ -8,6 +8,7 @@ import {
   isEquippable,
   isEquipped,
   itemCount,
+  filterInventoryItems,
   type Inventory,
   type InventoryLine,
 } from './inventory.ts';
@@ -116,6 +117,26 @@ describe("la doublure et le sac, tels que l'écran les lit (#30)", () => {
     // Trois t-shirts sont trois objets dans un sac, pas une ligne.
     assert.equal(itemCount(bag), 5);
     assert.equal(itemCount(inventory()), 0);
+  });
+
+  it('range les armes, tenues, composants et coffres sans perdre les objets portés ni les quantités', () => {
+    const shirt = line({ quantity: 3 });
+    const weapon = line({ key: 'GOLDEN_BOXING_GLOVES', slot: 'WEAPON' });
+    const headband = line({ key: 'BANDEAU_ECLAIR', slot: 'HEAD' });
+    const accessory = line({ key: 'ACCESSORY', slot: 'ACCESSORY' });
+    const resource = line({ key: 'FIBER', kind: 'RESOURCE', slot: null, quantity: 42 });
+    const chest = line({ key: 'CHEST', kind: 'CHEST', slot: null, quantity: 2 });
+    const items = [shirt, weapon, headband, accessory, resource, chest];
+    const bag = inventory({ items, equipment: { ...inventory().equipment, CHEST: shirt } });
+
+    assert.deepEqual(filterInventoryItems(bag.items, 'all'), items);
+    assert.deepEqual(filterInventoryItems(bag.items, 'weapons'), [weapon]);
+    assert.deepEqual(filterInventoryItems(bag.items, 'outfits'), [shirt, headband, accessory]);
+    assert.deepEqual(filterInventoryItems(bag.items, 'materials'), [resource]);
+    assert.deepEqual(filterInventoryItems(bag.items, 'chests'), [chest]);
+    assert.equal(filterInventoryItems(bag.items, 'outfits')[0], shirt);
+    assert.equal(filterInventoryItems(bag.items, 'materials')[0].quantity, 42);
+    assert.deepEqual(filterInventoryItems([], 'weapons'), []);
   });
 });
 

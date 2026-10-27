@@ -3,6 +3,22 @@ import type { EquipmentSlot } from '@/design/tokens';
 
 export type Inventory = components['schemas']['Inventory'];
 export type InventoryLine = components['schemas']['InventoryLine'];
+export const INVENTORY_CATEGORIES = {
+  all: 'Tous', weapons: 'Armes', outfits: 'Tenues', materials: 'Composants', chests: 'Coffres',
+} as const;
+export type InventoryCategory = keyof typeof INVENTORY_CATEGORIES;
+
+/** Filtres de présentation : les accessoires et le bandeau font partie de la tenue. */
+export function filterInventoryItems(items: InventoryLine[], category: InventoryCategory): InventoryLine[] {
+  switch (category) {
+    case 'all': return items;
+    case 'weapons': return items.filter((item) => item.kind === 'EQUIPMENT' && item.slot === 'WEAPON');
+    case 'outfits': return items.filter((item) => item.kind === 'EQUIPMENT' && item.slot !== 'WEAPON');
+    case 'materials': return items.filter((item) => item.kind === 'RESOURCE');
+    case 'chests': return items.filter((item) => item.kind === 'CHEST');
+  }
+}
+
 export type EquippableInventoryLine = InventoryLine & {
   kind: 'EQUIPMENT';
   slot: EquipmentSlot;

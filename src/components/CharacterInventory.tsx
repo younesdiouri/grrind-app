@@ -12,7 +12,7 @@ import { color, opacity, radius, space, type } from '@/design/tokens';
 const sections = { equipment: 'Équipement', statistics: 'Statistiques', bag: 'Sac' } as const;
 
 /** Même feuille pour soi et les autres ; les gestes privés restent fournis par l'écran personnel. */
-export function CharacterInventory({ inventory, statistics, equipment, bag, avatar, onAvatarPress, onAppearance }: {
+export function CharacterInventory({ inventory, statistics, equipment, bag, avatar, onAvatarPress, onAppearance, initialSection = 'equipment' }: {
   inventory: components['schemas']['PublicInventory'];
   statistics: components['schemas']['PlayerStatistics'];
   equipment?: ReactNode;
@@ -20,8 +20,9 @@ export function CharacterInventory({ inventory, statistics, equipment, bag, avat
   avatar?: Avatar;
   onAvatarPress?(): void;
   onAppearance?(): void;
+  initialSection?: keyof typeof sections;
 }) {
-  const [section, setSection] = useState<keyof typeof sections>('equipment');
+  const [section, setSection] = useState<keyof typeof sections>(initialSection);
   return (
     <View style={styles.content}>
       <View style={styles.tabs} accessibilityRole="tablist">

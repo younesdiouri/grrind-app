@@ -8,6 +8,7 @@ import {
   color,
   equipmentSlotLabel,
   frame,
+  inventoryArt,
   radius,
   rarityColor,
   rarityLabel,
@@ -30,6 +31,8 @@ type ItemCardProps = {
   quantity?: number;
   /** Porté dans son emplacement en ce moment — le sac et rien d'autre. */
   equipped?: boolean;
+  /** La même fiche, avec une illustration agrandie pour l’inspection d’un objet. */
+  expanded?: boolean;
 };
 
 /**
@@ -52,7 +55,7 @@ type ItemCardProps = {
  * lit comme le gain que la bourse vient d'afficher — ce sont deux choses différentes, y compris
  * quand elles valent le même nombre par coïncidence.
  */
-export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
+export function ItemCard({ item, quantity, equipped, expanded = false }: ItemCardProps) {
   // `kind` décide le libellé. Le second cas EQUIPMENT est une ceinture de sûreté pour la forme
   // OpenAPI aplatie : elle ne peut pas exprimer au type que ce variant porte toujours un slot.
   const category =
@@ -64,12 +67,15 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
 
   return (
     <View style={[styles.card, { borderColor: rarityColor[item.rarity] }]}>
-      <View style={styles.layout}>
+      <View style={[styles.layout, expanded && styles.expandedLayout]}>
+        <View style={expanded && styles.expandedArt}>
         <ItemIllustration
           item={item}
+          size={expanded ? inventoryArt.detailIconSize : undefined}
           tint={rarityColor[item.rarity]}
           accessibilityLabel={`Illustration de ${item.name}`}
         />
+        </View>
 
         <View style={styles.content}>
           <View style={styles.head}>
@@ -77,7 +83,7 @@ export function ItemCard({ item, quantity, equipped }: ItemCardProps) {
               <Text style={[styles.rarity, { color: rarityColor[item.rarity] }]}>
                 {rarityLabel[item.rarity].toUpperCase()}
               </Text>
-              <Text style={styles.name}>{item.name}</Text>
+              <Text style={[styles.name, expanded && styles.expandedName]}>{item.name}</Text>
             </View>
 
             {quantity === undefined ? null : <Text style={styles.quantity}>×{quantity}</Text>}
@@ -123,6 +129,9 @@ const styles = StyleSheet.create({
     padding: space.md,
   },
   layout: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  expandedLayout: { flexDirection: 'column', alignItems: 'stretch' },
+  expandedArt: { alignItems: 'center', paddingVertical: space.md },
+  expandedName: { ...type.title },
   content: { flex: 1, gap: space.sm },
   head: {
     flexDirection: 'row',
