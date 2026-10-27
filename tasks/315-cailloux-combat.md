@@ -17,7 +17,7 @@ Le serveur, les dégâts et le résultat ne changent pas.
   chute de KO posée au sol et maintenue jusqu’au verdict.
 - [x] Contrôler les sept gestes, le KO et la victoire via le lecteur réel et le bridge,
   contacts des deux côtés, orientation et continuité de mouvement.
-- [ ] Export device uniquement, réinstallation du development build après l’arène #316.
+- [x] Export device uniquement, development build installé sur l’iPhone avec l’arène #316.
 - [ ] Validation sur iPhone par l’auteur avant push.
 
 ## Sources, commandes et critères
@@ -53,7 +53,9 @@ frames, temps 0 à 5,714 s ; la console effacée puis observée ne contient aucu
 Animation de chute produite avec [SetEditorCurve Unity 6.3](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/AnimationUtility.SetEditorCurve.html),
 appui au sol mesuré sur le [mesh déformé](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/SkinnedMeshRenderer.BakeMesh.html).
 Le framework Device de #316 a été exporté/compilé (UUID `556DB339-1350-314F-8F76-0113ABFB4418`).
-La reconstruction de l’app de développement est en cours, sans nouvelle slice Simulator.
+Le development build est installé via `devicectl`, sans nouvelle slice Simulator.
+UUID du framework et 16 fichiers Data embarqués vérifiés contre l’export. Le lancement
+et la revue visuelle attendent le déverrouillage de l’iPhone par l’auteur.
 
 Le HUD utilise aussi les sockets réels du mob. Les étincelles sont calculées après la
 pose du contact, avec un ancrage corporel proche du poing ; le contrôle exige leur présence

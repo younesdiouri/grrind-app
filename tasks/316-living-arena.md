@@ -30,8 +30,8 @@ au bilan. Aucun calcul de dégâts, nouvelle règle, physique ou collider de dé
   par expo-audio existant. Valeurs et ordre serveur conservés.
 - [x] Contrôles : synchronisation/skip/rejeu, mouvement réduit, dégagement de la piste,
   deux côtés, retour inspection/raid. Captures ciblées au cadrage mobile, console sans erreur.
-- [ ] Export du framework Device uniquement et development build sur l’iPhone ;
-  validation auteur avant push. Aucun EAS/TestFlight.
+- [x] Export du framework Device uniquement et development build installé sur l’iPhone.
+- [ ] Validation auteur avant push. Aucun EAS/TestFlight.
 
 Builder/contrôles dans `spikes/Unity3D/Assets/Editor`, comportement dans `Assets/Spike`.
 Réutiliser les Playables, les matériaux Painted Toon et la police Oxanium existants.
@@ -53,3 +53,18 @@ Les captures et mesures doivent montrer que la piste reste dégagée, que l’ar
 en retrait au premier coup, que les gradins restent derrière les acteurs et que le
 public change de pose/hauteur sur critique. Le choix du flou reste optionnel : privilégier
 profondeur, taille et contraste sans ajouter un post-traitement coûteux pour le téléphone.
+
+## Résultat technique
+
+Les contrôles passent : 18 spectateurs, 201 672 triangles de public partagés, saut critique
+minimal de 13,6 cm dans l’échantillon, compte à rebours réel, rejeu et mouvement réduit.
+924 volumes testés sans chevauchement, 12 projections conservées à moins de 0,000092 px.
+TypeScript/lint, 608 tests et 31 previews déterministes au vert. La route combat compile
+via Metro 8081 en HTTP 200.
+
+Framework Device compilé et development build installé via `devicectl`. UUID embarqué
+`556DB339-1350-314F-8F76-0113ABFB4418` et SHA-256 des 16 fichiers Data concordants.
+Le verrouillage de l’iPhone empêche le lancement automatique ; ouvrir GRRIND dev après
+déverrouillage. La revue du rendu, du son et de la fluidité reste à l’auteur.
+La slice Simulator conserve sa scène antérieure ; aucun flow visuel Simulator n’est
+présenté comme une validation de la nouvelle arène. Aucun push/PR/merge ou EAS.

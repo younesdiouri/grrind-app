@@ -1,0 +1,34 @@
+{
+  "platform": "iPhone arm64, development Debug",
+  "frameworkUuid": "556DB339-1350-314F-8F76-0113ABFB4418",
+  "frameworkUuidMatchesEmbeddedApp": true,
+  "unityDataFiles": 16,
+  "unityDataHashesMatchEmbeddedApp": true,
+  "nodeTests": {
+    "passed": 608,
+    "failed": 0,
+    "skipped": 0
+  },
+  "previews": 31,
+  "typescript": "passed",
+  "lint": "passed",
+  "unity": {
+    "caillouxSamples": 50,
+    "scenerySamples": 924,
+    "sceneryOverlaps": 0,
+    "projectionPoints": 12,
+    "spectators": 18,
+    "crowdTriangles": 201672,
+    "minimumCriticalJumpM": 0.136,
+    "countdown": true,
+    "replay": true,
+    "reducedMotion": true,
+    "inspectorRoundTrip": true
+  },
+  "phoneInstall": "passed: devicectl installed app.grrind.dev",
+  "authorVisualReview": "pending",
+  "simulatorSlice": "reused unchanged; new scene not tested there",
+  "productionBuild": false,
+  "pushed": false,
+  "phoneLaunch": "pending device unlock"
+}

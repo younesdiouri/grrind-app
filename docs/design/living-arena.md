@@ -43,6 +43,7 @@ un contrôle vérifie que les étincelles ne restent pas à l’ancienne positio
 utilise ses sockets réels. La console finale ne contient aucune erreur ou alerte.
 
 TypeScript, lint, 608 tests et 31 previews déterministes passent. Le framework iPhone a
-été exporté et compilé ; le build de développement est en cours d’installation. La
-fluidité, les contacts et la lisibilité seront jugés par l’auteur sur son iPhone avant
-push. Aucun EAS/TestFlight et aucune reconstruction du Simulator pour cette itération.
+été exporté et compilé, puis installé sur l’iPhone via `devicectl`. L’UUID embarqué
+`556DB339-1350-314F-8F76-0113ABFB4418` et les SHA-256 des 16 fichiers Data correspondent
+à l’export. La fluidité, les contacts et la lisibilité restent à juger par l’auteur sur
+son iPhone avant push. Aucun EAS/TestFlight et aucune reconstruction du Simulator.
