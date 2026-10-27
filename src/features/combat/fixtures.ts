@@ -18,6 +18,10 @@ export const BATTLE_FIXTURES = {
 
 export type BattleFixtureName = keyof typeof BATTLE_FIXTURES;
 
+/** Défi de présentation : seule l’identité affichée change, la chronologie capturée reste intacte. */
+export const DEMO_DUEL: Battle = { ...BATTLE_FIXTURES.duel,
+  enemy: { ...BATTLE_FIXTURES.duel.enemy, name: 'Rival d’entraînement' } };
+
 /** Synthetic cosmetic snapshots over the captured timeline; no game values are changed. */
 export const AVATAR_DUEL: Battle = { ...BATTLE_FIXTURES.duel,
   player: { ...BATTLE_FIXTURES.duel.player,

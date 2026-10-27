@@ -22,9 +22,10 @@ test('les raccourcis de menu ne laissent pas une pile de boutiques et ateliers d
   assert.deepEqual(nav.actions, [{ method: 'dismissTo', href: '/atelier' }, { method: 'dismissTo', href: '/boutique' }]);
 });
 
-test('ouvrir depuis l’accueil ou ouvrir l’apparence conserve un retour vers l’origine', () => {
+test('le personnage ouvre l’équipement complet et la boutique depuis l’accueil conserve un retour', () => {
   const nav = recorder();
   openHudDestination('shop', false, nav);
-  openHudDestination('appearance', true, nav);
-  assert.deepEqual(nav.actions, [{ method: 'navigate', href: '/boutique' }, { method: 'navigate', href: '/apparence' }]);
+  openHudDestination('inventory', true, nav);
+  assert.deepEqual(nav.actions, [{ method: 'navigate', href: '/boutique' },
+    { method: 'dismissTo', href: { pathname: '/inventaire', params: { section: 'equipment' } } }]);
 });

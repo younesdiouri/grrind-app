@@ -5,8 +5,8 @@ import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
 import { CoinIcon } from '@/components/CoinIcon';
 import { color, control, frame, gameHud, opacity, space, type, typography } from '@/design/tokens';
 
-export type HudDestination = 'shop' | 'workshop' | 'bag' | 'appearance';
-const SHORTCUTS = { workshop: 'Atelier', bag: 'Sac', appearance: 'Apparence' } as const;
+export type HudDestination = 'shop' | 'workshop' | 'bag' | 'inventory';
+const SHORTCUTS = { workshop: 'Atelier', bag: 'Sac', inventory: 'Inventaire' } as const;
 
 /** Navigation de jeu sans titre de page ; le shell fournit le solde et les destinations. */
 export function GameHud({ coins, active, onNavigate, onBack, shopPulse }: {
@@ -44,9 +44,9 @@ export function GameHud({ coins, active, onNavigate, onBack, shopPulse }: {
 }
 
 /** Silhouettes autonomes et colorées : fiole, sac de loot et buste de personnage. */
-function HudIcon({ name }: { name: keyof typeof SHORTCUTS }) {
+export function HudIcon({ name, size = gameHud.iconSize }: { name: keyof typeof SHORTCUTS; size?: number }) {
   const ink = { stroke: color.background, strokeWidth: 1.4, strokeLinejoin: 'round' as const };
-  return <Svg width={gameHud.iconSize} height={gameHud.iconSize} viewBox="0 0 32 32">
+  return <Svg width={size} height={size} viewBox="0 0 32 32">
     {name === 'workshop' ? <>
       <Path d="M12 4h8v7l7 10a5 5 0 0 1-4 8H9a5 5 0 0 1-4-8l7-10Z" fill={color.surfaceRaised} stroke={gameHud.workshop} strokeWidth="1.5" />
       <Path d="m9 19 4-3 6 3 4-2 3 6a3 3 0 0 1-3 4H9a3 3 0 0 1-3-4Z" fill={gameHud.workshop} />
@@ -61,8 +61,8 @@ function HudIcon({ name }: { name: keyof typeof SHORTCUTS }) {
       <Rect x="13" y="15" width="6" height="7" rx="1" fill={color.coin} {...ink} />
       <Path d="M16 17v3" stroke={color.background} />
     </> : <>
-      <Circle cx="16" cy="16" r="14" fill={color.surfaceRaised} stroke={gameHud.appearance} strokeWidth="1.2" />
-      <Path d="M5 27v-4q2-7 11-7t11 7v4q-11 7-22 0Z" fill={gameHud.appearance} {...ink} />
+      <Circle cx="16" cy="16" r="14" fill={color.surfaceRaised} stroke={gameHud.inventory} strokeWidth="1.2" />
+      <Path d="M5 27v-4q2-7 11-7t11 7v4q-11 7-22 0Z" fill={gameHud.inventory} {...ink} />
       <Path d="m12 18 4 5 4-5" fill="none" stroke={color.background} strokeWidth="2" />
       <Ellipse cx="16" cy="11" rx="6" ry="7" fill={color.coinHighlight} {...ink} />
       <Path d="M10 11V8q1-6 7-5 6 0 6 7l-6-3-7 4Z" fill={color.textMuted} {...ink} />

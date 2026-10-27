@@ -10,7 +10,21 @@ import type { Avatar } from '@/features/combat/serverAvatar';
 import { color, opacity, radius, space, type } from '@/design/tokens';
 
 const sections = { equipment: 'Équipement', appearance: 'Apparence', bag: 'Sac', statistics: 'Statistiques' } as const;
+export type CharacterTab = keyof typeof sections;
 export type CharacterSection = Exclude<keyof typeof sections, 'appearance'>;
+
+export function CharacterTabs({ section, onSelect, appearanceEnabled = false }: {
+  section: CharacterTab; onSelect(section: CharacterTab): void; appearanceEnabled?: boolean;
+}) {
+  return <View style={styles.tabs} accessibilityRole="tablist">
+    {(Object.keys(sections) as CharacterTab[]).filter((key) => key !== 'appearance' || appearanceEnabled).map((key) => (
+      <Pressable key={key} testID={`character-tab-${key}`} accessibilityRole="tab" aria-selected={section === key}
+        onPress={() => onSelect(key)} style={({ pressed }) => [styles.tab, section === key && styles.selected, pressed && styles.pressed]}>
+        <Text style={[styles.label, section === key && styles.activeLabel]}>{sections[key]}</Text>
+      </Pressable>
+    ))}
+  </View>;
+}
 
 /** Même feuille pour soi et les autres ; les gestes privés restent fournis par l'écran personnel. */
 export function CharacterInventory({ inventory, statistics, equipment, bag, avatar, onAvatarPress, onAppearance, section: controlledSection, onSectionChange }: {
@@ -29,16 +43,8 @@ export function CharacterInventory({ inventory, statistics, equipment, bag, avat
   const setSection = onSectionChange ?? setLocalSection;
   return (
     <View style={styles.content}>
-      <View style={styles.tabs} accessibilityRole="tablist">
-        {(Object.keys(sections) as (keyof typeof sections)[]).filter((key) => key !== 'appearance' || onAppearance).map((key) => (
-          <Pressable key={key} testID={`character-tab-${key}`} accessibilityRole={key === 'appearance' ? 'button' : 'tab'}
-            aria-selected={key === 'appearance' ? undefined : section === key}
-            onPress={() => key === 'appearance' ? onAppearance?.() : setSection(key)}
-            style={({ pressed }) => [styles.tab, section === key && styles.selected, pressed && styles.pressed]}>
-            <Text style={[styles.label, section === key && styles.activeLabel]}>{sections[key]}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <CharacterTabs section={section} appearanceEnabled={onAppearance !== undefined}
+        onSelect={(key) => key === 'appearance' ? onAppearance?.() : setSection(key)} />
       {section === 'statistics' ? <CharacterStatistics statistics={statistics} /> : null}
       {section === 'equipment' ? equipment ?? (
         <>

@@ -395,9 +395,9 @@ function BattleScene({
       </Animated.View>
       {done && <View style={styles.resultControls}>
         <Pressable testID="battle-details" accessibilityRole="button"
-          accessibilityLabel={`${battleResultLabel[battle.result]}. Voir le bilan et le butin`}
+          accessibilityLabel={`${battleResultLabel[battle.result]}. Voir ${demo ? 'le bilan' : 'le bilan et le butin'}`}
           accessibilityState={{ expanded: showDetails }} onPress={() => setShowDetails(!showDetails)} style={styles.control}>
-          <Text style={styles.controlLabel}>{showDetails ? 'Revoir la scène' : 'Bilan et butin'}</Text>
+          <Text style={styles.controlLabel}>{showDetails ? 'Revoir la scène' : demo ? 'Bilan' : 'Bilan et butin'}</Text>
         </Pressable>
         <Pressable testID="battle-exit" accessibilityRole="button" onPress={touch} style={[styles.control, styles.controlOn]}>
           <Text style={styles.controlLabel}>Continuer</Text>
@@ -422,6 +422,9 @@ function BattleScene({
         </View>
       )}
       </SafeAreaView>
+      {demo && <View style={styles.demoBadge} pointerEvents="none">
+        <Text style={styles.demoLabel}>Démo · sans récompense</Text>
+      </View>}
     </View>
   );
 }
@@ -603,6 +606,9 @@ const styles = StyleSheet.create({
     backgroundColor: color.background,
   },
   safe: { flex: 1 },
+  demoBadge: { position: 'absolute', top: space.sm, alignSelf: 'center', paddingHorizontal: space.md,
+    paddingVertical: space.xs, borderRadius: control.radius, backgroundColor: color.background, zIndex: ambient.contentLayer + 2 },
+  demoLabel: { ...type.label, color: color.coin, fontFamily: typography.display.semibold },
   rendererNotice: { zIndex: ambient.contentLayer + 1,
     justifyContent: 'center', alignItems: 'center', gap: space.md, backgroundColor: color.background },
   rendererNoticeText: { ...type.body, color: color.textMuted },

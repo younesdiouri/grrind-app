@@ -19,7 +19,7 @@ export function SystemHeader({ canGoBack }: { canGoBack: boolean }) {
   const pulse = decorativeMotion('shopPulse', useReducedMotion());
   const active: HudDestination | undefined = pathname === '/boutique' ? 'shop'
     : pathname === '/atelier' ? 'workshop'
-      : pathname === '/inventaire' && section === 'bag' ? 'bag' : undefined;
+      : pathname === '/inventaire' ? section === 'bag' ? 'bag' : 'inventory' : undefined;
   return <View style={[styles.header, { paddingTop: insets.top }]}>
     <GameHud coins={inventory.data?.coins} active={active} onNavigate={(target) => openHudDestination(target, canGoBack, router)}
       onBack={canGoBack ? () => router.back() : undefined}

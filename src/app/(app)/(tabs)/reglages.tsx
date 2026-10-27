@@ -122,7 +122,7 @@ export default function ReglagesScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Ton personnage</Text>
         <View style={styles.avatar}>{state.step === 'ready' && inventory.data ? <AvatarEntry avatar={state.profile.avatar} equipment={inventory.data.equipment}
-          editable onPress={() => router.push('/apparence')} />
+          editable onPress={() => router.navigate({ pathname: '/inventaire', params: { section: 'appearance' } })} />
           : state.step === 'loading' || inventory.isPending ? <ActivityIndicator color={color.accent} />
           : <Text style={styles.body}>Personnage indisponible.</Text>}</View>
         {(profile.isError || inventory.isError) && <Button label="Recharger le personnage" variant="quiet" onPress={retry} />}

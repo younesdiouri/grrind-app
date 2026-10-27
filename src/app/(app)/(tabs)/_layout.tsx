@@ -1,4 +1,4 @@
-import { router, Tabs } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { StyleSheet, View, type ColorValue } from 'react-native';
 
@@ -43,18 +43,11 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="inventaire"
-        listeners={{ tabPress: (event) => {
-          event.preventDefault();
-          router.navigate({ pathname: '/inventaire', params: { section: 'equipment' } });
-        } }}
-        options={{
-          tabBarButtonTestID: 'tab-inventaire',
-          title: 'Inventaire',
-          tabBarIcon: ({ color: tint, focused }) => (
-            <TabIcon name="backpack" color={tint} focused={focused} beacon={beacon.effect !== undefined} />
-          ),
-        }}
+        options={{ href: null, title: 'Inventaire' }}
       />
+      <Tabs.Screen name="arene" options={{ title: 'Combat', tabBarButtonTestID: 'tab-arene',
+        tabBarIcon: ({ color: tint, focused }) => <TabIcon name="figure.boxing" color={tint} focused={focused} beacon={beacon.effect !== undefined} />,
+      }} />
       <Tabs.Screen
         name="combat"
         options={{

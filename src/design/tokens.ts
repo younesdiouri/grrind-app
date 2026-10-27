@@ -240,11 +240,20 @@ export const gameHud = {
   shop: palette.copper,
   workshop: palette.amethyst,
   bag: palette.glacier,
-  appearance: palette.mint,
+  inventory: palette.mint,
   shopSurface: 'rgba(255, 180, 84, 0.08)',
   shopBorder: 'rgba(255, 180, 84, 0.46)',
   shopShadow: '0 0 12px rgba(255, 180, 84, 0.14)',
   rim: 'rgba(234, 246, 255, 0.12)',
+} as const;
+
+/** Deux entrées de combat : un adversaire réel et un défi de démonstration avant les ligues. */
+export const combatMenu = {
+  portraitHeight: 230,
+  rivalIconSize: 112,
+  titleSize: 24,
+  pvpAccent: palette.amethyst,
+  illustrationSurface: '#101A30',
 } as const;
 
 export const typography = {

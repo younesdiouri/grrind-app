@@ -61,7 +61,7 @@ tags:
 - assertNotVisible:
     id: hud-back
 - tapOn:
-    id: tab-inventaire
+    id: hud-inventory
 - extendedWaitUntil:
     visible:
       id: equipment-slot-WEAPON
@@ -69,12 +69,26 @@ tags:
 - assertNotVisible:
     id: inventory-filter-all
 - tapOn:
-    id: hud-appearance
+    id: character-tab-appearance
 - extendedWaitUntil:
-    visible: Fermer l’apparence
+    visible:
+      id: avatar-3d-ready
     timeout: 30000
+- assertVisible:
+    id: hud-inventory
+- assertVisible:
+    id: hud-shop
+- assertVisible:
+    id: tab-arene
+- assertVisible:
+    id: character-tab-bag
 - assertNotVisible: Mon apparence
-- tapOn: Fermer l’apparence
+- tapOn:
+    id: avatar-section-Traits
+- assertVisible:
+    id: "avatar-option-faceStyle-.*"
+- tapOn:
+    id: character-tab-equipment
 - extendedWaitUntil:
     visible:
       id: equipment-slot-WEAPON
@@ -91,6 +105,49 @@ tags:
     visible:
       id: equipment-slot-WEAPON
     timeout: 15000
+- tapOn:
+    id: tab-arene
+- extendedWaitUntil:
+    visible: Cailloux dans la Chaussure
+    timeout: 15000
+- tapOn:
+    id: combat-mode-pvp
+- assertVisible: Rival d’entraînement
+- tapOn: ".*Lancer un défi.*"
+- extendedWaitUntil:
+    visible: ".*Démo.*sans récompense.*"
+    timeout: 30000
+- setOrientation: LANDSCAPE_LEFT
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: battle-dialogue
+    commands:
+      - tapOn:
+          id: battle-dialogue
+- runFlow:
+    when:
+      visible: Passer
+    commands:
+      - tapOn: Passer
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 90000
+- tapOn:
+    id: battle-details
+- assertNotVisible: ".*Bourse.*"
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: arena-screen
+    timeout: 15000
+- setOrientation: PORTRAIT
 - tapOn:
     id: tab-accueil
 - assertVisible: NIVEAU

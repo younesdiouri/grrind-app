@@ -1,34 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { color, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
-import { fetchAvatarCatalog } from '@/features/avatar/api';
 import { AppearanceScene } from '@/features/avatar/AppearanceScene';
-import { AvatarEditor } from '@/features/avatar/AvatarEditor';
-import { AVATAR_FIELDS, AVATAR_LABELS, type AvatarCatalog } from '@/features/avatar/avatar';
-import { useAvatarProfile } from '@/features/avatar/useAvatarProfile';
+import { AVATAR_FIELDS, AVATAR_LABELS } from '@/features/avatar/avatar';
 import { DEFAULT_AVATAR, serverAvatar } from '@/features/combat/serverAvatar';
 import { usePlayer } from '@/features/community/usePlayer';
-import { useInventory } from '@/features/inventory/useInventory';
 
 export default function AppearanceScreen() {
   const { playerId } = useLocalSearchParams<{ playerId?: string }>();
-  return playerId ? <PublicAppearance id={playerId} /> : <OwnAppearance />;
-}
-
-function OwnAppearance() {
-  const profile = useAvatarProfile();
-  const inventory = useInventory();
-  const catalog = useQuery<AvatarCatalog, Failure>({ queryKey: ['avatar-catalog'], queryFn: fetchAvatarCatalog });
-  // Keep a mounted draft during a background refetch failure; only initial loading blocks it.
-  if (!profile.data || !inventory.data || !catalog.data) {
-    return profile.isError || inventory.isError || catalog.isError ? <State
-      failure={profile.error ?? inventory.error ?? catalog.error ?? undefined}
-      retry={() => { void profile.refetch(); void inventory.refetch(); void catalog.refetch(); }} /> : <State />;
-  }
-  return <AvatarEditor key={profile.data.id} profile={profile.data} equipment={inventory.data.equipment} catalog={catalog.data} />;
+  return playerId ? <PublicAppearance id={playerId} />
+    : <Redirect href={{ pathname: '/inventaire', params: { section: 'appearance' } }} />;
 }
 
 function PublicAppearance({ id }: { id: string }) {

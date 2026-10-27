@@ -6,6 +6,7 @@ import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BattleResultBadge } from '@/components/BattleResultBadge';
 import { GameHud } from '@/components/GameHud';
+import { CombatMenu } from '@/components/CombatMenu';
 import { BattleRow } from '@/components/BattleRow';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
@@ -858,6 +859,18 @@ export const PREVIEWS: Preview[] = [
       </Specimen>
       <Specimen label="Solde en attente — les raccourcis restent accessibles">
         <View style={{ marginHorizontal: -space.lg }}><GameHud onNavigate={() => {}} /></View>
+      </Specimen>
+    </>,
+  },
+  {
+    slug: 'menu-combat', name: 'Combat PvE / PvP', group: 'Composants',
+    element: <>
+      <Specimen label="Cailloux — lancement du combat serveur">
+        <CombatMenu mode="pve" enemy={enemy({ name: 'Cailloux dans la Chaussure' })}
+          onMode={() => {}} onFight={() => {}} onDemo={() => {}} onHistory={() => {}} />
+      </Specimen>
+      <Specimen label="PvP — défi de démonstration">
+        <CombatMenu mode="pvp" onMode={() => {}} onFight={() => {}} onDemo={() => {}} onHistory={() => {}} />
       </Specimen>
     </>,
   },

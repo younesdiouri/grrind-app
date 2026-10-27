@@ -7,7 +7,7 @@ import { GameHud, type HudDestination } from '@/components/GameHud';
 
 test('le HUD expose les destinations sans titre de page et annonce le vrai solde', () => {
   const markup = renderToStaticMarkup(createElement(GameHud, { coins: 1240, onNavigate() {} }));
-  for (const name of ['Boutique, 1240 pièces', 'Atelier', 'Sac', 'Apparence']) {
+  for (const name of ['Boutique, 1240 pièces', 'Atelier', 'Sac', 'Inventaire']) {
     assert.ok(markup.includes(`aria-label="${name}"`));
   }
   assert.doesNotMatch(markup, />GRRIND<|>Inventaire<|>Boutique<|>Apparence</);
@@ -35,7 +35,7 @@ test('chaque raccourci demande la bonne destination et le retour reste indépend
   shop.props.onPress();
   shortcuts[0].forEach((button: { props: { onPress(): void } }) => button.props.onPress());
   assert.equal(backs, 1);
-  assert.deepEqual(targets, ['shop', 'workshop', 'bag', 'appearance']);
+  assert.deepEqual(targets, ['shop', 'workshop', 'bag', 'inventory']);
 });
 
 test('la destination active est annoncée sans faux badge ou compteur de potion', () => {

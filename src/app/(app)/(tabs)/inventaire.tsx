@@ -8,7 +8,8 @@ import { Button } from '@/components/Button';
 import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { CoinAmount } from '@/components/CoinAmount';
-import { CharacterInventory } from '@/components/CharacterInventory';
+import { CharacterInventory, CharacterTabs } from '@/components/CharacterInventory';
+import { OwnAppearance } from '@/features/avatar/OwnAppearance';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { AvatarEntry } from '@/features/avatar/AvatarEntry';
 import { useAvatarProfile } from '@/features/avatar/useAvatarProfile';
@@ -71,7 +72,7 @@ import { SHOP_QUERY_KEY } from '@/features/shop/useShop';
  */
 export default function InventoryScreen() {
   const { section } = useLocalSearchParams<{ section?: string }>();
-  const characterSection = section === 'bag' || section === 'statistics' ? section : 'equipment';
+  const characterSection = section === 'appearance' || section === 'bag' || section === 'statistics' ? section : 'equipment';
   const inventory = useInventory();
   const profile = useAvatarProfile();
   const queryClient = useQueryClient();
@@ -228,7 +229,12 @@ export default function InventoryScreen() {
   return (
     <View style={styles.shell}>
       <AmbientBackdrop />
-      <ScrollView style={styles.contentLayer} contentContainerStyle={styles.screen}>
+      {characterSection === 'appearance' ? <View style={styles.appearancePanel}>
+        <View style={styles.appearanceTabs}>
+          <CharacterTabs section="appearance" appearanceEnabled onSelect={(next) => router.setParams({ section: next })} />
+        </View>
+        <OwnAppearance />
+      </View> : <ScrollView style={styles.contentLayer} contentContainerStyle={styles.screen}>
 
       {inventory.isPending ? (
         <View style={styles.loading}>
@@ -280,7 +286,7 @@ export default function InventoryScreen() {
 
           <CharacterInventory inventory={data} statistics={data.statistics} section={characterSection}
             onSectionChange={(next) => router.setParams({ section: next })}
-            onAppearance={() => router.push('/apparence')} equipment={
+            onAppearance={() => router.setParams({ section: 'appearance' })} equipment={
               <>
                 <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={profile.data
                   ? <AvatarEntry avatar={profile.data.avatar} equipment={data.equipment} />
@@ -296,7 +302,7 @@ export default function InventoryScreen() {
             } bag={<InventoryBag items={data.items} equipment={data.equipment} selectedKey={inspectedKey} onSelect={inspect} />} />
         </>
       )}
-      </ScrollView>
+      </ScrollView>}
       <Modal visible={inspectedItem !== null || openedChest?.kind === 'opened'} transparent
         animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={closeDetails}>
         <View style={[styles.modal, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, space.md) }]}>
@@ -344,6 +350,8 @@ export default function InventoryScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1, overflow: 'hidden' },
   contentLayer: { zIndex: ambient.contentLayer },
+  appearancePanel: { flex: 1, zIndex: ambient.contentLayer },
+  appearanceTabs: { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.xs },
   screen: { padding: space.lg, paddingTop: space.sm, gap: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   pressed: { opacity: opacity.pressed },
