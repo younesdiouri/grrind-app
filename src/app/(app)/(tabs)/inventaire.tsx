@@ -186,6 +186,7 @@ export default function InventoryScreen() {
     // équipés, et cet onglet-là ne se démonte pas. Sur la réponse, jamais sur l'intention —
     // un refus n'a rien changé.
     noteEquipmentChanged();
+    return true;
   };
 
   const revealChest = async (itemKey: string) => {
@@ -376,7 +377,9 @@ export default function InventoryScreen() {
               </View> : inspectedItem !== null && data !== undefined ? (
                 <InventoryItemDetails item={inspectedItem} equipped={isEquipped(data, inspectedItem.key)} blocked={blocked}
                   busy={(pending !== null && pending === inspectedItem.slot) || pendingChest === inspectedItem.key}
-                  onEquip={(line) => void apply(line.slot, () => equipItem(line.slot, line.key))}
+                  onEquip={async (line) => {
+                    if (await apply(line.slot, () => equipItem(line.slot, line.key))) closeDetails();
+                  }}
                   onUnequip={(slot) => void apply(slot, () => unequipSlot(slot))}
                   onSell={confirmSale} onOpenChest={(key) => void revealChest(key)}
                   onCraft={() => { closeDetails(); router.push('/atelier'); }} />

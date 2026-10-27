@@ -6,6 +6,8 @@ Une grille d’objets lisible au doigt, dans la DA nuit/cyan de GRRIND : illustr
 rareté, nom, quantité, badge équipé. Catégories Tous / Armes / Tenues / Composants /
 Coffres. Une case ouvre la fiche puis les gestes existants. Le sac personnel s’ouvre
 sur la grille ; Équipement conserve le vrai personnage capturé par Unity (#307).
+Après un équipement réussi, la fiche se ferme automatiquement ; un refus la garde
+ouverte avec son message. Ajustement demandé après le premier test de l’auteur.
 
 React Native / Expo 57 pour cette interface. Aucun changement Unity, natif, API ou
 backend ; aucun push, PR, merge ou build avant le test de l’auteur sur son iPhone.

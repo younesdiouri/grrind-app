@@ -24,9 +24,9 @@ appId: app.grrind.dev
     direction: DOWN
 - tapOn: "Équiper — ${ITEM}"
 - extendedWaitUntil:
-    visible: "Retirer — ${ITEM}"
+    notVisible: Fermer la fiche
     timeout: 15000
-- tapOn: Fermer la fiche
+- assertVisible: "${ITEM},.*, équipé"
 - scrollUntilVisible:
     element:
       id: combat-avatar-ready

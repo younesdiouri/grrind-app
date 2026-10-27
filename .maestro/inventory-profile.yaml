@@ -84,10 +84,10 @@ tags:
     direction: DOWN
 - tapOn: ".*Équiper — Gants de boxe dorés.*"
 - extendedWaitUntil:
-    visible: "ÉQUIPÉ"
+    notVisible: Fermer la fiche
     timeout: 15000
+- assertVisible: "Gants de boxe dorés,.*, équipé"
 - takeScreenshot: inventory-reequipped-item
-- tapOn: Fermer la fiche
 - scrollUntilVisible:
     element:
       id: "character-tab-statistics"
