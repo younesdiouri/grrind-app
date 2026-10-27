@@ -23,7 +23,7 @@ Plus de tenue Peasant (« pas finie », hors DA) ni de pieds nus.
 - Aucune texture bruitée : des matériaux de palette unis. Exception assumée (#295) : Al Kasal
   garde sa texture peinte, posée sur un mesh facetté (`facet_skin.py`) ; la palette unie effaçait
   son visage. Les canapés, déjà en blocs de couleurs unies, restent tels quels.
-- Personnages (#299) : peau, visage et coiffures facettés par décimation, rig et poids intacts.
+- Personnages (#299) : peau, visage et coiffures facettés par décimation, rig et poids intacts. Variantes de visage et de nez en shape keys, coiffures neuves en low poly direct (#304).
 
 ## Palette
 

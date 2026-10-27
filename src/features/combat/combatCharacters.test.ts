@@ -57,7 +57,7 @@ test('les armes et leurs mouvements viennent du snapshot, même quand la famille
 test('un ancien snapshot reçoit le défaut V1 sans aucun équipement de démonstration', () => {
   const player = combatPlayer(duelBattle.player);
   assert.equal(player.body, 'male');
-  assert.equal(player.faceStyle, 'square');
+  assert.equal(player.faceStyle, 'original');
   assert.equal(player.noseStyle, 'wide');
   assert.equal(player.boxingGloves, false);
   assert.equal(player.shirtColor, 'base');
@@ -76,7 +76,7 @@ test('une clé inconnue ou rangée dans le mauvais slot ne fabrique aucun objet 
 test('le replay conserve les deux snapshots quand les apparences et équipements changent ensuite', () => {
   const armed = { ...equipment, WEAPON: { key: 'FER_PLAY', artworkVersion: null, weaponType: 'SWORD' as const } };
   const current: Battle = { ...duelBattle, player: { ...duelBattle.player, avatar, equipment: armed },
-    enemy: { ...duelBattle.enemy, avatar: { ...avatar, body: 'male' as const, faceStyle: 'square' as const },
+    enemy: { ...duelBattle.enemy, avatar: { ...avatar, body: 'male' as const, faceStyle: 'angular' as const },
       equipment: { ...armed, WEAPON: { ...armed.WEAPON, key: 'HUILESSON' } } } };
   const replay = structuredClone(current);
   const before = { player: combatPlayer(replay.player), enemy: combatEnemy(replay.enemy) };

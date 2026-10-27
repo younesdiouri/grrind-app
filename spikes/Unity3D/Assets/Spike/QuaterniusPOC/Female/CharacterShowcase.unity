@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1290278204
+--- !u!1 &905406819
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,8 +127,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1290278206}
-  - component: {fileID: 1290278205}
+  - component: {fileID: 905406821}
+  - component: {fileID: 905406820}
   m_Layer: 0
   m_Name: Showcase Camera
   m_TagString: MainCamera
@@ -136,13 +136,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!20 &1290278205
+--- !u!20 &905406820
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1290278204}
+  m_GameObject: {fileID: 905406819}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -187,13 +187,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &1290278206
+--- !u!4 &905406821
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1290278204}
+  m_GameObject: {fileID: 905406819}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.9995511, z: -0.029959597, w: 0}
   m_LocalPosition: {x: 0, y: 1.25, z: 5}
@@ -202,7 +202,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1778244013
+--- !u!1001 &2128213095
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -257,7 +257,7 @@ PrefabInstance:
     - target: {fileID: 7952890022034898261, guid: 1b768b667dc68483496ccbc7ca085d70, type: 3}
       propertyPath: inspectionCamera
       value: 
-      objectReference: {fileID: 1290278205}
+      objectReference: {fileID: 905406820}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -267,5 +267,5 @@ PrefabInstance:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1290278206}
-  - {fileID: 1778244013}
+  - {fileID: 905406821}
+  - {fileID: 2128213095}

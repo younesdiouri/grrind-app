@@ -10,5 +10,17 @@
     "Hair_Buns_Rigged": "3284 -> 1274",
     "Hair_Long": "2906 -> 1188"
   },
-  "changes": "Collapse decimation with open rims kept, flat face normals; armature and weights unchanged. Sources unchanged."
+  "changes": "Collapse decimation with open rims kept, flat face normals; armature and weights unchanged. Sources unchanged.",
+  "built_304": {
+    "script": "spikes/art-source/facial-pilot/build/hair.py",
+    "ticket": "#304",
+    "files": {
+      "Hair_Mohawk": "male, Hair_Buzzed + nine faceted tufts",
+      "Hair_Afro": "male, shell cast on the skull",
+      "Hair_Ponytail": "female, slicked shell + tapered tail",
+      "Hair_Bob": "female, shell + chin-length skirt"
+    },
+    "references": "spikes/art-source/facial-pilot/ref/{male,female}-hair.png (Meshy nano-banana-2)",
+    "license": "CC0-1.0 (Hair_Mohawk keeps the Quaternius buzzed cap); the rest is original geometry"
+  }
 }
