@@ -17,7 +17,7 @@ export function InventoryItemDetails({ item, equipped, blocked, busy, onEquip, o
   onCraft(): void;
 }) {
   return <View style={styles.content}>
-    <ItemCard item={item} quantity={item.quantity} equipped={equipped} expanded />
+    <ItemCard item={item} quantity={item.quantity} equipped={equipped} expanded showRarity={false} />
     {isEquippable(item) && <>
       {equipped
         ? <Button label="Retirer" accessibilityLabel={`Retirer — ${item.name}`} busy={busy} disabled={blocked}

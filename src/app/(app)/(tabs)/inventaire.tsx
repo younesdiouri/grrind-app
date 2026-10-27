@@ -16,7 +16,6 @@ import { ItemCard } from '@/components/ItemCard';
 import { InventoryBag, InventoryGrid } from '@/components/InventoryGrid';
 import { InventoryItemDetails } from '@/components/InventoryItemDetails';
 import { SystemFrame } from '@/components/SystemFrame';
-import { decorativeGlow } from '@/design/decorativeGlow';
 import {
   ambient,
   color,
@@ -90,7 +89,6 @@ export default function InventoryScreen() {
   const [inspectedKey, setInspectedKey] = useState<string | null>(null);
   const [openedChest, setOpenedChest] = useState<ChestOpenOutcome | null>(null);
   const reducedMotion = useReducedMotion();
-  const purseGlow = decorativeGlow('soft', reducedMotion);
   const insets = useSafeAreaInsets();
   const auth = useAuth();
   const userId = auth.status === 'signedIn' ? auth.user.id : null;
@@ -246,42 +244,20 @@ export default function InventoryScreen() {
 
       {data === undefined ? null : (
         <>
-          {/* La bourse en tête : cet écran lui appartient autant qu'au sac. Touchable depuis
-              #129 — c'est de là que le ledger de pièces s'ouvre, la seule porte vers son
-              histoire. */}
-          <Pressable
-            style={({ pressed }) => [pressed && styles.pressed]}
-            onPress={() => router.push('/bourse')}
-            accessibilityRole="button"
-            accessibilityLabel="Bourse"
-          >
-            <SystemFrame
-              tier="hero"
-              style={purseGlow.effect === undefined ? undefined : { boxShadow: purseGlow.effect.boxShadow }}
-              contentStyle={styles.purse}
-            >
-              <Text style={styles.label}>BOURSE</Text>
-              <View style={styles.purseAmount}>
-                <CoinAmount amount={data.coins} />
-                <Text style={styles.chevron}>›</Text>
-              </View>
-            </SystemFrame>
-          </Pressable>
-
           <Pressable
             style={({ pressed }) => [pressed && styles.pressed]}
             disabled={blocked}
             onPress={() => router.push('/boutique')}
             accessibilityRole="button"
-            accessibilityLabel="Boutique"
+            accessibilityLabel={`Boutique, ${data.coins} pièces`}
             testID="shop-entry"
           >
             <SystemFrame contentStyle={styles.shopEntry}>
-              <View>
-                <Text style={styles.label}>BOUTIQUE</Text>
-                <Text style={styles.detail}>Dépenser tes pièces</Text>
+              <Text style={styles.label}>BOUTIQUE</Text>
+              <View style={styles.shopBalance}>
+                <CoinAmount amount={data.coins} />
+                <Text style={styles.chevron}>›</Text>
               </View>
-              <Text style={styles.chevron}>›</Text>
             </SystemFrame>
           </Pressable>
 
@@ -319,29 +295,19 @@ export default function InventoryScreen() {
 
           <Button label="Atelier · fabriquer un équipement" onPress={() => router.push('/atelier')} />
 
-          <CharacterInventory inventory={data} statistics={data.statistics} initialSection="bag"
+          <CharacterInventory inventory={data} statistics={data.statistics}
             onAppearance={() => router.push('/apparence')} equipment={
               <>
-                <View style={styles.sectionHead}>
-                  <View style={styles.sectionCopy}>
-                    <Text style={styles.section}>ÉQUIPEMENT</Text>
-                    <Text style={styles.name}>Ta doublure</Text>
-                  </View>
-                  <Text style={styles.hint}>Choisis une zone</Text>
-                </View>
+                <Text style={styles.section}>ÉQUIPEMENT</Text>
                 <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={profile.data
-                  ? <AvatarEntry avatar={profile.data.avatar} equipment={data.equipment} editable onPress={() => router.push('/apparence')} />
+                  ? <AvatarEntry avatar={profile.data.avatar} equipment={data.equipment} />
                   : profile.isPending ? <ActivityIndicator color={color.accent} />
                   : <Button label="Recharger l’apparence" variant="quiet" onPress={() => void profile.refetch()} />} />
                 <SystemFrame contentStyle={styles.drawer}>
-                  <View style={styles.drawerHead}>
-                    <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
-                    <Text style={styles.count}>{compatibleItems.length} compatible{compatibleItems.length === 1 ? '' : 's'}</Text>
-                  </View>
-                  {compatibleItems.length > 0 ? <>
-                    <Text style={styles.detail}>Touche un objet pour l’équiper ou le retirer.</Text>
+                  <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
+                  {compatibleItems.length > 0 ? (
                     <InventoryGrid items={compatibleItems} equipment={data.equipment} selectedKey={inspectedKey} onSelect={inspect} />
-                  </> : <Text style={styles.detail}>Aucun objet compatible dans ton sac.</Text>}
+                  ) : <Text style={styles.detail}>Aucun objet compatible dans ton sac.</Text>}
                 </SystemFrame>
               </>
             } bag={<InventoryBag items={data.items} equipment={data.equipment} selectedKey={inspectedKey} onSelect={inspect} />} />
@@ -369,7 +335,7 @@ export default function InventoryScreen() {
                 {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0
                   ? <Text style={styles.detail}>Le coffre était vide.</Text>
                   : <>
-                    {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
+                    {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} showRarity={false} />)}
                     <Text style={styles.detail}>Pièces trouvées</Text>
                     <CoinAmount amount={openedChest.chest.coins} />
                   </>}
@@ -397,12 +363,6 @@ const styles = StyleSheet.create({
   contentLayer: { zIndex: ambient.contentLayer },
   screen: { padding: space.lg, gap: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
-  purse: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: space.md,
-  },
   shopEntry: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -411,29 +371,13 @@ const styles = StyleSheet.create({
   },
   // Même retour d'appui que `BagRow` : la ligne s'éteint sous le doigt, rien ne se déplace.
   pressed: { opacity: opacity.pressed },
-  purseAmount: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  shopBalance: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   chevron: { ...type.body, color: color.textMuted },
-  sectionHead: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: space.md,
-    marginTop: space.md,
-  },
-  sectionCopy: { gap: space.xs },
   section: { ...type.label, color: color.accent },
-  hint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   drawer: {
     padding: space.md,
     gap: space.md,
   },
-  drawerHead: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: space.sm,
-  },
-  count: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   current: { gap: space.sm },
   modal: { flex: 1, justifyContent: 'flex-end', backgroundColor: inventoryArt.scrim, paddingHorizontal: space.md },
   sheet: { maxHeight: inventoryArt.sheetMaxHeight, maxWidth: inventoryArt.sheetMaxWidth, width: '100%',

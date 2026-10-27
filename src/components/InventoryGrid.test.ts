@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { InventoryGrid } from '@/components/InventoryGrid';
+import { InventoryBag, InventoryGrid } from '@/components/InventoryGrid';
 import type { Inventory, InventoryLine } from '@/features/inventory/inventory';
 
 const shirt: InventoryLine = {
@@ -26,6 +26,7 @@ test('la grille annonce l’objet, la rareté, la quantité et l’état équip�
   const tile = InventoryGrid({ items: [shirt], equipment, onSelect: () => {} }).props.children[0].props.children[0];
   assert.equal(tile.props.accessibilityHint, 'Ouvrir la fiche de l’objet');
   assert.match(markup, /×3/);
+  assert.doesNotMatch(markup, />Rare</);
 });
 
 test('un composant garde sa quantité serveur et ne propose pas de s’équiper depuis la case', () => {
@@ -36,4 +37,11 @@ test('un composant garde sa quantité serveur et ne propose pas de s’équiper 
   assert.match(markup, /Fibre, Rare, 142 exemplaires/);
   assert.match(markup, /×142/);
   assert.doesNotMatch(markup, /, équipé|Équiper —/);
+});
+
+test('le sac garde ses catégories et ses objets sans consigne ni libellé visible de rareté', () => {
+  const markup = renderToStaticMarkup(createElement(InventoryBag, { items: [shirt], equipment, onSelect() {} }));
+  assert.match(markup, /inventory-filter-materials/);
+  assert.match(markup, /inventory-item-SPORT_TSHIRT_CORAL/);
+  assert.doesNotMatch(markup, /Touche un objet|>Rare</);
 });

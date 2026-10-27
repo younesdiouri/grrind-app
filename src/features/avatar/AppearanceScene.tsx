@@ -27,7 +27,8 @@ export function AppearanceScene({ avatar, title, children, busy = false, view = 
     {ready && !failed && <View pointerEvents="none" style={[StyleSheet.absoluteFill,
       { top: headerHeight + insets.top, bottom: controlsHeight + insets.bottom }]}><AvatarSnow /></View>}
     <SafeAreaView style={styles.overlay} pointerEvents="box-none">
-      <View style={styles.header} onLayout={({ nativeEvent }) => setHeaderHeight(nativeEvent.layout.height)}>
+      <View style={styles.header} testID={ready && !failed ? 'avatar-3d-ready' : 'avatar-3d-loading'}
+        onLayout={({ nativeEvent }) => setHeaderHeight(nativeEvent.layout.height)}>
         <View style={styles.heading}>
           <Pressable accessibilityRole="button" accessibilityLabel="Fermer l’apparence" disabled={busy}
             onPress={() => { if (router.canGoBack()) router.back(); else router.replace('/inventaire'); }} style={styles.close}>
@@ -35,9 +36,9 @@ export function AppearanceScene({ avatar, title, children, busy = false, view = 
           </Pressable>
           <Text style={styles.title}>{title}</Text>
         </View>
-        <Text style={styles.note} testID={ready && !failed ? 'avatar-3d-ready' : 'avatar-3d-loading'}>
-          {!unityCombatAvailable || failed ? 'L’aperçu 3D est indisponible.' : ready ? 'Aperçu 3D' : 'Chargement de l’aperçu…'}
-        </Text>
+        {(!ready || failed || !unityCombatAvailable) && <Text style={styles.note}>
+          {!unityCombatAvailable || failed ? 'L’aperçu 3D est indisponible.' : 'Chargement de l’aperçu…'}
+        </Text>}
       </View>
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>
         {children}

@@ -119,7 +119,8 @@ tags:
       id: "attribute-dexterity"
     direction: DOWN
 - takeScreenshot: player-statistics
-- assertNotVisible: "BOURSE"
+- assertNotVisible:
+    id: shop-entry
 - scrollUntilVisible:
     element:
       id: "stat-dodgePercent"

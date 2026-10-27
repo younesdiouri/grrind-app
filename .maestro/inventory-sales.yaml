@@ -22,7 +22,8 @@ tags:
 - tapOn:
     id: "bag-row"
 - extendedWaitUntil:
-    visible: "BOURSE"
+    visible:
+      id: shop-entry
     timeout: 15000
 - takeScreenshot: sale-inventory-before
 - scrollUntilVisible:
@@ -79,4 +80,3 @@ tags:
 - assertNotVisible: "Vendre — Coffre en bois"
 - takeScreenshot: sale-chest-excluded
 - tapOn: Fermer la fiche
-- runFlow: inventory-sale-ledger.yaml

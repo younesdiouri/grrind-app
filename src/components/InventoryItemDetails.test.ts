@@ -19,6 +19,7 @@ function markup(item: InventoryLine, equipped = false, blocked = false) {
 test('la fiche propose équiper et vendre au prix serveur puis retirer pour l’objet porté', () => {
   assert.match(markup(shirt), /Équiper — T-shirt sportif — Corail/);
   assert.match(markup(shirt), /Vendre · 17 pièces/);
+  assert.doesNotMatch(markup(shirt), />RARE</);
   const worn = markup(shirt, true);
   assert.match(worn, /Retirer — T-shirt sportif — Corail/);
   assert.doesNotMatch(worn, /Vendre ·/);

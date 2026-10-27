@@ -35,7 +35,6 @@ export function InventoryGrid({ items, equipment, selectedKey, onSelect }: GridP
               <View style={[styles.rarityBar, { backgroundColor: tint }]} />
             </View>
             <Text style={styles.name} numberOfLines={2}>{item.name}</Text>
-            <Text style={[styles.rarity, { color: tint }]}>{rarityLabel[item.rarity]}</Text>
           </Pressable>;
         })}
       </View>
@@ -56,7 +55,6 @@ export function InventoryBag(props: GridProps) {
         </Pressable>
       ))}
     </View>
-    <Text style={styles.note}>Touche un objet pour voir sa fiche.</Text>
     {items.length > 0 ? <InventoryGrid {...props} items={items} /> : (
       <SystemFrame contentStyle={styles.empty}>
         <Text style={styles.emptyTitle}>{props.items.length === 0 ? 'Ton sac est vide' : 'Aucun objet dans cette catégorie'}</Text>
@@ -75,7 +73,6 @@ const styles = StyleSheet.create({
     borderRadius: frame.standard.radius, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   name: { ...type.label, color: color.text, letterSpacing: 0, minHeight: inventoryArt.nameHeight,
     fontFamily: typography.display.semibold, fontWeight: typography.display.weight.semibold },
-  rarity: { ...type.label, fontSize: inventoryArt.raritySize, letterSpacing: 0 },
   quantity: { ...type.label, position: 'absolute', bottom: space.xs, right: space.xs,
     color: color.text, backgroundColor: color.surface, paddingHorizontal: space.xs, borderRadius: control.radius },
   equipped: { position: 'absolute', top: 0, left: 0, width: inventoryArt.markerSize, height: inventoryArt.markerSize,

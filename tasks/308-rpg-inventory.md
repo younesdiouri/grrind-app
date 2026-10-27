@@ -3,11 +3,18 @@
 ## Périmètre demandé
 
 Une grille d’objets lisible au doigt, dans la DA nuit/cyan de GRRIND : illustration,
-rareté, nom, quantité, badge équipé. Catégories Tous / Armes / Tenues / Composants /
-Coffres. Une case ouvre la fiche puis les gestes existants. Le sac personnel s’ouvre
-sur la grille ; Équipement conserve le vrai personnage capturé par Unity (#307).
+rareté par couleur, nom, quantité, badge équipé. Catégories Tous / Armes / Tenues /
+Composants / Coffres. Une case ouvre la fiche puis les gestes existants. L’inventaire
+s’ouvre sur Équipement et le vrai personnage capturé par Unity (#307).
 Après un équipement réussi, la fiche se ferme automatiquement ; un refus la garde
 ouverte avec son message. Ajustement demandé après le premier test de l’auteur.
+
+Après test de l’auteur : onglets Équipement / Apparence / Sac / Statistiques ;
+consignes, « Ta doublure », compteur de compatibles et bouton sous l’avatar retirés.
+Rareté visible par couleur dans l’inventaire, libellé conservé pour VoiceOver.
+« Aperçu 3D » retiré de l’atelier d’apparence, états de chargement/erreur conservés.
+Bourse et historique supprimés du client, solde serveur dans le bouton Boutique.
+La refonte de la boutique fera l’objet d’un ticket ultérieur.
 
 React Native / Expo 57 pour cette interface. Aucun changement Unity, natif, API ou
 backend ; aucun push, PR, merge ou build avant le test de l’auteur sur son iPhone.
@@ -45,11 +52,13 @@ Pas de nouvelle dépendance. Pas de Maestro : le flux serveur ne change pas.
 ## Preuves locales
 
 - `npm run typecheck` et `npm run lint` : sortie 0.
-- `npm test` : 591 tests réussis, aucun échec ni test ignoré.
-- 30 previews générées ; contrôle déterministe `npm run previews:check`.
+- `npm test` : 586 tests réussis, aucun échec ni test ignoré. Les huit tests
+  exclusivement liés à l’historique supprimé sont retirés avec lui ; trois tests
+  couvrent l’ordre des onglets, le défaut Équipement et le sac simplifié.
+- 29 previews générées ; contrôle déterministe `npm run previews:check`.
 - Preview RN Web à 390 pt : cases 108,66–108,67 pt de côté, filtres 44 pt,
   bouton de fiche 56 pt. Les cinq catégories sont visibles sur deux rangées.
-- Les neuf YAML touchés sont syntaxiquement valides ; flows non exécutés,
+- Les YAML touchés sont syntaxiquement valides ; flows non exécutés,
   conformément à la validation visuelle par l’auteur et au flux serveur inchangé.
-- Metro 8081 : bundle iOS HTTP 200, 1 234 modules, 2,9 s ; aucun rebuild natif.
+- Metro 8081 : bundle iOS HTTP 200 ; aucun rebuild natif.
   Le serveur reste disponible pour le téléphone. Aucun push ni PR.

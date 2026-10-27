@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import type { components } from '@/api/schema';
-import { formatModifier, formatOccurredAt } from './format.ts';
+import { formatModifier } from './format.ts';
 
 type DroppedItemModifier = components['schemas']['DroppedItemModifier'];
 
@@ -125,28 +125,6 @@ describe('formatModifier — la portée', () => {
     );
   });
 });
-
-describe('formatOccurredAt — la date d’un mouvement du ledger', () => {
-  // `now` est un paramètre, comme partout dans les formateurs de ce dépôt : un test qui dépend
-  // de l'heure de son exécution ne prouve rien.
-  const now = new Date(2026, 7, 29, 18, 0);
-
-  it('délègue à formatWhen, avec l’heure pour le jour même', () => {
-    assert.equal(
-      formatOccurredAt(new Date(2026, 7, 29, 15, 25).toISOString(), now),
-      'Aujourd’hui, 15:25',
-    );
-  });
-
-  it('nomme hier', () => {
-    assert.equal(formatOccurredAt(new Date(2026, 7, 28, 9, 5).toISOString(), now), 'Hier, 09:05');
-  });
-
-  it('retombe sur la date seule au-delà — la date du fait, jamais celle de l’écriture', () => {
-    assert.equal(formatOccurredAt(new Date(2026, 7, 20, 9, 5).toISOString(), now), '20 août');
-  });
-});
-
 
 describe('les nouveaux bonus de combat v2', () => {
   for (const [type, label] of [

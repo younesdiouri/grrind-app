@@ -33,6 +33,7 @@ type ItemCardProps = {
   equipped?: boolean;
   /** La même fiche, avec une illustration agrandie pour l’inspection d’un objet. */
   expanded?: boolean;
+  showRarity?: boolean;
 };
 
 /**
@@ -55,7 +56,7 @@ type ItemCardProps = {
  * lit comme le gain que la bourse vient d'afficher — ce sont deux choses différentes, y compris
  * quand elles valent le même nombre par coïncidence.
  */
-export function ItemCard({ item, quantity, equipped, expanded = false }: ItemCardProps) {
+export function ItemCard({ item, quantity, equipped, expanded = false, showRarity = true }: ItemCardProps) {
   // `kind` décide le libellé. Le second cas EQUIPMENT est une ceinture de sûreté pour la forme
   // OpenAPI aplatie : elle ne peut pas exprimer au type que ce variant porte toujours un slot.
   const category =
@@ -73,16 +74,16 @@ export function ItemCard({ item, quantity, equipped, expanded = false }: ItemCar
           item={item}
           size={expanded ? inventoryArt.detailIconSize : undefined}
           tint={rarityColor[item.rarity]}
-          accessibilityLabel={`Illustration de ${item.name}`}
+          accessibilityLabel={`Illustration de ${item.name}, ${rarityLabel[item.rarity]}`}
         />
         </View>
 
         <View style={[styles.content, expanded && styles.expandedContent]}>
           <View style={styles.head}>
             <View style={styles.identity}>
-              <Text style={[styles.rarity, { color: rarityColor[item.rarity] }]}>
+              {showRarity && <Text style={[styles.rarity, { color: rarityColor[item.rarity] }]}>
                 {rarityLabel[item.rarity].toUpperCase()}
-              </Text>
+              </Text>}
               <Text style={[styles.name, expanded && styles.expandedName]}>{item.name}</Text>
             </View>
 
