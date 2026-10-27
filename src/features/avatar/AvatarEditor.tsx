@@ -36,7 +36,7 @@ export function AvatarEditor({ profile, equipment, catalog }: { profile: UserPro
     setBusy(false);
   };
   const fieldErrors = failure ? Object.values(violationsByField(failure)).join(' ') : '';
-  return <AppearanceScene title="Mon apparence" avatar={serverAvatar(draft, equipment)} busy={busy}
+  return <AppearanceScene avatar={serverAvatar(draft, equipment)} busy={busy}
     view={section === 'Corps' ? 0 : 1}>
     <View style={styles.row} accessibilityRole="tablist">
       {(Object.keys(sections) as (keyof typeof sections)[]).map(label => <Pressable key={label}

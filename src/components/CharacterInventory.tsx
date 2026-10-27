@@ -10,9 +10,10 @@ import type { Avatar } from '@/features/combat/serverAvatar';
 import { color, opacity, radius, space, type } from '@/design/tokens';
 
 const sections = { equipment: 'Équipement', appearance: 'Apparence', bag: 'Sac', statistics: 'Statistiques' } as const;
+export type CharacterSection = Exclude<keyof typeof sections, 'appearance'>;
 
 /** Même feuille pour soi et les autres ; les gestes privés restent fournis par l'écran personnel. */
-export function CharacterInventory({ inventory, statistics, equipment, bag, avatar, onAvatarPress, onAppearance }: {
+export function CharacterInventory({ inventory, statistics, equipment, bag, avatar, onAvatarPress, onAppearance, section: controlledSection, onSectionChange }: {
   inventory: components['schemas']['PublicInventory'];
   statistics: components['schemas']['PlayerStatistics'];
   equipment?: ReactNode;
@@ -20,8 +21,12 @@ export function CharacterInventory({ inventory, statistics, equipment, bag, avat
   avatar?: Avatar;
   onAvatarPress?(): void;
   onAppearance?(): void;
+  section?: CharacterSection;
+  onSectionChange?(section: CharacterSection): void;
 }) {
-  const [section, setSection] = useState<Exclude<keyof typeof sections, 'appearance'>>('equipment');
+  const [localSection, setLocalSection] = useState<CharacterSection>('equipment');
+  const section = controlledSection ?? localSection;
+  const setSection = onSectionChange ?? setLocalSection;
   return (
     <View style={styles.content}>
       <View style={styles.tabs} accessibilityRole="tablist">

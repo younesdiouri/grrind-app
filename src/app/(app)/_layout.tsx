@@ -67,8 +67,8 @@ export default function AppLayout() {
         // pas, et iOS repliait alors sur le **nom de la route** — un bouton « ‹ (tabs) » en
         // haut de chaque écran poussé, découvert sur une capture du sac (#30). Les trois
         // écrans poussés le portaient déjà.
-        header: ({ back, options, route }) => (
-          <SystemHeader title={options.title ?? route.name} canGoBack={back !== undefined} />
+        header: ({ back }) => (
+          <SystemHeader canGoBack={back !== undefined} />
         ),
             }}
           >

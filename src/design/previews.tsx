@@ -5,7 +5,7 @@ import type { components } from '@/api/schema';
 import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BattleResultBadge } from '@/components/BattleResultBadge';
-import { BagRow } from '@/components/BagRow';
+import { GameHud } from '@/components/GameHud';
 import { BattleRow } from '@/components/BattleRow';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
@@ -33,7 +33,6 @@ import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { ToggleRow } from '@/components/ToggleRow';
 import { XpBar } from '@/components/XpBar';
-import { decorativeGlow } from '@/design/decorativeGlow';
 import {
   color,
   curve,
@@ -74,7 +73,6 @@ export type Preview = {
 };
 
 const DISCIPLINES = Object.keys(disciplineLabel) as components['schemas']['Discipline'][];
-const previewSoftGlow = decorativeGlow('soft', false);
 
 /** Un adversaire du catalogue, à trouer au cas par cas — voir les spécimens. */
 function enemy(overrides: Partial<components['schemas']['Enemy']>): components['schemas']['Enemy'] {
@@ -843,28 +841,25 @@ export const PREVIEWS: Preview[] = [
     ),
   },
   {
-    slug: 'ligne-sac',
-    name: 'Ligne du sac',
+    slug: 'hud-jeu',
+    name: 'HUD de jeu',
     group: 'Composants',
-    element: (
-      <>
-        <Specimen label="Sur l'accueil">
-          <BagRow summary={{ coins: 240, itemCount: 6 }} onPress={() => undefined} glow={previewSoftGlow} />
-        </Specimen>
-        {/* Le singulier existe, et le sac vide aussi : un objet qui vient de tomber, ou aucun. */}
-        <Specimen label="Un seul objet">
-          <BagRow summary={{ coins: 8, itemCount: 1 }} onPress={() => undefined} glow={previewSoftGlow} />
-        </Specimen>
-        {/* Ce qu'on ne sait pas ne s'écrit pas — mais la ligne reste, elle est le seul chemin
-            vers le sac. */}
-        <Specimen label="Avant que l'inventaire soit chargé">
-          <BagRow onPress={() => undefined} glow={previewSoftGlow} />
-        </Specimen>
-        <Specimen label="Une bourse à quatre chiffres">
-          <BagRow summary={{ coins: 1999, itemCount: 24 }} onPress={() => undefined} glow={previewSoftGlow} />
-        </Specimen>
-      </>
-    ),
+    element: <>
+      <Specimen label="Navigation principale — 390 pt">
+        <View style={{ marginHorizontal: -space.lg }}><GameHud coins={1240} onNavigate={() => {}} /></View>
+      </Specimen>
+      <Specimen label="Boutique ouverte — retour et solde">
+        <View style={{ marginHorizontal: -space.lg }}><GameHud coins={760} active="shop" onBack={() => {}} onNavigate={() => {}} /></View>
+      </Specimen>
+      <Specimen label="Petit téléphone — largeur utile de 318 pt avec retour">
+        <View style={{ width: 318 }}>
+          <GameHud coins={1234567} active="workshop" onBack={() => {}} onNavigate={() => {}} />
+        </View>
+      </Specimen>
+      <Specimen label="Solde en attente — les raccourcis restent accessibles">
+        <View style={{ marginHorizontal: -space.lg }}><GameHud onNavigate={() => {}} /></View>
+      </Specimen>
+    </>,
   },
   {
     slug: 'badge-issue-combat',

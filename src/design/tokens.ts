@@ -228,7 +228,23 @@ export const navigation = {
   markerSize: 6,
   markerOffset: -8,
   markerRotation: '45deg',
-  headerHeight: 56,
+} as const;
+
+/** Un seul rang de commandes : les chiffres ne pulsent pas, seule leur lumière respire. */
+export const gameHud = {
+  iconSize: 30,
+  coinSize: 24,
+  minimumFontScale: 0.65,
+  compactFrom: 10_000,
+  pressedScale: 0.94,
+  shop: palette.copper,
+  workshop: palette.amethyst,
+  bag: palette.glacier,
+  appearance: palette.mint,
+  shopSurface: 'rgba(255, 180, 84, 0.08)',
+  shopBorder: 'rgba(255, 180, 84, 0.46)',
+  shopShadow: '0 0 12px rgba(255, 180, 84, 0.14)',
+  rim: 'rgba(234, 246, 255, 0.12)',
 } as const;
 
 export const typography = {
@@ -321,6 +337,7 @@ export const ambient = {
  * Mac, et un balayage juste là-bas est probablement trop rapide sur l'appareil.
  */
 export const motion = {
+  shopPulse: { cycle: 3_000, from: 0.06, to: 0.24, scaleFrom: 0.94, scaleTo: 1.04 },
   /** Un cadre qu'on vient de lire : un trait qui le traverse une fois, puis se tait. */
   scan: { active: 1_400, thickness: 1, opacity: 0.85 },
   /**
@@ -687,7 +704,6 @@ export const shopArt = {
   detailHeight: 224,
   nameHeight: 42,
   titleSize: 22,
-  headingSize: 32,
   priceHeight: 44,
   cardGap: 12,
   pressedScale: 0.98,

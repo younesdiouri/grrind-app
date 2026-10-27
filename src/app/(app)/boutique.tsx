@@ -4,13 +4,11 @@ import { useRef, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { Button } from '@/components/Button';
-import { CoinAmount } from '@/components/CoinAmount';
 import { ShopCatalog, ShopItemDetails, ShopPurchaseReceipt, type ShopCategory } from '@/components/ShopCatalog';
 import { SystemFrame } from '@/components/SystemFrame';
 import { useReducedMotion } from '@/design/useReducedMotion';
-import { color, control, frame, inventoryArt, opacity, shopArt, space, type, typography } from '@/design/tokens';
+import { color, control, frame, inventoryArt, opacity, space, type, typography } from '@/design/tokens';
 import { messageFor, OFFLINE, type Failure } from '@/features/auth/problems';
 import { INVENTORY_QUERY_KEY } from '@/features/inventory/useInventory';
 import { purchaseItem, type PurchaseOutcome } from '@/features/shop/actions';
@@ -70,17 +68,6 @@ export default function ShopScreen() {
   return <View style={styles.root}>
     <Stack.Screen options={{ title: 'Boutique' }} />
     <ScrollView contentContainerStyle={[styles.screen, { paddingBottom: Math.max(insets.bottom, space.lg) }]} testID="shop-screen">
-      <View style={styles.header}>
-        <View style={styles.identity}>
-          <Text style={styles.eyebrow}>LE COMPTOIR</Text>
-          <Text style={styles.title} accessibilityRole="header">La boutique</Text>
-        </View>
-        {shop.data !== undefined && <View style={styles.purse}>
-          {receipt !== null ? <AnimatedCoinBalance key={`${receipt.item.key}-${receipt.coinsBefore}-${receipt.coinsAfter}`}
-            before={receipt.coinsBefore} after={receipt.coinsAfter} /> : <CoinAmount amount={shop.data.coins} />}
-        </View>}
-      </View>
-
       {shop.isPending && <View style={styles.loading}><ActivityIndicator color={color.accent} /></View>}
       {shop.isError && <SystemFrame contentStyle={styles.notice}>
         <Text style={styles.noticeTitle}>Boutique indisponible</Text>
@@ -124,13 +111,8 @@ export default function ShopScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  screen: { padding: space.lg, gap: space.lg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  identity: { flex: 1, gap: space.xs },
+  screen: { padding: space.lg, paddingTop: space.sm, gap: space.lg },
   eyebrow: { ...type.label, fontFamily: typography.display.semibold, color: color.accent },
-  title: { fontSize: shopArt.headingSize, fontFamily: typography.display.bold, color: color.text },
-  purse: { padding: space.sm, borderWidth: frame.standard.borderWidth, borderColor: shopArt.coinBorder,
-    backgroundColor: shopArt.coinSurface, borderRadius: frame.standard.radius },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   notice: { padding: space.md, gap: space.sm },
   noticeTitle: { ...type.body, fontFamily: typography.display.semibold, color: color.text },

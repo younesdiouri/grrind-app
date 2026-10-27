@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { StyleSheet, View, type ColorValue } from 'react-native';
 
@@ -17,9 +17,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        header: ({ options, route }) => (
-          <SystemHeader title={options.title ?? route.name} canGoBack={false} />
-        ),
+        header: () => <SystemHeader canGoBack={false} />,
         tabBarActiveTintColor: color.accent,
         tabBarInactiveTintColor: color.textMuted,
         tabBarStyle: styles.bar,
@@ -45,6 +43,10 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="inventaire"
+        listeners={{ tabPress: (event) => {
+          event.preventDefault();
+          router.navigate({ pathname: '/inventaire', params: { section: 'equipment' } });
+        } }}
         options={{
           tabBarButtonTestID: 'tab-inventaire',
           title: 'Inventaire',

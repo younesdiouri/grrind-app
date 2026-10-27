@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -70,6 +70,8 @@ import { SHOP_QUERY_KEY } from '@/features/shop/useShop';
  * serveur; une relecture remet ensuite le sac et la boutique en cohérence avec le catalogue.
  */
 export default function InventoryScreen() {
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const characterSection = section === 'bag' || section === 'statistics' ? section : 'equipment';
   const inventory = useInventory();
   const profile = useAvatarProfile();
   const queryClient = useQueryClient();
@@ -244,23 +246,6 @@ export default function InventoryScreen() {
 
       {data === undefined ? null : (
         <>
-          <Pressable
-            style={({ pressed }) => [pressed && styles.pressed]}
-            disabled={blocked}
-            onPress={() => router.push('/boutique')}
-            accessibilityRole="button"
-            accessibilityLabel={`Boutique, ${data.coins} pièces`}
-            testID="shop-entry"
-          >
-            <SystemFrame contentStyle={styles.shopEntry}>
-              <Text style={styles.label}>BOUTIQUE</Text>
-              <View style={styles.shopBalance}>
-                <CoinAmount amount={data.coins} />
-                <Text style={styles.chevron}>›</Text>
-              </View>
-            </SystemFrame>
-          </Pressable>
-
           {refusal !== null || !saleReady || unresolvedSale !== null || sold !== null ? (
             <SystemFrame contentStyle={styles.drawer}>
             {refusal === null ? null : <Text style={styles.refusal}>{messageFor(refusal)}</Text>}
@@ -293,12 +278,10 @@ export default function InventoryScreen() {
             </SystemFrame>
           ) : null}
 
-          <Button label="Atelier · fabriquer un équipement" onPress={() => router.push('/atelier')} />
-
-          <CharacterInventory inventory={data} statistics={data.statistics}
+          <CharacterInventory inventory={data} statistics={data.statistics} section={characterSection}
+            onSectionChange={(next) => router.setParams({ section: next })}
             onAppearance={() => router.push('/apparence')} equipment={
               <>
-                <Text style={styles.section}>ÉQUIPEMENT</Text>
                 <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={profile.data
                   ? <AvatarEntry avatar={profile.data.avatar} equipment={data.equipment} />
                   : profile.isPending ? <ActivityIndicator color={color.accent} />
@@ -361,19 +344,9 @@ export default function InventoryScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1, overflow: 'hidden' },
   contentLayer: { zIndex: ambient.contentLayer },
-  screen: { padding: space.lg, gap: space.md },
+  screen: { padding: space.lg, paddingTop: space.sm, gap: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
-  shopEntry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: space.md,
-  },
-  // Même retour d'appui que `BagRow` : la ligne s'éteint sous le doigt, rien ne se déplace.
   pressed: { opacity: opacity.pressed },
-  shopBalance: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  chevron: { ...type.body, color: color.textMuted },
-  section: { ...type.label, color: color.accent },
   drawer: {
     padding: space.md,
     gap: space.md,

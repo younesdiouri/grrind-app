@@ -39,3 +39,13 @@ test('la fiche publique ne propose pas de modifier l’apparence', () => {
   assert.match(markup, /APERÇU PUBLIC/);
   assert.doesNotMatch(markup, /character-tab-appearance/);
 });
+
+test('le raccourci Sac ouvre réellement le sac au lieu de l’équipement', () => {
+  const markup = renderToStaticMarkup(createElement(CharacterInventory, {
+    inventory, statistics, section: 'bag', onSectionChange() {},
+    equipment: createElement(Text, null, 'APERÇU ÉQUIPÉ'), bag: createElement(Text, null, 'CONTENU DU SAC'),
+  }));
+  assert.match(markup, /CONTENU DU SAC/);
+  assert.doesNotMatch(markup, /APERÇU ÉQUIPÉ/);
+  assert.match(markup, /aria-selected="true"[^>]*data-testid="character-tab-bag"/);
+});

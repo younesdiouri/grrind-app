@@ -67,7 +67,7 @@ tags:
 - tapOn:
     id: "tab-accueil"
 - tapOn:
-    id: "bag-row"
+    id: "hud-bag"
 - scrollUntilVisible:
     element:
       id: "character-tab-bag"

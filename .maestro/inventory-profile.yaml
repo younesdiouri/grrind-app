@@ -120,7 +120,7 @@ tags:
     direction: DOWN
 - takeScreenshot: player-statistics
 - assertNotVisible:
-    id: shop-entry
+    id: character-tab-appearance
 - scrollUntilVisible:
     element:
       id: "stat-dodgePercent"

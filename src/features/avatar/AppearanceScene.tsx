@@ -10,11 +10,11 @@ import { AvatarSnow } from './AvatarSnow';
 /** One fullscreen Unity surface; the form and navigation remain native app UI. */
 /** `view` 1 frames the head: face, hair and eyes are chosen up close. */
 export function AppearanceScene({ avatar, title, children, busy = false, view = 0 }: {
-  avatar: UnityAvatar; title: string; children: ReactNode; busy?: boolean; view?: 0 | 1;
+  avatar: UnityAvatar; title?: string; children: ReactNode; busy?: boolean; view?: 0 | 1;
 }) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(100);
+  const [headerHeight, setHeaderHeight] = useState(control.backSize + space.sm);
   const [controlsHeight, setControlsHeight] = useState(260);
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -32,9 +32,9 @@ export function AppearanceScene({ avatar, title, children, busy = false, view = 
         <View style={styles.heading}>
           <Pressable accessibilityRole="button" accessibilityLabel="Fermer l’apparence" disabled={busy}
             onPress={() => { if (router.canGoBack()) router.back(); else router.replace('/inventaire'); }} style={styles.close}>
-            <Text style={styles.link}>Fermer</Text>
+            <Text style={styles.closeGlyph}>×</Text>
           </Pressable>
-          <Text style={styles.title}>{title}</Text>
+          {title && <Text style={styles.title}>{title}</Text>}
         </View>
         {(!ready || failed || !unityCombatAvailable) && <Text style={styles.note}>
           {!unityCombatAvailable || failed ? 'L’aperçu 3D est indisponible.' : 'Chargement de l’aperçu…'}
@@ -50,11 +50,11 @@ export function AppearanceScene({ avatar, title, children, busy = false, view = 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.background },
   overlay: { flex: 1, justifyContent: 'space-between' },
-  header: { padding: space.md, gap: space.xs },
+  header: { paddingHorizontal: space.md, paddingVertical: space.xs, gap: space.xs },
   heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  title: { ...type.title, flex: 1, color: color.text },
-  link: { ...type.body, color: color.accent },
-  close: { minHeight: control.backSize, justifyContent: 'center', padding: space.sm },
+  title: { ...type.body, flex: 1, color: color.text },
+  closeGlyph: { ...type.title, color: color.text },
+  close: { width: control.backSize, height: control.backSize, alignItems: 'center', justifyContent: 'center' },
   note: { ...type.label, color: color.textMuted },
   controls: { padding: space.md, gap: space.sm, backgroundColor: color.surface },
 });

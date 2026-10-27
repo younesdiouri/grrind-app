@@ -25,14 +25,14 @@ import { framePresentation, type FrameAccent, type FrameTier } from '@/design/sy
 import { sheenStripes, stripeOffsets } from '@/components/xpFlow';
 import type { DecorativeMotion } from '@/design/decorativeMotion';
 import { breathe, cyclePhase, staggerOffset } from '@/design/motionPhase';
-import { color, glow, motion, radius, space, type, typography } from '@/design/tokens';
+import { color, frame, glow, motion, radius, space, type, typography } from '@/design/tokens';
 
 /**
  * Ce qui bouge sans qu'on y touche (#159).
  *
  * ————— Pourquoi ces composants ne sont pas dans le design system ————————————————————————
  *
- * `SystemFrame`, `XpBar`, `AttributeRing` et `BagRow` se rendent **dans Node**, avec
+ * `SystemFrame`, `XpBar`, `AttributeRing` et `GameHud` se rendent **dans Node**, avec
  * `react-native-web`, pour produire les previews. Rien n'y aliase `react-native-reanimated`, et
  * rien ne le fera : le design system est la source de vérité du dessin, pas du mouvement. Ces
  * composants-là prêtent donc des portes — `segments`, `overlay`, `underlay`, `children` — et
@@ -199,7 +199,7 @@ export function Convey({
 }: {
   count?: number;
   /**
-   * L'apparence du chevron, quand il en remplace un qui existait déjà — celui de `BagRow`.
+   * L'apparence du chevron, quand il en remplace un qui existait déjà dans un composant.
    * Le mouvement n'a pas à changer la couleur ni la taille de ce qu'il fait bouger : ce lot ne
    * touche à aucune des deux, et un chevron qui changerait de teinte en se mettant à défiler
    * serait une décision de hiérarchie déguisée en animation.
@@ -288,6 +288,19 @@ export function Beacon({
   });
 
   return <Animated.View {...decorative} style={[inert, style, pulse]} />;
+}
+
+/** La lumière de la boutique respire ; ni le chiffre ni la cible tactile ne changent de taille. */
+export function ShopPulse() {
+  const clock = useBackdropClock();
+  const light = useAnimatedStyle(() => {
+    const phase = cyclePhase(clock.value, motion.shopPulse.cycle);
+    return {
+      opacity: breathe(phase, motion.shopPulse.from, motion.shopPulse.to),
+      transform: [{ scale: breathe(phase, motion.shopPulse.scaleFrom, motion.shopPulse.scaleTo) }],
+    };
+  });
+  return <Animated.View {...decorative} style={[inert, StyleSheet.absoluteFill, styles.shopPulse, light]} />;
 }
 
 /**
@@ -414,6 +427,8 @@ const decorative = {
 const inert = { pointerEvents: 'none' } as const satisfies ViewStyle;
 
 const styles = StyleSheet.create({
+  shopPulse: { backgroundColor: color.coin, borderColor: color.coinHighlight,
+    borderWidth: frame.standard.borderWidth, borderRadius: frame.standard.radius },
   tickRail: {
     position: 'absolute',
     left: motion.tick.inset,
