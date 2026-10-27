@@ -20,7 +20,6 @@ const TRAITS = {
   female: { faceStyle: ['original', 'heart', 'round'], noseStyle: ['original', 'button', 'straight'],
     hairStyle: ['buns', 'long', 'buzzed', 'ponytail', 'bob'] },
 } as const satisfies Record<UnityAvatar['body'], { [K in 'faceStyle' | 'noseStyle' | 'hairStyle']: readonly UnityAvatar[K][] }>;
-const BANDED: readonly UnityAvatar['hairStyle'][] = ['parted', 'buzzed', 'buns'];
 
 function pick<T extends string>(options: readonly T[], value: string): T {
   return options.find(option => option === value) ?? options[0];
@@ -60,8 +59,7 @@ function Showcase({ preview }: { preview?: string }) {
   const insets = useSafeAreaInsets();
   const traits = TRAITS[body];
   const face = pick(traits.faceStyle, faceStyle), nose = pick(traits.noseStyle, noseStyle), hair = pick(traits.hairStyle, hairStyle);
-  const banded = BANDED.includes(hair);
-  const avatar: UnityAvatar = { body, hairStyle: hair, headband: headband && banded, visible: true,
+  const avatar: UnityAvatar = { body, hairStyle: hair, headband, visible: true,
     skinTone, eyeColor, hairColor, shirtColor, pantsColor, boxingGloves, dumbbell, weapon,
     weaponType: weapon ? 'SWORD' : 'FIST',
     faceStyle: face, noseStyle: nose };
@@ -131,7 +129,6 @@ function Showcase({ preview }: { preview?: string }) {
           {([{ label: 'Châtains', value: 'brown' }, { label: 'Noirs', value: 'black' }, { label: 'Blonds', value: 'blond' }] as const).map(({ label, value }) =>
             <Choice key={value} label={label} selected={hairColor === value} onPress={() => setHairColor(value)} />)}
         </View>
-        {!banded && <Text style={styles.subtitle}>Bandeau non ajusté sur cette coupe.</Text>}
         </>}
         {section === 'Tenue' && <>
         <View style={styles.row}>
@@ -145,7 +142,7 @@ function Showcase({ preview }: { preview?: string }) {
             <Choice key={value} label={label} selected={pantsColor === value} onPress={() => setPantsColor(value)} />)}
         </View>
         <View style={styles.row}>
-          {banded && <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
+          {<Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
         </View>
         <View style={styles.row}>
           <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => { setBoxingGloves(!boxingGloves); setDumbbell(false); setWeapon(undefined); }} />

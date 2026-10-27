@@ -5,7 +5,6 @@ import type { components } from '@/api/schema';
 import { CharacterStatistics } from '@/components/CharacterStatistics';
 import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { ItemCard } from '@/components/ItemCard';
-import { CombatAvatarPreview } from '@/features/combat/CombatAvatarPreview';
 import { AvatarEntry } from '@/features/avatar/AvatarEntry';
 import type { Avatar } from '@/features/combat/serverAvatar';
 import { color, opacity, radius, space, type } from '@/design/tokens';
@@ -39,8 +38,7 @@ export function CharacterInventory({ inventory, statistics, equipment, bag, avat
       {section === 'statistics' ? <CharacterStatistics statistics={statistics} /> : null}
       {section === 'equipment' ? equipment ?? (
         <>
-          <EquipmentBoard equipment={inventory.equipment} avatar={onAvatarPress
-            ? <AvatarEntry avatar={avatar} equipment={inventory.equipment} onPress={onAvatarPress} /> : <CombatAvatarPreview equipment={inventory.equipment} />} />
+          <EquipmentBoard equipment={inventory.equipment} avatar={<AvatarEntry avatar={avatar} equipment={inventory.equipment} onPress={onAvatarPress} />} />
           {Object.values(inventory.equipment).every((line) => line === null)
             ? <Text style={styles.note}>Aucun équipement porté.</Text>
             : Object.entries(inventory.equipment).map(([slot, line]) => line === null ? null : <ItemCard key={slot} item={line} equipped />)}

@@ -7,12 +7,12 @@ import { AvatarPreview } from '@/features/avatar/AvatarPreview';
 
 /** The card and fullscreen editor both render the saved model with its actual equipment. */
 export function AvatarEntry({ avatar = DEFAULT_AVATAR, equipment = {}, onPress, editable = false }: {
-  avatar?: Avatar; equipment?: AvatarEquipment; onPress(): void; editable?: boolean;
+  avatar?: Avatar; equipment?: AvatarEquipment; onPress?(): void; editable?: boolean;
 }) {
   const label = AVATAR_FIELDS.map(field => (AVATAR_LABELS[field] as Record<string, string>)[avatar[field]]).join(' · ');
   return <View style={styles.content}>
     <AvatarPreview avatar={serverAvatar(avatar, equipment)} label={label} />
-    <Button label={editable ? 'Personnaliser mon apparence' : 'Voir le personnage en 3D'} variant="quiet" onPress={onPress} />
+    {onPress && <Button label={editable ? 'Personnaliser mon apparence' : 'Voir le personnage en 3D'} variant="quiet" onPress={onPress} />}
   </View>;
 }
 

@@ -1,4 +1,9 @@
-# Aperçu du personnage équipé — #243 / #245
+# Aperçu du personnage équipé — #243 / #245 / #306
+
+**Depuis #306**, l’inventaire et les profils montrent le vrai personnage : `AvatarEntry` capture
+dans Unity l’avatar enregistré (corps, visage, coiffure) avec son équipement serveur, Bandeau
+éclair compris quand HEAD porte `BANDEAU_ECLAIR`. Les 72 captures figées de l’homme par défaut,
+`CombatAvatarPreview` et `AvatarPreviews.cs` sont supprimés ; ce qui suit est l’historique.
 
 L’inventaire, les profils et les réglages montrent les objets réellement portés, à partir
 des six emplacements serveur. Une mutation réussie remplace déjà le cache complet de
