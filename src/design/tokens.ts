@@ -664,6 +664,18 @@ export const characterSheet = {
   enemyPortraitHeight: 160,
 } as const;
 
+/** Cases RPG sur trois colonnes, lisibles dès 320 pt de largeur d’écran. */
+export const inventoryArt = {
+  columns: 3,
+  iconSize: 64,
+  detailIconSize: 128,
+  nameHeight: 34,
+  markerSize: 20,
+  sheetMaxHeight: '90%' as const,
+  sheetMaxWidth: 520,
+  scrim: 'rgba(5, 8, 22, 0.84)',
+} as const;
+
 /**
  * Les couleurs des quatre caractéristiques qui reçoivent de l'XP — `Attribute`, jamais
  * `AttributeState` : Vitality n'a **pas** de couleur, et c'est délibéré (#69). Les quatre
@@ -845,23 +857,6 @@ export const modifierLabel: Record<ModifierType, string> = {
   COOLDOWN_REDUCTION_BONUS: 'Célérité',
   PRECISION_BONUS: 'Précision',
   DODGE_BONUS: 'Esquive',
-};
-
-/**
- * La raison d'un mouvement du ledger de pièces (#129), rendue lisible.
- *
- * Même garde-fou que `xpSourceLabel` et les autres : la clé sort de l'union portée par
- * `CoinTransaction.reason`, jamais recopiée — le compilateur doit casser quand `PURCHASE` et
- * `CHEST` entreront au lot 6b, « sans migration » selon le back
- * (younesdiouri/grrind-back#225). Une pièce se consulte, sa provenance aussi : la table dit
- * *ce qui* a produit l'écriture, jamais *combien*, qui vient de `CoinAmount`.
- */
-export const coinReasonLabel: Record<components['schemas']['CoinTransaction']['reason'], string> = {
-  WORKOUT_DROP: 'Séance créditée',
-  BATTLE_DROP: 'Combat gagné',
-  PURCHASE: 'Achat',
-  CHEST: 'Coffre ouvert',
-  SALE: 'Vente',
 };
 
 /** Avatars sportifs : cartes comparables et atelier des poses. */

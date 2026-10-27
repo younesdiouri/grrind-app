@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar.ts';
 import { AvatarEntry } from './AvatarEntry.tsx';
 
-test('les entrées inventaire/réglages décrivent l’apparence enregistrée et ouvrent sa personnalisation', () => {
+test('l’entrée des réglages décrit l’apparence enregistrée et ouvre sa personnalisation', () => {
   const avatar = { ...DEFAULT_AVATAR, body: 'female' as const, faceStyle: 'heart' as const,
     noseStyle: 'original' as const, hairStyle: 'long' as const, skinTone: 'deep' as const, hairColor: 'blond' as const };
   const markup = renderToStaticMarkup(createElement(AvatarEntry, { avatar, editable: true, onPress() {} }));

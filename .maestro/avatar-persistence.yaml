@@ -100,7 +100,7 @@ tags:
 - tapOn: Fermer l’apparence
 - scrollUntilVisible:
     element:
-      text: Personnaliser mon apparence
+      id: combat-avatar-ready
     direction: DOWN
     timeout: 15000
 - extendedWaitUntil:

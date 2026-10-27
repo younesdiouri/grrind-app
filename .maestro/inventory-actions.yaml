@@ -19,6 +19,12 @@ tags:
     id: "character-tab-bag"
 - scrollUntilVisible:
     element:
+      id: inventory-item-GOLDEN_BOXING_GLOVES
+    direction: DOWN
+- tapOn:
+    id: inventory-item-GOLDEN_BOXING_GLOVES
+- scrollUntilVisible:
+    element:
       text: "Vendre.*"
     direction: DOWN
 - tapOn:
@@ -31,6 +37,11 @@ tags:
     text: "Vendre.*"
     index: 0
 - tapOn: "Confirmer la vente"
+- runFlow:
+    when:
+      visible: Fermer la fiche
+    commands:
+      - tapOn: Fermer la fiche
 - scrollUntilVisible:
     element:
       text: "Exemplaire vendu.*"
@@ -38,15 +49,21 @@ tags:
 - takeScreenshot: bag-sale-complete
 - scrollUntilVisible:
     element:
-      text: "Ouvrir"
+      text: "Coffre en bois,.*"
     direction: DOWN
     timeout: 60000
-- tapOn: "Ouvrir"
+- tapOn: "Coffre en bois,.*"
+- scrollUntilVisible:
+    element:
+      text: "Ouvrir — Coffre en bois"
+    direction: DOWN
+- tapOn: "Ouvrir — Coffre en bois"
 - scrollUntilVisible:
     element:
       text: "CONTENU DU COFFRE"
     direction: DOWN
 - takeScreenshot: bag-chest-opened
+- tapOn: Fermer la fiche
 - tapOn:
     id: "tab-accueil"
 - tapOn:

@@ -36,6 +36,12 @@ appId: app.grrind.dev
       - takeScreenshot: unity-settings-avatar
       - tapOn:
           id: tab-inventaire
+      - scrollUntilVisible:
+          element:
+            id: character-tab-equipment
+          direction: DOWN
+      - tapOn:
+          id: character-tab-equipment
       - extendedWaitUntil:
           visible:
             id: combat-avatar-ready
