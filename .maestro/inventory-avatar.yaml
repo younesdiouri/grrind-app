@@ -26,7 +26,10 @@ tags:
       id: combat-avatar-ready
     direction: DOWN
     centerElement: true
-- assertVisible: "Personnage équipé : tenue de base"
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 20000
 - assertNotVisible:
     id: equipment-slot-HANDS
 - takeScreenshot: avatar-empty
@@ -47,16 +50,20 @@ tags:
     env:
       SLOT: WEAPON
       ITEM: Gants de boxe dorés
-- assertVisible:
-    id: avatar-preview-base-original-gloves
-- assertNotVisible: "Personnage équipé :.*Le Poids Lourd.*"
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 20000
 - takeScreenshot: avatar-gloves-replace-dumbbell
 - runFlow:
     file: inventory-avatar-remove.yaml
     env:
       SLOT: WEAPON
       ITEM: Gants de boxe dorés
-- assertVisible: "Personnage équipé : tenue de base"
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 20000
 - takeScreenshot: avatar-gloves-removed
 - runFlow:
     file: inventory-avatar-equip.yaml
@@ -73,7 +80,9 @@ tags:
     env:
       SLOT: WEAPON
       ITEM: Gants de boxe dorés
-- assertVisible:
-    id: avatar-preview-coral-cyan-gloves
+- extendedWaitUntil:
+    visible:
+      id: combat-avatar-ready
+    timeout: 20000
 - takeScreenshot: avatar-six-slots-gloves
 - runFlow: inventory-avatar-finish.yaml

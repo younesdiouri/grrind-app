@@ -2301,7 +2301,7 @@ export interface components {
             key: string;
             compatibleBodies: ("male" | "female")[];
         };
-        /** @description Catalogue cosmétique versionné. Les coiffes sont des équipements HEAD, séparés des coiffures ; aucune coiffe Unity disponible actuellement. Le bandeau de l'atelier est un prototype, non équipable. */
+        /** @description Catalogue cosmétique versionné. Les coiffes sont des équipements HEAD, séparés des coiffures ; headwear liste les clés rendues par Unity sur toutes les coiffures (BANDEAU_ECLAIR, #325). */
         AvatarCatalog: {
             /** @enum {integer} */
             version: 1;

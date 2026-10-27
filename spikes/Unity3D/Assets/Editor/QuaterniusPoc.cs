@@ -144,7 +144,8 @@ public static class QuaterniusPoc
         appearance.SelectHair(appearance.hairStyles[0]);
         var pose = root.AddComponent<FighterPose>();
         pose.actor = root.GetComponent<Animator>();
-        appearance.headbandStyles = appearance.hairStyles.Where(style => style is "parted" or "buzzed" or "buns").ToArray();
+        // One Bandeau éclair fit per hairstyle (#306): 01_fit_and_export.py and 02_fit_new_styles.py.
+        appearance.headbandStyles = appearance.hairStyles;
         appearance.headbands = appearance.headbandStyles.Select(style => {
             var band = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/BandeauEclair/" + bodyName + "-" + style + ".fbx"));
             band.name = "Bandeau éclair " + style;
@@ -351,7 +352,7 @@ public static class QuaterniusPoc
                     throw new Exception("Customization leaked between actors/shared materials");
             }
             finally { UnityEngine.Object.DestroyImmediate(peer); }
-            if (appearance.headbands.Length != 2) throw new Exception("Missing headband fits");
+            if (appearance.headbands.Length != appearance.hairStyles.Length) throw new Exception("Missing headband fits");
             foreach (var style in appearance.headbandStyles)
             {
                 appearance.SelectHair(style);
@@ -362,8 +363,6 @@ public static class QuaterniusPoc
                         throw new Exception("Headband selection failed");
                 }
             }
-            appearance.SelectHair(appearance.hairStyles.Last()); appearance.SetHeadband(true);
-            if (appearance.headbands.Any(b => b.activeSelf)) throw new Exception("Unfitted band must stay hidden");
             ValidateFaces(appearance);
             Debug.Log("Quaternius POC: Humanoid, fingers, " + appearance.hairStyles.Length + " hairstyles, faces, headband, boots and bone bindings PASS: " + path);
         }

@@ -3,7 +3,7 @@ using UnityEngine;
 // Visual selection only; account appearance and equipment stay server-owned.
 public sealed class QuaterniusAppearance : MonoBehaviour
 {
-    // One headband fit per hairstyle that has one (same order as hairStyles); the others hide it.
+    // One headband fit per hairstyle (same order as hairStyles).
     public GameObject[] headbands = System.Array.Empty<GameObject>();
     public string[] headbandStyles = System.Array.Empty<string>();
     bool equipped;
