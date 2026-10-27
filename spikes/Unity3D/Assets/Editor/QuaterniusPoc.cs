@@ -49,11 +49,13 @@ public static class QuaterniusPoc
             importer.isReadable = true;
             if (path == facePath)
             {
-                // The faces and noses of #304 are blend shapes; the facets keep their own normals.
+                // The faces and noses of #304 are blend shapes; the facets and the smooth nose keep their normals.
+                // Shapes keep the basis normals: Unity's recalculated shape normals cracked the nose tip with
+                // dark shards under the key light.
                 importer.importBlendShapes = true;
                 importer.materialImportMode = ModelImporterMaterialImportMode.None;
                 importer.importNormals = ModelImporterNormals.Import;
-                importer.importBlendShapeNormals = ModelImporterNormals.Calculate;
+                importer.importBlendShapeNormals = ModelImporterNormals.None;
             }
             importer.SaveAndReimport();
         }
