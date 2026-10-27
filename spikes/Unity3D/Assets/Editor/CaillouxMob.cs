@@ -102,7 +102,10 @@ public static class CaillouxMob
             }
             for (int i = 0; i < bindings.Length; i++)
             {
-                var curve = new AnimationCurve(keys[i]);
+                // The sampled hit holds most bones still; retain endpoints rather than serializing 31 identical keys.
+                var curve = new AnimationCurve(keys[i].Where((key, k) => k == 0 || k == 30
+                    || Mathf.Abs(key.value - keys[i][k - 1].value) > .000001f
+                    || Mathf.Abs(key.value - keys[i][k + 1].value) > .000001f).ToArray());
                 for (int k = 0; k < curve.length; k++)
                 {
                     AnimationUtility.SetKeyLeftTangentMode(curve, k, AnimationUtility.TangentMode.Linear);
