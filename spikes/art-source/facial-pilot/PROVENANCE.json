@@ -107,13 +107,17 @@
       "Female NoseStraight": 6.84
     },
     "triangles": {
-      "MaleSportFace_Faceted": "7408 -> 4234",
-      "FemaleSportFace_Faceted": "7330 -> 3980",
+      "MaleSportFace_Faceted": "7408 -> 4570 (nose kept dense)",
+      "FemaleSportFace_Faceted": "7330 -> 4326 (nose kept dense)",
       "Hair_Afro": 212,
       "Hair_Mohawk": "456 (Hair_Buzzed 420 + crest)",
-      "Hair_Ponytail": 336,
+      "Hair_Ponytail": 364,
       "Hair_Bob": 346
     },
-    "license": "Derived from Quaternius CC0 sources; Meshy outputs are reference images only"
+    "license": "Derived from Quaternius CC0 sources; Meshy outputs are reference images only",
+    "author_feedback": [
+      "Ponytail looked shaved on the sides: cap lowered over the temples",
+      "Noses looked torn with facets and shadow: the nose region is no longer decimated"
+    ]
   }
 }

@@ -201,8 +201,11 @@ def female():
     for name in ('Hair_Ponytail', 'Hair_Bob'):
         skin, rig, tree = load('Female')
         if name == 'Hair_Ponytail':
-            # Slicked back close to the skull; a tied tail from the crown falls to the nape.
-            bm = shell(tree, centre, .006, hairline(eyes, .045, .025, -.045), rings=10, segments=18, lowest=-35)
+            # Slicked back close to the skull, down over the temples; a tied tail from the crown falls to the nape.
+            bm = shell(tree, centre, .009, hairline(eyes, .04, -.005, -.045), rings=10, segments=18, lowest=-35)
+            for v in [v for v in bm.verts if v.is_boundary]:  # pulled tight: the edge meets the skin
+                d = (v.co - centre).normalized()
+                v.co = surface(tree, centre, d) + d * .002
             jitter(bm, .0015, 2)
             crown = surface(tree, centre, Vector((0, -.55, .83)).normalized())
             out = Vector((0, -.55, .83)).normalized()
