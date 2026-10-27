@@ -18,6 +18,7 @@ La refonte de la boutique fera l’objet d’un ticket ultérieur.
 
 React Native / Expo 57 pour cette interface. Aucun changement Unity, natif, API ou
 backend ; aucun push, PR, merge ou build avant le test de l’auteur sur son iPhone.
+L’auteur a validé les ajustements et demandé la fusion, sans build.
 
 ## Plan et vérifications
 
@@ -46,8 +47,8 @@ Pas de nouvelle dépendance. Pas de Maestro : le flux serveur ne change pas.
 - [x] Dernières PR #307, #305, #303 et DA des objets #300/#301 lues.
 - [x] Ticket créé ; branche locale dédiée, main à jour et propre au départ.
 - [x] Implémentation et contrôles locaux terminés.
-- [ ] Validation de l’auteur sur son iPhone.
-- [ ] Push autorisé après le test.
+- [x] Validation de l’auteur sur son iPhone.
+- [x] Push et fusion autorisés après le test, sans build.
 
 ## Preuves locales
 
@@ -61,4 +62,5 @@ Pas de nouvelle dépendance. Pas de Maestro : le flux serveur ne change pas.
 - Les YAML touchés sont syntaxiquement valides ; flows non exécutés,
   conformément à la validation visuelle par l’auteur et au flux serveur inchangé.
 - Metro 8081 : bundle iOS HTTP 200 ; aucun rebuild natif.
-  Le serveur reste disponible pour le téléphone. Aucun push ni PR.
+  Le serveur reste disponible pour le téléphone. Livraison par PR à la demande de
+  l’auteur, sans rebuild natif ni build EAS.
