@@ -25,7 +25,7 @@ restent Accueil, Combat, ʿĀlam, Guilde et Réglages.
 - [x] Combat/PvP propose un Rival d’entraînement et lance une chronologie de duel capturée.
   Démo explicitement signalée, sans récompense, classement, appel de défi ou progression.
   Le raccord aux ligues reste hors périmètre.
-- [ ] Validation visuelle par l’auteur sur son iPhone avant tout push.
+- [x] Validation visuelle sur l’iPhone par l’auteur, qui autorise la fusion dans `main`.
 
 ## Architecture et limites
 
@@ -37,8 +37,9 @@ le cadrage natif Unity restent inchangés ; seul le viewport normalisé reçoit 
 dimensions. L’inspection publique conserve son écran dédié et son bouton de retour.
 
 Aucun changement backend, contrat API, règle de combat, dépendance, framework Unity ou
-configuration native. Aucun rebuild, EAS, push, PR ou merge pour cette itération.
-Build de développement installé et Metro iPhone 8081 conservés.
+configuration native. L’auteur a validé le résultat et demandé la fusion dans `main`.
+Livraison par PR, sans rebuild natif ni EAS. Build de développement installé et
+Metro iPhone 8081 conservés.
 
 ## Vérification
 
@@ -52,7 +53,7 @@ Build de développement installé et Metro iPhone 8081 conservés.
   Combat → Cailloux → PvP → défi démo → bilan sans Bourse → retour Combat puis Accueil.
   Rapport : `artifacts/e2e/report.xml`. Les sept YAML modifiés sont syntaxiquement valides.
 - L’iPhone réel a lancé `app.grrind.dev` via `devicectl`, contre Metro 8081 ; bundle HTTP 200.
-  Le rendu, la taille du personnage et son zoom restent à juger sur le téléphone par l’auteur.
+  L’auteur a validé le rendu sur son téléphone et autorisé la fusion.
 - Metro E2E 8082, serveur temporaire des previews et Simulator dédié arrêtés après le contrôle.
 
 L’option Expo existante `disableFab=1` évite que la hitbox de 92 pt du bouton développeur
