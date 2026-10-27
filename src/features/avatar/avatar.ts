@@ -5,9 +5,9 @@ export type AvatarCatalog = components['schemas']['AvatarCatalog'];
 export type AvatarField = keyof AvatarCatalog['options'];
 export const AVATAR_LABELS: { [K in AvatarField]: Record<Avatar[K], string> } = {
   body: { male: 'Homme', female: 'Femme' },
-  faceStyle: { original: 'Visage original', square: 'Visage carré' },
-  noseStyle: { original: 'Nez original', wide: 'Nez large' },
-  hairStyle: { parted: 'Coiffés', buzzed: 'Courts', buns: 'Chignons', long: 'Longs' },
+  faceStyle: { original: 'Visage fin', angular: 'Visage anguleux', oval: 'Visage ovale', heart: 'Visage en cœur', round: 'Visage rond' },
+  noseStyle: { original: 'Nez original', wide: 'Nez large', aquiline: 'Nez aquilin', flat: 'Nez épaté', button: 'Nez retroussé', straight: 'Nez droit' },
+  hairStyle: { parted: 'Coiffés', buns: 'Chignons', buzzed: 'Courts', mohawk: 'Crête', afro: 'Afro', long: 'Longs', ponytail: 'Queue de cheval', bob: 'Carré' },
   skinTone: { light: 'Teint clair', tan: 'Teint hâlé', brown: 'Teint brun', deep: 'Teint foncé' },
   eyeColor: { brown: 'Yeux marron', blue: 'Yeux bleus', green: 'Yeux verts' },
   hairColor: { brown: 'Cheveux châtains', black: 'Cheveux noirs', blond: 'Cheveux blonds' },

@@ -42,12 +42,82 @@
     "review/simulator-combinations.png"
   ],
   "limits": [
-    "Male facial options only; female geometry unchanged",
     "Appearance remains local to the workshop until grrind-back#308 and grrind-app#254",
     "Simulator verified; device framework not rebuilt in this iteration"
   ],
   "author_verdict": {
     "date": "2026-10-24",
     "quote": "ok je pense que ça peut être mergé comme ça c'est cool on garde au moins cette feature on verra apres si on rajoute des visages etc."
+  },
+  "v2_304": {
+    "date": "2026-10-27",
+    "ticket": "grrind-app#304",
+    "scope": "Square face retired; two faces, two noses and two hairstyles per body, faceted",
+    "geometry_sources": [
+      "spikes/Unity3D/Assets/Characters/Personalization/Male_Sport.fbx",
+      "spikes/Unity3D/Assets/Characters/Personalization/Female_Sport.fbx",
+      "spikes/Unity3D/Assets/Characters/FacetedHair/Hair_Buzzed.fbx"
+    ],
+    "meshy_tasks": [
+      {
+        "id": "01a17bb9-e9ed-77a1-b9db-c3bf38a3b3a1",
+        "tool": "image-to-image",
+        "model": "nano-banana-2",
+        "output": "ref/male-faces-noses.png",
+        "credits": 6
+      },
+      {
+        "id": "01a17bb9-ef0f-75ec-b7ad-1e45dbc06971",
+        "tool": "image-to-image",
+        "model": "nano-banana-2",
+        "output": "ref/female-faces-noses.png",
+        "credits": 6
+      },
+      {
+        "id": "01a17bb9-f29a-7557-a080-a97dffa731aa",
+        "tool": "image-to-image",
+        "model": "nano-banana-2",
+        "output": "ref/male-hair.png",
+        "credits": 6
+      },
+      {
+        "id": "01a17bb9-f53d-763f-bb8a-1701863bb296",
+        "tool": "image-to-image",
+        "model": "nano-banana-2",
+        "output": "ref/female-hair.png",
+        "credits": 6
+      }
+    ],
+    "meshy_inputs": "Blender workbench renders of the current faceted heads (front, three-quarter, profile)",
+    "paid_meshy_credits": 24,
+    "scripts": [
+      "build/shapes.py",
+      "build/hair.py",
+      "../faceted-garments/facet_skin.py (all .25)"
+    ],
+    "max_displacement_mm": {
+      "Male FaceAngular": 12.6,
+      "Male FaceOval": 11.46,
+      "Male NoseWide": 6.23,
+      "Male NoseAquiline": 6.8,
+      "Male NoseFlat": 9.23,
+      "Female FaceHeart": 14.15,
+      "Female FaceRound": 12.98,
+      "Female NoseButton": 7.35,
+      "Female NoseStraight": 6.84
+    },
+    "triangles": {
+      "MaleSportFace_Faceted": "7408 -> 4570 (nose kept dense)",
+      "FemaleSportFace_Faceted": "7330 -> 4326 (nose kept dense)",
+      "Hair_Afro": 212,
+      "Hair_Mohawk": "456 (Hair_Buzzed 420 + crest)",
+      "Hair_Ponytail": 364,
+      "Hair_Bob": 346
+    },
+    "license": "Derived from Quaternius CC0 sources; Meshy outputs are reference images only",
+    "author_feedback": [
+      "Ponytail looked shaved on the sides: cap lowered over the temples",
+      "Noses looked torn with facets and shadow: the nose region is no longer decimated"
+    ]
   }
 }

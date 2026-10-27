@@ -3,32 +3,33 @@ using UnityEngine;
 // Visual selection only; account appearance and equipment stay server-owned.
 public sealed class QuaterniusAppearance : MonoBehaviour
 {
+    // One headband fit per hairstyle that has one (same order as hairStyles); the others hide it.
     public GameObject[] headbands = System.Array.Empty<GameObject>();
+    public string[] headbandStyles = System.Array.Empty<string>();
     bool equipped;
-    int hair;
+    string hair = "";
     public void SetHeadband(bool visible)
     {
         equipped=visible;
-        for(int i=0;i<headbands.Length;i++)headbands[i].SetActive(visible&&i==hair);
+        for(int i=0;i<headbands.Length;i++)headbands[i].SetActive(visible&&headbandStyles[i]==hair);
     }
-    public GameObject parted, buzzed, buns, longHair;
+    // The hairstyles of this body (#304): the first one stands in for a style the body does not wear.
+    public string[] hairStyles = System.Array.Empty<string>();
+    public GameObject[] hairs = System.Array.Empty<GameObject>();
+    // Faces and noses are blend shapes of the athlete skin, named Face<Style> / Nose<Style>; original is none.
     public SkinnedMeshRenderer[] facialRenderers = System.Array.Empty<SkinnedMeshRenderer>();
-    public Mesh[] originalFaces = System.Array.Empty<Mesh>(), squareFaces = System.Array.Empty<Mesh>();
-    public Mesh[] originalGlovedFaces = System.Array.Empty<Mesh>(), squareGlovedFaces = System.Array.Empty<Mesh>();
     string selectedFace = "original", selectedNose = "original";
-    bool glovesEquipped;
 
     public void SelectFace(string face, string nose)
     {
         selectedFace = face; selectedNose = nose;
-        for (int i = 0; i < facialRenderers.Length; i++)
-        {
-            var renderer = facialRenderers[i];
-            var faces = glovesEquipped ? (face == "square" ? squareGlovedFaces : originalGlovedFaces)
-                : (face == "square" ? squareFaces : originalFaces);
-            renderer.sharedMesh = faces[i];
-            renderer.SetBlendShapeWeight(renderer.sharedMesh.GetBlendShapeIndex("NoseWide"), nose == "wide" ? 100 : 0);
-        }
+        foreach (var renderer in facialRenderers)
+            for (int i = 0; i < renderer.sharedMesh.blendShapeCount; i++)
+            {
+                string shape = renderer.sharedMesh.GetBlendShapeName(i);
+                renderer.SetBlendShapeWeight(i, shape.Equals("Face" + face, System.StringComparison.OrdinalIgnoreCase)
+                    || shape.Equals("Nose" + nose, System.StringComparison.OrdinalIgnoreCase) ? 100 : 0);
+            }
     }
     public GameObject[] sportTop = System.Array.Empty<GameObject>();
     public Material skinMaterial, hairMaterial, eyeMaterial, shirtMaterial;
@@ -43,7 +44,6 @@ public sealed class QuaterniusAppearance : MonoBehaviour
 
     public void SetBoxingGloves(bool visible)
     {
-        glovesEquipped = visible;
         if (visible) GetComponent<WeaponGrip>()?.SetEquipped(false);
         foreach (var glove in boxingGloves) glove.SetActive(visible);
         for (int i = 0; i < gloveArms.Length; i++)
@@ -53,11 +53,8 @@ public sealed class QuaterniusAppearance : MonoBehaviour
 
     public void SelectHair(string style)
     {
-        parted.SetActive(style != "buzzed" && style != "buns" && style != "long");
-        buzzed.SetActive(style == "buzzed");
-        buns.SetActive(style == "buns");
-        longHair.SetActive(style == "long");
-        hair=style=="long"?-1:style=="buzzed"?1:style=="buns"?2:0;
+        hair = System.Array.IndexOf(hairStyles, style) >= 0 ? style : hairStyles[0];
+        for (int i = 0; i < hairs.Length; i++) hairs[i].SetActive(hairStyles[i] == hair);
         SetHeadband(equipped);
     }
 

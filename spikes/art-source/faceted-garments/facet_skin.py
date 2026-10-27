@@ -43,10 +43,12 @@ for obj in bpy.context.scene.objects:
         for key in p.edge_keys:
             edges[key] = edges.get(key, 0) + 1
     rim = {v for key, count in edges.items() if count == 1 for v in key}
+    # The nose shapes of #304 stay dense: collapsed nostrils tear into jagged spikes once a key moves them.
+    nose = {i for name, offsets in keys.items() if name.startswith("Nose") for i, d in enumerate(offsets) if d.length > 1e-6}
     def protected(v):
         if mode == "legs" and (obj.matrix_world @ v.co).z > .38:
             return True
-        return v.index in rim or any(groups[g.group].startswith(smooth) and g.weight > .3 for g in v.groups)
+        return v.index in rim or v.index in nose or any(groups[g.group].startswith(smooth) and g.weight > .3 for g in v.groups)
     free = {v.index for v in mesh.vertices if not protected(v)}
     collapse = obj.vertex_groups.new(name="Collapse")
     collapse.add(list(free), 1.0, "REPLACE")
@@ -70,8 +72,12 @@ for obj in bpy.context.scene.objects:
                 block.data[vertex.index].co = vertex.co + offsets[tree.find(vertex.co)[1]]
     # In body mode the head keeps its smooth normals; everything else shows its facets.
     head = {v.index for v in mesh.vertices if mode == "body" and any(groups.get(g.group, "").startswith(("Head", "neck")) and g.weight > .3 for g in v.groups)}
+    # The dense nose is smooth too: flat, its little concave nostril faces turn into dark specks
+    # under the hard key light of Unity.
+    nose = {v.index for v in mesh.vertices if keys and any(offsets[tree.find(v.co)[1]].length > 1e-6
+            for name, offsets in keys.items() if name.startswith("Nose"))}
     for polygon in mesh.polygons:
-        polygon.use_smooth = all(i in head for i in polygon.vertices)
+        polygon.use_smooth = all(i in head for i in polygon.vertices) or all(i in nose for i in polygon.vertices)
     obj.vertex_groups.remove(obj.vertex_groups["Collapse"])
     if obj.vertex_groups:  # a static mesh (the raid boss) has no weights to limit
         bpy.ops.object.vertex_group_limit_total(limit=4)

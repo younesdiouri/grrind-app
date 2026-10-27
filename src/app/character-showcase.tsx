@@ -11,6 +11,20 @@ import { BATTLE_FIXTURES } from '@/features/combat/fixtures';
 import { UnityAvatarInspector, unityCombatAvailable } from '@/features/combat/UnityCombatStage';
 import type { UnityAvatar } from '@/features/combat/unityFrame';
 import type { FighterPose } from '@/features/combat/fighterMotion';
+import { AVATAR_LABELS } from '@/features/avatar/avatar';
+
+// Local spike: the catalog's compatibleBodies decide in the app; these mirror it for the workshop.
+const TRAITS = {
+  male: { faceStyle: ['original', 'angular', 'oval'], noseStyle: ['original', 'wide', 'aquiline', 'flat'],
+    hairStyle: ['parted', 'buzzed', 'mohawk', 'afro'] },
+  female: { faceStyle: ['original', 'heart', 'round'], noseStyle: ['original', 'button', 'straight'],
+    hairStyle: ['buns', 'long', 'buzzed', 'ponytail', 'bob'] },
+} as const satisfies Record<UnityAvatar['body'], { [K in 'faceStyle' | 'noseStyle' | 'hairStyle']: readonly UnityAvatar[K][] }>;
+const BANDED: readonly UnityAvatar['hairStyle'][] = ['parted', 'buzzed', 'buns'];
+
+function pick<T extends string>(options: readonly T[], value: string): T {
+  return options.find(option => option === value) ?? options[0];
+}
 
 export default function CharacterShowcaseScreen() {
   const { preview } = useLocalSearchParams<{ preview?: string }>();
@@ -20,7 +34,7 @@ export default function CharacterShowcaseScreen() {
 
 function Showcase({ preview }: { preview?: string }) {
   const [body, setBody] = useState<UnityAvatar['body']>('male');
-  const [faceStyle, setFaceStyle] = useState<UnityAvatar['faceStyle']>('square');
+  const [faceStyle, setFaceStyle] = useState<UnityAvatar['faceStyle']>('original');
   const [noseStyle, setNoseStyle] = useState<UnityAvatar['noseStyle']>('wide');
   const [hairStyle, setHairStyle] = useState<UnityAvatar['hairStyle']>('parted');
   const [headband, setHeadband] = useState(true);
@@ -44,14 +58,18 @@ function Showcase({ preview }: { preview?: string }) {
   const [controlsHeight, setControlsHeight] = useState(260);
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const avatar: UnityAvatar = { body, hairStyle, headband: headband && hairStyle !== 'long', visible: true,
+  const traits = TRAITS[body];
+  const face = pick(traits.faceStyle, faceStyle), nose = pick(traits.noseStyle, noseStyle), hair = pick(traits.hairStyle, hairStyle);
+  const banded = BANDED.includes(hair);
+  const avatar: UnityAvatar = { body, hairStyle: hair, headband: headband && banded, visible: true,
     skinTone, eyeColor, hairColor, shirtColor, pantsColor, boxingGloves, dumbbell, weapon,
     weaponType: weapon ? 'SWORD' : 'FIST',
-    faceStyle: body === 'male' ? faceStyle : 'original', noseStyle: body === 'male' ? noseStyle : 'original' };
+    faceStyle: face, noseStyle: nose };
   if (playing) return <View style={styles.screen}>
     <Stack.Screen options={{ headerShown: false, statusBarHidden: true }} />
     <BattleView battle={BATTLE_FIXTURES.duel} demo unityPlayer={avatar}
       unityEnemy={{ ...avatar, body: body === 'male' ? 'female' : 'male', hairStyle: body === 'male' ? 'buns' : 'parted',
+        faceStyle: 'original', noseStyle: 'original',
         weapon: weapon === 'ferPlay' ? 'huilesson' : weapon === 'huilesson' ? 'ferPlay' : undefined,
         skinTone: skinTone === 'deep' ? 'light' : 'deep', eyeColor: 'brown', hairColor: 'black',
         shirtColor: shirtColor === 'cyan' ? 'coral' : 'cyan', pantsColor: pantsColor === 'coral' ? 'violet' : 'coral', headband: false }}
@@ -98,29 +116,22 @@ function Showcase({ preview }: { preview?: string }) {
         </View>
         </>}
         {section === 'Traits' && <>
-          {body === 'male' ? <>
-            <View style={styles.row}>
-              <Choice label="Visage original" selected={faceStyle === 'original'} onPress={() => setFaceStyle('original')} />
-              <Choice label="Visage carré" selected={faceStyle === 'square'} onPress={() => setFaceStyle('square')} />
-            </View>
-            <View style={styles.row}>
-              <Choice label="Nez original" selected={noseStyle === 'original'} onPress={() => setNoseStyle('original')} />
-              <Choice label="Nez large" selected={noseStyle === 'wide'} onPress={() => setNoseStyle('wide')} />
-            </View>
-          </> : <Text style={styles.subtitle}>Premier essai sur le personnage homme.</Text>}
+          <View style={styles.row}>
+            {traits.faceStyle.map(value => <Choice key={value} label={AVATAR_LABELS.faceStyle[value]} selected={face === value} onPress={() => setFaceStyle(value)} />)}
+          </View>
+          <View style={styles.row}>
+            {traits.noseStyle.map(value => <Choice key={value} label={AVATAR_LABELS.noseStyle[value]} selected={nose === value} onPress={() => setNoseStyle(value)} />)}
+          </View>
         </>}
         {section === 'Cheveux' && <>
         <View style={styles.row}>
-          <Choice label="Coiffés" selected={hairStyle === 'parted'} onPress={() => setHairStyle('parted')} />
-          <Choice label="Courts" selected={hairStyle === 'buzzed'} onPress={() => setHairStyle('buzzed')} />
-          <Choice label="Chignons" selected={hairStyle === 'buns'} onPress={() => setHairStyle('buns')} />
-          <Choice label="Longs" selected={hairStyle === 'long'} onPress={() => setHairStyle('long')} />
+          {traits.hairStyle.map(value => <Choice key={value} label={AVATAR_LABELS.hairStyle[value]} selected={hair === value} onPress={() => setHairStyle(value)} />)}
         </View>
         <View style={styles.row}>
           {([{ label: 'Châtains', value: 'brown' }, { label: 'Noirs', value: 'black' }, { label: 'Blonds', value: 'blond' }] as const).map(({ label, value }) =>
             <Choice key={value} label={label} selected={hairColor === value} onPress={() => setHairColor(value)} />)}
         </View>
-        {hairStyle === 'long' && <Text style={styles.subtitle}>Bandeau non ajusté sur cette coupe.</Text>}
+        {!banded && <Text style={styles.subtitle}>Bandeau non ajusté sur cette coupe.</Text>}
         </>}
         {section === 'Tenue' && <>
         <View style={styles.row}>
@@ -134,7 +145,7 @@ function Showcase({ preview }: { preview?: string }) {
             <Choice key={value} label={label} selected={pantsColor === value} onPress={() => setPantsColor(value)} />)}
         </View>
         <View style={styles.row}>
-          {hairStyle !== 'long' && <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
+          {banded && <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
         </View>
         <View style={styles.row}>
           <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => { setBoxingGloves(!boxingGloves); setDumbbell(false); setWeapon(undefined); }} />

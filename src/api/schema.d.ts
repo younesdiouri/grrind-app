@@ -2272,10 +2272,10 @@ export interface components {
         };
         /**
          * @description Apparence Unity/Quaternius complète, indépendante de l'ancien champ appearance.
-         *     Identifiants stables dans la version 1. Corps et coiffure sont indépendants ;
-         *     square et wide sont réservés à male, les deux traits se choisissent séparément.
-         *     Absence historique/version inconnue : défaut V1 figé. Identifiant retiré :
-         *     défaut du champ ; les traits féminins reviennent à original. Aucun profil courant
+         *     Identifiants stables dans la version 1. Visages, nez et coiffures sont propres
+         *     à un corps ou communs : voir compatibleBodies du catalogue ; ils se choisissent séparément.
+         *     Absence historique/version inconnue : défaut V1. Identifiant retiré (square, #323) ou
+         *     incompatible avec le corps : défaut du champ, sinon première option du corps. Aucun profil courant
          *     n'est consulté pour un replay. Les écritures inconnues/incomplètes sont refusées (422).
          *     Aucun vêtement, coiffe ou objet : utiliser l'équipement serveur.
          */
@@ -2285,11 +2285,11 @@ export interface components {
             /** @enum {string} */
             body: "male" | "female";
             /** @enum {string} */
-            faceStyle: "original" | "square";
+            faceStyle: "original" | "angular" | "oval" | "heart" | "round";
             /** @enum {string} */
-            noseStyle: "original" | "wide";
+            noseStyle: "original" | "wide" | "aquiline" | "flat" | "button" | "straight";
             /** @enum {string} */
-            hairStyle: "parted" | "buzzed" | "buns" | "long";
+            hairStyle: "parted" | "buns" | "buzzed" | "mohawk" | "afro" | "long" | "ponytail" | "bob";
             /** @enum {string} */
             skinTone: "light" | "tan" | "brown" | "deep";
             /** @enum {string} */

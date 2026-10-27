@@ -3,7 +3,7 @@ import { equippedModels } from './equippedAvatarPreview.ts';
 import type { UnityAvatar } from './unityFrame.ts';
 
 export type Avatar = components['schemas']['Avatar'];
-export const DEFAULT_AVATAR: Avatar = { version: 1, body: 'male', faceStyle: 'square', noseStyle: 'wide',
+export const DEFAULT_AVATAR: Avatar = { version: 1, body: 'male', faceStyle: 'original', noseStyle: 'wide',
   hairStyle: 'parted', skinTone: 'tan', eyeColor: 'brown', hairColor: 'brown' };
 export type AvatarEquipment = components['schemas']['BattleEquipment'] | components['schemas']['PublicInventory']['equipment'];
 

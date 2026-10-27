@@ -42,10 +42,21 @@ public static class QuaterniusPoc
         Directory.CreateDirectory(output);
         Directory.CreateDirectory("Assets/Resources");
         AssetDatabase.Refresh();
-        foreach (var path in new[] { Source + "Superhero_" + bodyName + "_FullBody.fbx", Added + "Hair_Buzzed.fbx", "Assets/Characters/Personalization/" + bodyName + "_Body_Faceted.fbx" })
+        string facePath = "Assets/Characters/FacialPilot/" + bodyName + "SportFace_Faceted.fbx";
+        foreach (var path in new[] { Source + "Superhero_" + bodyName + "_FullBody.fbx", Added + "Hair_Buzzed.fbx", "Assets/Characters/Personalization/" + bodyName + "_Body_Faceted.fbx", facePath })
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
             importer.isReadable = true;
+            if (path == facePath)
+            {
+                // The faces and noses of #304 are blend shapes; the facets and the smooth nose keep their normals.
+                // Shapes keep the basis normals: Unity's recalculated shape normals cracked the nose tip with
+                // dark shards under the key light.
+                importer.importBlendShapes = true;
+                importer.materialImportMode = ModelImporterMaterialImportMode.None;
+                importer.importNormals = ModelImporterNormals.Import;
+                importer.importBlendShapeNormals = ModelImporterNormals.None;
+            }
             importer.SaveAndReimport();
         }
         var root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Source + "Superhero_" + bodyName + "_FullBody.fbx"));
@@ -77,12 +88,13 @@ public static class QuaterniusPoc
         bare.localBounds = body.localBounds;
         UnityEngine.Object.DestroyImmediate(body.gameObject);
         var appearance = root.AddComponent<QuaterniusAppearance>();
-        // #299: every hairstyle is faceted like the body (facet_skin.py on the Quaternius sources).
+        // #299: every hairstyle is faceted like the body; #304: each body wears its own, default first.
         const string FacetedHair = "Assets/Characters/FacetedHair/";
-        appearance.parted = Hair(FacetedHair + "Hair_SimpleParted_Rigged.fbx", root, bones, hair);
-        appearance.buzzed = Hair(FacetedHair + (female ? "Female_Hair_Buzzed.fbx" : "Hair_Buzzed.fbx"), root, bones, hair);
-        appearance.buns = Hair(FacetedHair + "Hair_Buns_Rigged.fbx", root, bones, hair);
-        appearance.longHair = Hair(FacetedHair + "Hair_Long.fbx", root, bones, hair);
+        var styles = female
+            ? new[] { ("buns", "Hair_Buns_Rigged"), ("long", "Hair_Long"), ("buzzed", "Female_Hair_Buzzed"), ("ponytail", "Hair_Ponytail"), ("bob", "Hair_Bob") }
+            : new[] { ("parted", "Hair_SimpleParted_Rigged"), ("buzzed", "Hair_Buzzed"), ("mohawk", "Hair_Mohawk"), ("afro", "Hair_Afro") };
+        appearance.hairStyles = styles.Select(s => s.Item1).ToArray();
+        appearance.hairs = styles.Select(s => Hair(FacetedHair + s.Item2 + ".fbx", root, bones, hair)).ToArray();
         appearance.skinMaterial = skin;
         appearance.lightSkin = AssetDatabase.LoadAssetAtPath<Texture2D>(Source + (female ? "T_Superhero_Female_Light_BaseColor.png" : "T_Superhero_Male_Ligh.png"));
         appearance.hairMaterial = hair; appearance.eyeMaterial = eyes;
@@ -104,7 +116,10 @@ public static class QuaterniusPoc
         guinzzRenderer.quality = SkinQuality.Bone4;
         appearance.guinzzMaterial = guinzzMaterials[0];
         var sport = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/Personalization/" + bodyName + "_Sport_Faceted.fbx"));
-        var sportParts = sport.GetComponentsInChildren<SkinnedMeshRenderer>();
+        // The athlete skin comes from the face FBX of #304, which carries the face and nose shapes.
+        var face = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(facePath));
+        var sportParts = sport.GetComponentsInChildren<SkinnedMeshRenderer>().Where(r => !r.name.EndsWith("_Skin"))
+            .Append(face.GetComponentsInChildren<SkinnedMeshRenderer>().Single(r => r.name.EndsWith("_Sport_Skin"))).ToArray();
         var shirtPath = Output + "Sport shirt " + bodyName + ".mat";
         var shirt = ToonMaterials.At(shirtPath);
         shirt.SetFloat("_Cull", 0); // Thin cotton renders on both sides inside open sleeves.
@@ -122,12 +137,15 @@ public static class QuaterniusPoc
         }
         appearance.sportTop = sportParts.Select(p => p.gameObject).ToArray();
         foreach (var part in sportParts) part.quality = SkinQuality.Bone4;
+        appearance.facialRenderers = sportParts.Where(p => p.name.EndsWith("_Skin")).ToArray();
         UnityEngine.Object.DestroyImmediate(sport);
+        UnityEngine.Object.DestroyImmediate(face);
         appearance.Customize("tan", "brown", "brown");
-        appearance.SelectHair(female ? "buns" : "parted");
+        appearance.SelectHair(appearance.hairStyles[0]);
         var pose = root.AddComponent<FighterPose>();
         pose.actor = root.GetComponent<Animator>();
-        appearance.headbands = new[] { "parted", "buzzed", "buns" }.Select(style => {
+        appearance.headbandStyles = appearance.hairStyles.Where(style => style is "parted" or "buzzed" or "buns").ToArray();
+        appearance.headbands = appearance.headbandStyles.Select(style => {
             var band = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Characters/BandeauEclair/" + bodyName + "-" + style + ".fbx"));
             band.name = "Bandeau éclair " + style;
             band.transform.SetParent(pose.actor.GetBoneTransform(HumanBodyBones.Head), true);
@@ -292,12 +310,13 @@ public static class QuaterniusPoc
                 || pose.contacts.Any(c => c <= 0 || c >= 1)) throw new Exception("Missing clip/contact mapping");
             if (pose.actor.GetBoneTransform(HumanBodyBones.RightIndexDistal) == null) throw new Exception("Missing fingers");
             var appearance = instance.GetComponent<QuaterniusAppearance>();
-            foreach (var style in new[] { "buzzed", "parted", "buns", "long" })
+            if (appearance.hairs.Length != appearance.hairStyles.Length || appearance.hairs.Length < 4) throw new Exception("Missing hairstyles");
+            foreach (var style in appearance.hairStyles.Append("unknown"))
             {
                 appearance.SelectHair(style);
-                if (new[] { appearance.parted, appearance.buzzed, appearance.buns, appearance.longHair }.Count(h => h.activeSelf) != 1
-                    || appearance.buzzed.activeSelf != (style == "buzzed") || appearance.buns.activeSelf != (style == "buns"))
-                    throw new Exception("Hair selection failed");
+                int expected = Math.Max(0, Array.IndexOf(appearance.hairStyles, style));
+                if (appearance.hairs.Count(h => h.activeSelf) != 1 || !appearance.hairs[expected].activeSelf)
+                    throw new Exception("Hair selection failed: " + style);
             }
             AthleteSneakers.Validate(instance);
             foreach (var renderer in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
@@ -332,8 +351,8 @@ public static class QuaterniusPoc
                     throw new Exception("Customization leaked between actors/shared materials");
             }
             finally { UnityEngine.Object.DestroyImmediate(peer); }
-            if (appearance.headbands.Length != 3) throw new Exception("Missing headband fits");
-            foreach (var style in new[] { "parted", "buzzed", "buns" })
+            if (appearance.headbands.Length != 2) throw new Exception("Missing headband fits");
+            foreach (var style in appearance.headbandStyles)
             {
                 appearance.SelectHair(style);
                 foreach (bool equipped in new[] { false, true })
@@ -343,12 +362,56 @@ public static class QuaterniusPoc
                         throw new Exception("Headband selection failed");
                 }
             }
-            appearance.SelectHair("long"); appearance.SetHeadband(true);
-            if (appearance.headbands.Any(b => b.activeSelf)) throw new Exception("Unfitted long-hair band must stay hidden");
-            Debug.Log("Quaternius POC: Humanoid, fingers, three hair options, headband, boots and bone bindings PASS: " + path);
+            appearance.SelectHair(appearance.hairStyles.Last()); appearance.SetHeadband(true);
+            if (appearance.headbands.Any(b => b.activeSelf)) throw new Exception("Unfitted band must stay hidden");
+            ValidateFaces(appearance);
+            Debug.Log("Quaternius POC: Humanoid, fingers, " + appearance.hairStyles.Length + " hairstyles, faces, headband, boots and bone bindings PASS: " + path);
         }
         finally { UnityEngine.Object.DestroyImmediate(instance); }
     }
+    // Every face and nose shape changes the head, leaves the scalp, ears and neck alone, survives the
+    // gloves and resets exactly (#304; the checks of the former FacialPilotChecks).
+    static void ValidateFaces(QuaterniusAppearance appearance)
+    {
+        var skin = appearance.facialRenderers.Single();
+        var mesh = skin.sharedMesh;
+        var shapes = Enumerable.Range(0, mesh.blendShapeCount).Select(mesh.GetBlendShapeName).ToArray();
+        if (shapes.Count(s => s.StartsWith("Face")) != 2 || shapes.Count(s => s.StartsWith("Nose")) < 2) throw new Exception("Expected two faces and two noses: " + string.Join(",", shapes));
+        appearance.SelectFace("original", "original");
+        var basis = Bake(skin);
+        foreach (var shape in shapes)
+        {
+            string style = shape.Substring(4).ToLowerInvariant();
+            appearance.SelectFace(shape.StartsWith("Face") ? style : "original", shape.StartsWith("Nose") ? style : "original");
+            var moved = Bake(skin);
+            int most = Enumerable.Range(0, moved.Length).OrderByDescending(i => Vector3.Distance(basis[i], moved[i])).First();
+            float largest = Vector3.Distance(basis[most], moved[most]);
+            // Shapes are symmetric: the centre of their changes lies on the face. Nothing behind the head bone may move.
+            var face = Vector3.ProjectOnPlane(Enumerable.Range(0, moved.Length).Aggregate(Vector3.zero,
+                (sum, i) => sum + basis[i] * Vector3.Distance(basis[i], moved[i])), Vector3.up).normalized;
+            for (int i = 0; i < moved.Length; i++)
+                if ((Vector3.Dot(basis[i], face) < 0 || basis[i].y < -.2f) && Vector3.Distance(basis[i], moved[i]) > .0001f)
+                    throw new Exception(shape + " moved the back of the head, the shoulders or the arms");
+            if (largest < .003f) throw new Exception(shape + " has no visible change");
+            appearance.SetBoxingGloves(true); appearance.SetBoxingGloves(false);
+            if (skin.GetBlendShapeWeight(mesh.GetBlendShapeIndex(shape)) != 100) throw new Exception("Gloves reset " + shape);
+        }
+        appearance.SelectFace("original", "original");
+        if (Bake(skin).Where((p, i) => Vector3.Distance(p, basis[i]) > .000001f).Any()) throw new Exception("Faces do not return exactly to the original");
+    }
+
+    static Vector3[] Bake(SkinnedMeshRenderer renderer)
+    {
+        var mesh = new Mesh();
+        renderer.BakeMesh(mesh);
+        // Relative to the head bone in the actor's space, y up.
+        var head = renderer.GetComponentInParent<Animator>().GetBoneTransform(HumanBodyBones.Head);
+        var root = renderer.GetComponentInParent<Animator>().transform;
+        var points = mesh.vertices.Select(v => root.InverseTransformPoint(renderer.transform.TransformPoint(v)) - root.InverseTransformPoint(head.position)).ToArray();
+        UnityEngine.Object.DestroyImmediate(mesh);
+        return points;
+    }
+
     public static float[] ValidateGaze()
     {
         if (!EditorApplication.isPlaying) throw new InvalidOperationException("Gaze must be checked in Play mode");
