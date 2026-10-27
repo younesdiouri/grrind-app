@@ -19,7 +19,7 @@ Les noms de joueurs/guildes et titres qui expliquent un état ou une action rest
   boutique sur l’horloge du décor existante, arrêt sur destination active et Réduire les animations.
 - [x] Navigation directe vers Sac ; onglet Inventaire vers Équipement ; apparence inchangée côté sauvegarde.
 - [x] Retrait des doublons de titres et raccourcis dans les menus concernés.
-- [ ] Tests de navigation/états/accessibilité, petites largeurs, types/lint/tests/previews et bundle iOS.
+- [x] Tests de navigation/états/accessibilité, petites largeurs, types/lint/tests/previews et bundle iOS.
 - [ ] Test de l’auteur sur son iPhone avant tout push.
 
 ## Architecture et limites
@@ -55,15 +55,21 @@ Travail local seulement ; aucun push/PR/merge sans son feu vert.
 Sur 320 pt, avec retour, solde compact sans débordement ; VoiceOver annonce le nombre exact.
 Le sac et les pièces partagent l’inventaire React Query et ses invalidations existantes.
 Les menus secondaires utilisent `dismissTo` : changer de menu ne les empile pas ; l’apparence
-garde un retour vers son origine. Le test de navigation emploie les frontières router réelles.
+garde un retour vers son origine. Les tests appellent la fonction de navigation de production
+et simulent le routeur à la frontière.
 
 Le bouton flottant d’Expo recouvrait le HUD : sa hitbox occupe 92 pt, même hors de son dessin.
 Source installée : `expo-dev-menu/ios/FAB/DevMenuFABWindow.swift` et `DevMenuFABView.swift`.
 Les liens des deux scripts E2E utilisent désormais l’option Expo existante `disableFab=1`,
 reconnue par `expo-dev-launcher/ios/EXDevLauncherURLHelper.swift`. Aucun changement natif.
 `test:ios:tools` : 4 tests réussis ; syntaxe shell et 4 YAML modifiés valides.
-Le parcours HUD est relancé sur la session jetable conservée après diagnostic de la surcouche
-et prise en charge de l’écran de récompense au lancement ; résultat final à consigner.
+Le parcours HUD est vert : pièces → boutique → atelier → sac, absence de retour sur les onglets,
+onglet Inventaire → Équipement, apparence sans titre répété → fermeture, boutique → retour,
+accueil. Rapport `artifacts/e2e/report.xml` : 1 flow passé en 88 s. Le dernier passage conserve
+la session QA (`E2E_OFFLINE=1`) et ne crée aucun compte supplémentaire. Le préambule gère les
+trois pages possibles d’une progression en attente (XP, butin, série), sans en rejouer le test santé.
 
 L’iPhone réel a été lancé via `devicectl` contre Metro 8081 avec `disableFab=1` ; le processus
 `app.grrind.dev` a démarré. Aucun rebuild, push, PR ou merge.
+`previews:check` et bundle iOS Metro 8081 : sortie 0 / HTTP 200. Le jugement visuel sur le
+téléphone reste à l’auteur ; essayer les quatre raccourcis depuis Accueil, Inventaire et Boutique.

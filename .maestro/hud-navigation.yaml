@@ -20,19 +20,16 @@ tags:
 - extendedWaitUntil:
     visible: "NIVEAU|.*Toucher pour.*"
     timeout: 30000
-- runFlow:
-    when:
-      visible: ".*Toucher pour voir le butin.*"
+# Une progression en attente peut avoir XP, butin puis série : au plus trois pages.
+- repeat:
+    times: 3
     commands:
-      - tapOn: ".*Toucher pour voir le butin.*"
-      - extendedWaitUntil:
-          visible: ".*Toucher pour continuer.*"
-          timeout: 30000
-- runFlow:
-    when:
-      visible: ".*Toucher pour continuer.*"
-    commands:
-      - tapOn: ".*Toucher pour continuer.*"
+      - runFlow:
+          when:
+            visible: ".*Toucher pour.*"
+          commands:
+            - tapOn:
+                point: "50%,50%"
 - tapOn:
     id: tab-accueil
 - extendedWaitUntil:
