@@ -13,6 +13,8 @@ public sealed class FighterPose : MonoBehaviour
     public Transform contactShadow;
     // Contact time of each clip as a fraction of its length.
     public float[] contacts=Array.Empty<float>();
+    // Generic mobs name their sockets explicitly; a root fallback puts impacts on the floor.
+    public Transform[] genericBones=Array.Empty<Transform>();
     public string weaponType="FIST";
     // Which clip each posture plays, per weapon family: the dumbbell is WEIGHT whatever its type.
     // Postures 0-6 come from the RN timeline; 7 workshop gaze, 8 knock-out, 9 victory.
@@ -92,6 +94,7 @@ public sealed class FighterPose : MonoBehaviour
         float contact=measured[selected];
         return p<=.5f?Mathf.Lerp(0,contact,p*2):Mathf.Lerp(contact,1,(p-.5f)*2);
     }
-    public Transform Bone(HumanBodyBones bone)=>actor.isHuman?actor.GetBoneTransform(bone):actor.transform;
+    public Transform Bone(HumanBodyBones bone)=>actor.isHuman?actor.GetBoneTransform(bone)
+        :(int)bone<genericBones.Length&&genericBones[(int)bone]!=null?genericBones[(int)bone]:actor.transform;
     void OnDestroy(){rigBuilder?.Clear();if(graph.IsValid())graph.Destroy();}
 }
