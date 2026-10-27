@@ -21,6 +21,7 @@ import { InviteCodeBlock } from '@/components/InviteCodeBlock';
 import { ItemCard } from '@/components/ItemCard';
 import { InventoryBag, InventoryGrid } from '@/components/InventoryGrid';
 import { InventoryItemDetails } from '@/components/InventoryItemDetails';
+import { ShopCatalog, ShopItemDetails, ShopPurchaseReceipt } from '@/components/ShopCatalog';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CharacterStatistics } from '@/components/CharacterStatistics';
@@ -143,6 +144,17 @@ function droppedItem(
     ...overrides,
   };
 }
+
+const shopItems: components['schemas']['ShopListing'][] = [
+  { ...droppedItem({ key: 'FER_PLAY', name: 'Le Fer Play', rarity: 'RARE', modifiers: [{ type: 'DAMAGE_BONUS', value: 7, discipline: null }], priceCoins: 480 }),
+    affordable: true, owned: false, minimumLevel: 5, unlocked: true },
+  { ...droppedItem({ key: 'CORAL', name: 'T-shirt sportif — Corail', slot: 'CHEST', priceCoins: 120 }),
+    affordable: true, owned: true, minimumLevel: 1, unlocked: true },
+  { ...droppedItem({ key: 'CHEST', name: 'Coffre d’entraînement', kind: 'CHEST', slot: null, rarity: 'UNCOMMON', priceCoins: 240 }),
+    affordable: true, owned: true, minimumLevel: 1, unlocked: true },
+  { ...droppedItem({ key: 'SHOES', name: 'Les Mille Bornes', slot: 'FEET', rarity: 'RARE', priceCoins: 1999 }),
+    affordable: false, owned: false, minimumLevel: 12, unlocked: false },
+];
 
 const inventoryItems: components['schemas']['InventoryLine'][] = [
   { ...droppedItem({ key: 'GOLDEN_BOXING_GLOVES', name: 'Gants de boxe dorés', rarity: 'EPIC', slot: 'WEAPON' }), quantity: 1, sellPriceCoins: 10 },
@@ -1020,6 +1032,30 @@ export const PREVIEWS: Preview[] = [
       </Specimen>
       <Specimen label="Sac vide">
         <InventoryBag items={[]} equipment={inventoryEquipment} onSelect={() => {}} />
+      </Specimen>
+    </>,
+  },
+  {
+    slug: 'boutique-rpg',
+    name: 'Boutique RPG',
+    group: 'Composants',
+    element: <>
+      <Specimen label="Vitrine, étal et états serveur">
+        <ShopCatalog items={shopItems} category="all" onCategory={() => {}} onSelect={() => {}} />
+      </Specimen>
+      <Specimen label="Inspection avant achat">
+        <ShopItemDetails item={shopItems[0]} busy={false} onBuy={() => {}} />
+      </Specimen>
+      <Specimen label="Petit iPhone — 320 pt, marges de 24 pt">
+        <View style={{ width: 320 - space.lg * 2 }}>
+          <ShopCatalog items={shopItems.slice(0, 2)} category="all" onCategory={() => {}} onSelect={() => {}} />
+        </View>
+      </Specimen>
+      <Specimen label="Acquisition confirmée par le serveur">
+        <ShopPurchaseReceipt purchase={{ item: shopItems[0], spentCoins: 480, coinsBefore: 1240, coinsAfter: 760 }} onContinue={() => {}} />
+      </Specimen>
+      <Specimen label="Étal vide">
+        <ShopCatalog items={[]} category="all" onCategory={() => {}} onSelect={() => {}} />
       </Specimen>
     </>,
   },
