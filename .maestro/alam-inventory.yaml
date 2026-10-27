@@ -15,7 +15,13 @@ appId: app.grrind.dev
     timeout: 20000
 - tapOn:
     id: character-tab-bag
-- assertVisible: RESSOURCES
+- tapOn:
+    id: inventory-filter-materials
+- scrollUntilVisible:
+    element:
+      text: "Essence du Nafs,.*"
+    direction: DOWN
+- tapOn: "Essence du Nafs,.*"
 - assertVisible: "Ressource · atelier"
 - assertNotVisible: "Équiper — Essence du Nafs"
 - takeScreenshot: alam-resources-inventory

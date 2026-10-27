@@ -77,7 +77,7 @@ export function ItemCard({ item, quantity, equipped, expanded = false }: ItemCar
         />
         </View>
 
-        <View style={styles.content}>
+        <View style={[styles.content, expanded && styles.expandedContent]}>
           <View style={styles.head}>
             <View style={styles.identity}>
               <Text style={[styles.rarity, { color: rarityColor[item.rarity] }]}>
@@ -131,6 +131,7 @@ const styles = StyleSheet.create({
   layout: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
   expandedLayout: { flexDirection: 'column', alignItems: 'stretch' },
   expandedArt: { alignItems: 'center', paddingVertical: space.md },
+  expandedContent: { flex: 0 },
   expandedName: { ...type.title },
   content: { flex: 1, gap: space.sm },
   head: {

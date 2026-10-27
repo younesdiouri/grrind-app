@@ -23,6 +23,12 @@ tags:
     id: tab-inventaire
 - scrollUntilVisible:
     element:
+      id: character-tab-equipment
+    direction: DOWN
+- tapOn:
+    id: character-tab-equipment
+- scrollUntilVisible:
+    element:
       id: combat-avatar-ready
     direction: DOWN
     centerElement: true

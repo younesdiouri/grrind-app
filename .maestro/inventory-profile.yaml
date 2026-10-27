@@ -49,12 +49,19 @@ tags:
 - tapOn: ".*Arme.*"
 - scrollUntilVisible:
     element:
-      text: "Retirer"
+      id: inventory-item-GOLDEN_BOXING_GLOVES
     direction: DOWN
-- tapOn: "Retirer"
+- tapOn:
+    id: inventory-item-GOLDEN_BOXING_GLOVES
+- scrollUntilVisible:
+    element:
+      text: "Retirer — Gants de boxe dorés"
+    direction: DOWN
+- tapOn: "Retirer — Gants de boxe dorés"
 - extendedWaitUntil:
     visible: ".*Équiper — Gants de boxe dorés.*"
     timeout: 15000
+- tapOn: Fermer la fiche
 - scrollUntilVisible:
     element:
       id: "character-tab-statistics"
@@ -67,6 +74,12 @@ tags:
     id: "character-tab-equipment"
 - scrollUntilVisible:
     element:
+      id: inventory-item-GOLDEN_BOXING_GLOVES
+    direction: DOWN
+- tapOn:
+    id: inventory-item-GOLDEN_BOXING_GLOVES
+- scrollUntilVisible:
+    element:
       text: ".*Équiper — Gants de boxe dorés.*"
     direction: DOWN
 - tapOn: ".*Équiper — Gants de boxe dorés.*"
@@ -74,6 +87,7 @@ tags:
     visible: "ÉQUIPÉ"
     timeout: 15000
 - takeScreenshot: inventory-reequipped-item
+- tapOn: Fermer la fiche
 - scrollUntilVisible:
     element:
       id: "character-tab-statistics"

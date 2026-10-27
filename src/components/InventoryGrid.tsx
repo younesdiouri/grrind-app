@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ItemIllustration } from '@/components/ItemIllustration';
 import { SystemFrame } from '@/components/SystemFrame';
@@ -47,8 +47,7 @@ export function InventoryBag(props: GridProps) {
   const [category, setCategory] = useState<InventoryCategory>('all');
   const items = filterInventoryItems(props.items, category);
   return <View style={styles.bag}>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}
-      accessibilityRole="tablist">
+    <View style={styles.filters} accessibilityRole="tablist">
       {(Object.keys(INVENTORY_CATEGORIES) as InventoryCategory[]).map((key) => (
         <Pressable key={key} testID={`inventory-filter-${key}`} accessibilityRole="tab"
           aria-selected={category === key} onPress={() => setCategory(key)}
@@ -56,7 +55,7 @@ export function InventoryBag(props: GridProps) {
           <Text style={[styles.filterLabel, category === key && styles.filterLabelActive]}>{INVENTORY_CATEGORIES[key]}</Text>
         </Pressable>
       ))}
-    </ScrollView>
+    </View>
     <Text style={styles.note}>Touche un objet pour voir sa fiche.</Text>
     {items.length > 0 ? <InventoryGrid {...props} items={items} /> : (
       <SystemFrame contentStyle={styles.empty}>
@@ -83,7 +82,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.accent, alignItems: 'center', justifyContent: 'center' },
   check: { ...type.label, color: color.background },
   rarityBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: frame.segmentThickness },
-  filters: { gap: space.sm, paddingBottom: space.xs },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   filter: { minHeight: control.backSize, paddingHorizontal: space.md, justifyContent: 'center',
     backgroundColor: color.surface, borderWidth: control.borderWidth, borderColor: color.border, borderRadius: control.radius },
   filterActive: { borderColor: color.accent, backgroundColor: color.surfaceRaised },

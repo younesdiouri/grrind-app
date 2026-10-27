@@ -36,6 +36,18 @@ Pas de nouvelle dépendance. Pas de Maestro : le flux serveur ne change pas.
 
 - [x] Dernières PR #307, #305, #303 et DA des objets #300/#301 lues.
 - [x] Ticket créé ; branche locale dédiée, main à jour et propre au départ.
-- [ ] Implémentation et contrôles locaux terminés.
+- [x] Implémentation et contrôles locaux terminés.
 - [ ] Validation de l’auteur sur son iPhone.
 - [ ] Push autorisé après le test.
+
+## Preuves locales
+
+- `npm run typecheck` et `npm run lint` : sortie 0.
+- `npm test` : 591 tests réussis, aucun échec ni test ignoré.
+- 30 previews générées ; contrôle déterministe `npm run previews:check`.
+- Preview RN Web à 390 pt : cases 108,66–108,67 pt de côté, filtres 44 pt,
+  bouton de fiche 56 pt. Les cinq catégories sont visibles sur deux rangées.
+- Les neuf YAML touchés sont syntaxiquement valides ; flows non exécutés,
+  conformément à la validation visuelle par l’auteur et au flux serveur inchangé.
+- Metro 8081 : bundle iOS HTTP 200, 1 234 modules, 2,9 s ; aucun rebuild natif.
+  Le serveur reste disponible pour le téléphone. Aucun push ni PR.

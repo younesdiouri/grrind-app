@@ -27,6 +27,12 @@ tags:
 - takeScreenshot: sale-inventory-before
 - scrollUntilVisible:
     element:
+      id: inventory-item-GOLDEN_BOXING_GLOVES
+    direction: DOWN
+- tapOn:
+    id: inventory-item-GOLDEN_BOXING_GLOVES
+- scrollUntilVisible:
+    element:
       text: "Vendre — Gants de boxe dorés"
     direction: DOWN
 - tapOn: "Vendre — Gants de boxe dorés"
@@ -37,6 +43,10 @@ tags:
 - assertVisible: "Vendre — Gants de boxe dorés"
 - tapOn: "Vendre — Gants de boxe dorés"
 - tapOn: "Confirmer la vente"
+- scrollUntilVisible:
+    element:
+      text: ".*Exemplaire vendu.*10 pièces.*"
+    direction: UP
 - extendedWaitUntil:
     visible: ".*Exemplaire vendu.*10 pièces.*"
     timeout: 15000
@@ -44,9 +54,10 @@ tags:
 - takeScreenshot: sale-last-unit
 - scrollUntilVisible:
     element:
-      text: ".*Torse.*"
-    direction: UP
-- tapOn: ".*Torse.*"
+      id: inventory-item-SPORT_TSHIRT_SLATE
+    direction: DOWN
+- tapOn:
+    id: inventory-item-SPORT_TSHIRT_SLATE
 - scrollUntilVisible:
     element:
       text: "Vendre — T-shirt sportif — Ardoise"
@@ -59,10 +70,13 @@ tags:
 - assertVisible: "ÉQUIPÉ"
 - takeScreenshot: sale-equipped-duplicate
 - assertNotVisible: "Vendre — T-shirt sportif — Ardoise"
+- tapOn: Fermer la fiche
 - scrollUntilVisible:
     element:
-      text: "Ouvrir"
+      text: "Coffre en bois,.*"
     direction: DOWN
+- tapOn: "Coffre en bois,.*"
 - assertNotVisible: "Vendre — Coffre en bois"
 - takeScreenshot: sale-chest-excluded
+- tapOn: Fermer la fiche
 - runFlow: inventory-sale-ledger.yaml

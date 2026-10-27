@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
@@ -12,13 +13,17 @@ import { EquipmentBoard } from '@/components/EquipmentBoard';
 import { AvatarEntry } from '@/features/avatar/AvatarEntry';
 import { useAvatarProfile } from '@/features/avatar/useAvatarProfile';
 import { ItemCard } from '@/components/ItemCard';
+import { InventoryBag, InventoryGrid } from '@/components/InventoryGrid';
+import { InventoryItemDetails } from '@/components/InventoryItemDetails';
 import { SystemFrame } from '@/components/SystemFrame';
 import { decorativeGlow } from '@/design/decorativeGlow';
 import {
   ambient,
   color,
   equipmentSlotLabel,
+  control,
   frame,
+  inventoryArt,
   opacity,
   space,
   type,
@@ -60,7 +65,7 @@ import { SHOP_QUERY_KEY } from '@/features/shop/useShop';
  *
  * `items` porte **tout** ce que le joueur possède, équipé compris. Ce n'est pas une liste à
  * recouper contre `equipment` : c'est la même ligne vue sous un autre angle. On ne filtre donc
- * rien, on marque — voir `isEquipped`.
+ * pas les objets portés du sac, on les marque — voir `isEquipped`.
  *
  * Une vente conserve son intention jusqu’au verdict. Son solde et sa quantité viennent du
  * serveur; une relecture remet ensuite le sac et la boutique en cohérence avec le catalogue.
@@ -82,8 +87,11 @@ export default function InventoryScreen() {
   const [pendingChest, setPendingChest] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<Failure | null>(null);
   const [selection, setSelection] = useState<EquipmentSlot | null>(null);
+  const [inspectedKey, setInspectedKey] = useState<string | null>(null);
   const [openedChest, setOpenedChest] = useState<ChestOpenOutcome | null>(null);
-  const purseGlow = decorativeGlow('soft', useReducedMotion());
+  const reducedMotion = useReducedMotion();
+  const purseGlow = decorativeGlow('soft', reducedMotion);
+  const insets = useSafeAreaInsets();
   const auth = useAuth();
   const userId = auth.status === 'signedIn' ? auth.user.id : null;
   const saleActions = userId === null ? null : salesFor(userId);
@@ -209,10 +217,12 @@ export default function InventoryScreen() {
     data?.items.find((line) => isEquippable(line) && !isEquipped(data, line.key))?.slot ??
     data?.items.find(isEquippable)?.slot ??
     'HEAD';
-  const equippedLine = data?.equipment[activeSlot] ?? null;
   const compatibleItems =
     data?.items.filter(isEquippable).filter((line) => line.slot === activeSlot) ?? [];
-  const availableItems = compatibleItems.filter((line) => line.key !== equippedLine?.key);
+  // Seule la clé est mémorisée : quantité, prix et statut suivent chaque réponse serveur.
+  const inspectedItem = data?.items.find((line) => line.key === inspectedKey) ?? null;
+  const inspect = (key: string) => { setOpenedChest(null); setInspectedKey(key); };
+  const closeDetails = () => { setInspectedKey(null); setOpenedChest(null); };
 
   return (
     <View style={styles.shell}>
@@ -308,165 +318,73 @@ export default function InventoryScreen() {
 
           <Button label="Atelier · fabriquer un équipement" onPress={() => router.push('/atelier')} />
 
-          <CharacterInventory inventory={data} statistics={data.statistics} onAppearance={() => router.push('/apparence')} equipment={
-            <>
-          <View style={styles.sectionHead}>
-            <View style={styles.sectionCopy}>
-              <Text style={styles.section}>ÉQUIPEMENT</Text>
-              <Text style={styles.name}>Ta doublure</Text>
-            </View>
-            <Text style={styles.hint}>Choisis une zone</Text>
-          </View>
-
-          <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={profile.data
-            ? <AvatarEntry avatar={profile.data.avatar} equipment={data.equipment} editable onPress={() => router.push('/apparence')} />
-            : profile.isPending ? <ActivityIndicator color={color.accent} />
-            : <Button label="Recharger l’apparence" variant="quiet" onPress={() => void profile.refetch()} />} />
-
-          <SystemFrame contentStyle={styles.drawer}>
-            <View style={styles.drawerHead}>
-              <View style={styles.sectionCopy}>
-                <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
-                <Text style={styles.drawerTitle}>
-                  {equippedLine === null ? 'Emplacement libre' : 'Objet équipé'}
-                </Text>
-              </View>
-              <Text style={styles.count}>
-                {compatibleItems.length} compatible{compatibleItems.length === 1 ? '' : 's'}
-              </Text>
-            </View>
-
-            {equippedLine === null ? null : (
-              <View style={styles.current}>
-                <ItemCard item={equippedLine} quantity={equippedLine.quantity} equipped />
-                <Button
-                  label="Retirer"
-                  variant="quiet"
-                  busy={pending === activeSlot}
-                  disabled={blocked}
-                  onPress={() => void apply(activeSlot, () => unequipSlot(activeSlot))}
-                />
-                {equippedLine.quantity > 1 ? (
-                  <Button label={`Vendre · ${equippedLine.sellPriceCoins} pièces`}
-                    accessibilityLabel={`Vendre — ${equippedLine.name}`}
-                    variant="quiet" disabled={blocked} onPress={() => confirmSale(equippedLine)} />
-                ) : <Text style={styles.detail}>Retire cet objet avant de vendre son dernier exemplaire.</Text>}
-              </View>
-            )}
-
-            {availableItems.length > 0 ? <Text style={styles.label}>DANS TON SAC</Text> : null}
-
-            {availableItems.map((line) => (
-              <View key={line.key} style={styles.current}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Équiper — ${line.name}`}
-                  accessibilityHint={`Remplace l’objet porté sur ${equipmentSlotLabel[line.slot].toLowerCase()}`}
-                  disabled={blocked}
-                  onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))}
-                  style={({ pressed }) => [
-                    styles.itemChoice,
-                    pressed && styles.pressed,
-                    blocked && styles.inert,
-                  ]}
-                >
-                  <ItemCard item={line} quantity={line.quantity} />
-                  <View style={styles.equipHint}>
-                    <Text style={styles.equipHintText}>
-                      {pending === line.slot ? 'Équipement…' : 'Toucher pour équiper'}
-                    </Text>
-                    <Text style={styles.chevron}>›</Text>
+          <CharacterInventory inventory={data} statistics={data.statistics} initialSection="bag"
+            onAppearance={() => router.push('/apparence')} equipment={
+              <>
+                <View style={styles.sectionHead}>
+                  <View style={styles.sectionCopy}>
+                    <Text style={styles.section}>ÉQUIPEMENT</Text>
+                    <Text style={styles.name}>Ta doublure</Text>
                   </View>
-                </Pressable>
-                <Button label={`Vendre · ${line.sellPriceCoins} pièces`}
-                  accessibilityLabel={`Vendre — ${line.name}`}
-                  variant="quiet" disabled={blocked} onPress={() => confirmSale(line)} />
-              </View>
-            ))}
-
-            {availableItems.length === 0 ? (
-              <View style={styles.emptyChoice}>
-                <Text style={styles.detail}>
-                  {equippedLine === null
-                    ? 'Aucun objet compatible dans ton sac.'
-                    : 'Aucune autre option pour cet emplacement.'}
-                </Text>
-                <Text style={styles.emptyHint}>Tes prochains drops apparaîtront ici.</Text>
-              </View>
-            ) : null}
-          </SystemFrame>
-
-            </>
-          } bag={
-            <>
-              {data.items.length === 0 ? <Text style={styles.detail}>Le sac est vide.</Text> : null}
-              {data.items.some((line) => line.kind === 'RESOURCE') && <Text style={styles.section}>RESSOURCES</Text>}
-              {data.items.filter((line) => line.kind === 'RESOURCE').map((line) => (
-                <ItemCard key={line.key} item={line} quantity={line.quantity} />
-              ))}
-              {data.items.some(isEquippable) && <Text style={styles.section}>ÉQUIPEMENTS</Text>}
-              {data.items.filter(isEquippable).map((line) => (
-                <View key={line.key} style={styles.current}>
-                  <ItemCard item={line} quantity={line.quantity} equipped={isEquipped(data, line.key)} />
-                  {isEquipped(data, line.key) ? null : (
-                    <Button label={`Équiper — ${line.name}`} disabled={blocked}
-                      onPress={() => void apply(line.slot, () => equipItem(line.slot, line.key))} />
-                  )}
-                  {!isEquipped(data, line.key) || line.quantity > 1 ? (
-                    <Button label={`Vendre · ${line.sellPriceCoins} pièces`} variant="quiet" disabled={blocked}
-                      onPress={() => confirmSale(line)} />
-                  ) : null}
+                  <Text style={styles.hint}>Choisis une zone</Text>
                 </View>
-              ))}
-          {data.items.filter((line) => line.kind === 'CHEST').length > 0 ? (
-            <SystemFrame contentStyle={styles.drawer}>
-              <View style={styles.drawerHead}>
-                <View style={styles.sectionCopy}>
-                  <Text style={styles.label}>COFFRES</Text>
-                  <Text style={styles.drawerTitle}>À ouvrir</Text>
-                </View>
-              </View>
-              {data.items
-                .filter((line) => line.kind === 'CHEST')
-                .map((line) => (
-                  <View key={line.key} style={styles.current}>
-                    <ItemCard item={line} quantity={line.quantity} />
-                    <Button
-                      label="Ouvrir"
-                      busy={pendingChest === line.key}
-                      disabled={blocked}
-                      onPress={() => void revealChest(line.key)}
-                    />
+                <EquipmentBoard equipment={data.equipment} selected={activeSlot} onSelect={setSelection} avatar={profile.data
+                  ? <AvatarEntry avatar={profile.data.avatar} equipment={data.equipment} editable onPress={() => router.push('/apparence')} />
+                  : profile.isPending ? <ActivityIndicator color={color.accent} />
+                  : <Button label="Recharger l’apparence" variant="quiet" onPress={() => void profile.refetch()} />} />
+                <SystemFrame contentStyle={styles.drawer}>
+                  <View style={styles.drawerHead}>
+                    <Text style={styles.label}>{equipmentSlotLabel[activeSlot].toUpperCase()}</Text>
+                    <Text style={styles.count}>{compatibleItems.length} compatible{compatibleItems.length === 1 ? '' : 's'}</Text>
                   </View>
-                ))}
-            </SystemFrame>
-          ) : null}
-
-          {openedChest?.kind === 'opened' ? (
-            <View accessibilityLiveRegion="polite">
-              <SystemFrame contentStyle={styles.drawer}>
-                <Text style={styles.label}>CONTENU DU COFFRE</Text>
-                {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0 ? (
-                  <Text style={styles.detail}>Le coffre était vide.</Text>
-                ) : (
-                  <>
-                    {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
-                    <Text style={styles.detail}>Pièces trouvées</Text>
-                    <CoinAmount amount={openedChest.chest.coins} />
-                  </>
-                )}
-                <AnimatedCoinBalance
-                  before={openedChest.chest.coinsBefore}
-                  after={openedChest.chest.coinsAfter}
-                />
-              </SystemFrame>
-            </View>
-          ) : null}
-            </>
-          } />
+                  {compatibleItems.length > 0 ? <>
+                    <Text style={styles.detail}>Touche un objet pour l’équiper ou le retirer.</Text>
+                    <InventoryGrid items={compatibleItems} equipment={data.equipment} selectedKey={inspectedKey} onSelect={inspect} />
+                  </> : <Text style={styles.detail}>Aucun objet compatible dans ton sac.</Text>}
+                </SystemFrame>
+              </>
+            } bag={<InventoryBag items={data.items} equipment={data.equipment} selectedKey={inspectedKey} onSelect={inspect} />} />
         </>
       )}
       </ScrollView>
+      <Modal visible={inspectedItem !== null || openedChest?.kind === 'opened'} transparent
+        animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={closeDetails}>
+        <View style={[styles.modal, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, space.md) }]}>
+          <Pressable style={StyleSheet.absoluteFill} accessible={false} importantForAccessibility="no"
+            onPress={closeDetails} />
+          <View style={styles.sheet} accessibilityViewIsModal onAccessibilityEscape={closeDetails}>
+            <View style={styles.sheetHead}>
+              <Text style={styles.label} accessibilityRole="header">
+                {openedChest?.kind === 'opened' ? 'CONTENU DU COFFRE' : 'FICHE D’OBJET'}
+              </Text>
+              <Pressable accessibilityRole="button" accessibilityLabel="Fermer la fiche" onPress={closeDetails}
+                style={({ pressed }) => [styles.close, pressed && styles.pressed]}>
+                <Text style={styles.closeLabel}>×</Text>
+              </Pressable>
+            </View>
+            <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.drawer}>
+              {refusal !== null && <Text style={styles.refusal} accessibilityRole="alert">{messageFor(refusal)}</Text>}
+              {openedChest?.kind === 'opened' ? <View style={styles.current} accessibilityLiveRegion="polite">
+                {openedChest.chest.items.length === 0 && openedChest.chest.coins === 0
+                  ? <Text style={styles.detail}>Le coffre était vide.</Text>
+                  : <>
+                    {openedChest.chest.items.map((item) => <ItemCard key={item.key} item={item} />)}
+                    <Text style={styles.detail}>Pièces trouvées</Text>
+                    <CoinAmount amount={openedChest.chest.coins} />
+                  </>}
+                <AnimatedCoinBalance before={openedChest.chest.coinsBefore} after={openedChest.chest.coinsAfter} />
+              </View> : inspectedItem !== null && data !== undefined ? (
+                <InventoryItemDetails item={inspectedItem} equipped={isEquipped(data, inspectedItem.key)} blocked={blocked}
+                  busy={(pending !== null && pending === inspectedItem.slot) || pendingChest === inspectedItem.key}
+                  onEquip={(line) => void apply(line.slot, () => equipItem(line.slot, line.key))}
+                  onUnequip={(slot) => void apply(slot, () => unequipSlot(slot))}
+                  onSell={confirmSale} onOpenChest={(key) => void revealChest(key)}
+                  onCraft={() => { closeDetails(); router.push('/atelier'); }} />
+              ) : null}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -512,32 +430,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: space.sm,
   },
-  drawerTitle: {
-    ...type.title,
-    color: color.text,
-    fontFamily: typography.display.semibold,
-    fontWeight: typography.display.weight.semibold,
-  },
   count: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   current: { gap: space.sm },
-  itemChoice: { gap: space.sm },
-  inert: { opacity: opacity.inert },
-  equipHint: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    gap: space.sm,
-    paddingHorizontal: space.sm,
-  },
-  equipHintText: { ...type.label, color: color.text, letterSpacing: 0 },
-  emptyChoice: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: color.border,
-    borderRadius: frame.standard.radius,
-    padding: space.md,
-    gap: space.xs,
-  },
-  emptyHint: { ...type.label, color: color.textMuted, letterSpacing: 0 },
+  modal: { flex: 1, justifyContent: 'flex-end', backgroundColor: inventoryArt.scrim, paddingHorizontal: space.md },
+  sheet: { maxHeight: inventoryArt.sheetMaxHeight, maxWidth: inventoryArt.sheetMaxWidth, width: '100%',
+    alignSelf: 'center', backgroundColor: color.surface, borderColor: color.accent,
+    borderWidth: frame.standard.borderWidth, borderRadius: frame.standard.radius, overflow: 'hidden' },
+  sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: space.md,
+    borderBottomWidth: frame.standard.borderWidth, borderBottomColor: color.border },
+  sheetScroll: { flexGrow: 0 },
+  close: { minWidth: control.backSize, minHeight: control.backSize, alignItems: 'center', justifyContent: 'center' },
+  closeLabel: { ...type.title, color: color.textMuted },
   card: {
     backgroundColor: color.surface,
     borderRadius: frame.standard.radius,

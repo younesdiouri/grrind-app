@@ -14,16 +14,19 @@ appId: app.grrind.dev
     id: equipment-slot-${SLOT}
 - scrollUntilVisible:
     element:
-      text: "Équiper — ${ITEM}"
+      text: "${ITEM},.*"
     direction: DOWN
     centerElement: true
+- tapOn: "${ITEM},.*"
+- scrollUntilVisible:
+    element:
+      text: "Équiper — ${ITEM}"
+    direction: DOWN
 - tapOn: "Équiper — ${ITEM}"
-- assertVisible:
-    id: tab-inventaire
-    selected: true
 - extendedWaitUntil:
-    notVisible: "Équiper — ${ITEM}"
+    visible: "Retirer — ${ITEM}"
     timeout: 15000
+- tapOn: Fermer la fiche
 - scrollUntilVisible:
     element:
       id: combat-avatar-ready

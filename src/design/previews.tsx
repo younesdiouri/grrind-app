@@ -20,6 +20,8 @@ import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { HpBar } from '@/components/HpBar';
 import { InviteCodeBlock } from '@/components/InviteCodeBlock';
 import { ItemCard } from '@/components/ItemCard';
+import { InventoryBag, InventoryGrid } from '@/components/InventoryGrid';
+import { InventoryItemDetails } from '@/components/InventoryItemDetails';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CharacterStatistics } from '@/components/CharacterStatistics';
@@ -142,6 +144,17 @@ function droppedItem(
     ...overrides,
   };
 }
+
+const inventoryItems: components['schemas']['InventoryLine'][] = [
+  { ...droppedItem({ key: 'GOLDEN_BOXING_GLOVES', name: 'Gants de boxe dorés', rarity: 'EPIC', slot: 'WEAPON' }), quantity: 1, sellPriceCoins: 10 },
+  { ...droppedItem({ key: 'SPORT_TSHIRT_CORAL', name: 'T-shirt sportif — Corail', rarity: 'COMMON', slot: 'CHEST' }), quantity: 2, sellPriceCoins: 17 },
+  { ...droppedItem({ key: 'GUINZZ_CYAN', name: 'Les Guinzz — Cyan', rarity: 'RARE', slot: 'LEGS' }), quantity: 1, sellPriceCoins: 12 },
+  { ...droppedItem({ key: 'NAFS_ESSENCE', name: 'Essence du Nafs', kind: 'RESOURCE', slot: null, rarity: 'UNCOMMON' }), quantity: 142, sellPriceCoins: 0 },
+  { ...droppedItem({ key: 'WOODEN_CHEST', name: 'Coffre en bois', kind: 'CHEST', slot: null }), quantity: 3, sellPriceCoins: 0 },
+];
+const inventoryEquipment: components['schemas']['Inventory']['equipment'] = {
+  HEAD: null, CHEST: null, LEGS: null, FEET: null, ACCESSORY: null, WEAPON: inventoryItems[0],
+};
 
 /**
  * La largeur d'une preview, en points : celle d'un iPhone.
@@ -1008,5 +1021,26 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
       </>
     ),
+  },
+  {
+    slug: 'grille-inventaire',
+    name: 'Inventaire RPG',
+    group: 'Composants',
+    element: <>
+      <Specimen label="Sac — catégories et quantités serveur">
+        <InventoryBag items={inventoryItems} equipment={inventoryEquipment} onSelect={() => {}} />
+      </Specimen>
+      <Specimen label="Case sélectionnée, rangée incomplète">
+        <InventoryGrid items={inventoryItems.slice(0, 2)} equipment={inventoryEquipment}
+          selectedKey={inventoryItems[1].key} onSelect={() => {}} />
+      </Specimen>
+      <Specimen label="Fiche — dernier exemplaire équipé protégé">
+        <InventoryItemDetails item={inventoryItems[0]} equipped blocked={false} busy={false}
+          onEquip={() => {}} onUnequip={() => {}} onSell={() => {}} onOpenChest={() => {}} onCraft={() => {}} />
+      </Specimen>
+      <Specimen label="Sac vide">
+        <InventoryBag items={[]} equipment={inventoryEquipment} onSelect={() => {}} />
+      </Specimen>
+    </>,
   },
 ];
