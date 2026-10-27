@@ -9,6 +9,7 @@ type ItemPlaceholderProps = {
   slot: components['schemas']['DroppedItem']['slot'];
   size?: number;
   tint?: string;
+  transparent?: boolean;
 };
 
 /** Une vignette provisoire par famille d'objet, remplaçable par l'illustration du catalogue. */
@@ -17,9 +18,10 @@ export function ItemPlaceholder({
   slot,
   size = 56,
   tint = color.textMuted,
+  transparent = false,
 }: ItemPlaceholderProps) {
   return (
-    <View style={[styles.frame, { width: size, height: size }]}>
+    <View style={[styles.frame, { width: size, height: size }, transparent && { backgroundColor: 'transparent' }]}>
       <Svg width={size * 0.64} height={size * 0.64} viewBox="0 0 24 24">
         <SlotGlyph kind={kind} slot={slot} tint={tint} />
       </Svg>

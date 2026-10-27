@@ -676,6 +676,29 @@ export const inventoryArt = {
   scrim: 'rgba(5, 8, 22, 0.84)',
 } as const;
 
+/** Étal RPG : les illustrations respirent au-dessus d’un socle, le prix garde sa propre ligne. */
+export const shopArt = {
+  columns: 2,
+  iconSize: 112,
+  featuredIconSize: 128,
+  detailIconSize: 176,
+  stageHeight: 144,
+  featuredHeight: 200,
+  detailHeight: 224,
+  nameHeight: 42,
+  titleSize: 22,
+  headingSize: 32,
+  priceHeight: 44,
+  cardGap: 12,
+  pressedScale: 0.98,
+  cardSurface: '#0D162B',
+  priceSurface: '#192035',
+  coinBorder: 'rgba(255, 180, 84, 0.32)',
+  coinSurface: 'rgba(255, 180, 84, 0.08)',
+  glowOpacity: 0.28,
+  speckOpacity: 0.65,
+} as const;
+
 /**
  * Les couleurs des quatre caractéristiques qui reçoivent de l'XP — `Attribute`, jamais
  * `AttributeState` : Vitality n'a **pas** de couleur, et c'est délibéré (#69). Les quatre

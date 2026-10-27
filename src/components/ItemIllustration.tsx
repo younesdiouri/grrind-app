@@ -14,6 +14,8 @@ type ItemIllustrationProps = {
   size?: number;
   tint?: string;
   accessibilityLabel?: string;
+  /** L’objet de boutique se détache directement sur son socle lumineux. */
+  transparent?: boolean;
 };
 
 /**
@@ -28,6 +30,7 @@ export function ItemIllustration({
   size = 56,
   tint = color.textMuted,
   accessibilityLabel,
+  transparent = false,
 }: ItemIllustrationProps) {
   const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
@@ -40,7 +43,7 @@ export function ItemIllustration({
   return (
     <View style={[styles.frame, { width: size, height: size }]}>
       {presentation.placeholderVisible ? (
-        <ItemPlaceholder kind={item.kind} slot={item.slot} size={size} tint={tint} />
+        <ItemPlaceholder kind={item.kind} slot={item.slot} size={size} tint={tint} transparent={transparent} />
       ) : null}
 
       {presentation.source === null ? null : (
@@ -51,7 +54,7 @@ export function ItemIllustration({
           contentFit="contain"
           onLoad={() => setLoadedImageUrl(presentation.source)}
           onError={() => setFailedImageUrl(presentation.source)}
-          style={[StyleSheet.absoluteFill, styles.image, !presentation.imageVisible && styles.imageLoading]}
+          style={[StyleSheet.absoluteFill, !transparent && styles.image, !presentation.imageVisible && styles.imageLoading]}
         />
       )}
     </View>
