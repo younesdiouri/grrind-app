@@ -48,8 +48,7 @@ export default function Atelier() {
   };
   return <ScrollView contentContainerStyle={s.screen}>
     <Stack.Screen options={{ title: 'Atelier' }} />
-    <Text style={s.title}>Donne forme à tes efforts</Text>
-    <Text style={s.muted}>Transforme les ressources de ʿĀlam al-Nafs en équipements pour ton inventaire.</Text>
+    <Text style={s.label}>RECETTES</Text>
     {recipes.isPending && <ActivityIndicator color={color.accent} />}
     {recipes.isError && <SystemFrame contentStyle={s.card}><Text style={s.error}>{messageFor(recipes.error)}</Text>
       <Button label="Réessayer" onPress={() => void recipes.refetch()} /></SystemFrame>}

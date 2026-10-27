@@ -56,7 +56,8 @@ else
   e2e_reset_state
 fi
 
-DEV_CLIENT_URL="exp+grrind-app://expo-development-client/?url=http%3A%2F%2F${METRO_HOST}%3A${METRO_PORT}"
+# Le FAB Expo intercepte une zone de 92 pt au-dessus du HUD, même hors de son icône.
+DEV_CLIENT_URL="exp+grrind-app://expo-development-client/?url=http%3A%2F%2F${METRO_HOST}%3A${METRO_PORT}&disableFab=1"
 xcrun simctl openurl "$E2E_SIMULATOR_UDID" "$DEV_CLIENT_URL"
 
 e2e_run_flow "$FLOW_PATH"

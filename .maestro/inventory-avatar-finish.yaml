@@ -28,10 +28,10 @@ appId: app.grrind.dev
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: tab-inventaire
+      id: hud-inventory
     timeout: 30000
 - tapOn:
-    id: tab-inventaire
+    id: hud-inventory
 - scrollUntilVisible:
     element:
       id: character-tab-equipment

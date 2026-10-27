@@ -30,7 +30,7 @@ tags:
     visible: "NIVEAU"
     timeout: 15000
 - tapOn:
-    id: "tab-inventaire"
+    id: "hud-inventory"
 - extendedWaitUntil:
     visible:
       id: "character-tab-statistics"
@@ -120,7 +120,7 @@ tags:
     direction: DOWN
 - takeScreenshot: player-statistics
 - assertNotVisible:
-    id: shop-entry
+    id: character-tab-appearance
 - scrollUntilVisible:
     element:
       id: "stat-dodgePercent"

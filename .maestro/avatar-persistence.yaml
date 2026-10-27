@@ -29,7 +29,7 @@ tags:
     visible: NIVEAU
     timeout: 30000
 - tapOn:
-    id: tab-inventaire
+    id: hud-inventory
 - scrollUntilVisible:
     element:
       id: character-tab-appearance
@@ -97,7 +97,8 @@ tags:
     visible: Apparence enregistrée
     timeout: 15000
 - takeScreenshot: avatar-saved
-- tapOn: Fermer l’apparence
+- tapOn:
+    id: character-tab-equipment
 - scrollUntilVisible:
     element:
       id: combat-avatar-ready
@@ -142,7 +143,7 @@ tags:
     visible: NIVEAU
     timeout: 30000
 - tapOn:
-    id: tab-inventaire
+    id: hud-inventory
 - scrollUntilVisible:
     element:
       id: character-tab-appearance
@@ -170,4 +171,5 @@ tags:
 - assertVisible:
     id: avatar-option-eyeColor-green-selected
 - takeScreenshot: avatar-after-reconnect
-- tapOn: Fermer l’apparence
+- tapOn:
+    id: character-tab-equipment

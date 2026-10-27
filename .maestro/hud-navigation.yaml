@@ -1,0 +1,153 @@
+appId: app.grrind.dev
+tags:
+  - ios
+  - navigation
+---
+# Un seul compte jetable vide, aucune mutation de jeu : liens et retours du HUD.
+- launchApp
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+      - tapOn: Close
+- runFlow:
+    when:
+      visible: Se connecter
+    file: login.yaml
+    env:
+      EMAIL: ${EMPTY_EMAIL}
+- extendedWaitUntil:
+    visible: "NIVEAU|.*Toucher pour.*"
+    timeout: 30000
+# Une progression en attente peut avoir XP, butin puis série : au plus trois pages.
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: ".*Toucher pour.*"
+          commands:
+            - tapOn:
+                point: "50%,50%"
+- tapOn:
+    id: tab-accueil
+- extendedWaitUntil:
+    visible: NIVEAU
+    timeout: 30000
+- assertVisible:
+    id: hud-shop
+- tapOn:
+    id: hud-shop
+- extendedWaitUntil:
+    visible:
+      id: shop-screen
+    timeout: 15000
+- assertVisible:
+    id: hud-back
+- assertNotVisible: LE COMPTOIR
+- assertNotVisible: La boutique
+- tapOn:
+    id: hud-workshop
+- extendedWaitUntil:
+    visible: RECETTES
+    timeout: 15000
+- tapOn:
+    id: hud-bag
+- extendedWaitUntil:
+    visible:
+      id: inventory-filter-all
+    timeout: 15000
+- assertNotVisible:
+    id: hud-back
+- tapOn:
+    id: hud-inventory
+- extendedWaitUntil:
+    visible:
+      id: equipment-slot-WEAPON
+    timeout: 15000
+- assertNotVisible:
+    id: inventory-filter-all
+- tapOn:
+    id: character-tab-appearance
+- extendedWaitUntil:
+    visible:
+      id: avatar-3d-ready
+    timeout: 30000
+- assertVisible:
+    id: hud-inventory
+- assertVisible:
+    id: hud-shop
+- assertVisible:
+    id: tab-arene
+- assertVisible:
+    id: character-tab-bag
+- assertNotVisible: Mon apparence
+- tapOn:
+    id: avatar-section-Traits
+- assertVisible:
+    id: "avatar-option-faceStyle-.*"
+- tapOn:
+    id: character-tab-equipment
+- extendedWaitUntil:
+    visible:
+      id: equipment-slot-WEAPON
+    timeout: 15000
+- tapOn:
+    id: hud-shop
+- extendedWaitUntil:
+    visible:
+      id: shop-screen
+    timeout: 15000
+- tapOn:
+    id: hud-back
+- extendedWaitUntil:
+    visible:
+      id: equipment-slot-WEAPON
+    timeout: 15000
+- tapOn:
+    id: tab-arene
+- extendedWaitUntil:
+    visible: Cailloux dans la Chaussure
+    timeout: 15000
+- tapOn:
+    id: combat-mode-pvp
+- assertVisible: Rival d’entraînement
+- tapOn: ".*Lancer un défi.*"
+- extendedWaitUntil:
+    visible: ".*Démo.*sans récompense.*"
+    timeout: 30000
+- setOrientation: LANDSCAPE_LEFT
+- extendedWaitUntil:
+    visible:
+      id: "battle-(dialogue|combat)"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: battle-dialogue
+    commands:
+      - tapOn:
+          id: battle-dialogue
+- runFlow:
+    when:
+      visible: Passer
+    commands:
+      - tapOn: Passer
+- extendedWaitUntil:
+    visible:
+      id: battle-exit
+    timeout: 90000
+- tapOn:
+    id: battle-details
+- assertNotVisible: ".*Bourse.*"
+- tapOn:
+    id: battle-exit
+- extendedWaitUntil:
+    visible:
+      id: arena-screen
+    timeout: 15000
+- setOrientation: PORTRAIT
+- tapOn:
+    id: tab-accueil
+- assertVisible: NIVEAU

@@ -142,7 +142,7 @@ fi
 
 ensure_metro
 
-DEV_CLIENT_URL="exp+grrind-app://expo-development-client/?url=http%3A%2F%2F${E2E_METRO_HOST}%3A${METRO_PORT}"
+DEV_CLIENT_URL="exp+grrind-app://expo-development-client/?url=http%3A%2F%2F${E2E_METRO_HOST}%3A${METRO_PORT}&disableFab=1"
 xcrun simctl openurl "$E2E_SIMULATOR_UDID" "$DEV_CLIENT_URL"
 
 elapsed=$(( $(date +%s) - STARTED_AT ))

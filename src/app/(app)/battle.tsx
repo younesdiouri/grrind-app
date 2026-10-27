@@ -6,7 +6,10 @@ import { api } from '@/api/client';
 import { color, space, type } from '@/design/tokens';
 import { failureFrom, messageFor, type Failure } from '@/features/auth/problems';
 import { BattleView } from '@/features/combat/BattleView';
-import { BATTLE_FIXTURES, type BattleFixtureName } from '@/features/combat/fixtures';
+import { BATTLE_FIXTURES, DEMO_DUEL, type BattleFixtureName } from '@/features/combat/fixtures';
+import { useAvatarProfile } from '@/features/avatar/useAvatarProfile';
+import { useInventory } from '@/features/inventory/useInventory';
+import { serverAvatar } from '@/features/combat/serverAvatar';
 import { takeHandOver } from '@/features/combat/lastBattle';
 import type { Battle } from '@/features/combat/timeline';
 
@@ -36,11 +39,13 @@ function leave(): void {
     return;
   }
 
-  router.replace('/combat');
+  router.replace('/arene');
 }
 
 export default function BattleScreen() {
-  const { id, fixture } = useLocalSearchParams<{ id?: string; fixture?: BattleFixtureName }>();
+  const { id, fixture, demo } = useLocalSearchParams<{ id?: string; fixture?: BattleFixtureName; demo?: string }>();
+
+  if (fixture === 'duel' && demo === '1') return <DemoDuel />;
 
   if (fixture !== undefined) {
     // `key` force un remontage à chaque fixture : la séquence se rejoue depuis le début plutôt
@@ -59,6 +64,14 @@ export default function BattleScreen() {
   }
 
   return <RealBattle key={id} id={id} />;
+}
+
+/** Aucun POST de défi : la fiche montre une démonstration sans modifier la progression. */
+function DemoDuel() {
+  const profile = useAvatarProfile();
+  const inventory = useInventory();
+  return <BattleView battle={DEMO_DUEL} demo onDismiss={leave}
+    unityPlayer={profile.data && inventory.data ? serverAvatar(profile.data.avatar, inventory.data.equipment) : undefined} />;
 }
 
 /**

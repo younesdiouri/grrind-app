@@ -15,7 +15,9 @@ import { avatarProfileKey } from './useAvatarProfile';
 const sections = { Corps: ['body', 'skinTone'], Traits: ['faceStyle', 'noseStyle'],
   Cheveux: ['hairStyle', 'hairColor'], Yeux: ['eyeColor'] } as const satisfies Record<string, readonly AvatarField[]>;
 
-export function AvatarEditor({ profile, equipment, catalog }: { profile: UserProfile; equipment: AvatarEquipment; catalog: AvatarCatalog }) {
+export function AvatarEditor({ profile, equipment, catalog, embedded = false }: {
+  profile: UserProfile; equipment: AvatarEquipment; catalog: AvatarCatalog; embedded?: boolean;
+}) {
   const client = useQueryClient();
   const [saved, setSaved] = useState(() => normalizeAvatar(profile.avatar, catalog));
   const [draft, setDraft] = useState(saved);
@@ -36,7 +38,7 @@ export function AvatarEditor({ profile, equipment, catalog }: { profile: UserPro
     setBusy(false);
   };
   const fieldErrors = failure ? Object.values(violationsByField(failure)).join(' ') : '';
-  return <AppearanceScene title="Mon apparence" avatar={serverAvatar(draft, equipment)} busy={busy}
+  return <AppearanceScene avatar={serverAvatar(draft, equipment)} busy={busy} embedded={embedded}
     view={section === 'Corps' ? 0 : 1}>
     <View style={styles.row} accessibilityRole="tablist">
       {(Object.keys(sections) as (keyof typeof sections)[]).map(label => <Pressable key={label}

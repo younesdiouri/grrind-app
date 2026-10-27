@@ -17,9 +17,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        header: ({ options, route }) => (
-          <SystemHeader title={options.title ?? route.name} canGoBack={false} />
-        ),
+        header: () => <SystemHeader canGoBack={false} />,
         tabBarActiveTintColor: color.accent,
         tabBarInactiveTintColor: color.textMuted,
         tabBarStyle: styles.bar,
@@ -45,14 +43,11 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="inventaire"
-        options={{
-          tabBarButtonTestID: 'tab-inventaire',
-          title: 'Inventaire',
-          tabBarIcon: ({ color: tint, focused }) => (
-            <TabIcon name="backpack" color={tint} focused={focused} beacon={beacon.effect !== undefined} />
-          ),
-        }}
+        options={{ href: null, title: 'Inventaire' }}
       />
+      <Tabs.Screen name="arene" options={{ title: 'Combat', tabBarButtonTestID: 'tab-arene',
+        tabBarIcon: ({ color: tint, focused }) => <TabIcon name="figure.boxing" color={tint} focused={focused} beacon={beacon.effect !== undefined} />,
+      }} />
       <Tabs.Screen
         name="combat"
         options={{

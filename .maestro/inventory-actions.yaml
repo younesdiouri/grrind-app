@@ -10,7 +10,7 @@ tags:
     start: "2%, 55%"
     end: "95%, 55%"
 - tapOn:
-    id: "tab-inventaire"
+    id: "hud-inventory"
 - scrollUntilVisible:
     element:
       id: "character-tab-bag"
@@ -67,7 +67,7 @@ tags:
 - tapOn:
     id: "tab-accueil"
 - tapOn:
-    id: "bag-row"
+    id: "hud-bag"
 - scrollUntilVisible:
     element:
       id: "character-tab-bag"

@@ -35,7 +35,7 @@ appId: app.grrind.dev
           id: hero-picker
       - takeScreenshot: unity-settings-avatar
       - tapOn:
-          id: tab-inventaire
+          id: hud-inventory
       - scrollUntilVisible:
           element:
             id: character-tab-equipment

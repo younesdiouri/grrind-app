@@ -20,7 +20,7 @@ tags:
     visible: NIVEAU
     timeout: 30000
 - tapOn:
-    id: tab-inventaire
+    id: hud-inventory
 - scrollUntilVisible:
     element:
       id: character-tab-equipment

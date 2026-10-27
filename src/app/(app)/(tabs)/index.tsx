@@ -1,5 +1,4 @@
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -10,21 +9,17 @@ import {
   View,
 } from 'react-native';
 
-import { bagRowChevron, BagRow } from '@/components/BagRow';
 import { Button } from '@/components/Button';
 import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { StreakMeter } from '@/components/StreakMeter';
 import { SystemFrame } from '@/components/SystemFrame';
-import { Convey, ScanLine, Seam, SparkRail } from '@/components/SystemMotion';
-import { decorativeGlow } from '@/design/decorativeGlow';
+import { ScanLine, Seam, SparkRail } from '@/components/SystemMotion';
 import { decorativeMotion } from '@/design/decorativeMotion';
 import { ambient, color, motion, radius, space, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSyncStatus } from '@/features/health/useSync';
-import { itemCount } from '@/features/inventory/inventory';
-import { useInventory } from '@/features/inventory/useInventory';
 import { AttributeCard, LevelCard, WorkoutRow } from '@/features/progression/PlayerHomeView';
 // Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
 // renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
@@ -221,12 +216,6 @@ function PlayerHome({
         />
       ) : null}
 
-      {/* L'action, entre le résumé et l'archive — la place que le docblock de cet écran gardait
-          libre depuis le #84. Elle se dessine même sans son résumé : elle est le seul chemin
-          vers le sac, et une entrée qui n'apparaîtrait qu'une fois l'inventaire chargé serait
-          introuvable exactement quand le réseau va mal. */}
-      {home.step === 'ready' ? <BagEntry /> : null}
-
       {home.step === 'ready' && home.workouts.length === 0 ? (
         <View style={styles.card}>
           <Text style={styles.name}>Aucune séance</Text>
@@ -265,41 +254,10 @@ function PlayerHome({
   );
 }
 
-/**
- * L'entrée du sac, et son résumé.
- *
- * Elle lit `GET /api/inventory` pour n'en montrer que deux nombres — le solde et le compte —,
- * et c'est délibérément le **même cache** que l'écran du sac : ouvrir le sac depuis ici
- * n'attend donc rien, et l'aller-retour n'est pas payé deux fois.
- */
-function BagEntry() {
-  const inventory = useInventory();
-  const reducedMotion = useReducedMotion();
-  const glow = decorativeGlow('soft', reducedMotion);
-  const seam = decorativeMotion('seam', reducedMotion);
-
-  return (
-    <BagRow
-      summary={
-        inventory.data === undefined
-          ? undefined
-          : { coins: inventory.data.coins, itemCount: itemCount(inventory.data) }
-      }
-      onPress={() => router.navigate('/inventaire')}
-      glow={glow}
-      // Deux mouvements et pas cinq : c'est une action, pas un résumé, et la hiérarchie du
-      // mouvement suit celle de l'écran. Le chevron défile parce qu'il **désigne une porte** ;
-      // la carte de séance juste en dessous n'en a aucun et n'en aura pas.
-      segments={seam.effect === undefined ? undefined : <Seam tier="hero" offset={seam.effect.phase.bag} />}
-      chevron={seam.effect === undefined ? undefined : <Convey count={1} style={bagRowChevron} />}
-    />
-  );
-}
-
 const styles = StyleSheet.create({
   shell: { flex: 1, overflow: 'hidden' },
   contentLayer: { zIndex: ambient.contentLayer },
-  screen: { padding: space.lg, gap: space.md },
+  screen: { padding: space.lg, paddingTop: space.sm, gap: space.md },
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -20,10 +20,10 @@ tags:
     visible: "NIVEAU"
     timeout: 30000
 - tapOn:
-    id: "bag-row"
+    id: "hud-bag"
 - extendedWaitUntil:
     visible:
-      id: shop-entry
+      id: character-tab-bag
     timeout: 15000
 - takeScreenshot: sale-inventory-before
 - scrollUntilVisible:
