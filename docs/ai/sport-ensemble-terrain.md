@@ -25,6 +25,9 @@ de localisation est elle aussi réservée à `APP_VARIANT=development`. Aucun bu
    son identifiant local. Après activation de l’envoi, les workouts des 30 derniers jours sont
    relus au lancement, au retour au premier plan et manuellement, préparés par pages de 50,
    indépendamment du curseur d’import : une route tardive peut donc enrichir un workout déjà crédité.
+   Un réveil HealthKit tente aussi l’enrichissement après le traitement de l’ancre et du widget.
+   Il n’attend pas l’envoi pour rendre la main à iOS. Les lots préparés restent
+   rejouables au prochain lancement/retour au premier plan. Cela ne démarre jamais le GPS.
 3. **Téléphone avant la séance.** L’explication précède la permission « Lorsque l’app est
    active ». Démarrage exclusivement au premier plan, sur geste explicite ; aucune demande
    « Toujours ». Core Location poursuit les mises à jour avec `allowsBackgroundLocationUpdates`

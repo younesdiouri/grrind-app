@@ -7,6 +7,7 @@ import { creditedNotice } from '@/features/health/creditedNotice';
 import { isE2eBuild } from '@/features/health/e2e';
 import { noteRegistration, noteWake } from '@/features/diagnostics/journal';
 import { sync } from '@/features/health/sync';
+import { syncTogether } from '@/features/health/syncTogether';
 import { hasAwardedXp } from '@/features/reward/timeline';
 import { refreshWidget } from '@/features/widget/publish';
 
@@ -135,6 +136,9 @@ async function handleWakeup(anchor: string): Promise<void> {
   if (widgetIsStale) {
     await refreshWidget();
   }
+
+  // L'ancre et le widget passent d'abord. L'envoi est indépendant et rejouable si iOS nous coupe.
+  void syncTogether('background');
 }
 
 /**
