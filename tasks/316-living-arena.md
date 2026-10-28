@@ -65,7 +65,7 @@ TypeScript/lint, 608 tests et 31 previews déterministes au vert. La route comba
 via Metro 8081 en HTTP 200.
 
 Framework Device compilé et development build installé via `devicectl`. UUID embarqué
-`556DB339-1350-314F-8F76-0113ABFB4418` et SHA-256 des 16 fichiers Data concordants.
+`3BF58925-CA64-366E-BE50-3F4DC7164A6B` et SHA-256 des 16 fichiers Data concordants.
 GRRIND dev a été lancé sur l’iPhone après déverrouillage le 28 octobre, via Metro 8081. La revue du rendu, du son et de la fluidité reste à l’auteur.
 La slice Simulator conserve sa scène antérieure ; aucun flow visuel Simulator n’est
 présenté comme une validation de la nouvelle arène. Aucun push/PR/merge ou EAS.
@@ -97,3 +97,10 @@ inspection et décompte passent. Toujours 201 672 triangles. Le graphe manuel de
 spectateurs + arbitre coûte 0,113 ms par échantillon sur ce Mac (1000 appels ; ce chiffre
 ne mesure pas les performances GPU ou la fluidité de l’iPhone). Console finale vide.
 Les contacts de duel existants restent contrôlés à 14,4 / 15,2 cm.
+
+Framework Device mis à jour compilé et app Debug signée (0 erreur, une alerte Expo
+déjà connue). Expo reste en attente de connexion au téléphone ; arrêter uniquement
+ce lanceur après compilation puis installer et lancer avec le CLI Apple `devicectl`
+réussit. UUID embarqué `3BF58925-CA64-366E-BE50-3F4DC7164A6B` et SHA-256 des 16 fichiers Data
+identiques à l’export. Version installée et lancée le 28 octobre via Metro 8081.
+La validation des cinq gestes et de la fluidité sur iPhone reste à l’auteur. Aucun push.

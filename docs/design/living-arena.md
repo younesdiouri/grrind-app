@@ -51,6 +51,7 @@ utilise ses sockets réels. La console finale ne contient aucune erreur ou alert
 
 TypeScript, lint, 608 tests et 31 previews déterministes passent. Le framework iPhone a
 été exporté et compilé, puis installé sur l’iPhone via `devicectl`. L’UUID embarqué
-`556DB339-1350-314F-8F76-0113ABFB4418` et les SHA-256 des 16 fichiers Data correspondent
-à l’export. La fluidité, les contacts et la lisibilité restent à juger par l’auteur sur
+`3BF58925-CA64-366E-BE50-3F4DC7164A6B` et les SHA-256 des 16 fichiers Data correspondent
+à l’export. La mise à jour du public est installée et lancée avec Metro 8081. La fluidité et la
+lisibilité des encouragements restent à juger par l’auteur sur
 son iPhone avant push. Aucun EAS/TestFlight et aucune reconstruction du Simulator.
