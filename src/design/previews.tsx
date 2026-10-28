@@ -17,6 +17,9 @@ import { DisciplineChip } from '@/components/DisciplineChip';
 import { EnemyCard } from '@/components/EnemyCard';
 import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
+import { GuildMembers, GuildTabs } from '@/components/GuildMenu';
+import { GuildRisalatSummary } from '@/components/GuildRisalatSummary';
+import { GuildWeeklyBoard } from '@/components/GuildWeeklyBoard';
 import { HpBar } from '@/components/HpBar';
 import { InviteCodeBlock } from '@/components/InviteCodeBlock';
 import { ItemCard } from '@/components/ItemCard';
@@ -238,7 +241,51 @@ const styles = StyleSheet.create({
   radiusBox: { width: space.xl, height: space.xl, backgroundColor: color.surfaceRaised },
 });
 
+const guildWeek: components['schemas']['GuildWeeklyLeaderboard'] = {
+  guildId: 'guild-preview', weekStartsAt: '2026-10-25T23:00:00Z', weekEndsAt: '2026-11-01T23:00:00Z', timezone: 'Europe/Paris',
+  totalWorkouts: 17, activeMemberCount: 5,
+  entries: ['Amine', 'Malik', 'Sara', 'Younes', 'Ilyes', 'Nora'].map((name, index) => ({
+    member: guildMember({ id: name, displayName: name, level: [12, 8, 9, 7, 3, 1][index], role: name === 'Younes' ? 'FOUNDER' : 'MEMBER' }),
+    workoutCount: [5, 4, 4, 3, 1, 0][index], rank: [1, 2, 2, 4, 5, null][index],
+  })),
+};
+const guildRisalat: components['schemas']['Risalat'] = {
+  risalat: [{ id: 'risala-preview', discipline: 'RUNNING', senderId: 'Sara', senderDisplayName: 'Sara',
+    bonusPercent: 10, revealedAt: '2026-10-25T19:00:00Z', expiresAt: '2026-11-08T19:00:00Z' }],
+  nextRevealAt: '2026-11-01T19:00:00Z', turn: null,
+};
+
 export const PREVIEWS: Preview[] = [
+  {
+    slug: 'guilde-semaine', name: 'Guilde · Semaine', group: 'Composants',
+    element: <>
+      <Specimen label="Accueil hebdomadaire · égalité au deuxième rang">
+        <GuildTabs selected="week" onSelect={() => {}} />
+        <GuildWeeklyBoard board={guildWeek} playerId="Younes" onProfile={() => {}}
+          summary={<GuildRisalatSummary risalat={guildRisalat} now={new Date('2026-10-28T10:00:00Z')} onOpen={() => {}} />} />
+      </Specimen>
+      <Specimen label="Premières séances de la semaine">
+        <GuildWeeklyBoard board={{ ...guildWeek, totalWorkouts: 0, activeMemberCount: 0,
+          entries: guildWeek.entries.map(entry => ({ ...entry, workoutCount: 0, rank: null })) }} playerId="Younes" onProfile={() => {}} />
+      </Specimen>
+    </>,
+  },
+  {
+    slug: 'guilde-membres', name: 'Guilde · Membres', group: 'Composants',
+    element: <><Specimen label="Vue du fondateur · tri par niveau">
+      <GuildTabs selected="members" onSelect={() => {}} />
+      <GuildMembers members={guildWeek.entries.map(entry => entry.member)} canExclude excludingId={null}
+        onProfile={() => {}} onExclude={() => {}} />
+    </Specimen>
+      <Specimen label="Écran 320 pt · noms longs">
+        <View style={{ width: 288 }}>
+          <GuildMembers members={[guildMember({ id: 'long-founder', displayName: 'Léa Maximilienne de la Fontaine', role: 'FOUNDER' }),
+            guildMember({ id: 'long-member', displayName: 'Jean-Baptiste de la Fontaine' })]} canExclude excludingId={null}
+            onProfile={() => {}} onExclude={() => {}} />
+        </View>
+      </Specimen>
+    </>,
+  },
   {
     slug: 'fondations',
     name: 'Fondations',

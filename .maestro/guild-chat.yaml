@@ -29,7 +29,8 @@ tags:
     visible: "QA Chat privé"
     timeout: 30000
 - takeScreenshot: chat-00-guild-baseline
-- tapOn: "Chat de la guilde"
+- tapOn:
+    id: "guild-tab-chat"
 - extendedWaitUntil:
     visible: "Historique 55"
     timeout: 30000

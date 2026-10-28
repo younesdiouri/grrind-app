@@ -33,6 +33,8 @@ tags:
     timeout: 90000
 - tapOn:
     id: "tab-guilde"
+- tapOn:
+    id: "guild-tab-members"
 - extendedWaitUntil:
     visible: "QA Défis"
     timeout: 30000

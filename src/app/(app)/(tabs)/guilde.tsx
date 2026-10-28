@@ -1,13 +1,12 @@
-import { Link, router } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -19,8 +18,10 @@ import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
 import { DangerRow } from '@/components/DangerRow';
 import { Field } from '@/components/Field';
-import { GuildMemberRow } from '@/components/GuildMemberRow';
-import { color, radius, space, type } from '@/design/tokens';
+import { GuildIcon, GuildMembers, GuildTabs, type GuildTab } from '@/components/GuildMenu';
+import { GuildRisalatSummary } from '@/components/GuildRisalatSummary';
+import { GuildWeeklyBoard } from '@/components/GuildWeeklyBoard';
+import { color, guildUi, radius, space, type, typography } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { GuildChat } from '@/features/community/GuildChat';
@@ -43,6 +44,7 @@ import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefu
 import { leaveAnnouncementFor } from '@/features/community/leaveAnnouncement';
 import { RisalatBlock } from '@/features/community/RisalatBlock';
 import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
+import { GUILD_WEEKLY_QUERY_KEY, useGuildWeekly } from '@/features/community/useGuildWeekly';
 import { RISALAT_QUERY_KEY, useRisalat } from '@/features/community/useRisalat';
 import { requestPermissionAndRegister } from '@/features/notifications/registration';
 
@@ -63,13 +65,14 @@ type GuildMemberEntry = GuildDetail['members'][number];
  * `GuildMilestone` ne tient l'écran qu'un instant : celui, très court, entre une fondation ou
  * un ralliement (`justResolved`, une `Guild` sans `members`) et la convergence du cache de
  * `/api/guilds/mine` vers le `GuildDetail` complet. Dès qu'il arrive, `Roster` prend le relais
- * avec la liste ordonnée par le serveur (#43). `guildScreenStateFrom` arbitre entre ces deux
+ * avec le détail complet de la guilde. `guildScreenStateFrom` arbitre entre ces deux
  * sources et le reste des états — **une seule fonction, un seul ordre**, plutôt qu'une chaîne
  * de `if` locale : une revue a montré qu'une chaîne de `if` laisse passer le cas où la guilde
  * disparaît (dissoute pendant qu'on la regardait) sans que les deux sources s'effacent
  * ensemble, ce qui ramenait indéfiniment `GuildMilestone` sur une guilde qui n'existait plus.
  */
 export default function GuildeScreen() {
+  const { section } = useLocalSearchParams<{ section?: string }>();
   const myGuild = useMyGuild();
   const queryClient = useQueryClient();
 
@@ -92,6 +95,7 @@ export default function GuildeScreen() {
     // joueur qui rallie une guilde déjà active verrait un bloc vide (ou celui d'une guilde
     // précédente, resté en cache) jusqu'à ce qu'un autre geste force le rafraîchissement.
     void queryClient.invalidateQueries({ queryKey: RISALAT_QUERY_KEY });
+    void queryClient.invalidateQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
     // Un formulaire qu'on vient de faire aboutir n'a plus de raison de rester armé : sans ce
     // reset, `mode` resterait sur `'found'` ou `'join'` pendant tout le séjour dans la guilde,
     // prêt à resurgir si le joueur la quitte ensuite (voir `forgetGuild`, juste en dessous).
@@ -123,6 +127,7 @@ export default function GuildeScreen() {
     // retire donc plutôt que de la recaler : sans ça, rejoindre une autre guilde plus tard
     // réafficherait un instant les Risālāt de celle qu'on vient de quitter.
     queryClient.removeQueries({ queryKey: RISALAT_QUERY_KEY });
+    queryClient.removeQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
     setJustResolved(null);
     setMode('empty');
   };
@@ -135,7 +140,8 @@ export default function GuildeScreen() {
   });
 
   if (state.kind === 'roster') {
-    return <Roster key={state.guild.id} guild={state.guild} onGone={forgetGuild} />;
+    return <Roster key={state.guild.id} guild={state.guild} onGone={forgetGuild}
+      requestedTab={section === 'chat' || section === 'risalat' ? section : undefined} />;
   }
 
   if (state.kind === 'milestone') {
@@ -230,37 +236,34 @@ function isPlayerNotAMember(failure: Failure): boolean {
   );
 }
 
-/**
- * La guilde et ses membres — l'écran du ticket #43.
- *
- * **L'ordre de `guild.members` n'est jamais retouché.** Le serveur l'a déjà décidé — le
- * fondateur d'abord, puis par date d'entrée croissante — et rien ici ne trie, ne filtre, ni
- * ne propose de le faire : une liste qui se réordonnerait seule entre deux ouvertures serait
- * un bug qu'on ne saurait pas reproduire.
- *
- * Le tirer-pour-rafraîchir n'appelle **pas** `/api/guilds/mine` : cette route ne peut que
- * dire « tu n'as plus de guilde », jamais laquelle a disparu. `refreshGuild` interroge
- * `GET /api/guilds/{id}`, scopée à celle-ci, ce qui rend le vrai `404 guild-not-found` quand
- * le fondateur vient de la dissoudre. Sur ce refus précis, `onGone` (porté par le parent)
- * efface la guilde des deux endroits où elle peut vivre à l'écran — pas seulement le cache
- * de `/mine` : `Roster` lui-même ne connaît pas `justResolved`, qui vit dans `GuildeScreen`.
- *
- * ————— #45 : quitter, exclure, gérer ——————————————————————————————————————————————————
- *
- * Trois gestes de plus, aucun optimiste : « Quitter » est un `DangerRow` seul dans sa propre
- * section du pied de liste, offert à **tout le monde** (`role` n'en change que le message,
- * jamais la visibilité). « Exclure » vit sur la ligne d'un membre, mais **jamais dans le
- * `Pressable` du `Link`** qui pointe vers son profil — un appui unique ne doit jamais exclure
- * *et* naviguer. « Gérer la guilde » (renommer, dissoudre) bascule cet écran sur `ManageGuild`,
- * dans le même composant : dissoudre a besoin de `onGone`, exactement comme quitter, et
- * `onGone` n'existe qu'ici — le pousser sur une route séparée l'aurait rendu inatteignable
- * sans réinventer `forgetGuild`.
- */
-function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
+/** Le cache reste serveur ; seules la navigation et la présentation des membres changent. */
+function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: () => void; requestedTab?: GuildTab }) {
   const auth = useAuth();
-  const [chatting, setChatting] = useState(false);
+  const [tab, setTab] = useState<GuildTab>(requestedTab ?? 'week');
+  const [chatVisited, setChatVisited] = useState(requestedTab === 'chat');
+  const [guildHeaderHeight, setGuildHeaderHeight] = useState(0);
+  const [lastRequestedTab, setLastRequestedTab] = useState(requestedTab);
+  if (lastRequestedTab !== requestedTab) {
+    setLastRequestedTab(requestedTab);
+    if (requestedTab) {
+      setTab(requestedTab);
+      if (requestedTab === 'chat') setChatVisited(true);
+    }
+  }
+  useEffect(() => {
+    if (requestedTab) {
+      Keyboard.dismiss();
+      router.setParams({ section: undefined });
+    }
+  }, [requestedTab]);
   const queryClient = useQueryClient();
   const risalat = useRisalat();
+  const weekly = useGuildWeekly(guild.id);
+  const refetchWeekly = weekly.refetch;
+  useFocusEffect(useCallback(() => { void refetchWeekly(); }, [refetchWeekly]));
+  useEffect(() => {
+    if (weekly.isError && isGuildGone(weekly.error)) onGone();
+  }, [weekly.isError, weekly.error, onGone]);
   // Calculé au rendu, jamais entretenu : une échéance à quinze jours n'a besoin d'être connue
   // qu'à l'ouverture de l'onglet et à chaque tirer-pour-rafraîchir, pas d'une horloge qui vit
   // entre les deux (#105).
@@ -282,7 +285,7 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
     setRefreshFailure(null);
     // Le geste rafraîchit ce qu'on regarde, pas une des deux moitiés : les Risālāt partent en
     // même temps que la guilde, jamais après coup sur un second tirer.
-    const [guildFailure] = await Promise.all([syncGuild(guild.id, queryClient, onGone), risalat.refetch()]);
+    const [guildFailure] = await Promise.all([syncGuild(guild.id, queryClient, onGone), risalat.refetch(), weekly.refetch()]);
     setRefreshFailure(guildFailure);
     setRefreshing(false);
   };
@@ -315,6 +318,7 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
     // Succès, ou `player-is-not-a-member` — il était déjà parti : dans les deux cas la liste
     // se recale sur ce que le serveur rend maintenant, jamais sur une épissure locale.
     setExcludeFailure(await syncGuild(guild.id, queryClient, onGone));
+    await queryClient.invalidateQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
     setExcludingId(null);
   };
 
@@ -360,114 +364,78 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
     ]);
   };
 
-  if (managing) {
-    return <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />;
-  }
+  const selectTab = (next: GuildTab) => {
+    Keyboard.dismiss();
+    if (next === 'chat') setChatVisited(true);
+    if (next === 'week') void weekly.refetch();
+    setTab(next);
+  };
+  const openProfile = (id: string) => router.push({ pathname: '/joueur/[id]', params: { id } });
+  const risalatContent = risalat.isPending ? <ActivityIndicator color={color.accent} />
+    : risalat.isError ? <View style={styles.risalatError}>
+      <Text style={styles.failure}>{messageFor(risalat.error)}</Text>
+      <Button label="Réessayer" onPress={() => void risalat.refetch()} variant="quiet" />
+    </View> : tab === 'risalat' ? <RisalatBlock risalat={risalat.data} now={now} />
+      : <GuildRisalatSummary risalat={risalat.data} now={now} onOpen={() => selectTab('risalat')} />;
 
-  if (chatting && auth.status === 'signedIn') {
-    return <GuildChat key={`${guild.id}:${auth.user.id}`} guild={guild} playerId={auth.user.id} onGone={onGone} onClose={() => setChatting(false)} />;
-  }
-
-  return (
-    <FlatList
-      data={guild.members}
-      // `id`, jamais `displayName` : deux membres homonymes sont un cas normal, et une clé
-      // de liste qui collisionnerait romprait le rendu, pas seulement l'affichage.
-      keyExtractor={(member) => member.id}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
-      contentContainerStyle={styles.rosterContent}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => void onRefresh()}
-          tintColor={color.accent}
-        />
-      }
-      ListHeaderComponent={
-        <View style={styles.rosterHeader}>
-          <Button label="ʿĀlam al-Nafs · raid et histoires" onPress={() => router.push('/combat')} />
-          <Button label="Chat de la guilde" onPress={() => setChatting(true)} />
-          {/* En tête, avant même l'identité de la guilde : c'est le présent de la guilde, le
-              roster en est l'archive (#105). Un push `GUILD_RISALAT` (#104) doit trouver la
-              Risāla qu'il annonce sans qu'on défile. */}
-          {risalat.isPending ? (
-            <View style={styles.risalatLoading}>
-              <ActivityIndicator color={color.accent} />
-            </View>
-          ) : risalat.isError ? (
-            <View style={styles.risalatError}>
-              <Text style={styles.failure}>{messageFor(risalat.error)}</Text>
-              <Button label="Réessayer" onPress={() => void risalat.refetch()} variant="quiet" />
-            </View>
-          ) : (
-            <RisalatBlock risalat={risalat.data} now={now} />
-          )}
-
-          <Text style={styles.title}>{guild.name}</Text>
+  return <View style={styles.flex}>
+    <View onLayout={({ nativeEvent }) => setGuildHeaderHeight(nativeEvent.layout.height)}>
+    <View style={styles.identity}>
+      <View style={styles.crest}><GuildIcon name="members" size={guildUi.rankSize} /></View>
+      <View style={styles.identityText}>
+        <Text style={styles.guildName} accessibilityRole="header">{guild.name}</Text>
+        <Text style={styles.body}>{guild.memberCount} membre{guild.memberCount === 1 ? '' : 's'}</Text>
+      </View>
+    </View>
+    <GuildTabs selected={tab} onSelect={selectTab} myTurn={risalat.data?.turn?.mine && risalat.data.turn.discipline === null} />
+    </View>
+    {/* Garder le chat monté préserve son brouillon et sa photo entre les sous-onglets. */}
+    {chatVisited && auth.status === 'signedIn' && <View style={tab === 'chat' ? styles.flex : styles.hidden}
+      accessibilityElementsHidden={tab !== 'chat'} importantForAccessibility={tab === 'chat' ? 'auto' : 'no-hide-descendants'}>
+      <GuildChat key={`${guild.id}:${auth.user.id}`} guild={guild} playerId={auth.user.id} onGone={onGone} headerOffset={guildHeaderHeight} />
+    </View>}
+    {tab === 'settings' && managing ? <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />
+      : tab !== 'chat' && <ScrollView contentContainerStyle={styles.guildContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={color.accent} />}>
+        {refreshFailure && <Text style={styles.failure}>{messageFor(refreshFailure)}</Text>}
+        {tab === 'week' && <>
+          {weekly.data ? <GuildWeeklyBoard board={weekly.data} playerId={auth.status === 'signedIn' ? auth.user.id : ''}
+            onProfile={openProfile} summary={risalatContent} />
+            : <>
+              {weekly.isPending ? <ActivityIndicator color={color.accent} /> : <View style={styles.risalatError}>
+                <Text style={styles.title}>Classement indisponible</Text>
+                <Text style={styles.failure}>{messageFor(weekly.error)}</Text>
+                <Button label="Réessayer" onPress={() => void weekly.refetch()} variant="quiet" />
+              </View>}
+              {risalatContent}
+            </>}
+          {weekly.data && weekly.isError && <View style={styles.risalatError}>
+            <Text style={styles.failure}>Actualisation impossible. Le dernier classement reçu reste affiché.</Text>
+            <Button label="Réessayer" onPress={() => void weekly.refetch()} variant="quiet" />
+          </View>}
+        </>}
+        {tab === 'members' && <>
+          <View style={styles.sectionHeading}><Text style={styles.title}>Membres</Text><Text style={styles.body}>Par niveau</Text></View>
+          <GuildMembers members={guild.members} canExclude={guild.role === 'FOUNDER'} excludingId={excludingId}
+            onProfile={openProfile} onExclude={confirmExclude} />
+          {excludeFailure && <Text style={styles.failure}>{messageFor(excludeFailure)}</Text>}
+        </>}
+        {tab === 'risalat' && risalatContent}
+        {tab === 'settings' && <>
+          <Text style={styles.title}>Réglages de la guilde</Text>
           <CapacityGauge memberCount={guild.memberCount} capacity={guild.capacity} />
           <Text style={styles.body}>Fondée le {formatCalendarDate(guild.createdAt)}.</Text>
-          {refreshFailure === null ? null : (
-            <Text style={styles.failure}>{messageFor(refreshFailure)}</Text>
-          )}
-          {/* `role` décide quoi dessiner, jamais ce qui est permis (#44) : un appel direct de
-              l'écran par un membre recevrait de toute façon `forbidden` du serveur. */}
-          {guild.role === 'FOUNDER' ? (
-            <>
-              <Button
-                label="Code d'invitation"
-                onPress={() => router.push({ pathname: '/invite-code', params: { guildId: guild.id } })}
-                variant="quiet"
-              />
-              <Button label="Gérer la guilde" onPress={() => setManaging(true)} variant="quiet" />
-            </>
-          ) : null}
-        </View>
-      }
-      renderItem={({ item }) => (
-        <View style={styles.memberRow}>
-          <Link href={{ pathname: '/joueur/[id]', params: { id: item.id } }} asChild>
-            {/* `asChild` clone l'enfant avec `onPress` : voir index.tsx pour la même règle. */}
-            <Pressable>
-              <GuildMemberRow member={item} />
-            </Pressable>
-          </Link>
-
-          {/* Le fondateur ne se voit jamais ce geste sur sa propre ligne — un seul membre
-              porte `role === 'FOUNDER'` dans cette liste, c'est lui. Le `409
-              founder-cannot-exclude-himself` reste une garde serveur, l'écran ne l'expose
-              simplement pas (#45). Hors de son propre `Pressable` du `Link` ci-dessus : un
-              appui n'exclut jamais *et* ne navigue jamais dans le même geste. */}
-          {guild.role === 'FOUNDER' && item.role !== 'FOUNDER' ? (
-            <DangerRow
-              label="Exclure"
-              onPress={() => confirmExclude(item)}
-              busy={excludingId === item.id}
-              disabled={excludingId !== null && excludingId !== item.id}
-            />
-          ) : null}
-        </View>
-      )}
-      ListFooterComponent={
-        <View style={styles.leaveSection}>
-          {excludeFailure === null ? null : (
-            <Text style={styles.failure}>{messageFor(excludeFailure)}</Text>
-          )}
-          {leaveFailure === null ? null : (
-            <Text style={styles.failure}>{messageFor(leaveFailure)}</Text>
-          )}
-          {/* Seule dans sa section, jamais mêlée aux actions ordinaires du pied de liste — la
-              règle de `DangerRow`. Offerte à tout le monde : `role` ne change que le message
-              annoncé par `leaveAnnouncementFor`, jamais la visibilité du geste. */}
-          <DangerRow
-            label="Quitter la guilde"
-            onPress={confirmLeave}
-            busy={leaving}
-            disabled={excludingId !== null}
-          />
-        </View>
-      }
-    />
-  );
+          {guild.role === 'FOUNDER' && <>
+            <Button label="Code d’invitation" onPress={() => router.push({ pathname: '/invite-code', params: { guildId: guild.id } })} variant="quiet" />
+            <Button label="Gérer la guilde" onPress={() => setManaging(true)} variant="quiet" />
+          </>}
+          <View style={styles.leaveSection}>
+            {leaveFailure && <Text style={styles.failure}>{messageFor(leaveFailure)}</Text>}
+            <DangerRow label="Quitter la guilde" onPress={confirmLeave} busy={leaving} disabled={excludingId !== null} />
+          </View>
+        </>}
+      </ScrollView>}
+  </View>;
 }
 
 /**
@@ -537,7 +505,7 @@ function ManageGuild({
   const confirmDissolve = () => {
     Alert.alert(
       'Dissoudre la guilde ?',
-      "Irréversible : la guilde et toutes les adhésions disparaissent dans le même geste. Pour partir sans la casser, quitte-la plutôt depuis la liste des membres — la guilde continue sans toi.",
+      "Irréversible : la guilde et toutes les adhésions disparaissent dans le même geste. Pour partir sans la dissoudre, utilise Quitter la guilde dans les réglages.",
       [
         { text: 'Annuler', style: 'cancel' },
         { text: 'Dissoudre', style: 'destructive', onPress: () => void performDissolve() },
@@ -661,6 +629,7 @@ function FoundForm({
 
         <Field
           label="Nom de la guilde"
+          testID="guild-name"
           value={name}
           onChangeText={setName}
           maxLength={GUILD_NAME_MAX_LENGTH}
@@ -790,11 +759,14 @@ const styles = StyleSheet.create({
     padding: space.md,
     gap: space.sm,
   },
-  rosterContent: { padding: space.lg },
-  rosterHeader: { gap: space.sm, marginBottom: space.md },
-  risalatLoading: { paddingVertical: space.lg, alignItems: 'center' },
+  hidden: { display: 'none' },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md },
+  identityText: { flex: 1, gap: space.xs },
+  crest: { width: guildUi.crestSize, height: guildUi.crestSize, backgroundColor: guildUi.heroLight,
+    alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm },
+  guildName: { fontFamily: typography.display.bold, fontSize: guildUi.titleSize, color: color.text },
+  guildContent: { padding: space.md, gap: space.lg },
+  sectionHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space.sm },
   risalatError: { gap: space.sm, marginBottom: space.md },
-  separator: { height: space.md },
-  memberRow: { gap: space.xs },
   leaveSection: { gap: space.sm, marginTop: space.lg },
 });

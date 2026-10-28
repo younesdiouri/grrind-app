@@ -5,7 +5,8 @@ tags:
 ---
 - tapOn:
     id: "tab-guilde"
-- tapOn: "Chat de la guilde"
+- tapOn:
+    id: "guild-tab-chat"
 - tapOn: "Photo"
 - tapOn:
     point: "50%,25%"

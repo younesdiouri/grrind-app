@@ -98,6 +98,8 @@ tags:
 - takeScreenshot: inventory-reequipped-statistics
 - tapOn:
     id: "tab-guilde"
+- tapOn:
+    id: "guild-tab-members"
 - scrollUntilVisible:
     element:
       text: ".*QA Equipements.*"

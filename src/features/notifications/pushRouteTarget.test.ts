@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { decodePushRouteTarget } from './pushRouteTarget.ts';
+import { decodePushRouteTarget, hrefForPushRoute } from './pushRouteTarget.ts';
+
+it('une notification de guilde ouvre son sous-onglet et les notifications chat sont reconnues', () => {
+  const chat = decodePushRouteTarget({ routeType: 'GUILD_CHAT', routeId: 'guild-id' });
+  assert.ok(chat);
+  assert.deepEqual(hrefForPushRoute(chat), { pathname: '/guilde', params: { section: 'chat' } });
+  assert.deepEqual(hrefForPushRoute({ ...chat, type: 'GUILD_RISALAT' }), { pathname: '/guilde', params: { section: 'risalat' } });
+  assert.deepEqual(hrefForPushRoute({ ...chat, type: 'PLAYER_PROFILE', routeId: 'player-id' }), { pathname: '/joueur/[id]', params: { id: 'player-id' } });
+});
 
 /**
  * Le banc du décodage de la charge utile — voir le docblock de `pushRouteTarget.ts` pour la

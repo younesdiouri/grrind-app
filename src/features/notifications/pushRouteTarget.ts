@@ -18,7 +18,7 @@ import type { components } from '@/api/schema';
  * `decodePushRouteTarget` ne fait jamais confiance à un `routeType` qu'il ne reconnaît pas —
  * il rend `null`, et l'appelant ne route rien. Un tap qui n'aboutit nulle part se remarque à
  * peine ; un tap qui aboutit ailleurs qu'attendu ressemble à un succès et se remarque encore
- * moins. C'est `hrefFor` (`pushRouting.ts`), pas ce fichier, qui casse le build quand le back
+ * moins. C'est `hrefForPushRoute`, qui casse le build quand le back
  * ajoute une valeur à l'enum : ici, une valeur inconnue à l'exécution — back plus récent que
  * l'app installée — reste un `null` silencieux plutôt qu'une erreur.
  *
@@ -72,9 +72,9 @@ export function decodePushRouteTarget(data: unknown): PushRouteTarget | null {
   // route plutôt qu'à une mauvaise.
   //
   // Attention : cette comparaison n'est pas un `switch` exhaustif — contrairement à
-  // `hrefFor`, le compilateur ne signale rien quand `PushRouteType` gagne une valeur ici.
+  // `hrefForPushRoute`, le compilateur ne signale rien quand `PushRouteType` gagne une valeur ici.
   // Une addition oubliée est donc silencieuse : elle rend `null` et ne route nulle part.
-  if (routeType !== ('PLAYER_PROFILE' satisfies PushRouteType) && routeType !== ('GUILD_RISALAT' satisfies PushRouteType)) {
+  if (routeType !== ('PLAYER_PROFILE' satisfies PushRouteType) && routeType !== ('GUILD_RISALAT' satisfies PushRouteType) && routeType !== ('GUILD_CHAT' satisfies PushRouteType)) {
     return null;
   }
 
@@ -87,4 +87,22 @@ export function decodePushRouteTarget(data: unknown): PushRouteTarget | null {
     routeId,
     groupingKey: typeof groupingKey === 'string' ? groupingKey : null,
   };
+}
+
+/** Exhaustif : une nouvelle destination serveur doit avoir un chemin client. */
+export function hrefForPushRoute(target: PushRouteTarget) {
+  switch (target.type) {
+    case 'PLAYER_PROFILE':
+      return { pathname: '/joueur/[id]', params: { id: target.routeId } } as const;
+    case 'GUILD_RISALAT':
+      return { pathname: '/guilde', params: { section: 'risalat' } } as const;
+    case 'GUILD_CHAT':
+      return { pathname: '/guilde', params: { section: 'chat' } } as const;
+    default:
+      return unroutablePushRouteType(target.type);
+  }
+}
+
+function unroutablePushRouteType(type: never): never {
+  throw new Error(`routeType non routable : ${String(type)}`);
 }

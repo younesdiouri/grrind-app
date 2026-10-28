@@ -1,0 +1,96 @@
+appId: app.grrind.dev
+tags:
+  - ios
+  - guild
+---
+# Un seul compte jetable : vrai classement vide, navigation, brouillon conservé, départ.
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+    commands:
+      - tapOn: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+- extendedWaitUntil:
+    visible: "Se connecter|.*Toucher pour .*|NIVEAU|Fonder une guilde|QA Semaine Guilde"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Se connecter"
+    commands:
+      - runFlow:
+          file: login.yaml
+          env:
+            EMAIL: ${EMPTY_EMAIL}
+- repeat:
+    times: 6
+    while:
+      visible: ".*Toucher pour .*"
+    commands:
+      - tapOn: ".*Toucher pour .*"
+- extendedWaitUntil:
+    visible:
+      id: "tab-guilde"
+    timeout: 30000
+- tapOn:
+    id: "tab-guilde"
+- runFlow:
+    when:
+      visible: "Fonder une guilde"
+    commands:
+      - tapOn: "Fonder une guilde"
+      - tapOn:
+          id: "guild-name"
+      - inputText: "QA Semaine Guilde"
+      - tapOn: "Fonder"
+- runFlow:
+    when:
+      visible: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+    commands:
+      - tapOn: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+- extendedWaitUntil:
+    visible:
+      id: "guild-weekly-board"
+    timeout: 30000
+- assertVisible: "La semaine commence ici"
+- tapOn:
+    id: "guild-tab-members"
+- assertVisible: ".*E2E Sans séance.*"
+- tapOn:
+    id: "guild-tab-chat"
+- extendedWaitUntil:
+    visible: "La conversation commence ici."
+    timeout: 30000
+- tapOn:
+    id: "chat-input"
+- inputText: "Mon brouillon reste ici"
+- assertVisible: "Envoyer"
+- tapOn:
+    id: "guild-tab-risalat"
+- assertVisible: "Risālāt de la semaine"
+- tapOn:
+    id: "guild-tab-chat"
+- assertVisible: "Mon brouillon reste ici"
+- tapOn:
+    id: "guild-tab-settings"
+- assertVisible: "Code d’invitation"
+- assertVisible: "Gérer la guilde"
+- tapOn: "Quitter la guilde"
+- tapOn: "Quitter"
+- extendedWaitUntil:
+    visible: "Fonder une guilde"
+    timeout: 30000

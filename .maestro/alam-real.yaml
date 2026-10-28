@@ -17,12 +17,7 @@ appId: app.grrind.dev
     visible: "NIVEAU"
     timeout: 90000
 - tapOn:
-    id: tab-guilde
-- extendedWaitUntil:
-    visible: "ʿĀlam al-Nafs · raid et histoires"
-    timeout: 30000
-- takeScreenshot: alam-real-guild
-- tapOn: "ʿĀlam al-Nafs · raid et histoires"
+    id: tab-combat
 - extendedWaitUntil:
     visible: "PRÉPARATION.*"
     timeout: 60000
