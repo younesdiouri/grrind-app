@@ -112,3 +112,7 @@ L’interdiction de push est levée pour ce lot ; fusionner les trois tickets pu
 un build EAS production et sa soumission TestFlight. TypeScript/lint, 608 tests et
 31 previews passent sur le code final. La vérification du candidat de production
 reste distincte de cette validation du development build.
+
+Smoke de sortie passé : `.maestro/ios-smoke.yaml`, 183 s de cycle, sans build natif
+Simulator. Archive EAS vérifiée : 59 fichiers de framework identiques, aucun fichier
+source Unity inclus. Le suivi de la livraison EAS/TestFlight se poursuit dans le ticket.
