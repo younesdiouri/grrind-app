@@ -1,9 +1,11 @@
 {
   "direction": "Sport Fantasy Cartoon facetté, clairière GRRIND existante",
   "characters": "Bases Quaternius et animations UAL2 déjà utilisées et documentées dans docs/design/quaternius-poc.md ; aucun nouveau corps généré",
-  "changes": "Arbitre chauve : coiffures masquées, t-shirt existant à bandes par groupes de triangles, pantalon noir et petit sifflet ; public : six meshes partagés pré-échantillonnés depuis le lecteur Unity réel",
+  "changes": "Arbitre chauve : coiffures masquées, t-shirt existant à bandes par groupes de triangles, pantalon noir et petit sifflet ; public : deux prefabs Quaternius existants nettoyés de toute logique de combat, animations Humanoid Mixamo continues, cinq gestes et phases/vitesses individuelles.",
   "scenery": "Gradins construits par primitives Unity, matériaux Painted Toon existants, sans collider",
   "builder": "spikes/Unity3D/Assets/Editor/LivingArenaAssets.cs",
   "whistle": "Création originale procédurale : PCM mono 44100 Hz, 0.30 s, sinus 2380→2200 Hz, modulation 43 Hz et second ton ×1.047, enveloppe entrée 18 ms/sortie 55 ms. Aucun enregistrement ou sample tiers.",
-  "paid_generation": false
+  "paid_generation": false,
+  "crowd_animations": "spikes/Unity3D/Assets/Animations/Mixamo/Crowd/PROVENANCE.json",
+  "critical_reaction": "Retirée à la demande auteur le 28 octobre 2026 ; aucune dépendance aux critiques ou impacts."
 }

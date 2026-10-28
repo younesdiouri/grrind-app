@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,8 +10,6 @@ public static class LivingArenaAssets
     const string Folder = "Assets/Spike/LivingArena/";
     static AnimationClip Clip(string name) => AssetDatabase.LoadAllAssetsAtPath("Assets/Animations/Quaternius/UAL2Clean.fbx")
         .OfType<AnimationClip>().Single(c => c.name == "Armature|" + name);
-    static void Call(FighterPose pose, string method) => typeof(FighterPose)
-        .GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(pose, null);
     // Replace the native mesh so its GPU buffer matches the regenerated vertices during Editor review.
     static void Save(UnityEngine.Object value, string path) => AssetDatabase.CreateAsset(value, path);
     static Material Material(string name, Color color)
@@ -53,13 +50,13 @@ public static class LivingArenaAssets
                 foreach (float x in new[] { 1.05f, 3.45f })
                     Box("Rail post", stand.transform, new Vector3(side * x,.65f,-3.18f), new Vector3(.08f,1.3f,.08f), wood);
             }
-            life.malePoses = Crowd(false, out var male); life.maleMaterials = male;
-            life.femalePoses = Crowd(true, out var female); life.femaleMaterials = female;
+            life.maleSpectator = Crowd(false); life.femaleSpectator = Crowd(true);
+            life.crowdClips = ImportCrowd();
             life.referee = Referee(root.transform);
             var source = Resources.Load<GameObject>("QuaterniusShowcase").GetComponent<FighterPose>();
             life.refereeClips = new[] { source.clips[7], Clip("Consume"), Clip("Walk_Carry_Loop") };
             PrefabUtility.SaveAsPrefabAsset(root, "Assets/Resources/LivingArena.prefab"); AssetDatabase.SaveAssets();
-            Debug.Log("Living arena assets: 18 shared-mesh spectators, two stands, bald striped referee");
+            Debug.Log("Living arena assets: 18 animated spectators, " + life.crowdClips.Length + " cheering clips, two stands, bald striped referee");
         }
         finally { UnityEngine.Object.DestroyImmediate(root); }
     }
@@ -100,59 +97,55 @@ public static class LivingArenaAssets
         return animator;
     }
 
-    static Mesh[] Crowd(bool female, out Material[] materials)
+    static GameObject Crowd(bool female)
     {
         string name = female ? "Female" : "Male";
         var root = UnityEngine.Object.Instantiate(Resources.Load<GameObject>(female ? "QuaterniusFemale" : "QuaterniusShowcase"));
-        var pose = root.GetComponent<FighterPose>();
-        var combined = new List<Mesh>();
         try
         {
-            pose.inspect = false; pose.facing = 0;
-            // Existing athlete rig, posed once into scenery meshes rather than 18 live Animators.
-            Call(pose, "Awake");
-            var renderers = root.GetComponentsInChildren<Renderer>().Where(r => r is SkinnedMeshRenderer || r.GetComponent<MeshFilter>() != null).ToArray();
-            var original = renderers.SelectMany(r => r.sharedMaterials).Distinct().ToArray();
-            materials = original;
-            var result = new Mesh[3];
-            for (int frame = 0; frame < 3; frame++)
+            var appearance = root.GetComponent<QuaterniusAppearance>();
+            appearance.SetHeadband(false); appearance.SetBoxingGloves(false);
+            root.GetComponent<WeaponGrip>()?.Select("");
+            foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))
+                UnityEngine.Object.DestroyImmediate(behaviour);
+            foreach (var light in root.GetComponentsInChildren<Light>(true)) UnityEngine.Object.DestroyImmediate(light);
+            foreach (var child in root.GetComponentsInChildren<Transform>(true))
+                if (child != null && !child.gameObject.activeSelf) UnityEngine.Object.DestroyImmediate(child.gameObject);
+            var animator = root.GetComponent<Animator>();
+            animator.runtimeAnimatorController = null; animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
             {
-                pose.stance = 7; pose.phase = .4f; Call(pose, "LateUpdate");
-                if (frame > 0) Cheer(pose, false);
-                if (frame > 1) Cheer(pose, true);
-                var groups = original.Select(_ => new List<CombineInstance>()).ToArray();
-                foreach (var renderer in renderers)
-                {
-                    Mesh source;
-                    if (renderer is SkinnedMeshRenderer skin) { source = new Mesh(); skin.BakeMesh(source); combined.Add(source); }
-                    else source = renderer.GetComponent<MeshFilter>().sharedMesh;
-                    for (int slot = 0; slot < source.subMeshCount; slot++)
-                        groups[Array.IndexOf(original, renderer.sharedMaterials[slot])].Add(new CombineInstance {
-                            mesh = source, subMeshIndex = slot, transform = root.transform.worldToLocalMatrix * renderer.transform.localToWorldMatrix
-                        });
-                }
-                var parts = groups.Select(group => { var part = new Mesh(); part.CombineMeshes(group.ToArray(),true,true); combined.Add(part); return new CombineInstance { mesh = part }; }).ToArray();
-                var mesh = new Mesh { name = name + " supporter " + frame }; mesh.CombineMeshes(parts,false,false);
-                Save(mesh, Folder + name + " supporter " + frame + ".asset");
-                result[frame] = AssetDatabase.LoadAssetAtPath<Mesh>(Folder + name + " supporter " + frame + ".asset");
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; renderer.receiveShadows = false;
+                renderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+                renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
             }
-            return result;
+            for (int i = 0; i < 3; i++) AssetDatabase.DeleteAsset(Folder + name + " supporter " + i + ".asset");
+            return PrefabUtility.SaveAsPrefabAsset(root, Folder + name + " supporter.prefab");
         }
-        finally
-        {
-            Call(pose, "OnDestroy");
-            foreach (var mesh in combined) UnityEngine.Object.DestroyImmediate(mesh);
-            UnityEngine.Object.DestroyImmediate(root);
-        }
+        finally { UnityEngine.Object.DestroyImmediate(root); }
     }
 
-    static void Cheer(FighterPose pose, bool left)
+    static AnimationClip[] ImportCrowd()
     {
-        var arm = pose.Bone(left ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm);
-        var forearm = pose.Bone(left ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm);
-        var hand = pose.Bone(left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand);
-        float side = left ? -1 : 1;
-        arm.rotation = Quaternion.FromToRotation(forearm.position - arm.position, new Vector3(side * .65f,1,.05f)) * arm.rotation;
-        forearm.rotation = Quaternion.FromToRotation(hand.position - forearm.position, new Vector3(side * .15f,1,0)) * forearm.rotation;
+        var result = new List<AnimationClip>();
+        foreach (string path in Directory.GetFiles("Assets/Animations/Mixamo/Crowd", "*.fbx").OrderBy(p => p))
+        {
+            var importer = (ModelImporter)AssetImporter.GetAtPath(path);
+            importer.animationType = ModelImporterAnimationType.Human;
+            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            importer.animationCompression = ModelImporterAnimationCompression.Off;
+            var clips = importer.defaultClipAnimations;
+            foreach (var clip in clips)
+            {
+                clip.name = Path.GetFileNameWithoutExtension(path);
+                clip.lockRootRotation = clip.lockRootHeightY = true;
+                clip.lockRootPositionXZ = false; clip.keepOriginalOrientation = true;
+                clip.heightFromFeet = true; clip.loopTime = clip.loopPose = true;
+            }
+            importer.clipAnimations = clips; importer.SaveAndReimport();
+            result.Add(AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>().Single(c => !c.name.StartsWith("__preview")));
+        }
+        return result.ToArray();
     }
 }

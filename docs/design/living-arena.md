@@ -5,17 +5,20 @@ colorées. Le centre reste dégagé pour les deux combattants. Un arbitre chauve
 et blanc donne le départ : 3, 2, 1, FIGHT, puis s’éloigne par l’allée centrale. Le
 sifflement dure 300 ms et respecte le mode silencieux du téléphone.
 
-L’ouverture dure 3,4 s ; le sifflet part à 2,4 s. Le public alterne des gestes
-d’encouragement et lève les deux bras en sautant sur un critique. Tout est échantillonné
-sur l’horloge du rejeu, sans horloge indépendante ni calcul de jeu. Réduire les animations
-conserve le compte à rebours lisible, supprime les sauts/balancements et place directement
-l’arbitre en retrait. Le décor ne s’affiche ni dans Apparence ni dans le raid.
+L’ouverture dure 3,4 s ; le sifflet part à 2,4 s. Après le retour auteur du 28 octobre,
+le public joue cinq vrais clips Mixamo : applaudissements, encouragement à deux poings,
+poing levé, relance des supporters et encouragement énergique. Les corps facettés restent
+ceux de Quaternius. Chaque spectateur a sa phase et sa vitesse (0,86 à 1,13), sans alternance
+brutale de meshes ni balancement ajouté par code. Les critiques ne pilotent plus le public.
 
-Les six meshes de public sont partagés, sans Animator par spectateur : 201 672 triangles
-affichés au total, sans ombres projetées par le public. L’arbitre garde un seul Animator
-piloté manuellement. Aucun collider n’est ajouté à la scène et aucun post-traitement
-de flou supplémentaire n’est requis. Matériaux Painted Toon et corps existants ; aucune
-génération payante. La provenance et le builder sont dans `spikes/art-source/living-arena/`.
+Les 18 spectateurs utilisent les mêmes meshes et matériaux partagés (201 672 triangles),
+sans ombres, lumières, colliders, contraintes de combat ni logique de personnage. Leurs
+Animators et celui de l’arbitre partagent un seul graphe manuel ; aucun contrôleur ni horloge
+libre. Tout suit le temps du rejeu. Réduire les animations fige les encouragements et place
+l’arbitre en retrait. Le décor ne s’affiche ni dans Apparence ni dans le raid. Aucune
+génération payante. Les sources FBX, paramètres et SHA-256 sont documentés dans
+`Assets/Animations/Mixamo/Crowd/PROVENANCE.json` ; les builders et la provenance générale
+restent sous `spikes/art-source/living-arena/` et `Assets/Editor/LivingArenaAssets.cs`.
 
 ## Preuves
 
@@ -24,12 +27,16 @@ Captures Unity de présentation, avec le vrai HUD et un viewport mobile, demand�
 Les points de vie affichés ici appartiennent au scénario de contrôle, pas à un compte.
 
 ![Départ et arbitre](living-arena/intro.png)
-![Contact PvE et réaction du public](living-arena/pve-contact.png)
+![Contact PvE — première itération](living-arena/pve-contact.png)
 
-`LivingArenaChecks.Run()` contrôle les gestes visibles, le saut critique (au moins
-13,6 cm dans le scénario échantillonné), le compte à rebours réel, le retrait de l’arbitre,
-le rejeu, l’immobilité d’une horloge figée, Réduire les animations et l’aller-retour
-inspection/combat. Les contrôles Quaternius de contact passent (15,5 et 20,1 cm).
+Ces captures appartiennent à la première itération. Le retour du 28 octobre est prouvé
+par les contrôles de mouvement et doit être jugé dans la nouvelle app sur iPhone.
+
+`LivingArenaChecks.Run()` contrôle les gestes Humanoid en boucle, le mouvement de chaque
+spectateur et la continuité des mains sur dix secondes, l’absence totale de réaction aux
+critiques, le compte à rebours, le retrait de l’arbitre, le rejeu, une horloge figée,
+Réduire les animations et l’aller-retour inspection/combat. Les contacts Quaternius restent
+contrôlés séparément.
 
 Le contrôle existant de la clairière passe : 924 volumes de personnage, zéro chevauchement
 avec le décor. Les douze points de projection restent à moins de 0,000092 px du cadrage

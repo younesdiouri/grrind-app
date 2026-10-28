@@ -12,35 +12,51 @@ public static class LivingArenaChecks
         bridge.Configure("{\"hud\":{\"playerHp\":100,\"enemyHp\":100}}");
         var arena = UnityEngine.Object.FindFirstObjectByType<ArenaLife>();
         if (arena == null || arena.GetComponentsInChildren<Collider>().Length != 0) throw new Exception("Missing arena or scenery colliders");
-        var crowd = arena.GetComponentsInChildren<MeshFilter>().Where(m => m.name.StartsWith("Spectator ")).ToArray();
+        var crowd = arena.GetComponentsInChildren<Animator>().Where(m => m.name.StartsWith("Spectator ")).ToArray();
         if (crowd.Length != 18 || arena.GetComponentsInChildren<FighterPose>().Length != 0)
-            throw new Exception("Expected 18 shared-mesh spectators and no extra fighter rigs");
-        foreach (var poses in new[] { arena.malePoses, arena.femalePoses })
-        {
-            float Height(Mesh mesh) { var vertices = mesh.vertices; return mesh.triangles.Max(i => vertices[i].y); }
-            if (Height(poses[2]) - Height(poses[0]) < .1f) throw new Exception("Crowd cheer does not raise its visible arms");
-            if (poses.Any(p => p.vertexCount != poses[0].vertexCount)) throw new Exception("Crowd pose changed its topology");
-        }
+            throw new Exception("Expected 18 scenery animators and no extra fighter logic");
+        if (arena.crowdClips.Any(c => !c.isHumanMotion || !c.isLooping)) throw new Exception("Crowd motions must be looping Humanoid clips");
+        Vector3[] Hands() => crowd.SelectMany(a => new[] { a.GetBoneTransform(HumanBodyBones.LeftHand).position,
+            a.GetBoneTransform(HumanBodyBones.RightHand).position }).ToArray();
+        float Difference(Vector3[] a, Vector3[] b) => a.Select((p,i) => Vector3.Distance(p,b[i])).Max();
         var idle = new CombatPresentation.Frame { time = 1, opening = 1 / 3.4f };
         arena.DrawFrame(idle, true);
         if (Mathf.Abs(arena.referee.transform.position.x) > .01f || arena.referee.transform.position.z > -.8f)
             throw new Exception("Referee does not start behind the fighters");
         var before = crowd.Select(m => m.transform.position).ToArray();
+        var beforeHands = Hands();
         var crit = new CombatPresentation.Frame { time = 1, opening = -1,
             enemy = new CombatPresentation.FighterState { critical = true, effectOpacity = .8f } };
         arena.DrawFrame(crit, true);
         float jump = crowd.Select((m,i) => Vector3.Distance(m.transform.position, before[i])).Max();
         if (jump > .0001f) throw new Exception("A critical hit still moves the whole crowd");
+        if (Difference(beforeHands, Hands()) > .0001f) throw new Exception("A critical hit still changes the crowd gesture");
         if (arena.referee.transform.position.z > -3f)
             throw new Exception("Referee still blocks the first exchange");
-        var sampled = crowd.Select(m => m.transform.position).ToArray();
+        var sampled = Hands();
         arena.DrawFrame(crit, true);
-        if (crowd.Where((m,i) => Vector3.Distance(m.transform.position,sampled[i]) > .0001f).Any())
+        if (Difference(sampled, Hands()) > .0001f)
             throw new Exception("A frozen replay clock advances the audience");
         crit.reduced = true; arena.DrawFrame(crit, true);
-        var reduced = crowd.Select(m => m.transform.localToWorldMatrix).ToArray();
+        var reduced = Hands();
         crit.time = 2; crit.enemy.effectOpacity = 1; arena.DrawFrame(crit, true);
-        if (crowd.Where((m,i) => m.transform.localToWorldMatrix != reduced[i]).Any()) throw new Exception("Reduced motion still moves the audience");
+        if (Difference(reduced, Hands()) > .0001f) throw new Exception("Reduced motion still moves the audience");
+        crit.reduced = false; crit.time = 1; arena.DrawFrame(crit,true);
+        if (Difference(sampled, Hands()) > .0001f) throw new Exception("Rewinding does not restore the crowd pose");
+        float maxHandStep = 0, motion = 0;
+        var movement = new float[crowd.Length];
+        var previous = Hands();
+        for (int step = 1; step <= 400; step++)
+        {
+            crit.time = 1 + step * .025f; arena.DrawFrame(crit,true);
+            var hands = Hands();
+            maxHandStep = Mathf.Max(maxHandStep, Difference(previous,hands));
+            for (int i = 0; i < movement.Length; i++)
+                movement[i] = Mathf.Max(movement[i], Vector3.Distance(sampled[i*2],hands[i*2]), Vector3.Distance(sampled[i*2+1],hands[i*2+1]));
+            motion = Mathf.Max(motion,Difference(sampled,hands)); previous = hands;
+        }
+        if (maxHandStep > .12f || motion < .15f) throw new Exception("Crowd hands snap or stay frozen: " + maxHandStep + "/" + motion);
+        if (movement.Min() < .05f) throw new Exception("A spectator is not cheering");
         crit.finished = true; arena.DrawFrame(crit,true);
         if (arena.referee.gameObject.activeSelf) throw new Exception("Referee hides the verdict");
         arena.DrawFrame(idle,true);
@@ -62,8 +78,8 @@ public static class LivingArenaChecks
             if (countdown.text != step.Item2 || !countdown.gameObject.activeInHierarchy)
                 throw new Exception("Countdown not visible at " + step.Item1 + ": " + countdown.text);
         }
-        int triangles = crowd.Sum(m => m.sharedMesh.triangles.Length / 3);
-        return new { spectators = crowd.Length, crowdTriangles = triangles, criticalCrowdDisplacement = jump,
+        int triangles = crowd.Sum(a => a.GetComponentsInChildren<SkinnedMeshRenderer>().Sum(r => r.sharedMesh.triangles.Length / 3));
+        return new { spectators = crowd.Length, crowdTriangles = triangles, criticalCrowdDisplacement = jump, maxHandStep, motion, minimumIndividualMotion = movement.Min(),
             staticClock = true, reducedMotion = true, refereeRetreated = true, inspectorRoundTrip = true, countdown = true };
     }
 }

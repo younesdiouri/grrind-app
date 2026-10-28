@@ -14,16 +14,17 @@ Départ lisible 3–2–1–FIGHT, environ 3,4 s au total ; geste de départ pui
 l’arbitre en fond de piste, sans chevaucher les combattants. Le sifflement est court et
 respecte le mode silencieux déjà utilisé pour les impacts.
 
-Le public encourage avec des poses pré-échantillonnées des mêmes avatars, des rythmes
-variés et un saut sur les critiques. La géométrie est réutilisée entre spectateurs ; pas
-de rig ou d’Animator par spectateur. Réduire les animations supprime les sauts/balancements
-et le retrait animé de l’arbitre. L’horloge RN pilote tout, y compris le rejeu et les sauts
-au bilan. Aucun calcul de dégâts, nouvelle règle, physique ou collider de décor.
+Après le retour auteur du 28 octobre, le public encourage avec cinq vrais gestes Mixamo
+reciblés sur les deux bases Quaternius. Chaque spectateur garde un geste, une phase et
+une vitesse propres ; les meshes et matériaux restent partagés. Les 18 Animators et
+l’arbitre partagent un seul graphe manuel. La réaction collective aux critiques est
+retirée. Réduire les animations fige le public et le retrait de l’arbitre. L’horloge RN
+pilote tout, y compris le rejeu et les sauts au bilan. Aucun calcul de dégâts, nouvelle règle, physique ou collider de décor.
 
 ## Slices et sources
 
 - [x] Assets via l’éditeur officiel : prefab `Resources/LivingArena`, tribunes, arbitre,
-  six meshes de public partagés (deux corps existants et trois poses).
+  deux prefabs de public nettoyés et cinq clips Humanoid Mixamo en boucle.
 - [x] Présentation Unity : vie du public, arbitre et compte à rebours ; activation duel
   uniquement, disparition en inspection/raid, décor discret au bilan.
 - [x] Bridge RN : temps et ouverture dans `unityPresentationAt`, durée d’intro et sifflet
@@ -51,13 +52,14 @@ Export : `rtk proxy env UNITY_IOS_TARGETS=Device ./scripts/unity-ios.sh`, puis
 
 Les captures et mesures doivent montrer que la piste reste dégagée, que l’arbitre est
 en retrait au premier coup, que les gradins restent derrière les acteurs et que le
-public change de pose/hauteur sur critique. Le choix du flou reste optionnel : privilégier
+public encourage de façon fluide et indépendante des critiques. Le choix du flou reste optionnel : privilégier
 profondeur, taille et contraste sans ajouter un post-traitement coûteux pour le téléphone.
 
 ## Résultat technique
 
-Les contrôles passent : 18 spectateurs, 201 672 triangles de public partagés, saut critique
-minimal de 13,6 cm dans l’échantillon, compte à rebours réel, rejeu et mouvement réduit.
+Première itération livrée : 18 spectateurs et 201 672 triangles de public. Le saut
+collectif sur critique de cette itération est retiré à la demande auteur. Le compte à
+rebours, le rejeu et le mouvement réduit restent couverts.
 924 volumes testés sans chevauchement, 12 projections conservées à moins de 0,000092 px.
 TypeScript/lint, 608 tests et 31 previews déterministes au vert. La route combat compile
 via Metro 8081 en HTTP 200.
@@ -82,3 +84,16 @@ dans les mêmes gradins. Réduire les animations fige le public, le bilan et le 
 restent déterministes. Contrôler continuité des mains/appuis, absence de réaction aux
 critiques, coût des 18 rigs et retour inspection. Puis framework Device et iPhone,
 sans push avant retour auteur.
+
+### Contrôles du public continuellement animé
+
+Cinq clips Mixamo d’origine importés sans skin, à 30 fps, Humanoid avec Loop Pose.
+Les applaudissements initiaux n’avaient que 4,3 cm de course de main : régler Intensity
+et Height à 100 dans la source les rend plus visibles, sans rotation d’os artificielle.
+Le contrôle final de 400 pas (25 ms, dix secondes) passe : chaque personne bouge
+d’au moins 9,56 cm, déplacement maximal d’une main par pas 11,04 cm. Aucun déplacement
+ou changement de geste à l’arrivée d’un critique ; horloge figée, rejeu, mouvement réduit,
+inspection et décompte passent. Toujours 201 672 triangles. Le graphe manuel de 18
+spectateurs + arbitre coûte 0,113 ms par échantillon sur ce Mac (1000 appels ; ce chiffre
+ne mesure pas les performances GPU ou la fluidité de l’iPhone). Console finale vide.
+Les contacts de duel existants restent contrôlés à 14,4 / 15,2 cm.
