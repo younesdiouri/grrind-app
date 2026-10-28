@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   #
   # `Security` est là pour la même raison : c'est par elle que l'ancre `HKAnchoredObjectQuery`
   # est écrite au Keychain, à part du trousseau que `expo-secure-store` gère déjà côté JS.
-  s.frameworks = 'HealthKit', 'Security', 'CoreLocation'
+  s.frameworks = 'HealthKit', 'Security', 'CoreLocation', 'CryptoKit'
 
   # Swift/Objective-C compatibility
   s.pod_target_xcconfig = {

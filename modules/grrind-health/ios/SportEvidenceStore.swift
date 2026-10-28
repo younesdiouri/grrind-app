@@ -25,6 +25,7 @@ struct SportEvidence: Codable {
   var endedAt: Double?
   var state = "recording"
   var points: [SportPoint] = []
+  var deliveredThrough: Double? = nil
 
   init(owner: String, origin: String, startedAt: Double, endedAt: Double? = nil,
        workoutId: String? = nil, routeId: String? = nil) {
@@ -39,7 +40,7 @@ struct SportEvidence: Codable {
   }
 
   mutating func append(_ incoming: [SportPoint]) {
-    var last = points.last?.timestamp ?? startedAt - 1
+    var last = max(points.last?.timestamp ?? startedAt - 1, deliveredThrough ?? startedAt - 1)
     for point in incoming.sorted(by: { $0.timestamp < $1.timestamp }) {
       guard point.isValid, point.timestamp >= startedAt, point.timestamp > last,
             endedAt.map({ point.timestamp <= $0 }) ?? true else { continue }
@@ -114,6 +115,22 @@ final class SportEvidenceStore {
       where evidence.workoutId == workoutId && !routeIds.contains(evidence.routeId ?? "") {
       try FileManager.default.removeItem(at: directory.appendingPathComponent(evidence.id + ".json"))
     }
+  }
+
+  func purgeUploaded(owner: String, batch: SportUploadBatch, now: Double) throws -> [SportEvidence] {
+    guard let payload = batch.payload,
+          let body = try JSONSerialization.jsonObject(with: payload) as? [String: Any],
+          let points = body["points"] as? [[String: Any]] else { return [] }
+    let timestamps = Set(points.compactMap { SportUploadOutbox.date($0["timestamp"]).map { Int64($0.rounded()) } })
+    var updated: [SportEvidence] = []
+    for var capture in try list(owner: owner, now: now) where capture.origin == batch.nativeOrigin
+      && (capture.origin == "phone" || capture.workoutId == batch.externalId) {
+      capture.points.removeAll { timestamps.contains(Int64($0.timestamp.rounded())) }
+      capture.deliveredThrough = max(capture.deliveredThrough ?? capture.startedAt - 1, timestamps.max().map(Double.init) ?? capture.startedAt - 1)
+      try save(capture)
+      updated.append(capture)
+    }
+    return updated
   }
 
   private func all(now: Double) throws -> [SportEvidence] {

@@ -11,6 +11,9 @@ import Security
  qui permet d'ouvrir un sport sans publier sur l'App Store. Un type que le serveur ne connaît
  pas revient nommé dans la réponse d'import, en `UNSUPPORTED_ACTIVITY` — il ne disparaît pas.
 
+ Le pilote Sport ensemble garde aussi une file privée de preuves : son transport HTTP natif
+ évite d'exposer les coordonnées au JS. L'autorisation d'envoi est distincte de la collecte.
+
  Les trois premières fonctions correspondent une pour une au port `HealthProvider` côté
  TypeScript. Les suivantes — `enableBackgroundDelivery`, l'événement `onWorkoutsChanged` et
  `commitAnchor` — n'y apparaissent pas et **n'y apparaîtront pas** : c'est une capacité propre à
@@ -119,6 +122,19 @@ public class GrrindHealthModule: Module {
     }.runOnQueue(.main)
     AsyncFunction("stopSportCapture") { self.sport.stop() }.runOnQueue(.main)
     AsyncFunction("clearSportEvidence") { try self.sport.clear() }.runOnQueue(.main)
+
+    AsyncFunction("setSportUploadsEnabled") { (owner: String, enabled: Bool) in
+      try self.sport.enableUploads(owner: owner, enabled: enabled)
+    }.runOnQueue(.main)
+    AsyncFunction("prepareSportUploads") { (owner: String, specifications: String) in
+      try self.sport.prepareUploads(owner: owner, specifications: specifications)
+    }.runOnQueue(.main)
+    AsyncFunction("uploadNextSportEvidence") { (owner: String, endpoint: String, token: String, promise: Promise) in
+      self.sport.uploadNext(owner: owner, endpoint: endpoint, token: token) { result, error in
+        if error != nil { promise.reject(SportCollectionException("Preuve conservée pour une nouvelle tentative.")) }
+        else { promise.resolve(result) }
+      }
+    }.runOnQueue(.main)
 
     AsyncFunction("requestSportRoutes") { (promise: Promise) in
       self.sport.requestRoutes { error in

@@ -14,7 +14,8 @@ export type SportEvidenceSummary = {
   workoutId: string | null;
   expiresAt: number;
 };
-export type SportStatus = { captures: SportEvidenceSummary[]; storageFailed: boolean; permission: SportPermission; activeCaptureId: string | null };
+export type SportStatus = { captures: SportEvidenceSummary[]; storageFailed: boolean; permission: SportPermission; activeCaptureId: string | null;
+  uploads?: { enabled: boolean; pending: number; delivered: number } };
 export type SportWorkout = {
   externalId: string;
   startedAt: number;
@@ -33,4 +34,7 @@ export type SportNativeBridge = {
   requestSportRoutes(): Promise<void>;
   sportWorkouts(): Promise<SportWorkout[]>;
   collectSportRoutes(workoutId: string): Promise<void>;
+  setSportUploadsEnabled(owner: string, enabled: boolean): Promise<void>;
+  prepareSportUploads(owner: string, specifications: string): Promise<void>;
+  uploadNextSportEvidence(owner: string, endpoint: string, accessToken: string): Promise<{ status: number; batchId: string | null; problemType?: string | null }>;
 };
