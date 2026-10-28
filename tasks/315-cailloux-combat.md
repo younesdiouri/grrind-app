@@ -18,7 +18,7 @@ Le serveur, les dégâts et le résultat ne changent pas.
 - [x] Contrôler les sept gestes, le KO et la victoire via le lecteur réel et le bridge,
   contacts des deux côtés, orientation et continuité de mouvement.
 - [x] Export device uniquement, development build installé sur l’iPhone avec l’arène #316.
-- [ ] Validation sur iPhone par l’auteur avant push.
+- [x] Validation auteur sur iPhone ; livraison autorisée le 28 octobre.
 
 ## Sources, commandes et critères
 
@@ -61,3 +61,11 @@ Le HUD utilise aussi les sockets réels du mob. Les étincelles sont calculées 
 pose du contact, avec un ancrage corporel proche du poing ; le contrôle exige leur présence
 à moins de 15 cm d’un socket réel. Il détecte ainsi le décalage d’une frame observé lors
 de la revue. Le cache de renderers est vidé quand les combattants changent.
+
+## Validation et livraison — 28 octobre
+
+L’auteur valide la version installée : « franchement mon gars vraiment bien joué c’est vraiment lourd. Tu peux push main merge déployer etc. que ça soit back ou front tu gères ».
+L’interdiction de push est levée pour ce lot ; fusionner les trois tickets puis lancer
+un build EAS production et sa soumission TestFlight. TypeScript/lint, 608 tests et
+31 previews passent sur le code final. La vérification du candidat de production
+reste distincte de cette validation du development build.

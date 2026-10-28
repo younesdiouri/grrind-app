@@ -32,7 +32,7 @@ pilote tout, y compris le rejeu et les sauts au bilan. Aucun calcul de dégâts,
 - [x] Contrôles : synchronisation/skip/rejeu, mouvement réduit, dégagement de la piste,
   deux côtés, retour inspection/raid. Captures ciblées au cadrage mobile, console sans erreur.
 - [x] Export du framework Device uniquement et development build installé sur l’iPhone.
-- [ ] Validation auteur avant push. Aucun EAS/TestFlight.
+- [x] Validation auteur sur iPhone ; livraison autorisée le 28 octobre.
 
 Builder/contrôles dans `spikes/Unity3D/Assets/Editor`, comportement dans `Assets/Spike`.
 Réutiliser les Playables, les matériaux Painted Toon et la police Oxanium existants.
@@ -104,3 +104,11 @@ ce lanceur après compilation puis installer et lancer avec le CLI Apple `device
 réussit. UUID embarqué `3BF58925-CA64-366E-BE50-3F4DC7164A6B` et SHA-256 des 16 fichiers Data
 identiques à l’export. Version installée et lancée le 28 octobre via Metro 8081.
 La validation des cinq gestes et de la fluidité sur iPhone reste à l’auteur. Aucun push.
+
+## Validation et livraison — 28 octobre
+
+L’auteur valide la version installée : « franchement mon gars vraiment bien joué c’est vraiment lourd. Tu peux push main merge déployer etc. que ça soit back ou front tu gères ».
+L’interdiction de push est levée pour ce lot ; fusionner les trois tickets puis lancer
+un build EAS production et sa soumission TestFlight. TypeScript/lint, 608 tests et
+31 previews passent sur le code final. La vérification du candidat de production
+reste distincte de cette validation du development build.

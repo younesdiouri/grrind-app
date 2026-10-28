@@ -33,13 +33,14 @@
     "editorBenchmarkScope": "Initial five-clip pilot before applause intensity/height increase; diagnostic CPU cost, not device FPS"
   },
   "phoneInstall": "passed: devicectl installed app.grrind.dev with five Mixamo crowd clips on 2026-10-28",
-  "authorVisualReview": "pending",
+  "authorVisualReview": "approved on iPhone 2026-10-28: franchement mon gars vraiment bien joué c’est vraiment lourd. Tu peux push main merge déployer etc. que ça soit back ou front tu gères",
   "simulatorSlice": "reused unchanged; new scene not tested there",
   "productionBuild": false,
   "pushed": false,
   "phoneLaunch": "passed: devicectl launched app.grrind.dev via Metro 8081 on 2026-10-28",
   "crowdRevisionDate": "2026-10-28",
-  "reactNativeChecks": "unchanged sources since the 608-test/31-preview validation; this revision changes Unity only",
+  "reactNativeChecks": "passed on final code before push: typecheck, lint, 608 tests, 31 deterministic previews",
   "visualEvidence": "initial-arena screenshots retained as history; final cheering motion verified by editor sampling, physical review pending",
-  "xcodeDevelopmentBuild": "passed: 0 errors, 1 existing Expo script dependency warning"
+  "xcodeDevelopmentBuild": "passed: 0 errors, 1 existing Expo script dependency warning",
+  "releaseAuthorization": "Push, merge main and deployment authorized on 2026-10-28"
 }
