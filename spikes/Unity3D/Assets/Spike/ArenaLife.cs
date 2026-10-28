@@ -65,17 +65,14 @@ public sealed class ArenaLife : MonoBehaviour
     public void DrawFrame(CombatPresentation.Frame frame, bool playing)
     {
         if (crowd == null || frame == null) return;
-        float cheer = frame.finished ? 0 : Mathf.Max(frame.player.critical ? frame.player.effectOpacity : 0,
-            frame.enemy.critical ? frame.enemy.effectOpacity : 0);
         for (int i = 0; i < crowd.Length; i++)
         {
             var member = crowd[i];
             float rhythm = frame.time * 2.5f + i * 1.73f;
             float bob = frame.reduced || !playing ? 0 : Mathf.Sin(rhythm) * .013f;
-            float jump = frame.reduced || !playing ? 0 : cheer * (.17f + i % 3 * .025f);
-            member.root.localPosition = member.home + Vector3.up * (bob + jump);
+            member.root.localPosition = member.home + Vector3.up * bob;
             member.root.localRotation = Quaternion.Euler(0, member.yaw, frame.reduced || !playing ? 0 : Mathf.Sin(rhythm * .6f) * 2);
-            int pose = frame.reduced || !playing ? 0 : cheer > .4f ? 2 : Mathf.Sin(rhythm) > .15f ? 1 : 0;
+            int pose = frame.reduced || !playing ? 0 : Mathf.Sin(rhythm) > .15f ? 1 : 0;
             if (member.mesh.sharedMesh != member.poses[pose]) member.mesh.sharedMesh = member.poses[pose];
         }
         referee.gameObject.SetActive(playing && !frame.finished);

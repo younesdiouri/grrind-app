@@ -29,8 +29,8 @@ public static class LivingArenaChecks
         var crit = new CombatPresentation.Frame { time = 1, opening = -1,
             enemy = new CombatPresentation.FighterState { critical = true, effectOpacity = .8f } };
         arena.DrawFrame(crit, true);
-        float jump = crowd.Select((m,i) => m.transform.position.y - before[i].y).Min();
-        if (jump < .1f) throw new Exception("The crowd did not react to the critical hit");
+        float jump = crowd.Select((m,i) => Vector3.Distance(m.transform.position, before[i])).Max();
+        if (jump > .0001f) throw new Exception("A critical hit still moves the whole crowd");
         if (arena.referee.transform.position.z > -3f)
             throw new Exception("Referee still blocks the first exchange");
         var sampled = crowd.Select(m => m.transform.position).ToArray();
@@ -63,7 +63,7 @@ public static class LivingArenaChecks
                 throw new Exception("Countdown not visible at " + step.Item1 + ": " + countdown.text);
         }
         int triangles = crowd.Sum(m => m.sharedMesh.triangles.Length / 3);
-        return new { spectators = crowd.Length, crowdTriangles = triangles, minimumCriticalJump = jump,
+        return new { spectators = crowd.Length, crowdTriangles = triangles, criticalCrowdDisplacement = jump,
             staticClock = true, reducedMotion = true, refereeRetreated = true, inspectorRoundTrip = true, countdown = true };
     }
 }

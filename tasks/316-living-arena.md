@@ -67,3 +67,18 @@ Framework Device compilé et development build installé via `devicectl`. UUID e
 GRRIND dev a été lancé sur l’iPhone après déverrouillage le 28 octobre, via Metro 8081. La revue du rendu, du son et de la fluidité reste à l’auteur.
 La slice Simulator conserve sa scène antérieure ; aucun flow visuel Simulator n’est
 présenté comme une validation de la nouvelle arène. Aucun push/PR/merge ou EAS.
+
+## Retour auteur — 28 octobre
+
+« franchement lourd de fou » ; corriger le mouvement de main du public et retirer
+la réaction collective aux critiques. Référence : catalogue Mixamo cheer.
+
+Plan : retirer d’abord le déclenchement sur critique avec contrôle de non-réaction ;
+puis remplacer les poses statiques par plusieurs clips Humanoid Mixamo réellement
+reciblés sur les deux bases existantes. Chaque spectateur garde un geste, une phase
+et une vitesse propres. Un seul graphe manuel suit le temps du rejeu ; aucune horloge
+libre, allocation par frame ou nouvelle règle de combat. Les mêmes 18 personnes restent
+dans les mêmes gradins. Réduire les animations fige le public, le bilan et le rejeu
+restent déterministes. Contrôler continuité des mains/appuis, absence de réaction aux
+critiques, coût des 18 rigs et retour inspection. Puis framework Device et iPhone,
+sans push avant retour auteur.
