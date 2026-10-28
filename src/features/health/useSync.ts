@@ -6,6 +6,8 @@ import { enableBackgroundWakeup, startBackgroundWakeup } from '@/features/health
 import { sendDailyActivity } from '@/features/health/dailyActivity';
 import { healthProvider } from '@/features/health/current';
 import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/features/health/sync';
+import { syncTogether } from '@/features/health/syncTogether';
+import { togetherInbox } from '@/features/health/togetherBonuses';
 
 /**
  * Les quatre déclencheurs de la synchronisation, et rien de plus.
@@ -46,6 +48,8 @@ import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/feature
 export function useSyncTriggers(): void {
   const auth = useAuth();
   const signedIn = auth.status === 'signedIn';
+  const owner = auth.status === 'signedIn' ? auth.user.id : null;
+  useEffect(() => { togetherInbox.bind(owner); }, [owner]);
 
   const run = useCallback(
     (trigger: Parameters<typeof sync>[0]) => {
@@ -53,7 +57,7 @@ export function useSyncTriggers(): void {
         return;
       }
 
-      void sync(trigger);
+      void sync(trigger).then(() => syncTogether(trigger));
 
       // L'énergie active part **avec** les mêmes déclencheurs, pas sur un cinquième (#77). Ce
       // n'est pas une synchronisation : pas de coordinateur, pas de seuil, pas de clé
@@ -135,6 +139,7 @@ export function useSyncStatus(): { status: SyncStatus; refresh: () => Promise<vo
   const refresh = useCallback(async (): Promise<void> => {
     if (signedIn) {
       await sync('manual');
+      await syncTogether('manual');
     }
   }, [signedIn]);
 

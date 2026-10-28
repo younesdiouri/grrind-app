@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { color, radius, space, type } from '@/design/tokens';
 import { sportNative } from '@/features/health/sportNative';
 import { useAuth } from '@/features/auth/useAuth';
+import { syncTogether } from '@/features/health/syncTogether';
 import type { SportStatus, SportWorkout } from '../../../modules/grrind-health/src/SportTogether.types';
 
 /** Banc terrain dev : aucun chiffre de groupe ou d'XP n'est décidé ici. */
@@ -38,7 +39,24 @@ export function SportTogetherPilot() {
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <Text style={styles.title}>Sport ensemble · pilote terrain</Text>
-      <Text style={styles.body}>Ce pilote conserve les positions sur cet iPhone. Aucun envoi ni bonus de groupe. Les séances et leur XP continuent de venir de Santé et du serveur.</Text>
+      <Text style={styles.body}>Pilote Sport ensemble : les seuils sont provisoires et la collecte reste à vérifier sur le terrain. Les séances viennent toujours de Santé ; le serveur décide du groupe et de l’XP.</Text>
+      <View style={styles.card}>
+        <Text style={styles.label}>Envoi des preuves à GRRIND</Text>
+        <Text style={styles.body}>Sur activation, GRRIND envoie tes positions horodatées et leur précision, limitées aux bornes de tes séances Santé, pour reconnaître le sport ensemble. Les itinéraires Santé autorisés peuvent aussi servir. Les données brutes sont supprimées après remise utile sur le téléphone et conservées au plus 30 jours pour le rapprochement serveur. Aucune carte ni position d’un autre joueur n’est affichée.</Text>
+        <Text style={styles.body}>Envoi {status?.uploads?.enabled ? 'activé' : 'désactivé'} · {status?.uploads?.pending ?? 0} lot(s) en attente · {status?.uploads?.delivered ?? 0} remis.</Text>
+        {typeof native.setSportUploadsEnabled === 'function' ? <>
+          <Button label={status?.uploads?.enabled ? 'Suspendre l’envoi des preuves' : 'Activer le pilote connecté'} busy={busy}
+            onPress={() => void run(async () => {
+              if (auth.status !== 'signedIn') return;
+              const enabled = !status?.uploads?.enabled;
+              if (enabled) await native.requestSportRoutes();
+              await native.setSportUploadsEnabled(auth.user.id, enabled);
+              if (enabled) await syncTogether('manual');
+            })} />
+          <Button label="Synchroniser les preuves et les compléments" busy={busy} variant="quiet" onPress={() => void run(() => syncTogether('manual'))} />
+        </> : <Text style={styles.body}>Installe le nouveau development build pour activer l’envoi privé des preuves.</Text>}
+        <Text style={styles.body}>Sans preuve ou si tu refuses, l’import et l’XP solo continuent. Un bonus peut arriver après la synchronisation d’un ami.</Text>
+      </View>
       <View style={styles.card}>
         <Text style={styles.label}>Téléphone · activer avant le sport</Text>
         <Text style={styles.body}>GRRIND utilise ta localisation pendant cette séance pour reconnaître le sport ensemble.</Text>
@@ -82,7 +100,7 @@ export function SportTogetherPilot() {
       {status?.captures.map((capture) => (
         <View key={capture.id} style={styles.card}>
           <Text selectable style={styles.body}>{capture.origin} · {capture.state} · {new Date(capture.startedAt).toLocaleString('fr-FR')}</Text>
-          <Text selectable style={styles.body}>{capture.pointCount} points · trou interne max {Math.round(capture.maxGapSeconds)} s · précision la moins bonne {capture.worstAccuracyMeters === null ? '—' : Math.round(capture.worstAccuracyMeters)} m</Text>
+          <Text selectable style={styles.body}>{capture.pointCount} points locaux restants · trou interne max {Math.round(capture.maxGapSeconds)} s · précision la moins bonne {capture.worstAccuracyMeters === null ? '—' : Math.round(capture.worstAccuracyMeters)} m</Text>
           <Text style={styles.body}>Premier point : {capture.firstPointAt === null ? '—' : new Date(capture.firstPointAt).toLocaleTimeString('fr-FR')} · dernier : {capture.lastPointAt === null ? '—' : new Date(capture.lastPointAt).toLocaleTimeString('fr-FR')}</Text>
         </View>
       ))}

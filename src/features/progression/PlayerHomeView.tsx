@@ -17,6 +17,7 @@ import { attributeLegendDot, AttributeLegend, AttributeRing } from '@/components
 import { arcPresentation, arcsOf, ringViewport, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
 import { OrbitCrown, SweepSector } from '@/components/RingDial';
 import { SessionCard } from '@/components/SessionCard';
+import { TogetherDetails } from '@/components/TogetherDetails';
 import { SystemFrame } from '@/components/SystemFrame';
 import { Beacon, Convey, FlowLayers, ScanLine, Seam, TickRail } from '@/components/SystemMotion';
 import { TitleBadge } from '@/components/TitleBadge';
@@ -444,12 +445,15 @@ export function WorkoutRow({ workout, now }: { workout: Workout; now: Date }) {
   ].filter((measure): measure is string => measure !== null);
 
   return (
+    <View>
     <SessionCard
       discipline={workout.discipline}
       duration={formatDuration(workout.durationSeconds)}
       when={formatWhen(workout.startedAt, now)}
       measures={measures}
     />
+    <TogetherDetails together={workout.together} />
+    </View>
   );
 }
 

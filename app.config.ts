@@ -71,7 +71,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       infoPlist: {
         ...config.ios?.infoPlist,
         NSLocationWhenInUseUsageDescription: 'GRRIND utilise ta localisation pendant cette séance pour reconnaître le sport ensemble.',
-        NSHealthShareUsageDescription: 'GRRIND lit tes séances et, si tu l’autorises pour le pilote Sport ensemble, leurs itinéraires enregistrés dans Santé. Aucun itinéraire n’est envoyé pendant ce pilote.',
+        NSHealthShareUsageDescription: 'GRRIND lit tes séances et, si tu l’autorises pour le pilote Sport ensemble, leurs itinéraires enregistrés dans Santé. Avec ton accord dans GRRIND, les positions sont envoyées à son serveur pour reconnaître tes séances communes.',
         UIBackgroundModes: [...(config.ios?.infoPlist?.UIBackgroundModes ?? []), 'location'],
       },
       bundleIdentifier: identifier,

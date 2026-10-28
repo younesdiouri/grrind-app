@@ -20,6 +20,8 @@ import { ItemCard } from '@/components/ItemCard';
 import { StreakMeter, streakHeroCount } from '@/components/StreakMeter';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
+import { TogetherDetails } from '@/components/TogetherDetails';
+import { togetherGroups, type TogetherStatus } from '@/features/health/together';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import {
   ambient,
@@ -111,7 +113,7 @@ export function SyncSummaryView({
       <AmbientBackdrop />
       <View style={styles.frame}>
         <SystemFrame tier="event" style={styles.frame} contentStyle={styles.content}>
-          {page === 'xp' ? <XpPage gains={gains} progress={progress} /> : null}
+          {page === 'xp' ? <XpPage gains={gains} progress={progress} together={summary.imported.map((workout) => workout.session.together)} /> : null}
           {page === 'loot' ? <LootPage gains={gains} /> : null}
           {page === 'streak' && gains.streak !== null ? <StreakPage streak={gains.streak} /> : null}
 
@@ -132,7 +134,7 @@ const NEXT_LABEL: Record<Page, string> = { xp: 'l’XP', loot: 'le butin', strea
 
 type Progress = ReturnType<typeof useSharedValue<number>>;
 
-function XpPage({ gains, progress }: { gains: BatchGains; progress: Progress }) {
+function XpPage({ gains, progress, together }: { gains: BatchGains; progress: Progress; together: (TogetherStatus | undefined)[] }) {
   const { totals, bar } = gains;
   const xp = totals?.xpAwarded ?? 0;
 
@@ -169,7 +171,7 @@ function XpPage({ gains, progress }: { gains: BatchGains; progress: Progress }) 
   const climbed = totals.levelAfter > totals.levelBefore;
 
   return (
-    <View style={styles.page}>
+    <ScrollView style={styles.page} contentContainerStyle={styles.lootContent}>
       <AnimatedTextInput
         style={[styles.counter, xp === 0 && styles.quiet]}
         editable={false}
@@ -192,6 +194,10 @@ function XpPage({ gains, progress }: { gains: BatchGains; progress: Progress }) 
       {gains.noCredit === null ? null : (
         <Text style={styles.label}>{xpNoCreditReasonLabel[gains.noCredit].toUpperCase()}</Text>
       )}
+      {togetherGroups(together).map((group, index) => <View key={index}>
+        <Text style={styles.label}>{group.count} séance{group.count > 1 ? 's' : ''}</Text>
+        <TogetherDetails together={group.together} />
+      </View>)}
 
       {gains.titles.map((title) => (
         <TitleBadge key={title.id} name={title.name} caption="Titre débloqué" />
@@ -214,7 +220,7 @@ function XpPage({ gains, progress }: { gains: BatchGains; progress: Progress }) 
           </View>
         ))}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

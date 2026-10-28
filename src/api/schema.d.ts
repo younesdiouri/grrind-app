@@ -582,6 +582,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workouts/together-bonuses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_progression_together_bonuses"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/crafting/recipes": {
         parameters: {
             query?: never;
@@ -774,6 +790,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workouts/location-evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_training_location_evidence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workouts/sync-state": {
         parameters: {
             query?: never;
@@ -816,6 +848,129 @@ export interface components {
             routeType: components["schemas"]["PushRouteType"];
             /** Format: uuid */
             routeId: string;
+        };
+        /** @description Pilote : seuils provisoires. XP solo après plafond ; le supplément est hors budget quotidien. Aucune identité ni position des autres joueurs. */
+        TogetherStatus: {
+            /** @enum {string} */
+            status: "PENDING" | "INSUFFICIENT_EVIDENCE" | "VERIFIED" | "UNAVAILABLE";
+            /** @description Compte plafonné ; afficher 4+ au plafond. */
+            playerCount: number;
+            multiplier: number;
+            soloXp: number;
+            bonusXp: number;
+            totalXp: number;
+            rulesetVersion: string | null;
+        };
+        LocationPoint: {
+            /** Format: date-time */
+            timestamp: string;
+            latitude: number;
+            longitude: number;
+            horizontalAccuracy: number;
+        };
+        /** @description Lot immuable, UUID stable par compte. Bornes du workout fournisseur (24 h maximum), points dans ces bornes. Avant import accepté ; 50 lots / 20 000 points maximum par séance. Rejeu identique accepté, contenu différent 409. Preuve expirée après 30 jours : 410, sans prolongation. Aucun accès en lecture au GPS brut. */
+        LocationEvidenceRequest: {
+            /** Format: uuid */
+            batchId: string;
+            /** @enum {string} */
+            source: "APPLE_HEALTH" | "HEALTH_CONNECT";
+            externalId: string;
+            /** @enum {string} */
+            origin: "WORKOUT_ROUTE" | "PHONE_CAPTURE";
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            endedAt: string;
+            points: components["schemas"]["LocationPoint"][];
+        };
+        LocationEvidenceResult: {
+            /** Format: uuid */
+            batchId: string;
+            /** Format: uuid */
+            workoutId: string | null;
+            together: components["schemas"]["TogetherStatus"] | null;
+        };
+        /** @description Complément seul : bonusXp est le delta nouvellement accordé, totalBonusXp son cumul pour le workout. Ne jamais rejouer le SyncSummary. Valeurs avant/après prises au crédit du complément ; occurredAt reste la date du sport. */
+        TogetherBonus: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            workoutId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** Format: date-time */
+            createdAt: string;
+            previousMultiplier: number;
+            multiplier: number;
+            soloXp: number;
+            bonusXp: number;
+            totalBonusXp: number;
+            workoutTotalXp: number;
+            xp: {
+                awarded: number;
+                breakdown: {
+                    /** @enum {string} */
+                    source: "TOGETHER";
+                    amount: number;
+                }[];
+            };
+            /**
+             * @description Les cinq caractéristiques du personnage, chacune avec son avant et son
+             *     après — même raison que le palier de niveau : une jauge qui repartirait de
+             *     zéro mentirait à tout joueur qui n'y était pas.
+             *
+             *     **Vitality n'a pas de `gained`.** Elle ne reçoit jamais d'XP directement —
+             *     c'est une caractéristique dérivée des quatre autres, qui mesure l'équilibre
+             *     de la pratique. Elle peut donc bouger sans que **cette** séance lui ait
+             *     rien crédité : un joueur qui varie ses sports la voit sauter même le jour
+             *     où la répartition de sa séance n'y touche pas directement.
+             */
+            attributes: {
+                strength: components["schemas"]["AttributeGauge"];
+                endurance: components["schemas"]["AttributeGauge"];
+                mobility: components["schemas"]["AttributeGauge"];
+                dexterity: components["schemas"]["AttributeGauge"];
+                /** @description Dérivée, jamais créditée : pas de `gained` ici. */
+                vitality: {
+                    /** @example 300 */
+                    before: number;
+                    /** @example 310 */
+                    after: number;
+                };
+            };
+            level: {
+                /** @example 1 */
+                before: number;
+                /**
+                 * @description Où en était la barre avant la séance. Le client l'y place, **puis** la remplit.
+                 * @example 30
+                 */
+                xpIntoLevelBefore: number;
+                /**
+                 * @description Avec le précédent, la largeur du palier de départ. Elle ne se redéduit pas du reste dès que plusieurs niveaux sont franchis, et sans elle la barre repart de zéro pour un joueur qui n'y était pas. `null` au niveau maximum.
+                 * @example 70
+                 */
+                xpToNextLevelBefore: number | null;
+                /** @example 2 */
+                after: number;
+                /** @description Les niveaux franchis, dans l'ordre. En gagner plusieurs d'un coup est un cas normal — le client les anime tous. Vide quand rien ne bouge. */
+                reached: number[];
+                totalXp: number;
+                xpIntoLevel: number;
+                /** @description Ce qu'il **reste** à gagner. `null` signifie le niveau maximum ; zéro voudrait dire « atteint ». */
+                xpToNextLevel: number | null;
+            };
+            skillPointsGranted: number;
+            titlesUnlocked: components["schemas"]["PlayerTitle"][];
+            rulesetVersion: string;
+            detectionRulesetVersion: string;
+        };
+        /** @description Ordre de crédit croissant, filtré au compte courant. Relisible ; conserver le curseur après présentation réussie. Retourner nextCursor même à la fin du flux. */
+        TogetherBonusPage: {
+            bonuses: components["schemas"]["TogetherBonus"][];
+            /** Format: uuid */
+            nextCursor: string | null;
+            hasMore: boolean;
         };
         AlamGauge: {
             /** @enum {string} */
@@ -1463,6 +1618,7 @@ export interface components {
             averageHeartRate: number | null;
             /** @description L'identifiant chez le fournisseur, rendu parce que c'est le client qui l'a envoyé : il peut ainsi rapprocher sa liste HealthKit de ce que le serveur connaît déjà, sans deviner. */
             externalId: string | null;
+            together: components["schemas"]["TogetherStatus"];
         };
         /**
          * @description Une page d'historique, **dans l'ordre de la pratique** : `startedAt` décroissant, puis
@@ -1666,7 +1822,7 @@ export interface components {
              *     contributeurs de modificateurs ; les deux dernières, les garde-fous.
              * @enum {string}
              */
-            source: "BASE" | "DISTANCE" | "ELEVATION" | "HEART_RATE" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "GUILD" | "DIMINISHING" | "DAILY_CAP";
+            source: "BASE" | "DISTANCE" | "ELEVATION" | "HEART_RATE" | "STREAK" | "ITEM" | "SKILL" | "LEAGUE" | "GUILD" | "DIMINISHING" | "DAILY_CAP" | "TOGETHER";
             /** @example -55 */
             amount: number;
         };
@@ -2236,7 +2392,7 @@ export interface components {
              */
             sourceId: string;
             /** @enum {string} */
-            reason: "SESSION_COMPLETED" | "SESSION_INVALIDATED";
+            reason: "SESSION_COMPLETED" | "SESSION_INVALIDATED" | "TOGETHER_BONUS";
             discipline: components["schemas"]["Discipline"];
             /** @description Signé. La somme du `breakdown`, jamais autre chose. */
             amount: number;
@@ -3048,6 +3204,56 @@ export interface components {
             cursor: string | null;
             /** @default 20 */
             limit: number;
+        };
+        LocationPointRequest: {
+            /**
+             * Format: date-time
+             * @default null
+             */
+            timestamp: string | null;
+            /**
+             * Format: float
+             * @default null
+             */
+            latitude: number | null;
+            /**
+             * Format: float
+             * @default null
+             */
+            longitude: number | null;
+            /**
+             * Format: float
+             * @default null
+             */
+            horizontalAccuracy: number | null;
+        };
+        LocationEvidenceRequest2: {
+            /**
+             * Format: uuid
+             * @default null
+             */
+            batchId: string | null;
+            /** @default null */
+            source: components["schemas"]["WorkoutSource"] | null;
+            /** @default  */
+            externalId: string;
+            /**
+             * @default
+             * @enum {string}
+             */
+            origin: "WORKOUT_ROUTE" | "PHONE_CAPTURE";
+            /**
+             * Format: date-time
+             * @default null
+             */
+            startedAt: string | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            endedAt: string | null;
+            /** @default [] */
+            points: components["schemas"]["LocationPointRequest"][];
         };
     };
     responses: {
@@ -4478,6 +4684,32 @@ export interface operations {
             422: components["responses"]["UnprocessableEntity"];
         };
     };
+    get_progression_together_bonuses: {
+        parameters: {
+            query?: {
+                /** @description Dernier identifiant présenté, UUID v7 ; ordre de crédit croissant. */
+                after?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Compléments relisibles du joueur courant ; conserver nextCursor côté appareil après présentation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TogetherBonusPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     get_rewards_crafting_recipes: {
         parameters: {
             query?: never;
@@ -4894,6 +5126,42 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    post_training_location_evidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocationEvidenceRequest"];
+            };
+        };
+        responses: {
+            /** @description Lot enregistré ou rejoué ; workout nul avant son import. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationEvidenceResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+            /** @description Fenêtre de preuve expirée. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
             422: components["responses"]["UnprocessableEntity"];
         };
     };

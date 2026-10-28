@@ -7,6 +7,7 @@ import ExpoModulesCore
 final class SportTogetherCollector: NSObject, CLLocationManagerDelegate {
   private let health = HKHealthStore()
   private let archive = SportEvidenceStore()
+  private let outbox = SportUploadOutbox()
   private let location = CLLocationManager()
   private var owner: String?
   private var active: SportEvidence?
@@ -14,6 +15,7 @@ final class SportTogetherCollector: NSObject, CLLocationManagerDelegate {
   private var permissionReply: (([String: Any]) -> Void)?
   private var collectingRoute = false
   private var generation = UUID()
+  private var uploadTask: URLSessionDataTask?
   private(set) var storageFailed = false
   private var now: Double { Date().timeIntervalSince1970 * 1000 }
 
@@ -25,14 +27,14 @@ final class SportTogetherCollector: NSObject, CLLocationManagerDelegate {
     location.distanceFilter = kCLDistanceFilterNone
     location.pausesLocationUpdatesAutomatically = false
     // Une relance ne réactive jamais le GPS. Les points déjà écrits restent consultables.
-    do { try archive.recoverInterrupted(now: now) } catch { storageFailed = true }
+    do { try archive.recoverInterrupted(now: now); try outbox.purgeExpired(now: now) } catch { storageFailed = true }
   }
 
   func bind(_ newOwner: String?) throws {
     guard newOwner == nil || (newOwner!.count > 0 && newOwner!.count <= 128) else {
       throw SportCollectionException("Compte invalide.")
     }
-    if owner != newOwner { stop(reason: "accountChanged"); generation = UUID() }
+    if owner != newOwner { stop(reason: "accountChanged"); uploadTask?.cancel(); generation = UUID() }
     owner = newOwner
   }
 
@@ -57,7 +59,8 @@ final class SportTogetherCollector: NSObject, CLLocationManagerDelegate {
     guard let owner else { return ["captures": [], "storageFailed": storageFailed, "permission": permissions, "activeCaptureId": NSNull()] }
     if let active, now >= active.startedAt + 4 * 60 * 60 * 1000 { stop(reason: "limit") }
     return ["captures": try archive.list(owner: owner, now: now).map(\.summary),
-            "storageFailed": storageFailed, "permission": permissions, "activeCaptureId": active?.id as Any? ?? NSNull()]
+            "storageFailed": storageFailed, "permission": permissions, "activeCaptureId": active?.id as Any? ?? NSNull(),
+            "uploads": try outbox.summary(owner: owner, now: now)]
   }
 
   func start(expectedOwner: String) throws {
@@ -97,9 +100,11 @@ final class SportTogetherCollector: NSObject, CLLocationManagerDelegate {
 
   func clear() throws {
     generation = UUID()
+    uploadTask?.cancel()
     stop()
     guard let owner else { return }
     try archive.remove(owner: owner, now: now)
+    try outbox.clear(owner: owner, now: now)
     storageFailed = false
   }
 
@@ -119,7 +124,7 @@ final class SportTogetherCollector: NSObject, CLLocationManagerDelegate {
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     guard var capture = active else { return }
     guard now < capture.startedAt + 4 * 60 * 60 * 1000 else { stop(reason: "limit"); return }
-    var last = capture.points.last?.timestamp ?? capture.startedAt - 10_000
+    var last = max(capture.points.last?.timestamp ?? capture.startedAt - 10_000, capture.deliveredThrough ?? capture.startedAt - 10_000)
     let points = locations.sorted { $0.timestamp < $1.timestamp }.compactMap { value -> SportPoint? in
       let point = Self.point(value)
       guard point.isValid, point.timestamp >= capture.startedAt, point.timestamp <= now,
@@ -240,6 +245,89 @@ final class SportTogetherCollector: NSObject, CLLocationManagerDelegate {
     SportPoint(timestamp: location.timestamp.timeIntervalSince1970 * 1000,
       latitude: location.coordinate.latitude, longitude: location.coordinate.longitude,
       horizontalAccuracy: location.horizontalAccuracy)
+  }
+
+  func enableUploads(owner: String, enabled: Bool) throws {
+    guard self.owner == owner else { throw SportCollectionException("Le compte a changé.") }
+    if !enabled { uploadTask?.cancel() }
+    try outbox.enable(enabled, owner: owner, now: now)
+  }
+
+  func prepareUploads(owner: String, specifications: String) throws {
+    guard self.owner == owner, let data = specifications.data(using: .utf8),
+          let values = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+      throw SportCollectionException("Préparation des preuves impossible.")
+    }
+    try outbox.prepare(owner: owner, specifications: values, evidence: archive.list(owner: owner, now: now), now: now)
+  }
+
+  // Le seul accès réseau aux coordonnées. Le pont JS ne reçoit ni les points ni un chemin de fichier.
+  func uploadNext(owner: String, endpoint: String, token: String, reply: @escaping ([String: Any]?, Error?) -> Void) {
+    guard self.owner == owner, uploadTask == nil, let url = URL(string: endpoint),
+          url.path == "/api/workouts/location-evidence", url.user == nil, url.password == nil,
+          url.query == nil, url.fragment == nil else {
+      reply(nil, SportCollectionException("Envoi des preuves indisponible.")); return
+    }
+    var allowed = url.scheme == "https"
+    #if DEBUG
+    if url.scheme == "http", let host = url.host {
+      allowed = host == "localhost" || host == "127.0.0.1" || host.hasPrefix("192.168.") || host.hasPrefix("10.")
+        || host.hasSuffix(".local") || host.hasPrefix("169.254.")
+    }
+    #endif
+    guard allowed else { reply(nil, SportCollectionException("Adresse de preuve non sécurisée.")); return }
+    let batch: SportUploadBatch
+    do {
+      guard let pending = try outbox.next(owner: owner, now: now) else { reply(["status": 204, "batchId": NSNull()], nil); return }
+      batch = pending
+    } catch { reply(nil, SportCollectionException("File de preuves indisponible.")); return }
+    let current = generation
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.httpBody = batch.payload
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
+    request.setValue("fr", forHTTPHeaderField: "Accept-Language")
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.timeoutIntervalForRequest = 20
+    configuration.httpShouldSetCookies = false
+    let session = URLSession(configuration: configuration, delegate: SportNoRedirect(), delegateQueue: nil)
+    uploadTask = session.dataTask(with: request) { data, response, error in
+      DispatchQueue.main.async {
+        session.finishTasksAndInvalidate()
+        self.uploadTask = nil
+        guard self.owner == owner, self.generation == current else {
+          reply(nil, SportCollectionException("Envoi interrompu par changement de compte.")); return
+        }
+        guard error == nil, let response = response as? HTTPURLResponse else {
+          reply(nil, SportCollectionException("Envoi interrompu. Le même lot sera repris.")); return
+        }
+        let object = data.flatMap { try? JSONSerialization.jsonObject(with: $0) } as? [String: Any]
+        let status = response.statusCode
+        if (200..<300).contains(status) || status == 410 {
+          guard status == 410 || SportUploadOutbox.acknowledges(batch, responseId: object?["batchId"]) else {
+            reply(nil, SportCollectionException("Réponse de preuve incomplète.")); return
+          }
+          do {
+            for updated in try self.archive.purgeUploaded(owner: owner, batch: batch, now: self.now) {
+              if self.active?.id == updated.id { self.active = updated }
+            }
+            try self.outbox.acknowledge(owner: owner, id: batch.id, delivered: status != 410, now: self.now)
+          } catch { reply(nil, SportCollectionException("Acquittement local impossible. Le lot sera relu.")); return }
+        }
+        // Un refus de validation peut contenir des mesures : seul le type du 401 traverse le pont.
+        reply(["status": status, "batchId": batch.id,
+               "problemType": status == 401 ? object?["type"] as Any? ?? NSNull() : NSNull()], nil)
+      }
+    }
+    uploadTask?.resume()
+  }
+}
+
+private final class SportNoRedirect: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+  func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                  newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+    completionHandler(nil)
   }
 }
 
