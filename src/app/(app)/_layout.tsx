@@ -5,6 +5,7 @@ import { AmbientBackdropProvider } from '@/components/AmbientBackdrop';
 import { SystemHeader } from '@/components/SystemHeader';
 import { ambient, color } from '@/design/tokens';
 import { useSyncTriggers } from '@/features/health/useSync';
+import { SportCaptureStatus } from '@/features/health/SportCaptureStatus';
 import { useDeviceRegistration } from '@/features/notifications/useDeviceRegistration';
 import { usePendingPushRoute } from '@/features/notifications/usePendingPushRoute';
 import { markInteracted } from '@/features/reward/launchGate';
@@ -56,6 +57,7 @@ export default function AppLayout() {
     <ThemeProvider value={connectedTheme}>
       <AmbientBackdropProvider>
         <View style={styles.shell} onTouchStart={markInteracted}>
+          <SportCaptureStatus />
           <View style={styles.navigation}>
           <Stack
             screenOptions={{

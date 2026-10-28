@@ -38,6 +38,7 @@ import Security
  */
 public class GrrindHealthModule: Module {
   private let store = HKHealthStore()
+  private lazy var sport = SportTogetherCollector()
 
   /** L'observateur en cours d'exécution, retenu pour ne pas être désalloué entre deux réveils.
    Un second appel à `enableBackgroundDelivery` ne doit pas en démarrer un deuxième par-dessus :
@@ -98,7 +99,47 @@ public class GrrindHealthModule: Module {
     // ne tente rien de coûteux sans autorisation : sans elle, il ne livre simplement jamais rien.
     OnCreate {
       self.startObserving()
+      DispatchQueue.main.async { _ = self.sport }
     }
+
+    AsyncFunction("setSportOwner") { (owner: String?) in
+      try self.sport.bind(owner)
+    }.runOnQueue(.main)
+
+    AsyncFunction("sportStatus") { () -> [String: Any] in
+      try self.sport.status()
+    }.runOnQueue(.main)
+
+    AsyncFunction("requestSportLocation") { (promise: Promise) in
+      self.sport.requestLocationPermission { promise.resolve($0) }
+    }.runOnQueue(.main)
+
+    AsyncFunction("startSportCapture") { (owner: String) in
+      try self.sport.start(expectedOwner: owner)
+    }.runOnQueue(.main)
+    AsyncFunction("stopSportCapture") { self.sport.stop() }.runOnQueue(.main)
+    AsyncFunction("clearSportEvidence") { try self.sport.clear() }.runOnQueue(.main)
+
+    AsyncFunction("requestSportRoutes") { (promise: Promise) in
+      self.sport.requestRoutes { error in
+        if error != nil { promise.reject(SportCollectionException("La demande Santé a échoué.")) }
+        else { promise.resolve() }
+      }
+    }.runOnQueue(.main)
+
+    AsyncFunction("sportWorkouts") { (promise: Promise) in
+      self.sport.workouts { workouts, error in
+        if error != nil { promise.reject(SportCollectionException("Lecture Santé indisponible.")) }
+        else { promise.resolve(workouts ?? []) }
+      }
+    }.runOnQueue(.main)
+
+    AsyncFunction("collectSportRoutes") { (workoutId: String, promise: Promise) in
+      self.sport.collectRoutes(workoutId: workoutId) { error in
+        if error != nil { promise.reject(SportCollectionException("Lecture des routes incomplète. Réessaie.")) }
+        else { promise.resolve() }
+      }
+    }.runOnQueue(.main)
 
     AsyncFunction("isAvailable") { () -> Bool in
       HKHealthStore.isHealthDataAvailable()

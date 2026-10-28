@@ -36,6 +36,18 @@ struct SportEvidenceChecks {
     try restored.recoverInterrupted(now: now + 30)
     let recovered = try restored.list(owner: "account-a", now: now).first { $0.id == interrupted.id }
     try check(recovered?.state == "interrupted" && recovered?.endedAt == point.timestamp)
+    var route = SportEvidence(owner: "account-a", origin: "route", startedAt: now, endedAt: now + 10,
+                              workoutId: "workout", routeId: UUID().uuidString)
+    route.append([point, SportPoint(timestamp: now + 11, latitude: 48, longitude: 2, horizontalAccuracy: 5)])
+    try check(route.points.count == 1, "Une route ne déborde pas du workout")
+    try store.save(route)
+    try store.removeReplacedRoutes(owner: "account-a", workoutId: "workout", keeping: [route.routeId!], now: now)
+    try check(try store.list(owner: "account-a", now: now).contains { $0.id == route.id })
+    try store.removeReplacedRoutes(owner: "account-a", workoutId: "workout", keeping: [], now: now)
+    try check(try !store.list(owner: "account-a", now: now).contains { $0.id == route.id }, "Route remplacée supprimée")
+    var large = SportEvidence(owner: "account-a", origin: "route", startedAt: now)
+    large.append((1...20_001).map { SportPoint(timestamp: now + Double($0), latitude: 48, longitude: 2, horizontalAccuracy: 10) })
+    try check(large.points.count == 20_000 && large.state == "limit", "Route volumineuse bornée et statut explicite")
     try check(try restored.list(owner: "account-a", now: deadline).isEmpty, "Expiration inclusive et purge")
     try check(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty)
     print("Sport evidence: isolation, reprise, dédoublonnage, validation et purge OK")

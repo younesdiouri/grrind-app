@@ -65,6 +65,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
+    "test:health:native": "sh scripts/test-health-native.sh",
     "previews": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/use-module-hooks.ts scripts/build-previews.ts",
     "previews:check": "npm run previews && git diff --exit-code --stat previews && test -z \"$(git status --porcelain previews)\"",
     "test": "node --test --experimental-test-module-mocks --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/use-module-hooks.ts \"src/**/*.test.ts\"",

@@ -28,7 +28,7 @@ struct SportEvidence: Codable {
 
   init(owner: String, origin: String, startedAt: Double, endedAt: Double? = nil,
        workoutId: String? = nil, routeId: String? = nil) {
-    self.id = routeId ?? UUID().uuidString
+    self.id = UUID().uuidString
     self.owner = owner
     self.origin = origin
     self.startedAt = startedAt
@@ -105,6 +105,13 @@ final class SportEvidenceStore {
 
   func remove(owner: String, now: Double) throws {
     for evidence in try list(owner: owner, now: now) {
+      try FileManager.default.removeItem(at: directory.appendingPathComponent(evidence.id + ".json"))
+    }
+  }
+
+  func removeReplacedRoutes(owner: String, workoutId: String, keeping routeIds: Set<String>, now: Double) throws {
+    for evidence in try list(owner: owner, now: now)
+      where evidence.workoutId == workoutId && !routeIds.contains(evidence.routeId ?? "") {
       try FileManager.default.removeItem(at: directory.appendingPathComponent(evidence.id + ".json"))
     }
   }
