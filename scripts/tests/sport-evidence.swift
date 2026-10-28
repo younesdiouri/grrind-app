@@ -72,6 +72,12 @@ struct SportEvidenceChecks {
     try check(!SportUploadOutbox.acknowledges(first, responseId: UUID().uuidString), "Ne pas acquitter le mauvais lot")
     let payload = try JSONSerialization.jsonObject(with: first.payload!) as! [String: Any]
     try check(payload["startedAt"] as? String == startString && payload["endedAt"] as? String == endString)
+    let sentPoints = payload["points"] as! [[String: Any]]
+    try check(Set(sentPoints[0].keys) == ["timestamp", "latitude", "longitude", "horizontalAccuracy"], "Allowlist du contrat, aucune autre donnée Core Location")
+    try check(sentPoints.allSatisfy { point in
+      guard let timestamp = SportUploadOutbox.date(point["timestamp"]) else { return false }
+      return timestamp >= begin && timestamp <= end
+    }, "Horodatages ISO UTC dans les bornes du workout")
     let relaunched = SportUploadOutbox(directory: uploadDirectory)
     try relaunched.prepare(owner: "account-a", specifications: specs, evidence: [phone], now: now)
     try check(try relaunched.next(owner: "account-a", now: now)?.payload == first.payload, "Même corps et même UUID après relance")

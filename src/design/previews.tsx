@@ -36,6 +36,9 @@ import { StreakMeter } from '@/components/StreakMeter';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { ToggleRow } from '@/components/ToggleRow';
+import { TogetherDetails } from '@/components/TogetherDetails';
+import { TogetherBonusReceipt } from '@/features/health/TogetherBonusReceipt';
+import { TOGETHER_BONUS_FIXTURE } from '@/features/health/togetherFixtures';
 import { XpBar } from '@/components/XpBar';
 import {
   color,
@@ -917,6 +920,18 @@ export const PREVIEWS: Preview[] = [
       </Specimen>
       <Specimen label="Pilote localisation — stockage indisponible">
         <View style={{ marginHorizontal: -space.lg }}><GameHud coins={50} location={{ active: false, failed: true }} onNavigate={() => {}} /></View>
+      </Specimen>
+    </>,
+  },
+  {
+    slug: 'sport-ensemble', name: 'Sport ensemble · pilote', group: 'Composants',
+    element: <>
+      <Specimen label="Statuts serveur — aucun verdict solo déduit d’une absence de GPS">
+        {(['PENDING', 'INSUFFICIENT_EVIDENCE', 'UNAVAILABLE', 'VERIFIED'] as const).map((status) =>
+          <TogetherDetails key={status} together={{ status, playerCount: 4, multiplier: 4, soloXp: 100, bonusXp: 300, totalXp: 400, rulesetVersion: 'synthetic' }} />)}
+      </Specimen>
+      <Specimen label="Reçu de complément synthétique — valeurs serveur avant/après">
+        <TogetherBonusReceipt bonus={TOGETHER_BONUS_FIXTURE} />
       </Specimen>
     </>,
   },
