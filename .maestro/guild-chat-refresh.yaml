@@ -2,7 +2,8 @@ appId: app.grrind.dev
 ---
 - tapOn:
     id: "tab-guilde"
-- tapOn: "Chat de la guilde"
+- tapOn:
+    id: "guild-tab-chat"
 - tapOn:
     id: "chat-input"
 - inputText: "Refresh natif iOS"

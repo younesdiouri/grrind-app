@@ -23,7 +23,7 @@ export function GuildRisalatSummary({ risalat, now, onOpen }: {
         </View>)}
         {risalat.turn?.mine && <Text style={styles.turn}>{risalat.turn.discipline === null ? 'C’est ton tour' : 'Ta prochaine Risāla est prête'}</Text>}
       </View>
-      <Text style={styles.chevron} accessibilityElementsHidden>›</Text>
+      <Text style={styles.chevron} aria-hidden>›</Text>
     </SystemFrame>
   </Pressable>;
 }

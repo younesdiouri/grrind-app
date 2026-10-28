@@ -2,7 +2,7 @@ import { useHeaderHeight } from 'expo-router/react-navigation';
 import { randomUUID } from 'expo-crypto';
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { color, control, guildChat, radius, space, type } from '@/design/tokens';
@@ -13,23 +13,14 @@ import { chatAuthorLabel, type ChatError, type ChatMessage } from '@/features/co
 import type { GuildDetail } from '@/features/community/guildScreenState';
 import { useGuildChat } from '@/features/community/useGuildChat';
 
-export function GuildChat({ guild, playerId, onClose, onGone }: {
-  guild: GuildDetail; playerId: string; onClose?: () => void; onGone: () => void;
+export function GuildChat({ guild, playerId, onGone, headerOffset = 0 }: {
+  guild: GuildDetail; playerId: string; onGone: () => void; headerOffset?: number;
 }) {
   const { state, controller, connected, signal } = useGuildChat(guild.id, playerId, onGone);
   const [picking, setPicking] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const headerHeight = useHeaderHeight();
   const draft = state.draft;
-  const close = () => {
-    if (!onClose) return;
-    if (draft?.text || draft?.photo) {
-      Alert.alert('Fermer le chat ?', 'Le brouillon et sa photo seront abandonnés.', [
-        { text: 'Continuer à écrire', style: 'cancel' },
-        { text: 'Abandonner', style: 'destructive', onPress: onClose },
-      ]);
-    } else onClose();
-  };
   const pick = async () => {
     setPicking(true);
     setPhotoError(null);
@@ -42,9 +33,8 @@ export function GuildChat({ guild, playerId, onClose, onGone }: {
     } finally { if (!signal.aborted) setPicking(false); }
   };
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={headerHeight}>
+    <KeyboardAvoidingView testID="guild-chat-screen" style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={headerHeight + headerOffset}>
       <View style={styles.heading}>
-        {onClose && <Button label="Infos et membres" onPress={close} variant="quiet" />}
         <View style={styles.headingRow}>
           <Text style={styles.title} numberOfLines={1}>Chat · {guild.name}</Text>
           <Text style={styles.status}>{connected ? 'En direct' : 'Reconnexion…'}</Text>

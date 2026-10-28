@@ -1,9 +1,10 @@
-import { router } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -19,6 +20,7 @@ import { DangerRow } from '@/components/DangerRow';
 import { Field } from '@/components/Field';
 import { GuildIcon, GuildMembers, GuildTabs, type GuildTab } from '@/components/GuildMenu';
 import { GuildRisalatSummary } from '@/components/GuildRisalatSummary';
+import { GuildWeeklyBoard } from '@/components/GuildWeeklyBoard';
 import { color, guildUi, radius, space, type, typography } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
@@ -42,6 +44,7 @@ import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefu
 import { leaveAnnouncementFor } from '@/features/community/leaveAnnouncement';
 import { RisalatBlock } from '@/features/community/RisalatBlock';
 import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
+import { GUILD_WEEKLY_QUERY_KEY, useGuildWeekly } from '@/features/community/useGuildWeekly';
 import { RISALAT_QUERY_KEY, useRisalat } from '@/features/community/useRisalat';
 import { requestPermissionAndRegister } from '@/features/notifications/registration';
 
@@ -69,6 +72,7 @@ type GuildMemberEntry = GuildDetail['members'][number];
  * ensemble, ce qui ramenait indéfiniment `GuildMilestone` sur une guilde qui n'existait plus.
  */
 export default function GuildeScreen() {
+  const { section } = useLocalSearchParams<{ section?: string }>();
   const myGuild = useMyGuild();
   const queryClient = useQueryClient();
 
@@ -91,6 +95,7 @@ export default function GuildeScreen() {
     // joueur qui rallie une guilde déjà active verrait un bloc vide (ou celui d'une guilde
     // précédente, resté en cache) jusqu'à ce qu'un autre geste force le rafraîchissement.
     void queryClient.invalidateQueries({ queryKey: RISALAT_QUERY_KEY });
+    void queryClient.invalidateQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
     // Un formulaire qu'on vient de faire aboutir n'a plus de raison de rester armé : sans ce
     // reset, `mode` resterait sur `'found'` ou `'join'` pendant tout le séjour dans la guilde,
     // prêt à resurgir si le joueur la quitte ensuite (voir `forgetGuild`, juste en dessous).
@@ -122,6 +127,7 @@ export default function GuildeScreen() {
     // retire donc plutôt que de la recaler : sans ça, rejoindre une autre guilde plus tard
     // réafficherait un instant les Risālāt de celle qu'on vient de quitter.
     queryClient.removeQueries({ queryKey: RISALAT_QUERY_KEY });
+    queryClient.removeQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
     setJustResolved(null);
     setMode('empty');
   };
@@ -134,7 +140,8 @@ export default function GuildeScreen() {
   });
 
   if (state.kind === 'roster') {
-    return <Roster key={state.guild.id} guild={state.guild} onGone={forgetGuild} />;
+    return <Roster key={state.guild.id} guild={state.guild} onGone={forgetGuild}
+      requestedTab={section === 'chat' || section === 'risalat' ? section : undefined} />;
   }
 
   if (state.kind === 'milestone') {
@@ -230,12 +237,33 @@ function isPlayerNotAMember(failure: Failure): boolean {
 }
 
 /** Le cache reste serveur ; seules la navigation et la présentation des membres changent. */
-function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
+function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: () => void; requestedTab?: GuildTab }) {
   const auth = useAuth();
-  const [tab, setTab] = useState<GuildTab>('week');
-  const [chatVisited, setChatVisited] = useState(false);
+  const [tab, setTab] = useState<GuildTab>(requestedTab ?? 'week');
+  const [chatVisited, setChatVisited] = useState(requestedTab === 'chat');
+  const [guildHeaderHeight, setGuildHeaderHeight] = useState(0);
+  const [lastRequestedTab, setLastRequestedTab] = useState(requestedTab);
+  if (lastRequestedTab !== requestedTab) {
+    setLastRequestedTab(requestedTab);
+    if (requestedTab) {
+      setTab(requestedTab);
+      if (requestedTab === 'chat') setChatVisited(true);
+    }
+  }
+  useEffect(() => {
+    if (requestedTab) {
+      Keyboard.dismiss();
+      router.setParams({ section: undefined });
+    }
+  }, [requestedTab]);
   const queryClient = useQueryClient();
   const risalat = useRisalat();
+  const weekly = useGuildWeekly(guild.id);
+  const refetchWeekly = weekly.refetch;
+  useFocusEffect(useCallback(() => { void refetchWeekly(); }, [refetchWeekly]));
+  useEffect(() => {
+    if (weekly.isError && isGuildGone(weekly.error)) onGone();
+  }, [weekly.isError, weekly.error, onGone]);
   // Calculé au rendu, jamais entretenu : une échéance à quinze jours n'a besoin d'être connue
   // qu'à l'ouverture de l'onglet et à chaque tirer-pour-rafraîchir, pas d'une horloge qui vit
   // entre les deux (#105).
@@ -257,7 +285,7 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
     setRefreshFailure(null);
     // Le geste rafraîchit ce qu'on regarde, pas une des deux moitiés : les Risālāt partent en
     // même temps que la guilde, jamais après coup sur un second tirer.
-    const [guildFailure] = await Promise.all([syncGuild(guild.id, queryClient, onGone), risalat.refetch()]);
+    const [guildFailure] = await Promise.all([syncGuild(guild.id, queryClient, onGone), risalat.refetch(), weekly.refetch()]);
     setRefreshFailure(guildFailure);
     setRefreshing(false);
   };
@@ -290,6 +318,7 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
     // Succès, ou `player-is-not-a-member` — il était déjà parti : dans les deux cas la liste
     // se recale sur ce que le serveur rend maintenant, jamais sur une épissure locale.
     setExcludeFailure(await syncGuild(guild.id, queryClient, onGone));
+    await queryClient.invalidateQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
     setExcludingId(null);
   };
 
@@ -336,7 +365,9 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
   };
 
   const selectTab = (next: GuildTab) => {
+    Keyboard.dismiss();
     if (next === 'chat') setChatVisited(true);
+    if (next === 'week') void weekly.refetch();
     setTab(next);
   };
   const openProfile = (id: string) => router.push({ pathname: '/joueur/[id]', params: { id } });
@@ -348,6 +379,7 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
       : <GuildRisalatSummary risalat={risalat.data} now={now} onOpen={() => selectTab('risalat')} />;
 
   return <View style={styles.flex}>
+    <View onLayout={({ nativeEvent }) => setGuildHeaderHeight(nativeEvent.layout.height)}>
     <View style={styles.identity}>
       <View style={styles.crest}><GuildIcon name="members" size={guildUi.rankSize} /></View>
       <View style={styles.identityText}>
@@ -356,18 +388,31 @@ function Roster({ guild, onGone }: { guild: GuildDetail; onGone: () => void }) {
       </View>
     </View>
     <GuildTabs selected={tab} onSelect={selectTab} myTurn={risalat.data?.turn?.mine && risalat.data.turn.discipline === null} />
+    </View>
     {/* Garder le chat monté préserve son brouillon et sa photo entre les sous-onglets. */}
     {chatVisited && auth.status === 'signedIn' && <View style={tab === 'chat' ? styles.flex : styles.hidden}
       accessibilityElementsHidden={tab !== 'chat'} importantForAccessibility={tab === 'chat' ? 'auto' : 'no-hide-descendants'}>
-      <GuildChat key={`${guild.id}:${auth.user.id}`} guild={guild} playerId={auth.user.id} onGone={onGone} />
+      <GuildChat key={`${guild.id}:${auth.user.id}`} guild={guild} playerId={auth.user.id} onGone={onGone} headerOffset={guildHeaderHeight} />
     </View>}
     {tab === 'settings' && managing ? <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />
       : tab !== 'chat' && <ScrollView contentContainerStyle={styles.guildContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={color.accent} />}>
         {refreshFailure && <Text style={styles.failure}>{messageFor(refreshFailure)}</Text>}
         {tab === 'week' && <>
-          <Text style={styles.title}>La semaine de la guilde</Text>
-          {risalatContent}
+          {weekly.data ? <GuildWeeklyBoard board={weekly.data} playerId={auth.status === 'signedIn' ? auth.user.id : ''}
+            onProfile={openProfile} summary={risalatContent} />
+            : <>
+              {weekly.isPending ? <ActivityIndicator color={color.accent} /> : <View style={styles.risalatError}>
+                <Text style={styles.title}>Classement indisponible</Text>
+                <Text style={styles.failure}>{messageFor(weekly.error)}</Text>
+                <Button label="Réessayer" onPress={() => void weekly.refetch()} variant="quiet" />
+              </View>}
+              {risalatContent}
+            </>}
+          {weekly.data && weekly.isError && <View style={styles.risalatError}>
+            <Text style={styles.failure}>Actualisation impossible. Le dernier classement reçu reste affiché.</Text>
+            <Button label="Réessayer" onPress={() => void weekly.refetch()} variant="quiet" />
+          </View>}
         </>}
         {tab === 'members' && <>
           <View style={styles.sectionHeading}><Text style={styles.title}>Membres</Text><Text style={styles.body}>Par niveau</Text></View>
@@ -584,6 +629,7 @@ function FoundForm({
 
         <Field
           label="Nom de la guilde"
+          testID="guild-name"
           value={name}
           onChangeText={setName}
           maxLength={GUILD_NAME_MAX_LENGTH}

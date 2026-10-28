@@ -70,9 +70,9 @@ const styles = StyleSheet.create({
   icon: { position: 'relative' },
   dot: { position: 'absolute', top: -space.xs, right: -space.xs, width: space.sm, height: space.sm, borderRadius: space.sm, backgroundColor: color.gain },
   members: { gap: space.sm },
-  member: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: control.borderWidth, borderBottomColor: color.border, paddingVertical: space.md },
+  member: { flexDirection: 'row', alignItems: 'flex-start', borderBottomWidth: control.borderWidth, borderBottomColor: color.border, paddingVertical: space.md },
   profile: { flex: 1, minWidth: 0 },
-  exclude: { width: control.backSize, height: control.backSize, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end' },
+  exclude: { width: control.backSize, height: control.backSize, alignItems: 'center', justifyContent: 'center', marginTop: space.sm },
   cross: { ...type.title, color: color.textMuted },
   pressed: { opacity: opacity.pressed },
 });

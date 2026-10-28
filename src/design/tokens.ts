@@ -228,7 +228,7 @@ export const control = {
 export const guildUi = {
   tabHeight: 58, tabLabelSize: 12, iconSize: 20,
   crestSize: 44, avatarSize: 56, leaderAvatarSize: 68,
-  podiumHeight: 230, podiumBase: 64, podiumRise: 24,
+  podiumBase: 48, podiumRise: 16,
   rankSize: 30, scoreSize: 30, titleSize: 26,
   heroSurface: '#0C1B30', heroLight: 'rgba(53, 228, 255, 0.12)',
   silver: '#B8CEE4', bronze: '#C69B87',

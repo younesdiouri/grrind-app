@@ -11,8 +11,9 @@ npm run api:generate
 GRRIND_API_REF=fd1c2ba5abea2529302731ec9f3745e922ddec73 npm run api:check
 ```
 
-La conversation conserve ses messages et son brouillon uniquement pendant son ouverture.
-Fermer le chat abandonne le brouillon ; un envoi échoué reste réessayable tant qu'on y reste.
+Depuis #320, Chat est un sous-onglet de Guilde. La conversation se monte au premier accès
+et reste montée en changeant de sous-onglet : brouillon, photo et réessai sont conservés.
+Le démontage du module (départ de guilde, déconnexion ou arrêt de l'app) abandonne le brouillon.
 Chaque modification crée une nouvelle intention. Un réessai réutilise l'intention et le JPEG
 préparé. Le curseur de rattrapage n'avance pas sur la réponse d'un envoi, afin de ne pas sauter
 les messages écrits entre-temps par un autre membre.
@@ -27,7 +28,7 @@ La photothèque utilise le picker système iOS, qui ne demande pas l'accès comp
 bibliothèque sur les versions iOS supportées. La caméra n'est pas appelée. Le codec natif
 prépare un JPEG de 1 600 pixels maximum sur le grand côté, compression 0,8, vérifié sous
 5 Mio ; l'original temporaire est supprimé. Le fichier préparé est supprimé après succès,
-remplacement ou fermeture. Le répertoire dédié est aussi purgé au démarrage et à la déconnexion, y compris après un arrêt du processus. Seuls les fichiers du cache de l'app peuvent être supprimés.
+remplacement ou démontage du chat. Le répertoire dédié est aussi purgé au démarrage et à la déconnexion, y compris après un arrêt du processus. Seuls les fichiers du cache de l'app peuvent être supprimés.
 
 Sources SDK 57 consultées avant implémentation :
 - https://docs.expo.dev/versions/v57.0.0/sdk/expo/#expofetch-api

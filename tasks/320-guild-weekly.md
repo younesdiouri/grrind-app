@@ -7,14 +7,14 @@ un accueil consacré aux séances de l’équipe et cinq sous-onglets persistant
 Semaine (défaut), Chat, Membres, Risālāt, Réglages.
 Le 28 octobre 2026 il confirme le classement par nombre de séances validées dans la semaine.
 
-- [ ] Semaine : podium, classement complet, repère personnel, dates et total serveur.
-- [ ] Égalités respectées ; aucun podium artificiel avec des comptes à zéro.
-- [ ] Aperçu Risālāt compact ouvrant leur onglet complet, tour accessible.
-- [ ] Membres par niveau décroissant, progression XP, profil et croix d’exclusion nominative
+- [x] Semaine : podium, classement complet, repère personnel, dates et total serveur.
+- [x] Égalités respectées ; aucun podium artificiel avec des comptes à zéro.
+- [x] Aperçu Risālāt compact ouvrant leur onglet complet, tour accessible.
+- [x] Membres par niveau décroissant, progression XP, profil et croix d’exclusion nominative
       de 44 pt, confirmation conservée et réservée au fondateur.
-- [ ] Réglages : capacité, création, départ ; invitation/renommage/dissolution du fondateur.
-- [ ] Retirer le raccourci Ālam redondant ; conserver le brouillon en changeant de sous-onglet.
-- [ ] Push Risālāt/chat dirigés vers leur sous-onglet, paramètre consommé une fois.
+- [x] Réglages : capacité, création, départ ; invitation/renommage/dissolution du fondateur.
+- [x] Retirer le raccourci Ālam redondant ; conserver le brouillon en changeant de sous-onglet.
+- [x] Push Risālāt/chat dirigés vers leur sous-onglet, paramètre consommé une fois.
 
 Le back réalise [grrind-back#327](https://github.com/younesdiouri/grrind-back/issues/327)
 dans son chat existant. Aucun score, rang ou calendrier métier recalculé par le client.
@@ -43,4 +43,26 @@ avant code : https://docs.expo.dev/versions/v57.0.0/.
 
 ## Résultat
 
-À compléter après vérification.
+Implémentation locale sur `codex/320-guild-weekly`. Backend #327 terminé dans son chat,
+commit `c0103b7`, branche `codex/327-guild-weekly-leaderboard`, serveur localhost:8080.
+Contrat officiel copié depuis `/Users/younesdiouri/Desktop/grrind/openapi.yaml`, types générés.
+Le back annonce 1 507 tests et ses barrières QA/OpenAPI réussis.
+
+Typecheck et lint : sortie 0 ; 616 tests client passent. 33 previews issues des composants RN.
+Sous-onglets mesurés à 58 pt de haut ; exclusions à 44 × 44 pt, sans débordement dans
+la preview de noms longs à la largeur utile d’un écran de 320 pt.
+Bundle principal iOS Metro 8081 (`.expo/.virtual-metro-entry.bundle`) : HTTP 200,
+12 373 078 octets ; présence de GuildWeeklyBoard et du décalage clavier confirmée.
+
+Maestro `guild-weekly` passe en 1 min 32 s, rapport `artifacts/e2e/report.xml`, run
+`2026-10-28_105940`. Chargement réel de la semaine vide, membres, Risālāt, brouillon conservé,
+composer disponible avec clavier, gestion fondateur et départ vérifiés. Un seul compte jetable,
+créé au premier essai ; reprises via `E2E_OFFLINE=1` pour conserver cette session et les vrais
+appels API. Les échecs de préparation ont été diagnostiqués par leur capture : libellé de champ
+ambigu, bilan de récompense en attente, `hideKeyboard` quittant le formulaire, puis permission
+iOS « Refuser ». Le flow réutilise maintenant l’app ouverte et cible le champ par identifiant.
+Les autres YAML ont seulement leurs destinations/sélecteurs mis à jour, sans parcours superposés.
+
+Aucun rebuild natif, aucune modification d’Unity, aucun push ni déploiement. L’empreinte E2E
+historique n’a pas été modifiée ; seul le binaire déjà installé a servi au test. Le rendu du
+podium, les noms et le clavier du chat restent à juger par l’auteur sur son iPhone.

@@ -2,11 +2,13 @@ appId: app.grrind.dev
 ---
 - runFlow:
     when:
-      notVisible: "Infos et membres"
+      notVisible:
+        id: "guild-chat-screen"
     commands:
       - tapOn:
           id: "tab-guilde"
-      - tapOn: "Chat de la guilde"
+      - tapOn:
+          id: "guild-tab-chat"
 - scrollUntilVisible:
     element: "Messages précédents"
     direction: UP

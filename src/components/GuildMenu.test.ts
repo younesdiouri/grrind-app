@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { components } from '@/api/schema';
 import { GuildMembers, GuildTabs } from '@/components/GuildMenu';
+import { GuildRisalatSummary } from '@/components/GuildRisalatSummary';
 import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar';
 
 function member(id: string, level: number, role: 'FOUNDER' | 'MEMBER' = 'MEMBER'): components['schemas']['GuildMember'] {
@@ -41,4 +42,20 @@ test('les cinq destinations restent accessibles et Risālāt signale le tour san
   for (const tab of ['week', 'chat', 'members', 'risalat', 'settings']) assert.match(markup, new RegExp(`guild-tab-${tab}`));
   assert.match(markup, /Risālāt, c’est ton tour/);
   assert.match(markup, /aria-selected="true"/);
+});
+
+test('le résumé conserve chaque bonus serveur et distingue le tour personnel de celui d’un autre membre', () => {
+  const first: components['schemas']['Risala'] = { id: 'first', discipline: 'RUNNING', senderId: 'a', senderDisplayName: 'Amine',
+    bonusPercent: 150, revealedAt: '2026-10-25T19:00:00Z', expiresAt: '2026-11-08T19:00:00Z' };
+  const risalat: components['schemas']['Risalat'] = { risalat: [first, { ...first, id: 'second', discipline: 'CYCLING', bonusPercent: 50 }],
+    nextRevealAt: '2026-11-01T19:00:00Z', turn: { senderId: 'a', senderDisplayName: 'Amine', mine: true, discipline: null,
+      deadline: '2026-11-01T19:00:00Z', choosable: ['SWIMMING'] } };
+  const props = { risalat, now: new Date('2026-10-28T10:00:00Z'), onOpen() {} };
+  const markup = renderToStaticMarkup(createElement(GuildRisalatSummary, props));
+  assert.match(markup, /150.*% XP/);
+  assert.match(markup, /50.*% XP/);
+  assert.match(markup, /C’est ton tour/);
+  const other = renderToStaticMarkup(createElement(GuildRisalatSummary, { ...props,
+    risalat: { ...risalat, turn: { ...risalat.turn!, mine: false } } }));
+  assert.doesNotMatch(other, /C’est ton tour/);
 });

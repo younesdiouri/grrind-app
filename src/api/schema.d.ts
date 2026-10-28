@@ -284,6 +284,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/guilds/mine/weekly-leaderboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_community_guild_weekly_leaderboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/players/{id}": {
         parameters: {
             query?: never;
@@ -1162,6 +1178,40 @@ export interface components {
             role: "FOUNDER" | "MEMBER";
             /** Format: date-time */
             joinedAt: string;
+        };
+        /**
+         * @description Classement des membres actuels par nombre de séances validées, jamais par XP.
+         *     Le crédit enregistré à l'import fait foi : un plafond donnant zéro XP ne retire
+         *     pas la séance ; marche, imports hors fenêtre et sources invalidées sont exclus.
+         *     Seules les séances terminées depuis l'adhésion actuelle comptent. Aucun gain associé.
+         */
+        GuildWeeklyLeaderboard: {
+            /** Format: uuid */
+            guildId: string;
+            /**
+             * Format: date-time
+             * @description Lundi 00:00 Europe/Paris, borne incluse sur endedAt.
+             */
+            weekStartsAt: string;
+            /**
+             * Format: date-time
+             * @description Lundi suivant 00:00 Europe/Paris, borne exclue sur endedAt. L'offset peut changer en cours de semaine.
+             */
+            weekEndsAt: string;
+            /** @enum {string} */
+            timezone: "Europe/Paris";
+            /** @description Somme des workoutCount. */
+            totalWorkouts: number;
+            /** @description Nombre de membres ayant au moins une séance. */
+            activeMemberCount: number;
+            /** @description Nombre de séances décroissant ; entre égaux, adhésion croissante puis UUID joueur. Tous les membres sont présents, sans pagination. */
+            entries: components["schemas"]["GuildWeeklyLeaderboardEntry"][];
+        };
+        GuildWeeklyLeaderboardEntry: {
+            member: components["schemas"]["GuildMember"];
+            workoutCount: number;
+            /** @description Rang de compétition (1, 1, 3). Null à zéro séance ; aucun vainqueur si la semaine est vide. */
+            rank: number | null;
         };
         /**
          * @description La guilde et ses membres d'un bloc — **c'est l'écran**. L'onglet ne s'ouvre
@@ -3836,6 +3886,36 @@ export interface operations {
             };
             /** @description Le fondateur a tenté de s'exclure lui-même (`founder-cannot-exclude-himself`). Il doit passer par `POST /api/guilds/mine/leave`, qui sait gérer la succession. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    get_community_guild_weekly_leaderboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Les membres actuels classés par nombre de séances validées terminées dans la semaine civile Europe/Paris, depuis leur adhésion actuelle. Aucun gain associé. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuildWeeklyLeaderboard"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Le joueur n'a pas de guilde (`guild-not-found`). */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
