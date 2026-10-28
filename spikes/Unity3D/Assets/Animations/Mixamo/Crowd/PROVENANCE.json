@@ -1,0 +1,56 @@
+{
+  "author": "Adobe Mixamo",
+  "source": "https://www.mixamo.com/#/?page=1&query=cheer&type=Motion%2CMotionPack",
+  "downloaded": "2026-10-28",
+  "license": "Adobe Mixamo account terms; not CC0. Integrated motions only, no standalone redistribution.",
+  "export": {
+    "format": "FBX for Unity",
+    "skin": "Without Skin",
+    "fps": 30,
+    "keyframe_reduction": "none",
+    "source_character": "Remy",
+    "mirror": false,
+    "trim": "full",
+    "character_arm_space": 50,
+    "overdrive": 50
+  },
+  "clips": {
+    "TwoFistsCheer": {
+      "catalog": "Cheering — Male Cheering With Two Fists Pump",
+      "energy_level": 50,
+      "frames": 88
+    },
+    "StandingClap": {
+      "catalog": "Clapping — Clap While Standing",
+      "intensity": 100,
+      "height": 100,
+      "frames": 38
+    },
+    "Rallying": {
+      "catalog": "Rallying — Rallying The Crowd To Make Them Cheer",
+      "intensity": 100,
+      "arms": 100,
+      "frames": 187
+    },
+    "EnergeticCheer": {
+      "catalog": "Cheering — Male Cheering Head Banging",
+      "enthusiasm": 50,
+      "stance": 50,
+      "frames": 58
+    },
+    "StandingFistPump": {
+      "catalog": "Standing Fist Pump — Restrained Enthusiasm Standing Fist Pump",
+      "frames": 114
+    }
+  },
+  "sha256": {
+    "EnergeticCheer": "2aae79ed5ef9d4099e26045eadbea2312454827d50efc3aa2ec57afd27f20cc0",
+    "Rallying": "3df4a36333749d471bafc00908997c813a031e084906378bfcb06ec4dee0789f",
+    "StandingClap": "3d0541b8ef9e903a835f72715440f2f2d9ec5119a404929f4262ca79e3687a3c",
+    "StandingFistPump": "87dcc3aa92ab20eae14e42317dceae6c5f7e65772653a11021ca50ec33cbcb1b",
+    "TwoFistsCheer": "a154ebd25c687c927839d1e850a1736f74e1954adcc527a9f69171ca66f63295"
+  },
+  "unity_import": "Humanoid from own source skeleton; no compression; Loop Time + Loop Pose. Root rotation/height baked, horizontal root extracted and applyRootMotion disabled. Retargeted live to both Quaternius athletes, existing faceted meshes/materials retained.",
+  "builder": "LivingArenaAssets.ImportCrowd",
+  "runtime": "One manual PlayableGraph shared by 18 spectators and referee; five motions, individual phase/speed; replay time only. No critical-hit input."
+}

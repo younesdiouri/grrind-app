@@ -1,0 +1,59 @@
+{
+  "platform": "iPhone arm64, development Debug",
+  "frameworkUuid": "3BF58925-CA64-366E-BE50-3F4DC7164A6B",
+  "frameworkUuidMatchesEmbeddedApp": true,
+  "unityDataFiles": 16,
+  "unityDataHashesMatchEmbeddedApp": true,
+  "nodeTests": {
+    "passed": 608,
+    "failed": 0,
+    "skipped": 0
+  },
+  "previews": 31,
+  "typescript": "passed",
+  "lint": "passed",
+  "unity": {
+    "caillouxSamples": 50,
+    "scenerySamples": 924,
+    "sceneryOverlaps": 0,
+    "projectionPoints": 12,
+    "spectators": 18,
+    "crowdTriangles": 201672,
+    "criticalCrowdDisplacementM": 0,
+    "cheeringClips": 5,
+    "minimumIndividualHandMotionM": 0.0956123,
+    "maximumHandStepAt25msM": 0.110436745,
+    "handSamples": 400,
+    "editorMillisecondsPerDrawFor18SpectatorsAndReferee": 0.1126706,
+    "editorBenchmarkDraws": 1000,
+    "countdown": true,
+    "replay": true,
+    "reducedMotion": true,
+    "inspectorRoundTrip": true,
+    "editorBenchmarkScope": "Initial five-clip pilot before applause intensity/height increase; diagnostic CPU cost, not device FPS"
+  },
+  "phoneInstall": "passed: devicectl installed app.grrind.dev with five Mixamo crowd clips on 2026-10-28",
+  "authorVisualReview": "approved on iPhone 2026-10-28: franchement mon gars vraiment bien joué c’est vraiment lourd. Tu peux push main merge déployer etc. que ça soit back ou front tu gères",
+  "simulatorSlice": "reused unchanged; new scene not tested there",
+  "phoneLaunch": "passed: devicectl launched app.grrind.dev via Metro 8081 on 2026-10-28",
+  "crowdRevisionDate": "2026-10-28",
+  "reactNativeChecks": "passed on final code before push: typecheck, lint, 608 tests, 31 deterministic previews",
+  "visualEvidence": "initial-arena screenshots retained as history; final cheering motion verified by editor sampling, physical review pending",
+  "xcodeDevelopmentBuild": "passed: 0 errors, 1 existing Expo script dependency warning",
+  "releaseAuthorization": "Push, merge main and deployment authorized on 2026-10-28",
+  "validationBuildType": "development, approved by author on real iPhone",
+  "releaseSmoke": {
+    "flow": ".maestro/ios-smoke.yaml",
+    "status": "passed",
+    "durationSeconds": 183,
+    "report": "artifacts/e2e/2026-10-28_093721/ios-smoke",
+    "nativeSimulatorRebuilt": false,
+    "scope": "session, combat and return; visual arena approval is from real iPhone"
+  },
+  "easArchive": {
+    "frameworkFiles": 59,
+    "hashMismatches": 0,
+    "deviceFrameworkUuid": "3BF58925-CA64-366E-BE50-3F4DC7164A6B",
+    "unitySourceFiles": 0
+  }
+}

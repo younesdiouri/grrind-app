@@ -38,6 +38,8 @@ export function unityPresentationAt(timeline: BattleTimeline, time: number, skip
     };
   };
   return {
+    time: Math.max(0, time) / 1000,
+    opening: beat?.kind === 'opening' && !skipped ? Math.max(0, (time - beat.at) / (beat.until - beat.at)) : -1,
     player: sideAt(timeline.player, 'PLAYER'), enemy: sideAt(timeline.enemy, 'ENEMY'),
     active: beat?.kind === 'attack' || beat?.kind === 'dodge' ? (beat.attacker === 'PLAYER' ? 1 : 2)
       : beat?.kind === 'combo' ? (beat.actor === 'PLAYER' ? 1 : 2) : 0,

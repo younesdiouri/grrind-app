@@ -11,6 +11,7 @@ public sealed class BattleBridge : MonoBehaviour
     FighterPose player,enemy;
     CombatPresentation presentation;
     RaidScene raid;
+    ArenaLife arenaLife;
 
     [Serializable] public class AvatarConfig {
         public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="base",pantsColor="base",faceStyle="original",noseStyle="original";
@@ -108,6 +109,7 @@ public sealed class BattleBridge : MonoBehaviour
             // JsonUtility creates missing nested objects: the scene discriminator is explicit.
             if(config.scene=="raid")
             {
+                if(arenaLife!=null)arenaLife.gameObject.SetActive(false);
                 inspection=false;lastFrame=null;
                 if(player!=null){player.gameObject.SetActive(false);Destroy(player.gameObject);}
                 if(enemy!=null){enemy.gameObject.SetActive(false);Destroy(enemy.gameObject);}
@@ -124,6 +126,9 @@ public sealed class BattleBridge : MonoBehaviour
             hud=config.hud;
             if(combatEnvironment!=null)combatEnvironment.SetActive(!inspection);
             if(inspectionFloor!=null)inspectionFloor.SetActive(inspection);
+            if(!inspection&&arenaLife==null)
+                arenaLife=Instantiate(Resources.Load<GameObject>("LivingArena"),combatEnvironment!=null?combatEnvironment.transform:transform).GetComponent<ArenaLife>();
+            if(arenaLife!=null)arenaLife.gameObject.SetActive(!inspection);
             Ambience(inspection);
             caillouxFight=config.enemy.model=="cailloux";
             illustratedFight=!config.enemy.visible;
@@ -192,6 +197,7 @@ public sealed class BattleBridge : MonoBehaviour
             lastFrame=frame;
             Apply(player,frame.player,true);Apply(enemy,frame.enemy,false);
             presentation?.DrawFrame(frame.presentation);
+            arenaLife?.DrawFrame(frame.presentation,frame.player.visible);
             (GetComponent<ImpactFx>()??gameObject.AddComponent<ImpactFx>()).Draw(player,enemy,frame);
         }
         catch(Exception e){Debug.LogError("GRRIND avatar frame: "+e.Message);}

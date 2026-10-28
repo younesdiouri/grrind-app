@@ -19,7 +19,8 @@ export const combatEffects = {
 } as const;
 
 export const combatMotion = {
-  openingDuration: 900,
+  openingDuration: 3400,
+  refereeWhistleAt: 2400,
   actionDuration: 1300,
   comboDuration: 360,
   followupDuration: 900,
