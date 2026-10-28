@@ -57,7 +57,6 @@ export default function AppLayout() {
     <ThemeProvider value={connectedTheme}>
       <AmbientBackdropProvider>
         <View style={styles.shell} onTouchStart={markInteracted}>
-          <SportCaptureStatus />
           <View style={styles.navigation}>
           <Stack
             screenOptions={{
@@ -85,6 +84,7 @@ export default function AppLayout() {
         statusBarHidden: true, gestureEnabled: false }} />
           </Stack>
           </View>
+          <SportCaptureStatus />
         </View>
       </AmbientBackdropProvider>
     </ThemeProvider>
