@@ -9,7 +9,7 @@ bilan agrégé ni historique. Aucun endpoint, DTO ou enum serveur n’est antici
 ## Ce que le pilote permet
 
 Sur le development build iPhone : Réglages → Santé → « Sport ensemble · pilote terrain ».
-L’écran et la bannière active sont réservés au JS de développement. La configuration native
+L’écran et l’icône de localisation du HUD sont réservés au JS de développement. La configuration native
 de localisation est elle aussi réservée à `APP_VARIANT=development`. Aucun build EAS.
 
 1. **Routes d’abord.** Demander explicitement la lecture des workouts et itinéraires Santé.
@@ -24,7 +24,9 @@ de localisation est elle aussi réservée à `APP_VARIANT=development`. Aucun bu
 3. **Téléphone avant la séance.** L’explication précède la permission « Lorsque l’app est
    active ». Démarrage exclusivement au premier plan, sur geste explicite ; aucune demande
    « Toujours ». Core Location poursuit les mises à jour avec `allowsBackgroundLocationUpdates`
-   et l’indicateur système ; l’état et le bouton d’arrêt restent visibles dans tout GRRIND.
+   et l’indicateur système. Le curseur du HUD, à côté de l’or, est cyan pendant la capture ;
+   il ouvre cet écran pour consulter les mesures ou arrêter la localisation. Aucun bandeau
+   ne réduit la place du contenu ou de la navigation.
    La montre/app santé reste nécessaire pour produire le vrai workout.
 4. **Arrêt et interruptions.** Arrêt explicite, limite de sécurité 4 h, révocation des droits,
    erreur de localisation non transitoire, erreur disque ou changement de compte arrêtent la

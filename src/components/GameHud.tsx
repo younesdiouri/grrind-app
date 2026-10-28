@@ -5,16 +5,18 @@ import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
 import { CoinIcon } from '@/components/CoinIcon';
 import { color, control, frame, gameHud, opacity, space, type, typography } from '@/design/tokens';
 
-export type HudDestination = 'shop' | 'workshop' | 'bag' | 'inventory';
+export type HudDestination = 'shop' | 'workshop' | 'bag' | 'inventory' | 'location';
 const SHORTCUTS = { workshop: 'Atelier', bag: 'Sac', inventory: 'Inventaire' } as const;
 
 /** Navigation de jeu sans titre de page ; le shell fournit le solde et les destinations. */
-export function GameHud({ coins, active, onNavigate, onBack, shopPulse }: {
+export function GameHud({ coins, active, onNavigate, onBack, shopPulse, location }: {
   coins?: number; active?: HudDestination; onNavigate(target: HudDestination): void;
   onBack?(): void; shopPulse?: ReactNode;
+  location?: { active: boolean; failed: boolean };
 }) {
   const compact = coins !== undefined && coins >= gameHud.compactFrom;
-  return <View style={styles.row} accessibilityRole="toolbar">
+  const locationTint = location?.failed ? color.danger : location?.active ? color.accent : color.textMuted;
+  return <View style={[styles.row, location && styles.withLocation]} accessibilityRole="toolbar">
     {onBack && <Pressable accessibilityRole="button" accessibilityLabel="Retour" onPress={onBack}
       testID="hud-back" style={({ pressed }) => [styles.button, styles.back, pressed && styles.pressed]}>
       <Text style={styles.backGlyph}>‹</Text>
@@ -23,7 +25,7 @@ export function GameHud({ coins, active, onNavigate, onBack, shopPulse }: {
       aria-selected={active === 'shop'} onPress={() => onNavigate('shop')} testID="hud-shop"
       style={({ pressed }) => [styles.button, styles.shop, active === 'shop' && styles.shopActive, pressed && styles.pressed]}>
       {shopPulse}
-      <View style={styles.balance} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={[styles.balance, location && styles.compactBalance]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <CoinIcon size={gameHud.coinSize} />
         <Text style={[styles.coins, compact && styles.compactCoins]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={gameHud.minimumFontScale}>
           {coins === undefined ? '···' : coins.toLocaleString('fr-FR', compact ? { notation: 'compact', maximumFractionDigits: 1 } : undefined)}
@@ -31,6 +33,18 @@ export function GameHud({ coins, active, onNavigate, onBack, shopPulse }: {
       </View>
       <View style={[styles.edge, { backgroundColor: color.coin }]} />
     </Pressable>
+    {location && <Pressable accessibilityRole="button"
+      accessibilityLabel={location.failed ? 'Localisation, stockage indisponible, ouvrir Sport ensemble'
+        : location.active ? 'Localisation active, ouvrir Sport ensemble' : 'Localisation inactive, ouvrir Sport ensemble'}
+      aria-selected={active === 'location'} testID="hud-location" onPress={() => onNavigate('location')}
+      style={({ pressed }) => [styles.button, (location.active || location.failed || active === 'location') && { borderColor: locationTint }, pressed && styles.pressed]}>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <Svg width={gameHud.iconSize} height={gameHud.iconSize} viewBox="0 0 32 32">
+          <Path d="m5 14 22-9-9 22-3-10Z" fill={location.active ? locationTint : 'none'} stroke={locationTint} strokeWidth="2" strokeLinejoin="round" />
+        </Svg>
+      </View>
+      <View style={[styles.edge, { backgroundColor: locationTint }]} />
+    </Pressable>}
     {(Object.keys(SHORTCUTS) as (keyof typeof SHORTCUTS)[]).map((key) => <Pressable key={key}
       testID={`hud-${key}`} accessibilityRole="button" accessibilityLabel={SHORTCUTS[key]}
       aria-selected={active === key} onPress={() => onNavigate(key)}
@@ -73,6 +87,7 @@ export function HudIcon({ name, size = gameHud.iconSize }: { name: keyof typeof 
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.sm, paddingVertical: space.xs },
+  withLocation: { gap: space.xs },
   button: { width: control.backSize, height: control.backSize, alignItems: 'center', justifyContent: 'center',
     backgroundColor: color.surface, borderWidth: control.borderWidth, borderColor: gameHud.rim,
     borderRadius: frame.standard.radius, overflow: 'hidden' },
@@ -81,6 +96,7 @@ const styles = StyleSheet.create({
   shop: { flex: 1, minWidth: 0, backgroundColor: gameHud.shopSurface, borderColor: gameHud.shopBorder, boxShadow: gameHud.shopShadow },
   shopActive: { borderColor: color.coin },
   balance: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.sm, width: '100%' },
+  compactBalance: { gap: space.xs, paddingHorizontal: space.xs },
   coins: { ...type.body, color: color.coin, fontFamily: typography.display.semibold, fontWeight: typography.display.weight.semibold, flexShrink: 1 },
   compactCoins: { fontSize: type.label.fontSize },
   edge: { position: 'absolute', bottom: 0, alignSelf: 'center', width: space.md, height: frame.segmentThickness },

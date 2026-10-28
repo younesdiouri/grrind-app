@@ -9,6 +9,13 @@ function recorder() {
     dismissTo: (href: Href) => { actions.push({ method: 'dismissTo', href }); } };
 }
 
+test('le curseur de localisation ouvre Sport ensemble depuis un onglet ou un menu secondaire', () => {
+  const nav = recorder();
+  openHudDestination('location', false, nav);
+  openHudDestination('location', true, nav);
+  assert.deepEqual(nav.actions, [{ method: 'navigate', href: '/sport-ensemble' }, { method: 'dismissTo', href: '/sport-ensemble' }]);
+});
+
 test('le sac ferme l’atelier ou la boutique et revient sur le contenu du sac', () => {
   const nav = recorder();
   openHudDestination('bag', true, nav);
