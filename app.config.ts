@@ -68,6 +68,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     icon: './assets/expo-dev.icon',
     ios: {
       ...config.ios,
+      infoPlist: {
+        ...config.ios?.infoPlist,
+        NSLocationWhenInUseUsageDescription: 'GRRIND utilise ta localisation pendant cette séance pour reconnaître le sport ensemble.',
+        NSHealthShareUsageDescription: 'GRRIND lit tes séances et, si tu l’autorises pour le pilote Sport ensemble, leurs itinéraires enregistrés dans Santé. Aucun itinéraire n’est envoyé pendant ce pilote.',
+        UIBackgroundModes: [...(config.ios?.infoPlist?.UIBackgroundModes ?? []), 'location'],
+      },
       bundleIdentifier: identifier,
       icon: './assets/expo-dev.icon',
       entitlements: {

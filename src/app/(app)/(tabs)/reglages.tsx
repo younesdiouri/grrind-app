@@ -120,6 +120,7 @@ export default function ReglagesScreen() {
         <Text style={styles.cardTitle}>Santé</Text>
         <Text style={styles.body}>Tes activités, les autorisations de lecture et la synchronisation avec Santé.</Text>
         <Button label="Ouvrir Santé" onPress={() => router.push('/sante')} variant="quiet" />
+        {__DEV__ ? <Button label="Sport ensemble · pilote terrain" onPress={() => router.push('/sport-ensemble')} variant="quiet" /> : null}
         {access.step === 'asked' ? (
           <>
             <Text style={styles.path}>Réglages › Confidentialité et sécurité › Santé › GRRIND</Text>
