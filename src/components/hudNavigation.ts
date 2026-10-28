@@ -5,6 +5,7 @@ const routes: Record<HudDestination, Href> = {
   shop: '/boutique', workshop: '/atelier',
   inventory: { pathname: '/inventaire', params: { section: 'equipment' } },
   bag: { pathname: '/inventaire', params: { section: 'bag' } },
+  location: '/sport-ensemble',
 };
 
 /** Les menus secondaires se remplacent ; le personnage et le sac reviennent aux onglets. */

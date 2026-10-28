@@ -44,13 +44,18 @@ export function SportTogetherPilot() {
         <Text style={styles.body}>GRRIND utilise ta localisation pendant cette séance pour reconnaître le sport ensemble.</Text>
         <Text style={styles.body}>Garde ton enregistrement Santé habituel. La capture ne crée aucune séance. Elle continue écran verrouillé si iOS le permet, avec l’indicateur de localisation. Arrêt de sécurité après 4 h ; une app arrêtée de force doit être réactivée manuellement. Aucune position passée n’est reconstituée.</Text>
         <Text style={styles.body}>Localisation : {status?.permission.permission ?? '…'} · {status?.permission.precise ? 'précise' : 'approximative'}. L’absence de positions n’empêche pas l’XP solo.</Text>
-        <Button label={active ? 'Arrêter la localisation' : 'Activer pour cette séance'} busy={busy}
-          onPress={() => void run(async () => {
-            if (active) { await native.stopSportCapture(); return; }
+        <Button label={active ? 'Arrêter la localisation' : 'Activer pour cette séance'} busy={busy && !active}
+          onPress={() => {
+            if (active) {
+              void native.stopSportCapture().then(refresh).catch(() => setMessage('L’arrêt n’a pas abouti. Réessaie.'));
+              return;
+            }
+            void run(async () => {
             const permission = await native.requestSportLocation();
             if (permission.permission !== 'allowed') { setMessage('Localisation refusée. Tu peux continuer sans elle ou ouvrir Réglages.'); return; }
             if (auth.status === 'signedIn') await native.startSportCapture(auth.user.id);
-          })} />
+            });
+          }} />
         <Button label="Réglages de localisation" variant="quiet" onPress={() => void Linking.openSettings()} />
       </View>
       <View style={styles.card}>

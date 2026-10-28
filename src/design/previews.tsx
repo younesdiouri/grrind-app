@@ -907,6 +907,17 @@ export const PREVIEWS: Preview[] = [
       <Specimen label="Solde en attente — les raccourcis restent accessibles">
         <View style={{ marginHorizontal: -space.lg }}><GameHud onNavigate={() => {}} /></View>
       </Specimen>
+      <Specimen label="Pilote localisation — inactive, accès à Sport ensemble">
+        <View style={{ marginHorizontal: -space.lg }}><GameHud coins={50} location={{ active: false, failed: false }} onNavigate={() => {}} /></View>
+      </Specimen>
+      <Specimen label="Pilote localisation — capture active et retour, 318 pt">
+        <View style={{ width: 318 }}>
+          <GameHud coins={1234567} location={{ active: true, failed: false }} active="location" onBack={() => {}} onNavigate={() => {}} />
+        </View>
+      </Specimen>
+      <Specimen label="Pilote localisation — stockage indisponible">
+        <View style={{ marginHorizontal: -space.lg }}><GameHud coins={50} location={{ active: false, failed: true }} onNavigate={() => {}} /></View>
+      </Specimen>
     </>,
   },
   {
