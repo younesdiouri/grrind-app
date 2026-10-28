@@ -616,6 +616,7 @@ export const xpSourceLabel: Record<components['schemas']['XpLine']['source'], st
   GUILD: 'Guilde',
   DIMINISHING: 'Rendements décroissants',
   DAILY_CAP: 'Plafond quotidien',
+  TOGETHER: 'Sport ensemble',
 };
 
 /**
