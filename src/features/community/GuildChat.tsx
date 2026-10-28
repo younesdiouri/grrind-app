@@ -14,7 +14,7 @@ import type { GuildDetail } from '@/features/community/guildScreenState';
 import { useGuildChat } from '@/features/community/useGuildChat';
 
 export function GuildChat({ guild, playerId, onClose, onGone }: {
-  guild: GuildDetail; playerId: string; onClose: () => void; onGone: () => void;
+  guild: GuildDetail; playerId: string; onClose?: () => void; onGone: () => void;
 }) {
   const { state, controller, connected, signal } = useGuildChat(guild.id, playerId, onGone);
   const [picking, setPicking] = useState(false);
@@ -22,6 +22,7 @@ export function GuildChat({ guild, playerId, onClose, onGone }: {
   const headerHeight = useHeaderHeight();
   const draft = state.draft;
   const close = () => {
+    if (!onClose) return;
     if (draft?.text || draft?.photo) {
       Alert.alert('Fermer le chat ?', 'Le brouillon et sa photo seront abandonnés.', [
         { text: 'Continuer à écrire', style: 'cancel' },
@@ -43,7 +44,7 @@ export function GuildChat({ guild, playerId, onClose, onGone }: {
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={headerHeight}>
       <View style={styles.heading}>
-        <Button label="Infos et membres" onPress={close} variant="quiet" />
+        {onClose && <Button label="Infos et membres" onPress={close} variant="quiet" />}
         <View style={styles.headingRow}>
           <Text style={styles.title} numberOfLines={1}>Chat · {guild.name}</Text>
           <Text style={styles.status}>{connected ? 'En direct' : 'Reconnexion…'}</Text>

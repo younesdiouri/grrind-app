@@ -224,6 +224,17 @@ export const control = {
   backSize: 44,
 } as const;
 
+/** La guilde partage les cadres système et réserve le cyan au classement de la semaine. */
+export const guildUi = {
+  tabHeight: 58, tabLabelSize: 12, iconSize: 20,
+  crestSize: 44, avatarSize: 56, leaderAvatarSize: 68,
+  podiumHeight: 230, podiumBase: 64, podiumRise: 24,
+  rankSize: 30, scoreSize: 30, titleSize: 26,
+  heroSurface: '#0C1B30', heroLight: 'rgba(53, 228, 255, 0.12)',
+  silver: '#B8CEE4', bronze: '#C69B87',
+  leaderShadow: '0 0 24px rgba(53, 228, 255, 0.22)',
+} as const;
+
 export const navigation = {
   iconSize: 24,
   markerSize: 6,
