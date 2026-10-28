@@ -28,7 +28,7 @@ export function SportCaptureStatus() {
     return () => { disposed = true; clearInterval(timer); void native.setSportOwner(null).catch(() => {}); };
   }, [owner]);
   if (!__DEV__ || (!active && !failed)) return null;
-  return <SafeAreaView edges={['top']} style={styles.banner}><View>
+  return <SafeAreaView edges={['bottom']} style={styles.banner}><View>
     <Text accessibilityRole="alert" style={styles.label}>{active ? 'Sport ensemble · localisation active' : 'Sport ensemble · stockage indisponible'}</Text>
     {active ? <Button label="Arrêter la localisation" variant="quiet" onPress={() => {
       void sportNative?.stopSportCapture().then(() => setActive(false)).catch(() => setFailed(true));
