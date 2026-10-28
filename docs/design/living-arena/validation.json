@@ -30,5 +30,5 @@
   "simulatorSlice": "reused unchanged; new scene not tested there",
   "productionBuild": false,
   "pushed": false,
-  "phoneLaunch": "pending device unlock"
+  "phoneLaunch": "passed: devicectl launched app.grrind.dev with Metro 8081 on 2026-10-28"
 }

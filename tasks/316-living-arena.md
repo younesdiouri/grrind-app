@@ -64,7 +64,6 @@ via Metro 8081 en HTTP 200.
 
 Framework Device compilé et development build installé via `devicectl`. UUID embarqué
 `556DB339-1350-314F-8F76-0113ABFB4418` et SHA-256 des 16 fichiers Data concordants.
-Le verrouillage de l’iPhone empêche le lancement automatique ; ouvrir GRRIND dev après
-déverrouillage. La revue du rendu, du son et de la fluidité reste à l’auteur.
+GRRIND dev a été lancé sur l’iPhone après déverrouillage le 28 octobre, via Metro 8081. La revue du rendu, du son et de la fluidité reste à l’auteur.
 La slice Simulator conserve sa scène antérieure ; aucun flow visuel Simulator n’est
 présenté comme une validation de la nouvelle arène. Aucun push/PR/merge ou EAS.

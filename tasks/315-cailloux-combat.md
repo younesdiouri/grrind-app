@@ -54,8 +54,8 @@ Animation de chute produite avec [SetEditorCurve Unity 6.3](https://docs.unity3d
 appui au sol mesuré sur le [mesh déformé](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/SkinnedMeshRenderer.BakeMesh.html).
 Le framework Device de #316 a été exporté/compilé (UUID `556DB339-1350-314F-8F76-0113ABFB4418`).
 Le development build est installé via `devicectl`, sans nouvelle slice Simulator.
-UUID du framework et 16 fichiers Data embarqués vérifiés contre l’export. Le lancement
-et la revue visuelle attendent le déverrouillage de l’iPhone par l’auteur.
+UUID du framework et 16 fichiers Data embarqués vérifiés contre l’export. L’app a été lancée sur l’iPhone après déverrouillage le 28 octobre, via Metro 8081.
+La revue visuelle reste à l’auteur.
 
 Le HUD utilise aussi les sockets réels du mob. Les étincelles sont calculées après la
 pose du contact, avec un ancrage corporel proche du poing ; le contrôle exige leur présence
