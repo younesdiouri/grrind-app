@@ -70,3 +70,8 @@ podium, les noms et le clavier du chat restent à juger par l’auteur sur son i
 `previews:check` et `api:check` contre l’export local officiel passent (sortie 0).
 Metro E2E 8082 et le serveur de previews sont arrêtés, le Simulator GRRIND E2E est éteint.
 Metro 8081 du téléphone est conservé et répond `packager-status:running`.
+
+## Validation auteur — 28 octobre 2026
+
+L’auteur valide le rendu (« c’est nickel ») et demande la fusion des deux dépôts.
+Livrer le backend avant le client, selon le workflow de chaque dépôt. Aucun nouveau build iOS.
