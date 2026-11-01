@@ -4,27 +4,36 @@ Accessoire de cyclisme cumulable avec HEAD : visière Meshy miroir rose/orange/o
 violette continue vers des branches sport violet/citron. Atelier uniquement, sans catalogue
 serveur, loot ni tenue sauvegardée. L’auteur juge le modèle porté sur son iPhone.
 
-## Continuité de la monture
+## Trajet de la branche — schéma de l’auteur
 
-`ref/continuous-frame-reference.webp` est la référence actuelle : la monture tourne autour
-du coin du verre puis devient la branche, dans un seul volume. La capture
-`iphone-top-bar-rejected.jpg` montre le défaut précédent : une barre paraissant posée
-au-dessus du côté violet, malgré le chevauchement géométrique des deux pièces.
+La référence actuelle est `ref/ear-route-author-sketch.jpg` : départ bas et large dans le
+côté violet, amincissement vers le sommet de l’oreille, puis coude descendant derrière elle.
+La photo `continuous-frame-reference.webp` guide la continuité de matière. Les deux dernières
+corrections restaient trop hautes : souder la branche à la monture ne suffisait pas à obtenir
+la silhouette tracée. La barre haute uniforme de 8 mm est remplacée, sans déplacer le verre.
 
 La reprise part de la section arrière de la vraie pièce violette. Cette partie de la
 monture est reformée progressivement jusqu’à la section de branche ; les bords de coupe
 sont directement partagés avec la branche. Aucun bouchon ni second volume superposé au
 raccord. La même teinte violette traverse la jonction ; l’accent citron commence plus loin,
-sur la face extérieure de la branche. Le corps droit et la section appréciée sont conservés.
+sur la face extérieure de la branche.
 
-| Corps | Triangles livrés | Distance iris/verre | Branche visible | Arêtes partagées gauche/droite |
+| Corps | Triangles livrés | Distance iris/verre | Départ / appui d’oreille | Arêtes partagées gauche/droite |
 | --- | --- | --- | --- | --- |
-| Homme | 3 735 | 24,7–29,6 mm | 8 × 4 mm | 30 / 29 |
-| Femme | 3 633 | 24,4–29,9 mm | 8 × 4 mm | 32 / 29 |
+| Homme | 3 381 | 24,7–29,6 mm | 18 / 6 mm de haut | 30 / 29 |
+| Femme | 3 387 | 24,4–29,9 mm | 18 / 6 mm de haut | 32 / 29 |
 
-La branche reste droite jusqu’à l’oreille ; seul le retour arrière descend de 15 mm.
-Le côté violet rejoint cette section par une courbe de volume, au lieu d’un départ de
-barre sur le bord supérieur du verre. Les UV et normales du verre miroir restent intacts.
+Le centre du départ est 11,2 / 13 mm sous le sommet de l’oreille. Son bord supérieur reste
+presque droit, tandis que le bas s’affine vers l’appui. L’épaisseur est de 4 mm. Le retour
+commence derrière le contour postérieur de l’oreille et finit environ 21 mm sous son sommet,
+avec une pointe légèrement recourbée vers l’avant. Ses sections suivent la courbure pour
+conserver une vraie épaisseur. Les UV et normales du verre miroir restent intacts.
+
+[Comparaison du profil au schéma rouge](les-cyclopes/ear-route-compare.png) : recalage sur
+41 repères d’anatomie inchangée, lunettes exclues ; erreur moyenne de recalage 1,36 px.
+Aux quatre abscisses mesurées entre la monture et l’oreille, l’écart des bords est de 3,94 px
+au maximum dans la capture d’origine ([mesures](les-cyclopes/ear-route-compare.json)).
+Cette mesure locale ne constitue ni une validation du dos caché ni une acceptation de l’auteur.
 
 ## Source et matière
 
@@ -32,7 +41,9 @@ Concept ImageGen `ref/concept-v2.png` → Meshy 7.1 → retopologie Meshy : 40 c
 (35 + 5), source GLB de 4 034 triangles conservé et tâches dans `tasks.json`.
 Les 1 038 triangles de miroir gardent leurs positions, UV et normales. La déformation est
 limitée aux parties non métalliques du raccord latéral ; les points partagés avec le verre
-sont protégés. Les nouvelles surfaces violettes et les branches réemploient l’atlas existant.
+sont protégés, y compris au bord extérieur du verre féminin proche de la coupe. Le build
+refuse tout déplacement d’un triangle de miroir. Les nouvelles surfaces violettes et les
+branches réemploient l’atlas existant.
 Aucune nouvelle génération payante pour ces retouches.
 
 Un mesh et un matériau par corps, deux maps 2k partagées. Painted Toon conserve le reflet
@@ -43,15 +54,18 @@ dimensions masqués sur les photos restent inférés des vrais meshes Quaternius
 
 Avec Blender headless et `--python-exit-code 1` :
 
-1. `build/02_fit_and_export.py -- --output artifacts/les-cyclopes/fitted-v6` ;
-2. `build/03_validate_fit.py -- --output artifacts/les-cyclopes/fitted-v6` ;
+1. `build/02_fit_and_export.py -- --output artifacts/les-cyclopes/fitted-v7` ;
+2. `build/03_validate_fit.py -- --output artifacts/les-cyclopes/fitted-v7` ;
 3. copier les FBX, BaseColor et MetalMask dans `Assets/Characters/LesCyclopes`, puis appeler
    `LesCyclopes.Build()` via Unity Pipeline. `QuaterniusPoc.Build()` inclut cet accessoire.
 
 Le master Blender reste local. Le build contrôle que chaque arête de raccord possède une
 face de monture et une face de branche. La relecture FBX refait cette vérification sur les
 positions exportées : 30/29 et 32/29 arêtes continues, sans ouverture. Le même contrôle
-rejette l’ancien export v5 à barre superposée, ce qui reproduit le défaut structurel signalé.
+rejette l’ancien export v5 à barre superposée. Le nouveau contrôle anatomique examine les
+sections réimportées : départ sous le sommet de l’oreille, largeur décroissante vers l’appui,
+retour descendant derrière l’oreille. L’export v6 à barre haute échoue à ce contrôle, alors
+que ses arêtes étaient déjà soudées.
 
 La relecture conserve les 54 rayons d’iris par corps, la distance iris/verre, zéro traversée
 des oreilles/peau par les branches, et 36 rayons profil/trois-quarts avec la crête homme :
@@ -63,12 +77,7 @@ retrait indépendant. Les contacts latéraux sous laine/cheveux longs restent co
 Rendus actuels à 360 × 360, proches de la taille de l’app :
 [homme/profil](les-cyclopes/unity-fit-male-profile.png),
 [homme/trois-quarts](les-cyclopes/unity-fit-male-threequarter.png),
-[crête/trois-quarts](les-cyclopes/unity-fit-male-mohawk-threequarter.png),
-[femme/coupe courte/profil](les-cyclopes/unity-fit-female-profile.png),
-[homme/afro](les-cyclopes/unity-male-afro.png),
-[homme/laine](les-cyclopes/unity-male-moumoutivation.png),
-[femme/long/bandeau](les-cyclopes/unity-female-long-bandeau.png),
-[femme/laine](les-cyclopes/unity-female-moumoutivation.png).
+[femme/coupe courte/profil](les-cyclopes/unity-fit-female-profile.png).
 Le profil homme reprend la coupe coiffée et le nez large de la dernière capture de l’auteur.
 Ces contrôles ne constituent pas une acceptation visuelle de sa part.
 

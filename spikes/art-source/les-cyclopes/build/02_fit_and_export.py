@@ -157,6 +157,7 @@ def rebuild_temples(model, skin, head, approach, optics):
         metal = optics.sample(sum((corner[1] for corner in polygon), Vector((0, 0))) / 3)
         if metal > .65:
             assert all(corner[0].y > cut_y for corner in polygon)
+            locked.update(key(corner[0]) for corner in polygon)
             kept_lens += 1
         if metal > .1:
             locked.update(key(corner[0]) for corner in polygon if corner[0].y > cut_y + .002)
@@ -213,8 +214,9 @@ def rebuild_temples(model, skin, head, approach, optics):
         low, high = bounds(root)
         crest = max(point.z for point in head if point.x * side > max(p.x * side for p in head) * .8
                     and abs(point.y - ear.y) < .025 and point.z < ear.z + .008)
-        specifications[side] = {'root': root, 'centre': (low + high) / 2, 'level': crest + .0055,
-                                'scale_x': .004 / (high.x - low.x), 'scale_z': .008 / (high.z - low.z), 'ear': ear}
+        # Author's red profile: broad, low side wing narrowing up to the ear, not a high top bar.
+        specifications[side] = {'root': root, 'centre': (low + high) / 2, 'level': crest - .013,
+                                'scale_x': .004 / (high.x - low.x), 'scale_z': .018 / (high.z - low.z), 'ear': ear}
 
     def warp(point):
         if key(point) in locked:
@@ -254,6 +256,7 @@ def rebuild_temples(model, skin, head, approach, optics):
     for polygon, metal in polygons:
         transformed = [(warp(point), texcoord, normal) for point, texcoord, normal in polygon]
         changed = any((a[0] - b[0]).length > 1e-8 for a, b in zip(polygon, transformed))
+        assert not changed or metal <= .65, 'The mirror lens must remain fixed while reshaping the frame'
         for i in range(1, len(transformed) - 1):
             triangle = [transformed[0], transformed[i], transformed[i + 1]]
             if changed:
@@ -279,10 +282,18 @@ def rebuild_temples(model, skin, head, approach, optics):
         root_centre = Vector((spec['centre'].x, cut_y, level))
         outer = max(point.x * side for point in head)
         support_x = max(outer + .004, abs(root_centre.x) - .007)
-        path = [root_centre, Vector((root_centre.x, cut_y - .012, level)),
-                Vector((side * support_x, ear.y + .010, level)), Vector((side * support_x, ear.y - .014, level))]
-        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < level)
-        for y, z in ((ear_back - .010, level - .004), (ear_back - .025, level - .015)):
+        support_z = ear.z + .0005
+        support_y = ear.y + .006
+        t = .012 / (cut_y - support_y)
+        path = [root_centre, Vector((root_centre.x, cut_y - .012, level + (support_z - level) * t)),
+                Vector((side * support_x, support_y, support_z))]
+        heights = [.018, .018 + (.006 - .018) * t, .006]
+        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < ear.z)
+        path.append(Vector((side * support_x, ear_back - .004, ear.z - .0005)))
+        heights.append(.006)
+        # Turn down immediately behind the ear, then curl the tip slightly forward.
+        for y, z in ((ear_back - .010, ear.z - .004), (ear_back - .016, ear.z - .015),
+                     (ear_back - .013, ear.z - .020)):
             hits = [surface.ray_cast(Vector((0, y, z + dz)), Vector((side, 0, 0)), .15)[0] for dz in (-.002, 0, .002)]
             assert all(hit is not None for hit in hits)
             target = Vector((side * (max(hit.x * side for hit in hits) + .003), y, z))
@@ -294,7 +305,8 @@ def rebuild_temples(model, skin, head, approach, optics):
                 assert all(hit is not None for hit in hits)
                 point.x = side * max(point.x * side, max(hit.x * side for hit in hits) + .003)
                 path.append(point)
-        assert max(point.z for point in path[:4]) - min(point.z for point in path[:4]) < 1e-7
+                heights.append(.004)
+        assert path[0].z < ear.z - .006 and path[2].z > path[0].z + .009
 
         def section(direction, half_x, half_z):
             bevel = .0007
@@ -312,11 +324,13 @@ def rebuild_temples(model, skin, head, approach, optics):
                     return Vector((direction.x * t * half_x, 0, direction.y * t * half_z))
             raise RuntimeError('Invalid frame section')
 
-        directions = [Vector(((point.x - root_centre.x) / .002, (point.z - level) / .004)) for point in root]
+        directions = [Vector(((point.x - root_centre.x) / .002, (point.z - level) / .009)) for point in root]
         rings = [root]
         for i, centre in enumerate(path[1:], 1):
-            rings.append([centre + section(direction, .002 if i < 4 else .0015, .004 if i < 4 else .002)
-                          for direction in directions])
+            tangent = path[min(i + 1, len(path) - 1)] - path[i - 1]
+            up = Vector((0, tangent.z, -tangent.y)).normalized() if i >= 4 else Vector((0, 0, 1))
+            offsets = [section(direction, .002 if i < 4 else .0015, heights[i] / 2) for direction in directions]
+            rings.append([centre + Vector((offset.x, 0, 0)) + up * offset.z for offset in offsets])
         for i, (a, b) in enumerate(zip(rings, rings[1:])):
             for j in range(len(root)):
                 quad = [a[j], a[(j + 1) % len(root)], b[(j + 1) % len(root)], b[j]]
@@ -327,8 +341,9 @@ def rebuild_temples(model, skin, head, approach, optics):
             face([(point, purple, Vector((0, -1, 0))) for point in (path[-1], a, b)])
         joined_rings[side] = [vertex_indices[key(point)] for point in root]
         report['sides'][side] = {'ear_top_m': list(ear), 'centreline_m': [list(point) for point in path],
-                                 'stem_height_m': .008, 'stem_thickness_m': .004, 'return_drop_m': .015,
-                                 'straight_run_rise_m': 0, 'shared_frame_edges': len(root)}
+                                 'section_heights_m': heights, 'stem_thickness_m': .004,
+                                 'return_drop_m': path[3].z - path[-1].z,
+                                 'front_to_ear_rise_m': path[2].z - path[0].z, 'shared_frame_edges': len(root)}
     edge_counts = {}
     for polygon in faces:
         for a, b in zip(polygon, polygon[1:] + polygon[:1]):
