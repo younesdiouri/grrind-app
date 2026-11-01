@@ -1,0 +1,149 @@
+{
+  "Male": {
+    "triangles": 4034,
+    "iris_coverage": {
+      "-25": {
+        "iris_samples": 18,
+        "uncovered": 0
+      },
+      "0": {
+        "iris_samples": 18,
+        "uncovered": 0
+      },
+      "25": {
+        "iris_samples": 18,
+        "uncovered": 0
+      }
+    },
+    "faces_and_noses": {
+      "original/original": 0,
+      "original/NoseWide": 0,
+      "original/NoseAquiline": 0,
+      "original/NoseFlat": 0,
+      "FaceAngular/original": 0,
+      "FaceAngular/NoseWide": 0,
+      "FaceAngular/NoseAquiline": 0,
+      "FaceAngular/NoseFlat": 0,
+      "FaceOval/original": 0,
+      "FaceOval/NoseWide": 0,
+      "FaceOval/NoseAquiline": 0,
+      "FaceOval/NoseFlat": 0
+    },
+    "hair": {
+      "parted": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "buzzed": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "mohawk": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "afro": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      }
+    },
+    "headwear": {
+      "moumoutivation": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 8
+      },
+      "bandeau-parted": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bandeau-buzzed": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bandeau-mohawk": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bandeau-afro": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      }
+    }
+  },
+  "Female": {
+    "triangles": 4034,
+    "iris_coverage": {
+      "-25": {
+        "iris_samples": 18,
+        "uncovered": 0
+      },
+      "0": {
+        "iris_samples": 18,
+        "uncovered": 0
+      },
+      "25": {
+        "iris_samples": 18,
+        "uncovered": 0
+      }
+    },
+    "faces_and_noses": {
+      "original/original": 0,
+      "original/NoseButton": 0,
+      "original/NoseStraight": 0,
+      "FaceHeart/original": 0,
+      "FaceHeart/NoseButton": 0,
+      "FaceHeart/NoseStraight": 0,
+      "FaceRound/original": 0,
+      "FaceRound/NoseButton": 0,
+      "FaceRound/NoseStraight": 0
+    },
+    "hair": {
+      "buns": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "long": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "buzzed": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "ponytail": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bob": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      }
+    },
+    "headwear": {
+      "moumoutivation": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 9
+      },
+      "bandeau-buns": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bandeau-long": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bandeau-buzzed": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bandeau-ponytail": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      },
+      "bandeau-bob": {
+        "central_visor_intersections": 0,
+        "all_visor_intersections": 0
+      }
+    }
+  }
+}

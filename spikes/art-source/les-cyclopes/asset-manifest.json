@@ -1,0 +1,77 @@
+{
+  "source": "Meshy 7.1 + Meshy remesh; UVs/topology/normals retained",
+  "units": "metres",
+  "axes": "Z up, +Y front in Blender; body-rest-space FBX, Humanoid Head attachment",
+  "variants": {
+    "Male": {
+      "triangles": 4034,
+      "uniform_scale": 0.11131219999147186,
+      "translation_m": [
+        -6.306543946266174e-05,
+        0.02179490588605404,
+        1.6867319345474243
+      ],
+      "bounds_m": [
+        [
+          -0.10246004164218903,
+          -0.08398029208183289,
+          1.6513980627059937
+        ],
+        [
+          0.10246004164218903,
+          0.12779049575328827,
+          1.7222418785095215
+        ]
+      ],
+      "iris_coverage": {
+        "-25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "0": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        }
+      }
+    },
+    "Female": {
+      "triangles": 4034,
+      "uniform_scale": 0.10831440328767757,
+      "translation_m": [
+        -6.136298179626465e-05,
+        0.021387038752436638,
+        1.6450921297073364
+      ],
+      "bounds_m": [
+        [
+          -0.09970063716173172,
+          -0.08153948187828064,
+          1.6107099056243896
+        ],
+        [
+          0.09970063716173172,
+          0.12452801316976547,
+          1.6796457767486572
+        ]
+      ],
+      "iris_coverage": {
+        "-25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "0": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        }
+      }
+    }
+  }
+}
