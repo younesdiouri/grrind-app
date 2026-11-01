@@ -1,4 +1,4 @@
-"""Seat the Meshy visor and temples on the real eyes and ears; retain topology and UVs."""
+"""Preserve the Meshy visor and fit slim, natural stems to the real eyes and ears."""
 import argparse
 import json
 import math
@@ -124,51 +124,121 @@ def ear_tops(head):
                       key=lambda point: point.z) for side in (-1, 1)}
 
 
-def seat_temples(model, head, approach):
-    # iPhone fit review: the source arms crossed the pinnae. Bend only behind the hinges.
-    hinge_y, length = .070 - approach, .080
+def rebuild_temples(model, skin, head, approach, optics):
+    # The photo calls for a slim temple stem and a short, tucked return, not an arch around the pinna.
     mesh = model.data
+    mesh.calc_loop_triangles()
     points = [vertex.co.copy() for vertex in mesh.vertices]
-    normals = [corner.vector.copy() for corner in mesh.corner_normals]
+    uv = mesh.uv_layers.active.data
+    corner_normals = [normal.vector.copy() for normal in mesh.corner_normals]
+    cut_y = .072 - approach
+    base = bpy.data.images.load(str(ASSET / 'source_textures/base_color.png'))
+    pixels = np.empty(base.size[0] * base.size[1] * 4, dtype=np.float32)
+    base.pixels.foreach_get(pixels)
+    rgb = pixels.reshape(-1, 4)[:, :3]
+    matte = optics.pixels.reshape(-1, 4)[:, 0] < .05
 
-    def weight(y):
-        t = max(0, min(1, (hinge_y - y) / length))
-        return t * t * (3 - 2 * t), -6 * t * (1 - t) / length
+    def colour_uv(purple):
+        score = -np.abs(rgb - np.array([.05, .01, .15])).sum(axis=1) if purple else np.minimum(rgb[:, 0], rgb[:, 1]) - rgb[:, 2]
+        valid = matte & (rgb[:, 2] > rgb[:, 0]) if purple else matte
+        index = int(np.argmax(np.where(valid, score, -100)))
+        return Vector(((index % base.size[0] + .5) / base.size[0], (index // base.size[0] + .5) / base.size[1]))
 
-    adjustments = {}
+    purple, yellow = colour_uv(True), colour_uv(False)
+    vertices, faces, uvs, normals, cuts = [], [], [], [], []
+
+    def face(corners):
+        offset = len(vertices)
+        vertices.extend(tuple(point) for point, texcoord, normal in corners)
+        uvs.extend(tuple(texcoord) for point, texcoord, normal in corners)
+        normals.extend(tuple(normal) for point, texcoord, normal in corners)
+        faces.append(tuple(range(offset, offset + len(corners))))
+
+    kept_lens = 0
+    for triangle in mesh.loop_triangles:
+        polygon = [(points[index].copy(), uv[loop].uv.copy(), corner_normals[loop].copy())
+                   for index, loop in zip(triangle.vertices, triangle.loops)]
+        if optics.sample(sum((corner[1] for corner in polygon), Vector((0, 0))) / 3) > .65:
+            assert all(corner[0].y > cut_y for corner in polygon), 'The cut must leave the complete Meshy lens intact'
+            kept_lens += 1
+        clipped = []
+        previous = polygon[-1]
+        for current in polygon:
+            before, after = previous[0].y >= cut_y, current[0].y >= cut_y
+            if before != after:
+                t = (cut_y - previous[0].y) / (current[0].y - previous[0].y)
+                corner = tuple(a.lerp(b, t) for a, b in zip(previous, current))
+                corner[0].y = cut_y
+                clipped.append(corner)
+                cuts.append(corner[0])
+            if after:
+                clipped.append(current)
+            previous = current
+        for i in range(1, len(clipped) - 1):
+            face([clipped[0], clipped[i], clipped[i + 1]])
+
+    # Close each removed arm section; the visor's UVs and corner normals above are copied exactly.
+    for side in (-1, 1):
+        boundary = {tuple(round(value, 6) for value in point): point for point in cuts if point.x * side > 0}
+        ring = list(boundary.values())
+        assert len(ring) >= 3
+        centre = sum(ring, Vector()) / len(ring)
+        ring.sort(key=lambda point: math.atan2(point.z - centre.z, point.x - centre.x))
+        for a, b in zip(ring, ring[1:] + ring[:1]):
+            face([(point, purple, Vector((0, -1, 0))) for point in (centre, a, b)])
+
+    surface_points = [skin.matrix_world @ vertex.co for vertex in skin.data.vertices]
+    surface = BVHTree.FromPolygons(surface_points, [tuple(poly.vertices) for poly in skin.data.polygons])
+    report = {'retained_mirror_triangles': kept_lens, 'sides': {}}
     for side, ear in ear_tops(head).items():
-        support = [point for point in points if point.x * side > .055 and abs(point.y - ear.y) < .003]
-        assert support and all(weight(point.y)[0] > .2 for point in support)
-        lift = max((ear.z + .002 - point.z) / weight(point.y)[0] for point in support)
-        inward = max(0, (float(np.median([point.x * side for point in support])) - abs(ear.x) - .002)
-                     / float(np.mean([weight(point.y)[0] for point in support])))
-        adjustments[side] = {'ear_top_m': list(ear), 'lift_m': lift, 'inward_m': inward,
-                             'rear_start_m': ear.y - .035, 'rear_end_m': min(point.y for point in points if point.x * side > 0)}
-
-    def bend(y, adjustment):
-        span = adjustment['rear_start_m'] - adjustment['rear_end_m']
-        t = max(0, min(1, (adjustment['rear_start_m'] - y) / span))
-        rear, rear_derivative = t * t * (3 - 2 * t), -6 * t * (1 - t) / span
-        w, derivative = weight(y)
-        return w * (1 - rear), derivative * (1 - rear) - w * rear_derivative, rear, rear_derivative
-
-    for vertex, point in zip(mesh.vertices, points):
-        side = 1 if point.x > 0 else -1
-        w, derivative, rear, rear_derivative = bend(point.y, adjustments[side])
-        vertex.co.x -= side * adjustments[side]['inward_m'] * w
-        vertex.co.z += adjustments[side]['lift_m'] * w
-        # Keep the original hook position behind the ear when bringing the visor closer.
-        vertex.co.y += approach * rear
-    # Inverse-transpose of the bend Jacobian preserves the existing corner-normal treatment.
-    for loop, normal in zip(mesh.loops, normals):
-        point = points[loop.vertex_index]
-        side = 1 if point.x > 0 else -1
-        w, derivative, rear, rear_derivative = bend(point.y, adjustments[side])
-        normal.y += derivative * (side * adjustments[side]['inward_m'] * normal.x - adjustments[side]['lift_m'] * normal.z)
-        normal.y /= 1 + approach * rear_derivative
-        normal.normalize()
-    mesh.normals_split_custom_set(normals)
-    return adjustments
+        outer = max(point.x * side for point in head)
+        anchor = max((point for point in points if point.x * side > outer * .95 and cut_y < point.y < cut_y + .012),
+                     key=lambda point: point.z).copy()
+        path = [anchor]
+        crest = max(point.z for point in head if point.x * side > outer * .8
+                    and abs(point.y - ear.y) < .025 and point.z < ear.z + .008)
+        # Follow the scalp beside the superior ear fold; only the short rear return descends.
+        controls = [(ear.y + dy, crest + dz) for dy, dz in ((.045, .002), (.006, .002), (-.005, .002), (-.014, -.002), (-.023, -.007))]
+        for i, (y, z) in enumerate(controls):
+            previous = path[-1]
+            count = 1 if i == 0 else max(1, math.ceil(abs(y - previous.y) / .004))
+            for step in range(1, count + 1):
+                t = step / count
+                sample_y, sample_z = previous.y + (y - previous.y) * t, previous.z + (z - previous.z) * t
+                hits = [surface.ray_cast(Vector((0, sample_y, sample_z + dz)), Vector((side, 0, 0)), .15)[0]
+                        for dz in (-.0016, 0, .0016)]
+                assert all(hit is not None for hit in hits)
+                x = max(hit.x * side for hit in hits) + .0025
+                path.append(Vector((side * x, sample_y, sample_z)))
+        rings = []
+        for i, centre in enumerate(path):
+            half_x, half_z, bevel = .0009, (.002 if i == 0 else .0016), .00045
+            cross = [(-half_x + bevel, -half_z), (half_x - bevel, -half_z), (half_x, -half_z + bevel),
+                     (half_x, half_z - bevel), (half_x - bevel, half_z), (-half_x + bevel, half_z),
+                     (-half_x, half_z - bevel), (-half_x, -half_z + bevel)]
+            rings.append([centre + Vector((x, 0, z)) for x, z in cross])
+        for i, (a, b) in enumerate(zip(rings, rings[1:])):
+            colour = yellow if path[i].y > ear.y + .006 and i > 0 else purple
+            for j in range(8):
+                quad = [a[j], a[(j + 1) % 8], b[(j + 1) % 8], b[j]]
+                normal = (quad[1] - quad[0]).cross(quad[2] - quad[0]).normalized()
+                face([(point, colour, normal) for point in quad])
+        face([(point, purple, Vector((0, 1, 0))) for point in reversed(rings[0])])
+        face([(point, purple, Vector((0, -1, 0))) for point in rings[-1]])
+        report['sides'][side] = {'ear_top_m': list(ear), 'centreline_m': [list(point) for point in path],
+                                 'stem_height_m': .0032, 'stem_thickness_m': .0018, 'return_drop_m': .009}
+    result = bpy.data.meshes.new(model.name + '_NaturalTemples')
+    result.from_pydata(vertices, [], faces)
+    layer = result.uv_layers.new(name='UVMap')
+    for loop, texcoord in zip(layer.data, uvs):
+        loop.uv = texcoord
+    for material in mesh.materials:
+        result.materials.append(material)
+    for poly in result.polygons:
+        poly.use_smooth = True
+    result.normals_split_custom_set(normals)
+    model.data = result
+    return report
 
 
 def fit(output):
@@ -180,7 +250,7 @@ def fit(output):
     output.mkdir(parents=True, exist_ok=True)
     mask = bpy.data.images.load(str(ASSET / 'source_textures/metallic.png'))
     mask.colorspace_settings.name = 'Non-Color'
-    report = {'source': 'Meshy 7.1 + Meshy remesh; UVs/topology retained, temple normals follow the bend', 'units': 'metres',
+    report = {'source': 'Meshy mirror/frame retained; rear arms replaced by slim stems fitted to the scalp and ear fold', 'units': 'metres',
               'axes': 'Z up, +Y front in Blender; body-rest-space FBX, Humanoid Head attachment', 'variants': {}}
     for body in ('Male', 'Female'):
         refs = imported(CHARACTERS / 'Quaternius' / ('Superhero_' + body + '_FullBody.fbx'), 'fbx')
@@ -201,8 +271,6 @@ def fit(output):
         model.name = 'PR_LesCyclopes_' + body + '_LOD0'
         optics = Optics(model, mask)
         source_matrix = model.matrix_world.copy()
-        original_faces = [tuple(face.vertices) for face in model.data.polygons]
-        original_uv = [tuple(loop.uv) for loop in model.data.uv_layers.active.data]
         source_min, source_max = bounds([source_matrix @ vertex.co for vertex in model.data.vertices])
         # The measured Meshy lens is on -Y. Preserve proportions with uniform scale.
         rotation = Matrix.Rotation(math.pi, 4, 'Z')
@@ -231,9 +299,10 @@ def fit(output):
         model.select_set(True)
         bpy.context.view_layer.objects.active = model
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        temples = seat_temples(model, head, approach)
-        assert original_faces == [tuple(face.vertices) for face in model.data.polygons]
-        assert original_uv == [tuple(loop.uv) for loop in model.data.uv_layers.active.data]
+        temples = rebuild_temples(model, skin, head, approach, optics)
+        optics = Optics(model, mask)
+        coverage = optics.coverage(pupils)
+        assert all(value["uncovered"] == 0 for value in coverage.values())
         model.data.calc_loop_triangles()
         triangles = len(model.data.loop_triangles)
         assert triangles <= 6000
