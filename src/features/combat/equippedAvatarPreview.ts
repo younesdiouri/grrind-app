@@ -18,5 +18,6 @@ export function equippedModels(equipment: Record<string, Pick<NonNullable<Equipm
     : equipment.WEAPON?.key === 'HUILESSON' ? 'huilesson' : 'unarmed';
   const headband = equipment.HEAD?.key === 'BANDEAU_ECLAIR';
   const moumoutivation = equipment.HEAD?.key === 'MOUMOUTIVATION';
-  return { shirt, pants, weapon, headband, moumoutivation } as const;
+  const cyclopes = equipment.ACCESSORY?.key === 'LES_CYCLOPES';
+  return { shirt, pants, weapon, headband, moumoutivation, cyclopes } as const;
 }

@@ -4,6 +4,20 @@ import { DEFAULT_AVATAR, serverAvatar } from './serverAvatar.ts';
 
 const item = (key: string) => ({ key, artworkVersion: null });
 
+test('Les Cyclopes viennent de ACCESSORY, se cumulent avec HEAD et disparaissent au retrait', () => {
+  for (const body of ['male', 'female'] as const) {
+    const avatar = { ...DEFAULT_AVATAR, body };
+    const glasses = serverAvatar(avatar, { ACCESSORY: item('LES_CYCLOPES'), HEAD: item('MOUMOUTIVATION') });
+    assert.equal(glasses.cyclopes, true);
+    assert.equal(glasses.moumoutivation, true);
+    assert.equal(glasses.headband, false);
+    assert.equal(serverAvatar(avatar, { ACCESSORY: item('LES_CYCLOPES'), HEAD: item('BANDEAU_ECLAIR') }).headband, true);
+    assert.equal(serverAvatar(avatar, { HEAD: item('LES_CYCLOPES') }).cyclopes, false);
+    assert.equal(serverAvatar(avatar, { ACCESSORY: item('FUTURE_GLASSES') }).cyclopes, false);
+    assert.equal(serverAvatar(avatar).cyclopes, false);
+  }
+});
+
 test('la Moumoutivation vient de HEAD, remplace le bandeau et disparaît au retrait', () => {
   for (const body of ['male', 'female'] as const) {
     const avatar = { ...DEFAULT_AVATAR, body };

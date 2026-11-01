@@ -75,6 +75,7 @@ test('une clé inconnue ou rangée dans le mauvais slot ne fabrique aucun objet 
 
 test('le replay conserve les deux snapshots quand les apparences et équipements changent ensuite', () => {
   const armed = { ...equipment, HEAD: { key: 'MOUMOUTIVATION', artworkVersion: null },
+    ACCESSORY: { key: 'LES_CYCLOPES', artworkVersion: null },
     WEAPON: { key: 'FER_PLAY', artworkVersion: null, weaponType: 'SWORD' as const } };
   const current: Battle = { ...duelBattle, player: { ...duelBattle.player, avatar, equipment: armed },
     enemy: { ...duelBattle.enemy, avatar: { ...avatar, body: 'male' as const, faceStyle: 'angular' as const },
@@ -85,6 +86,8 @@ test('le replay conserve les deux snapshots quand les apparences et équipements
   assert.equal(before.enemy.avatar.weapon, 'huilesson');
   assert.equal(before.player.moumoutivation, true);
   assert.equal(before.enemy.avatar.moumoutivation, true);
+  assert.equal(before.player.cyclopes, true);
+  assert.equal(before.enemy.avatar.cyclopes, true);
   current.player.avatar.hairStyle = 'buzzed';
   current.player.equipment = {};
   current.enemy.avatar!.faceStyle = 'original';

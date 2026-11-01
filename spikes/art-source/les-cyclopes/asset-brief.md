@@ -1,4 +1,4 @@
-# PR_LesCyclopes — essai atelier (#350)
+# PR_LesCyclopes — accessoire catalogue (#358, pilote #350)
 
 ASSET Les Cyclopes, lunettes de cycliste facettées, accessoire rigide attaché à Head.
 CATEGORY Accessoire indépendant de HEAD, deux corps Quaternius inchangés.
@@ -38,5 +38,6 @@ anatomique réimporté rejette v6 ; la comparaison mesurée du profil est dans l
 Le retour v7 restait à l’extérieur : v8 rentre le coude entre l’oreille et la tête. Les 615
 centres de triangles inférieurs contrôlés sont masqués par l’oreille au réimport des deux
 corps, sans intersection. L’ancien retour échoue à ce contrôle anatomique.
-Scripts bpy headless reproductibles. Atelier uniquement, sans
-back, prix, loot ou tenue sauvegardée. L’auteur juge l’acceptation finale sur son iPhone.
+Scripts bpy headless reproductibles. Le modèle porté est validé sur iPhone ; le catalogue
+serveur grrind-back#340 le propose en ACCESSORY. Les prix et modificateurs restent serveur,
+hors loot. L’icône est capturée depuis le mesh et le matériau Unity avec `04_catalog_icon.cs`.
