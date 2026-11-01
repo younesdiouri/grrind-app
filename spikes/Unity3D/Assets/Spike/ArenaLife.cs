@@ -35,6 +35,9 @@ public sealed class ArenaLife : MonoBehaviour
             obj.transform.localScale = Vector3.one * (.62f + i % 3 * .025f);
             var animator = obj.GetComponent<Animator>();
             var source = crowdClips[i % crowdClips.Length];
+            // Overhead claps cross the retargeted forearms; reuse the two clean fist cheers.
+            if (source.name == "StandingClap") source = System.Array.Find(crowdClips,
+                c => c.name == (i % 2 == 0 ? "StandingFistPump" : "TwoFistsCheer"));
             var motion = AnimationClipPlayable.Create(graph, source);
             motion.SetApplyFootIK(true);
             AnimationPlayableOutput.Create(graph, obj.name, animator).SetSourcePlayable(motion);

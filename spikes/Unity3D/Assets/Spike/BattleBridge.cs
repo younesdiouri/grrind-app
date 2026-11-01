@@ -229,13 +229,13 @@ public sealed class BattleBridge : MonoBehaviour
             // The uppercut has a shorter reach than the extended direct/jab.
             float range=frame.pose==3?.4f:.6f;
             // Match the human's head strike and the short stone arm's body strike.
-            if(caillouxFight)range=left?(frame.pose==3?.65f:.85f):.8f;
+            if(caillouxFight)range=left?(frame.pose==3?.65f:.85f):1f;
             float travel=Mathf.Max(0,Mathf.Abs(CombatX(true)-CombatX(false))-range);
             pose.placement+=(left?Vector3.left:Vector3.right)*travel*approach;
         }
     }
     float Facing(bool left)=>(left?-1:1)*(caillouxFight||illustratedFight?65:85);
-    float CombatX(bool left)=>(left?1:-1)*(caillouxFight?.625f:illustratedFight?HalfWidth()*.5f:.35f);
+    float CombatX(bool left)=>caillouxFight?(left?.625f:-.375f):(left?1:-1)*(illustratedFight?HalfWidth()*.5f:.35f);
     // Half of the visible width on the fighters' plane, for either projection.
     float HalfWidth()
     {

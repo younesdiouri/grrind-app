@@ -85,7 +85,8 @@ heads = {b.name:b.head_local.copy() for b in rig.data.bones}
 tails = {b.name:b.tail_local.copy() for b in rig.data.bones}
 order = sorted(rig.pose.bones, key=lambda b:len(b.parent_recursive))
 legs = {b.name for b in rig.pose.bones if any(t in b.name for t in ('Leg','Foot','Toe'))}
-guard = {'Left':Vector((.50,-.245,.88)), 'Right':Vector((-.50,-.245,.88))}
+# Camera-side fist below the face; the far fist keeps the boxing silhouette.
+guard = {'Left':Vector((.54,-.12,.70)), 'Right':Vector((-.50,-.22,.82))}
 
 def aimed(name, point, direction):
     q = (tails[name]-heads[name]).normalized().rotation_difference(direction.normalized())
@@ -113,35 +114,52 @@ def pulse(p, peak=.5):
     t = p/peak if p <= peak else (1-p)/(1-peak)
     return math.sin(max(0,min(1,t))*math.pi/2)**2
 
+def reach(p, targets):
+    for (start, a), (end, b) in zip(targets, targets[1:]):
+        if p <= end:
+            t = max(0, min(1, (p-start)/(end-start)))
+            return Vector(a).lerp(Vector(b), t*t*(3-2*t))
+    return Vector(targets[-1][1])
+
 def pose(kind, p):
     amount = pulse(p)
     left, right = guard['Left'].copy(), guard['Right'].copy()
     pitch = yaw = lean = 0.0
     if kind == 'Idle':
         amount = math.sin(p*2*math.pi)
-        left.z += .003*amount; right.z -= .003*amount
+        pitch = .025*amount; yaw = .045*amount; lean = .025*amount
+        left.z += .025*amount; right.z -= .020*amount
+        left.y += .015*math.sin(p*2*math.pi); right.y -= .02*amount
     elif kind == 'Attack':
-        right = right.lerp(Vector((-.23,-.54,1.04)), amount)
-        yaw = .24*amount; pitch = .06*amount
+        right = reach(p, [(0,right), (.15,(-.52,-.16,.87)),
+            (.50,(-.20,-.54,1.02)), (.58,(-.20,-.52,1.00)), (1,guard['Right'])])
+        windup = pulse(p/.36) if p < .36 else 0
+        yaw = .30*amount-.16*windup; pitch = .07*amount-.04*windup
+        left.y += .06*amount
     elif kind == 'Hit':
         pitch = -.18*amount
         left.z += .045*amount; right.z += .045*amount
     elif kind == 'Critical':
-        prep = pulse(p,.24) if p < .5 else 0
-        right = right.lerp(Vector((-.47,-.16,1.24)), prep*.85)
-        right = right.lerp(Vector((-.24,-.53,.94)), amount)
-        pitch = .09*amount; yaw = .27*amount
+        right = reach(p, [(0,right), (.15,(-.53,-.15,.99)),
+            (.50,(-.22,-.54,.94)), (.60,(-.24,-.51,.90)), (1,guard['Right'])])
+        pitch = .12*amount; yaw = .34*amount
+        left.y += .08*amount
     elif kind == 'Dodge':
         pitch = -.22*amount; lean = .10*amount
         left.y += .07*amount; right.y += .07*amount
     elif kind == 'Combo':
-        left.z += .10*amount; right.z += .10*amount
-        left.x += .025*amount; right.x -= .025*amount
+        jab = pulse(p/.44) if p < .44 else 0
+        left = left.lerp(Vector((.34,-.33,.78)), jab)
+        right = reach(p, [(0,right), (.15,(-.52,-.16,.90)),
+            (.50,(-.20,-.54,1.02)), (.58,(-.23,-.52,.98)), (1,guard['Right'])])
+        yaw = .28*amount-.12*jab; pitch = .06*amount
     elif kind == 'Counter':
         parry = pulse(p*2,.44) if p < .5 else 0
-        left = left.lerp(Vector((.58,-.34,1.08)), parry*.85)
-        right = right.lerp(Vector((-.22,-.54,1.08)), amount)
-        yaw = .27*amount; pitch = .055*amount
+        left = left.lerp(Vector((.58,-.28,.94)), parry*.65)
+        right = reach(p, [(0,right), (.15,(-.52,-.16,.87)),
+            (.50,(-.20,-.54,1.02)), (.58,(-.20,-.52,1.00)), (1,guard['Right'])])
+        windup = pulse(p/.36) if p < .36 else 0
+        yaw = .30*amount-.16*windup; pitch = .07*amount-.04*windup
     pivot = Vector((0,0,.67))  # inferred: centre of the rigid torso, below the face
     torso = Matrix.Translation(pivot) @ Euler((pitch,lean,yaw),'XYZ').to_matrix().to_4x4() @ Matrix.Translation(-pivot)
     matrices = {name:(rest[name].copy() if name in legs else torso @ rest[name]) for name in rest}

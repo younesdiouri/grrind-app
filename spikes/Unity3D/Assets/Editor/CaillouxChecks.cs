@@ -23,7 +23,7 @@ public static class CaillouxChecks
             throw new Exception("Cailloux impacts still use the ground instead of the torso/hand sockets");
         var baked = new Mesh();
         float minimumFloor = float.MaxValue, maximumFloor = float.MinValue, knockoutHeight = 0;
-        float movement = 0, playerGap = 0, enemyGap = 0;
+        float movement = 0, playerGap = 0, enemyGap = 0, attackFootDrift = 0, idleMotion = 0;
         int samples = 0;
         try
         {
@@ -42,6 +42,7 @@ public static class CaillouxChecks
             for (int stance = 0; stance <= 9; stance++)
             {
                 Vector3[] first = null;
+                Vector3[] firstFeet = null;
                 float poseMotion = 0;
                 for (int step = 0; step <= 4; step++)
                 {
@@ -54,6 +55,10 @@ public static class CaillouxChecks
                     if (Quaternion.Angle(enemy.actor.transform.rotation, Quaternion.Euler(0, 65, 0)) > .1f)
                         throw new Exception("Cailloux faces away from the opponent");
                     var vertices = Vertices(enemy, baked);
+                    var feet = new[] { enemy.Bone(HumanBodyBones.LeftFoot).position, enemy.Bone(HumanBodyBones.RightFoot).position };
+                    if (firstFeet == null) firstFeet = feet;
+                    if (stance == 1 || stance == 3 || stance == 5 || stance == 6)
+                        attackFootDrift = Mathf.Max(attackFootDrift, feet.Select((v, i) => Vector3.Distance(v, firstFeet[i])).Max());
                     float floor = vertices.Min(v => v.y);
                     minimumFloor = Mathf.Min(minimumFloor, floor); maximumFloor = Mathf.Max(maximumFloor, floor);
                     if (floor < -.04f || floor > .06f) throw new Exception($"Cailloux leaves the floor: {stance}/{phase} = {floor}");
@@ -64,21 +69,25 @@ public static class CaillouxChecks
                 }
                 if (stance <= 6 && poseMotion < (stance == 0 ? .001f : .015f))
                     throw new Exception("Frozen Cailloux posture: " + stance);
+                if (stance == 0) idleMotion = poseMotion;
                 movement = Mathf.Max(movement, poseMotion);
             }
+            if (attackFootDrift > .002f) throw new Exception("Cailloux slides during its planted strike: " + attackFootDrift);
+            if (idleMotion < .025f) throw new Exception("Cailloux idle is unreadable at combat scale: " + idleMotion);
             if (knockoutHeight > .95f) throw new Exception("Cailloux does not stay down after knockout: " + knockoutHeight);
             foreach (bool playerAttacks in new[] { true, false })
+            foreach (int attack in new[] { 1, 3, 5, 6 })
             {
                 bridge.Present(JsonUtility.ToJson(new BattleBridge.Frame {
-                    player = new BattleBridge.ActorFrame { pose = playerAttacks ? 1 : 2, phase = .5f },
-                    enemy = new BattleBridge.ActorFrame { pose = playerAttacks ? 2 : 1, phase = .5f }
+                    player = new BattleBridge.ActorFrame { pose = playerAttacks ? attack : 2, phase = .5f },
+                    enemy = new BattleBridge.ActorFrame { pose = playerAttacks ? 2 : attack, phase = .5f }
                 }));
                 Solve(player); Solve(enemy);
                 var hand = playerAttacks ? player.Bone(HumanBodyBones.RightHand)
                     : enemy.GetComponentsInChildren<Transform>().Single(t => t.name == "RightHand");
                 float gap = Vertices(playerAttacks ? enemy : player, baked).Min(v => Vector3.Distance(v, hand.position));
-                if (gap > .30f) throw new Exception("Cailloux contact misses by " + gap + " m, player attacks=" + playerAttacks);
-                if (playerAttacks) playerGap = gap; else enemyGap = gap;
+                if (gap > .30f) throw new Exception("Cailloux contact misses by " + gap + " m, player attacks=" + playerAttacks + ", pose=" + attack);
+                if (playerAttacks) playerGap = Mathf.Max(playerGap, gap); else enemyGap = Mathf.Max(enemyGap, gap);
             }
             bridge.Present(JsonUtility.ToJson(new BattleBridge.Frame {
                 presentation = new CombatPresentation.Frame { finished = true, finale = 1 }
@@ -86,7 +95,7 @@ public static class CaillouxChecks
             Solve(player);
             if (enemy.gameObject.activeSelf || player.stance != 9) throw new Exception("The PvE finale did not complete");
             bridge.Present("{}");
-            return new { samples, minimumFloor, maximumFloor, movement, knockoutHeight, playerGap, enemyGap, finale = true };
+            return new { samples, minimumFloor, maximumFloor, movement, idleMotion, attackFootDrift, knockoutHeight, playerGap, enemyGap, finale = true };
         }
         finally { UnityEngine.Object.DestroyImmediate(baked); }
     }
