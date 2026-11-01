@@ -74,8 +74,7 @@
         ],
         "totalXp": 230,
         "xpIntoLevel": 130,
-        "xpToNextLevel": 30,
-        "skillPointsGranted": 1
+        "xpToNextLevel": 30
       },
       "titlesUnlocked": [
         {
@@ -138,7 +137,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -202,8 +200,7 @@
         ],
         "totalXp": 260,
         "xpIntoLevel": 0,
-        "xpToNextLevel": 220,
-        "skillPointsGranted": 1
+        "xpToNextLevel": 220
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -231,7 +228,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -293,8 +289,7 @@
         "reached": [],
         "totalXp": 310,
         "xpIntoLevel": 50,
-        "xpToNextLevel": 170,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 170
       },
       "titlesUnlocked": [],
       "loot": [
@@ -344,7 +339,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -416,8 +410,7 @@
         ],
         "totalXp": 484,
         "xpIntoLevel": 4,
-        "xpToNextLevel": 276,
-        "skillPointsGranted": 1
+        "xpToNextLevel": 276
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -445,7 +438,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -511,8 +503,7 @@
         "reached": [],
         "totalXp": 599,
         "xpIntoLevel": 119,
-        "xpToNextLevel": 161,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 161
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -540,7 +531,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -616,8 +606,7 @@
         ],
         "totalXp": 829,
         "xpIntoLevel": 69,
-        "xpToNextLevel": 271,
-        "skillPointsGranted": 1
+        "xpToNextLevel": 271
       },
       "titlesUnlocked": [
         {
@@ -669,7 +658,6 @@
           }
         ]
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -731,8 +719,7 @@
         "reached": [],
         "totalXp": 859,
         "xpIntoLevel": 99,
-        "xpToNextLevel": 241,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 241
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -760,7 +747,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -822,8 +808,7 @@
         "reached": [],
         "totalXp": 909,
         "xpIntoLevel": 149,
-        "xpToNextLevel": 191,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 191
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -851,7 +836,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -921,8 +905,7 @@
         "reached": [],
         "totalXp": 1083,
         "xpIntoLevel": 323,
-        "xpToNextLevel": 17,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 17
       },
       "titlesUnlocked": [],
       "loot": [
@@ -972,7 +955,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -1040,8 +1022,7 @@
         ],
         "totalXp": 1198,
         "xpIntoLevel": 98,
-        "xpToNextLevel": 302,
-        "skillPointsGranted": 1
+        "xpToNextLevel": 302
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -1069,7 +1050,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -1143,8 +1123,7 @@
         "reached": [],
         "totalXp": 1428,
         "xpIntoLevel": 328,
-        "xpToNextLevel": 72,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 72
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -1172,7 +1151,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -1234,8 +1212,7 @@
         "reached": [],
         "totalXp": 1458,
         "xpIntoLevel": 358,
-        "xpToNextLevel": 42,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 42
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -1263,7 +1240,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -1327,8 +1303,7 @@
         ],
         "totalXp": 1508,
         "xpIntoLevel": 8,
-        "xpToNextLevel": 452,
-        "skillPointsGranted": 1
+        "xpToNextLevel": 452
       },
       "titlesUnlocked": [],
       "loot": [
@@ -1389,7 +1364,6 @@
           }
         ]
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -1459,8 +1433,7 @@
         "reached": [],
         "totalXp": 1682,
         "xpIntoLevel": 182,
-        "xpToNextLevel": 278,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 278
       },
       "titlesUnlocked": [],
       "loot": [
@@ -1515,7 +1488,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     },
     {
@@ -1581,8 +1553,7 @@
         "reached": [],
         "totalXp": 1797,
         "xpIntoLevel": 297,
-        "xpToNextLevel": 163,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 163
       },
       "titlesUnlocked": [],
       "loot": [
@@ -1632,7 +1603,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     }
   ],

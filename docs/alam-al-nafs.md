@@ -20,7 +20,7 @@ de combat ne sont calculés sur le mobile. Les éditions historiques gardent leu
 et leur difficulté nulle ; les événements et timestamps serveur conduisent toujours le replay.
 
 Les cinq caractéristiques sont hebdomadaires : remise à zéro dimanche à 20 h Europe/Paris,
-en PvE et PvP. XP, niveau, compétences, titres et possessions restent acquis. Les taux de
+en PvE et PvP. XP, niveau, titres et possessions restent acquis. Les taux de
 combat viennent uniquement des équipements portés. Un import historique peut créditer de
 l’XP sans augmenter les caractéristiques courantes. Au retour au premier plan et à la
 frontière hebdomadaire (changements d’heure inclus), le mobile relit les valeurs serveur.
@@ -63,7 +63,8 @@ La musique d’ambiance a été retirée à la demande de l’auteur le 24 octob
 arrière-plan n’est demandée. Le son peut être coupé et s’arrête à la fin ou en arrière-plan.
 Les animations et l’haptique respectent le réglage de mouvement réduit. Les portraits utilisent
 le composant de profil existant ; tant que le serveur ne fournit pas d’avatar, il affiche les
-initiales. Les anciens combats restent accessibles depuis le bas de l’écran ʿĀlam.
+initiales. L’écran ʿĀlam garde l’édition courante et son replay ; les listes d’anciennes
+éditions et de combats solo sont retirées de la V0 (#335).
 
 ## QA reproductible
 

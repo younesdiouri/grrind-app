@@ -8,7 +8,7 @@ import { Button } from '@/components/Button';
 const enemy = { key: 'SAND_JACKAL', name: 'Cailloux dans la Chaussure', minimumLevel: 1, hp: 90, damage: 8,
   mitigationPercent: 0, comboPercent: 0, dodgePercent: 0, maintenancePercent: 0, criticalChancePercent: 0,
   guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0 };
-const actions = { onMode() {}, onFight() {}, onDemo() {}, onHistory() {} };
+const actions = { onMode() {}, onFight() {}, onDemo() {} };
 
 test('le PvE expose Cailloux et conserve le verrou serveur', () => {
   const markup = renderToStaticMarkup(createElement(CombatMenu, { ...actions, mode: 'pve', enemy: { ...enemy, minimumLevel: 12 }, locked: true }));

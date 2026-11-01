@@ -9,6 +9,6 @@ export const TOGETHER_BONUS_FIXTURE: TogetherBonus = {
   occurredAt: reward.session.startedAt, createdAt: reward.session.endedAt,
   previousMultiplier: 2, multiplier: 3, soloXp: 100, bonusXp: 17, totalBonusXp: 999, workoutTotalXp: 1099,
   xp: { awarded: 17, breakdown: [{ source: 'TOGETHER', amount: 17 }] },
-  attributes: reward.attributes, level: reward.level, skillPointsGranted: 3, titlesUnlocked: reward.titlesUnlocked,
+  attributes: reward.attributes, level: reward.level, titlesUnlocked: reward.titlesUnlocked,
   rulesetVersion: 'synthetic', detectionRulesetVersion: 'synthetic',
 };

@@ -79,9 +79,8 @@ export function useCatalog(): { catalog: Catalog; reload: () => void } {
    *
    * `player` porte les modificateurs équipés : il vieillit donc dès qu'on porte ou retire un
    * objet dans le sac. Et cet onglet ne se démonte pas — c'est tout l'intérêt d'une barre
-   * d'onglets — donc rien ne le relirait au retour. On se rebranche sur le compteur, comme
-   * `useBattleHistory` se rebranche sur les combats livrés, et pour la même raison : l'écran
-   * qu'on retrouve doit être celui d'après le geste, pas celui d'avant.
+   * d'onglets — donc rien ne le relirait au retour. Le compteur fait relire l'état confirmé
+   * après chaque changement d'équipement.
    *
    * Le catalogue lui-même n'a pas bougé, mais il arrive dans la même réponse : il n'y a rien
    * à relire plus finement, et une route de moins vaut mieux qu'une lecture partielle.

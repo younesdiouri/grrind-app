@@ -20,7 +20,7 @@ type DroppedItemModifier = components['schemas']['DroppedItemModifier'];
  * - `MITIGATION_BONUS`, `COMBO_BONUS`, `DODGE_BONUS` sont des **millièmes**, et c'est
  *   une décision d'affichage de ce ticket de les rendre en pourcentage avec une décimale :
  *   un joueur ne lit pas « +180 ‰ », et le seul taux qu'on lui montre déjà — celui d'un
- *   combattant, sur `EnemyCard` — est un pourcentage. La conversion s'arrête à l'écran ; le
+ *   combattant — est un pourcentage. La conversion s'arrête à l'écran ; le
  *   client ne recompose aucun taux de combat, il en affiche un qui arrive résolu du serveur.
  * - `STREAK_SHIELD` compte des charges.
  * - `UNLOCK_SESSION_TYPE` n'a encore aucun objet qui le porte : sa valeur n'a pas de sens

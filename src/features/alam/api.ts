@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useIsFocused } from 'expo-router';
 import { api } from '@/api/client';
 import { queryOrFailure } from '@/api/queryOrFailure';
@@ -27,16 +27,6 @@ export function useAlamCurrent(guildId: string | undefined) {
     refetchInterval: (query) => focused && !query.state.error
       ? Math.min(alamMotion.pollMaxMs, Math.max(1000, (query.state.data?.pollAfterSeconds ?? 5) * 1000)) : false,
     refetchIntervalInBackground: false,
-  });
-}
-
-export function useAlamHistory(guildId: string | undefined) {
-  const focused = useIsFocused();
-  return useInfiniteQuery({
-    queryKey: [...ALAM_KEY, 'history', guildId], enabled: !!guildId && focused,
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => queryOrFailure(() => api.GET('/api/guild/alam/runs', { params: { query: { cursor: pageParam, limit: 20 } } })),
-    getNextPageParam: (page) => page.nextCursor ?? undefined,
   });
 }
 

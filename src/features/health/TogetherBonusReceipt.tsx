@@ -9,7 +9,7 @@ export function TogetherBonusReceipt({ bonus }: { bonus: TogetherBonus }) {
     <Text style={styles.body}>Complément de la séance du {new Date(bonus.occurredAt).toLocaleDateString('fr-FR')}</Text>
     <Text style={styles.body}>Multiplicateur ×{bonus.previousMultiplier} → ×{bonus.multiplier}</Text>
     <Text style={styles.body}>{bonus.totalBonusXp} XP de groupe cumulées · {bonus.workoutTotalXp} XP pour cette séance</Text>
-    <Text style={styles.body}>Niveau {bonus.level.before} → {bonus.level.after} · {bonus.skillPointsGranted} point{bonus.skillPointsGranted === 1 ? '' : 's'} de compétence</Text>
+    <Text style={styles.body}>Niveau {bonus.level.before} → {bonus.level.after}</Text>
     {(['strength', 'endurance', 'mobility', 'dexterity', 'vitality'] as const).map((attribute) =>
       <Text key={attribute} style={styles.body}>{attributeLabel[attribute]} : {bonus.attributes[attribute].before} → {bonus.attributes[attribute].after}</Text>)}
     {bonus.titlesUnlocked.map((title) => <Text key={title.id} style={styles.body}>Titre débloqué : {title.name}</Text>)}
