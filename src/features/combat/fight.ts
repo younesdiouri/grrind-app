@@ -2,7 +2,6 @@ import { api } from '@/api/client';
 import { failureFrom, OFFLINE, type Failure } from '@/features/auth/problems';
 import { battleKeys } from './battleKey.ts';
 import { duelIntentionOf, forgetsKeyAfter, intentionOf } from './keyPolicy.ts';
-import { noteBattleFought } from './battlesRevision.ts';
 import { handOver } from './lastBattle.ts';
 import type { Battle } from './timeline.ts';
 
@@ -19,9 +18,7 @@ export type FightOutcome =
  * ————— Ce que le succès enchaîne ————————————————————————————————————————————————————————
  *
  * Le combat est mis en main (`handOver`) plutôt que rechargé : le back rend la timeline entière
- * sur le `POST` précisément pour qu'il n'y ait qu'un aller-retour. Et l'historique est prévenu
- * **ici**, au verdict, et non à la sortie de l'animation — un joueur qui tue l'app pendant la
- * séquence doit retrouver son combat en tête de liste.
+ * sur le `POST` précisément pour qu'il n'y ait qu'un aller-retour.
  */
 export async function fight(enemyKey: string | null): Promise<FightOutcome> {
   return deliver(intentionOf(enemyKey), (key) =>
@@ -81,7 +78,6 @@ async function deliver(
   if (reply.data !== undefined) {
     await battleKeys.forget();
     handOver(reply.data);
-    noteBattleFought();
 
     return { kind: 'fought', battle: reply.data };
   }

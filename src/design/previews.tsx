@@ -8,14 +8,12 @@ import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BattleResultBadge } from '@/components/BattleResultBadge';
 import { GameHud } from '@/components/GameHud';
 import { CombatMenu } from '@/components/CombatMenu';
-import { BattleRow } from '@/components/BattleRow';
 import { BreakdownRow } from '@/components/BreakdownRow';
 import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
 import { CoinAmount } from '@/components/CoinAmount';
 import { DangerRow } from '@/components/DangerRow';
 import { DisciplineChip } from '@/components/DisciplineChip';
-import { EnemyCard } from '@/components/EnemyCard';
 import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { GuildMembers, GuildTabs } from '@/components/GuildMenu';
@@ -869,51 +867,6 @@ export const PREVIEWS: Preview[] = [
     ),
   },
   {
-    slug: 'carte-adversaire',
-    name: 'Carte d’adversaire',
-    group: 'Composants',
-    element: (
-      <>
-        <Specimen label="À portée">
-          <EnemyCard enemy={enemy({})} />
-        </Specimen>
-        {/* La fente d'action : le design system ne connaît ni la navigation ni le réseau, la
-            carte reçoit donc son bouton au lieu de le fabriquer. Un adversaire verrouillé n'en
-            reçoit aucun — pas un bouton désactivé, qui inviterait à un geste sans effet. */}
-        <Specimen label="À portée, avec son action">
-          <EnemyCard
-            enemy={enemy({})}
-            action={<Button label="Combattre" onPress={() => {}} />}
-          />
-        </Specimen>
-        <Specimen label="Action en cours">
-          <EnemyCard
-            enemy={enemy({})}
-            action={<Button label="Combattre" onPress={() => {}} busy />}
-          />
-        </Specimen>
-        {/* Verrouillé : la carte reste **lisible**, elle ne disparaît pas. C'est ce qui donne
-            une raison de monter de niveau — la cacher rendrait le catalogue d'un joueur de
-            niveau 1 indiscernable d'un catalogue vide. */}
-        <Specimen label="Hors de portée">
-          <EnemyCard
-            enemy={enemy({ key: 'STORM_HYENA', name: 'Hyène des tempêtes', minimumLevel: 20, hp: 640, damage: 40, mitigationPercent: 18, comboPercent: 13, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 10 })}
-            locked
-          />
-        </Specimen>
-        {/* Un boss se dessine **exactement** comme un ennemi ordinaire : le contrat ne les
-            distingue pas, et le client n'invente pas la distinction. Ce spécimen est là pour
-            qu'on le voie, pas pour montrer une variante — il n'y en a pas. */}
-        <Specimen label="Un boss : même carte, plus gros chiffres">
-          <EnemyCard
-            enemy={enemy({ key: 'CINDER_SOVEREIGN', name: 'Souverain des cendres', minimumLevel: 50, hp: 3600, damage: 190, mitigationPercent: 44, comboPercent: 33, maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0, criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0, dodgePercent: 25 })}
-            locked
-          />
-        </Specimen>
-      </>
-    ),
-  },
-  {
     slug: 'carte-combattant-joueur',
     name: 'Statistiques du personnage',
     group: 'Composants',
@@ -981,10 +934,10 @@ export const PREVIEWS: Preview[] = [
     element: <>
       <Specimen label="Cailloux — lancement du combat serveur">
         <CombatMenu mode="pve" enemy={enemy({ name: 'Cailloux dans la Chaussure' })}
-          onMode={() => {}} onFight={() => {}} onDemo={() => {}} onHistory={() => {}} />
+          onMode={() => {}} onFight={() => {}} onDemo={() => {}} />
       </Specimen>
       <Specimen label="PvP — défi de démonstration">
-        <CombatMenu mode="pvp" onMode={() => {}} onFight={() => {}} onDemo={() => {}} onHistory={() => {}} />
+        <CombatMenu mode="pvp" onMode={() => {}} onFight={() => {}} onDemo={() => {}} />
       </Specimen>
     </>,
   },
@@ -1001,34 +954,6 @@ export const PREVIEWS: Preview[] = [
             alarmante. Rien n'a mal tourné — on a perdu, on y retourne. */}
         <Specimen label="Défaite">
           <BattleResultBadge result="DEFEAT" />
-        </Specimen>
-      </>
-    ),
-  },
-  {
-    slug: 'ligne-combat',
-    name: 'Ligne d’historique de combat',
-    group: 'Composants',
-    element: (
-      <>
-        <Specimen label="Victoire">
-          <BattleRow result="VICTORY" enemyName="Chacal des sables" counts="15 actions · 16 tentatives · KO" when="Aujourd’hui, 15:25" coinsGained={0} />
-        </Specimen>
-        {/* Le gain (#227) : les pièces seulement, jamais une carte d'objet — voir le docblock
-            de `coinsGained`. */}
-        <Specimen label="Victoire, avec un gain">
-          <BattleRow result="VICTORY" enemyName="Chacal des sables" counts="15 actions · 16 tentatives · KO" when="Aujourd’hui, 15:25" coinsGained={4} />
-        </Specimen>
-        <Specimen label="Défaite, contre un boss">
-          <BattleRow result="DEFEAT" enemyName="Souverain des dunes" counts="18 actions · 21 tentatives · KO" when="Hier, 09:05" coinsGained={0} />
-        </Specimen>
-        {/* Le singulier existe : un combat peut se conclure en un tour. */}
-        <Specimen label="Un seul tour">
-          <BattleRow result="VICTORY" enemyName="Chacal de fer" counts="1 action · 1 tentative · KO" when="20 août" coinsGained={0} />
-        </Specimen>
-        {/* Le nom cède avant la pastille : c'est l'issue qui doit rester lisible en défilant. */}
-        <Specimen label="Nom qui déborde">
-          <BattleRow result="DEFEAT" enemyName="Matriarche des tempêtes obsidiennes" counts="30 actions · 33 tentatives · Limite atteinte" when="12 août" coinsGained={0} />
         </Specimen>
       </>
     ),

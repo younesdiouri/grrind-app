@@ -1008,7 +1008,6 @@ export interface components {
                 /** @description Ce qu'il **reste** à gagner. `null` signifie le niveau maximum ; zéro voudrait dire « atteint ». */
                 xpToNextLevel: number | null;
             };
-            skillPointsGranted: number;
             titlesUnlocked: components["schemas"]["PlayerTitle"][];
             rulesetVersion: string;
             detectionRulesetVersion: string;
@@ -2321,8 +2320,7 @@ export interface components {
          *     la même séquence dans tous les cas.
          *
          *     **`streak` suit `coins` (#286)** : le jour sportif, la série avant, la série
-         *     après, puis le coffre de la semaine s'il tombe. `unlockableNodes` reste
-         *     **présent et vide** jusqu'au Lot 7.
+         *     après, puis le coffre de la semaine s'il tombe.
          */
         RewardSummary: {
             session: components["schemas"]["Workout"];
@@ -2397,7 +2395,6 @@ export interface components {
                 xpIntoLevel: number;
                 /** @description Ce qu'il **reste** à gagner. `null` signifie le niveau maximum ; zéro voudrait dire « atteint ». */
                 xpToNextLevel: number | null;
-                skillPointsGranted: number;
             };
             /** @description Vide le plus souvent — un titre est un événement rare, c'est ce qui en fait un. */
             titlesUnlocked: components["schemas"]["PlayerTitle"][];
@@ -2430,8 +2427,6 @@ export interface components {
                 /** @description Le coffre de la semaine de régularité qui vient d'être acquise — vide le plus souvent. Déjà crédité à l'inventaire, il s'ouvre par `POST /api/inventory/chests/{key}/open`. */
                 chests: components["schemas"]["DroppedItem"][];
             };
-            /** @description Lot 7 : toujours vide aujourd'hui. */
-            unlockableNodes: Record<string, never>[];
             /** @description L'équilibrage sous lequel ces montants ont été accordés. Le client n'en fait rien ; un rapport de bug, si. */
             rulesetVersion: string;
         };
@@ -2442,16 +2437,6 @@ export interface components {
             xpIntoLevel: number;
             /** @description `null` au niveau maximum. */
             xpToNextLevel: number | null;
-            /**
-             * @description Deux nombres, alors qu'ils valent la même chose aujourd'hui. `earned` est un
-             *     cumul de carrière qui ne redescend pas, `available` un solde que les arbres
-             *     feront baisser. Les fondre obligerait à renommer — donc à casser le client —
-             *     au premier point dépensé.
-             */
-            skillPoints: {
-                earned: number;
-                available: number;
-            };
             /**
              * @description Les cinq caractéristiques du personnage, à l'instant présent — même
              *     vocabulaire que dans `RewardSummary.attributes`, mais sous une forme

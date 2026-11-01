@@ -55,8 +55,7 @@
         "reached": [],
         "totalXp": 0,
         "xpIntoLevel": 0,
-        "xpToNextLevel": 100,
-        "skillPointsGranted": 0
+        "xpToNextLevel": 100
       },
       "titlesUnlocked": [],
       "loot": [],
@@ -84,7 +83,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     }
   ],

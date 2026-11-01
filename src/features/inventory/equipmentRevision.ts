@@ -9,16 +9,14 @@
  * ment précisément sur la seule chose que le joueur venait vérifier.
  *
  * Et il ne se démonte pas. Un onglet visité reste monté — c'est tout l'intérêt d'une barre
- * d'onglets — donc ni `useEffect` de montage ni paramètre de route ne le relira. C'est le même
- * trou que `battlesRevision` bouche pour l'historique au retour d'un combat, et il se bouche de
- * la même façon : un compteur, et les écrans qui s'y branchent.
+ * d'onglets — donc ni `useEffect` de montage ni paramètre de route ne le relira. Un compteur
+ * et les écrans qui s'y branchent déclenchent cette relecture.
  *
  * Ce défaut ne se voit pas en test manuel, parce qu'on ne revient jamais deux fois sur le même
  * écran dans la même session quand on vérifie une fonctionnalité qu'on vient d'écrire.
  *
- * Un nombre et non un booléen, pour la raison de `battlesRevision` : `useSyncExternalStore`
- * compare des instantanés, et deux équipements d'affilée doivent produire deux valeurs
- * distinctes.
+ * Un nombre et non un booléen : `useSyncExternalStore` compare des instantanés, et deux
+ * équipements d'affilée doivent produire deux valeurs distinctes.
  */
 let revision = 0;
 const listeners = new Set<() => void>();

@@ -47,7 +47,7 @@ describe('formatModifier — les points, déjà l’effet final', () => {
 
 describe('formatModifier — les millièmes, convertis en pourcentage à une décimale', () => {
   // Décision de ce ticket : un joueur ne lit pas « +180 ‰ », et le seul taux déjà montré
-  // ailleurs (`EnemyCard`) est un pourcentage. La conversion est un choix d'affichage, elle
+  // ailleurs est un pourcentage. La conversion est un choix d'affichage, elle
   // ne recalcule aucun taux de combat.
   it('convertit MITIGATION_BONUS', () => {
     assert.equal(formatModifier(modifier({ type: 'MITIGATION_BONUS', value: 180 })), 'Mitigation +18,0 %');

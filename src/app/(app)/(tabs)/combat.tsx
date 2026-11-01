@@ -8,7 +8,7 @@ import { SystemFrame } from '@/components/SystemFrame';
 import { color } from '@/design/tokens';
 import { AlamGauges } from '@/features/alam/AlamGauges';
 import { AlamDifficultyOptions } from '@/features/alam/AlamDifficultyOptions';
-import { ALAM_KEY, alamPreferences, launchAlam, useAlamCurrent, useAlamHistory } from '@/features/alam/api';
+import { ALAM_KEY, alamPreferences, launchAlam, useAlamCurrent } from '@/features/alam/api';
 import { preferenceIsDefinitive, preferenceMessage } from '@/features/alam/preferences';
 import { alamStyles as s } from '@/features/alam/styles';
 import { messageFor, type Failure } from '@/features/auth/problems';
@@ -22,7 +22,6 @@ type Preference = { kind: 'registration'; input: Parameters<typeof alamPreferenc
 export default function AlamScreen() {
   const guild = useMyGuild();
   const current = useAlamCurrent(guild.data?.id);
-  const history = useAlamHistory(guild.data?.id);
   const auth = useAuth();
   const client = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -117,17 +116,7 @@ export default function AlamScreen() {
           <AlamGauges gauges={player.gauges} />
         </View>)}
       </SystemFrame>
-      <Text style={s.label}>HISTOIRES DE LA GUILDE</Text>
-      {history.isPending && <ActivityIndicator color={color.accent} />}
-      {history.isError && <Button label="Réessayer l’historique" onPress={() => void history.refetch()} />}
-      {history.data?.pages.every((page) => page.runs.length === 0) && <Text style={s.muted}>Votre première histoire reste à écrire.</Text>}
-      {history.data?.pages.flatMap((page) => page.runs).map((edition) => <SystemFrame key={edition.id} contentStyle={s.card}>
-        <Text style={s.body}>{date(edition.revealedAt)} · {edition.mode === 'MANUAL' ? 'Manuelle' : 'Hebdomadaire'}</Text>
-        <Button label="Lire et rejouer" variant="quiet" onPress={() => router.push({ pathname: '/alam/[id]', params: { id: edition.id, replay: '1' } })} />
-      </SystemFrame>)}
-      {history.hasNextPage && <Button label="Histoires précédentes" busy={history.isFetchingNextPage} onPress={() => void history.fetchNextPage()} />}
     </>}
-    <Button label="Anciens combats solo" variant="quiet" onPress={() => router.push('/combats-solo')} />
   </ScrollView>;
 }
 

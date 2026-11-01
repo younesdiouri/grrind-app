@@ -9,15 +9,15 @@ appId: app.grrind.dev
 # elle qu'on vérifie, jamais un objet précis qui pourrait ne pas tomber.
 
 - tapOn:
-    id: "tab-combat"
-- tapOn: "Anciens combats solo"
+    id: "tab-arene"
+- tapOn:
+    id: "combat-mode-pve"
 - extendedWaitUntil:
-    visible: "Adversaires"
+    visible: "Cailloux dans la Chaussure"
     timeout: 15000
-- assertVisible: "Ton équipement et tes statistiques.*"
 - takeScreenshot: 03-combat-catalog
 
-- tapOn: "Combattre"
+- tapOn: "Combattre — Cailloux dans la Chaussure"
 - extendedWaitUntil:
     visible:
       id: "battle-(dialogue|combat)"
@@ -56,7 +56,7 @@ appId: app.grrind.dev
 - tapOn:
     id: "battle-exit"
 - extendedWaitUntil:
-    visible: "Adversaires"
+    visible: "Cailloux dans la Chaussure"
     timeout: 15000
 - takeScreenshot: portrait-return-before-device-reset
 # L’app a déjà rétabli le portrait ; aligner maintenant les coordonnées du pilote iOS.

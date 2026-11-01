@@ -42,8 +42,7 @@ export default function ArenaScreen() {
     {mode === 'pve' && failure && <Text style={styles.error} accessibilityRole="alert">{messageFor(failure)}</Text>}
     <CombatMenu mode={mode} onMode={setMode} enemy={pebble?.enemy} locked={pebble?.locked} busy={busy}
       portrait={<Image source={PEBBLE.poses.idle} contentFit="contain" style={StyleSheet.absoluteFill} />}
-      onFight={() => void launch()} onDemo={() => router.push({ pathname: '/battle', params: { fixture: 'duel', demo: '1' } })}
-      onHistory={() => router.push('/combats-solo')} />
+      onFight={() => void launch()} onDemo={() => router.push({ pathname: '/battle', params: { fixture: 'duel', demo: '1' } })} />
     {mode === 'pve' && catalog.step === 'ready' && !pebble && <Text style={styles.note}>Aucun adversaire disponible pour le moment.</Text>}
   </ScrollView>;
 }

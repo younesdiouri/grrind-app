@@ -7,13 +7,11 @@ export type BattleReward = Battle['rewards'];
  *
  * Pas une décision de jeu : le serveur envoie déjà `loot: []` et un gain nul pour une défaite,
  * ou pour une victoire tranchée par `max_attacks` sans KO — voir le docblock de `BattleReward`
- * dans le contrat. Cette fonction ne fait que le lire, pour que le bilan (`BattleView`) et la
- * ligne d'historique (`BattleRow`, via `combat.tsx`) posent la même question de la même façon
- * au lieu de comparer chacun `loot.length` et `coins.gained` à leur façon.
+ * dans le contrat. Cette fonction ne fait que le lire pour le bilan (`BattleView`).
  *
  * **Une défaite n'affiche rien** : le back a refusé de donner une consolation dessinée, pour
  * que le combat perdu ne devienne pas la stratégie rapide. `hasBattleReward` est la porte par
- * laquelle cette règle passe des deux côtés de l'app.
+ * laquelle cette règle passe dans le bilan.
  */
 export function hasBattleReward(reward: BattleReward): boolean {
   return reward.loot.length > 0 || reward.coins.gained > 0;

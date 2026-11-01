@@ -70,8 +70,7 @@
         ],
         "totalXp": 186,
         "xpIntoLevel": 86,
-        "xpToNextLevel": 74,
-        "skillPointsGranted": 1
+        "xpToNextLevel": 74
       },
       "titlesUnlocked": [
         {
@@ -134,7 +133,6 @@
         },
         "chests": []
       },
-      "unlockableNodes": [],
       "rulesetVersion": "v1-038e963146f3"
     }
   ],

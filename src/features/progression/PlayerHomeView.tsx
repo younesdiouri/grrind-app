@@ -188,16 +188,7 @@ export function LevelCard({
         </View>
       </View>
 
-      {/* Deux nombres qui valent la même chose aujourd'hui, et le contrat explique
-          pourquoi : les arbres de compétences feront baisser `available` sans toucher à
-          `earned`. On affiche le solde, celui qui bougera. */}
-      {progression.skillPoints.available > 0 ? (
-        <Text style={styles.levelFoot}>
-          {progression.skillPoints.available} point
-          {progression.skillPoints.available > 1 ? 's' : ''} de compétence
-        </Text>
-      ) : null}
-      <Text style={styles.levelFoot}>XP, niveau et compétences restent acquis entre les semaines.</Text>
+      <Text style={styles.levelFoot}>XP et niveau restent acquis entre les semaines.</Text>
       </View>
     </SystemFrame>
   );

@@ -17,7 +17,6 @@ function progression(overrides: Partial<Progression> = {}): Progression {
     totalXp: 24_500,
     xpIntoLevel: 340,
     xpToNextLevel: 660,
-    skillPoints: { earned: 12, available: 12 },
     attributes: { strength: 5108, endurance: 3200, mobility: 900, dexterity: 1500, vitality: 310 },
     vitalityBreakdown: { windowAverageActiveKcal: 420, targetActiveKcal: 500, bonusPermille: 168 },
     activeTitle: null,

@@ -25,4 +25,4 @@ tags:
 - extendedWaitUntil:
     visible: "NIVEAU"
     timeout: 30000
-- runFlow: combat-real-flow.yaml
+- runFlow: combat-round.yaml

@@ -9,9 +9,9 @@ import { color, combatMenu, control, frame, opacity, space, type, typography } f
 
 export type CombatMode = 'pve' | 'pvp';
 
-export function CombatMenu({ mode, onMode, enemy, portrait, locked = false, busy = false, onFight, onDemo, onHistory }: {
+export function CombatMenu({ mode, onMode, enemy, portrait, locked = false, busy = false, onFight, onDemo }: {
   mode: CombatMode; onMode(mode: CombatMode): void; enemy?: components['schemas']['Enemy'];
-  portrait?: ReactNode; locked?: boolean; busy?: boolean; onFight(): void; onDemo(): void; onHistory(): void;
+  portrait?: ReactNode; locked?: boolean; busy?: boolean; onFight(): void; onDemo(): void;
 }) {
   return <View style={styles.menu}>
     <View style={styles.tabs} accessibilityRole="tablist">
@@ -29,7 +29,6 @@ export function CombatMenu({ mode, onMode, enemy, portrait, locked = false, busy
         <Button label={locked ? `Niveau ${enemy.minimumLevel}` : 'Combattre'} busy={busy} disabled={locked}
           accessibilityLabel={`Combattre — ${enemy.name}`} onPress={onFight} />
       </SystemFrame>}
-      <Button label="Historique PvE" variant="quiet" disabled={busy} onPress={onHistory} />
     </> : <SystemFrame tier="hero" style={styles.pvpFrame} contentStyle={styles.card}>
       <View style={styles.rivalPortrait}><HudIcon name="inventory" size={combatMenu.rivalIconSize} /></View>
       <Text style={styles.name} accessibilityRole="header">Rival d’entraînement</Text>
