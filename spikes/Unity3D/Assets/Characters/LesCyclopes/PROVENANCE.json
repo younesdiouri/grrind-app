@@ -1,15 +1,24 @@
 {
   "name": "Les Cyclopes",
-  "source": "Original GRRIND model constructed in Blender 4.5.14 from the cycling photo reference and approved design",
-  "authoring_script": "spikes/art-source/les-cyclopes/build/02_model_and_fit.py",
+  "source": "ImageGen concept → Meshy 7.1 → Meshy remesh → Blender rigid fitting",
+  "concept": "spikes/art-source/les-cyclopes/ref/concept-v2.png",
   "reference": "spikes/art-source/les-cyclopes/ref/cycling-reference.png",
-  "reference_role": "Shape only; no brand or product texture reproduced",
-  "calibration": "Existing Quaternius CC0 eye landmarks and faceted heads; no reference body exported",
-  "paid_generation_credits": 0,
-  "triangles_per_body": 456,
-  "materials": 2,
-  "texture": "BaseColor.png, 256x32 sRGB palette without baked lighting",
+  "reference_role": "Shape and funky palette only; no brand or product texture reproduced",
+  "generation_task": "01a1981a-d68a-7284-9f64-9d80a25b7dda",
+  "remesh_task": "01a1981e-3166-7605-ac5e-156934f5f950",
+  "source_mesh": "spikes/art-source/les-cyclopes/source.glb",
+  "authoring_script": "spikes/art-source/les-cyclopes/build/02_fit_and_export.py",
+  "modifications": "Uniform scale, 180° Z rotation and translation per body; source topology, UVs and normals retained",
+  "calibration": "Real Quaternius CC0 iris samples and faceted heads; no reference body exported",
+  "paid_generation_credits": 40,
+  "triangles_per_body": 4034,
+  "materials": 1,
+  "textures": [
+    "BaseColor.png 2048 sRGB",
+    "MetalMask.png 2048 linear"
+  ],
+  "mirror": "View-dependent tinted studio MatCap in existing Painted Toon; no scene reflection",
   "attachment": "Humanoid Head, rigid, rest-space export",
-  "inferred": ["Wrap depth", "Temple and rear construction", "Metric proportions and clearances"],
+  "rights": "Generated through the project’s Meshy account; Quaternius calibration references CC0. Product photo is reference only.",
   "delivery": "Workshop/iPhone pilot; not a published server inventory item"
 }

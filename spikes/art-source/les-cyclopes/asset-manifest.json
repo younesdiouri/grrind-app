@@ -1,97 +1,77 @@
 {
-  "name": "Les Cyclopes",
-  "slot": "ACCESSORY",
+  "source": "Meshy 7.1 + Meshy remesh; UVs/topology/normals retained",
   "units": "metres",
-  "axes": "Blender Z up, +Y forward, body rest-space, Unity Humanoid Head attachment",
-  "source": "Blender modelling from approved photo/design, no paid generation",
-  "materials": [
-    "Cyclopes_Frame",
-    "Cyclopes_Visor"
-  ],
-  "texture": {
-    "file": "BaseColor.png",
-    "size": [
-      256,
-      32
-    ],
-    "color_space": "sRGB",
-    "role": "unlit palette, no baked lighting"
-  },
-  "inferred": [
-    "wrap depth",
-    "rear/temple construction",
-    "metric proportions and clearances"
-  ],
+  "axes": "Z up, +Y front in Blender; body-rest-space FBX, Humanoid Head attachment",
   "variants": {
     "Male": {
-      "triangles": 456,
-      "head_bounds_m": [
+      "triangles": 4034,
+      "uniform_scale": 0.11131219999147186,
+      "translation_m": [
+        -6.306543946266174e-05,
+        0.02179490588605404,
+        1.6867319345474243
+      ],
+      "bounds_m": [
         [
-          -0.09067234396934509,
-          -0.1058083102107048,
-          1.58632230758667
+          -0.10246004164218903,
+          -0.08398029208183289,
+          1.6513980627059937
         ],
         [
-          0.09067285060882568,
-          0.11516959965229034,
-          1.8086718320846558
+          0.10246004164218903,
+          0.12779049575328827,
+          1.7222418785095215
         ]
       ],
-      "eye_bounds_m": [
-        [
-          -0.04874878749251366,
-          0.05123401805758476,
-          1.6835992336273193
-        ],
-        [
-          0.04874880984425545,
-          0.08063791692256927,
-          1.7135447263717651
-        ]
-      ],
-      "eye_centre_z_m": 1.6985719799995422,
-      "visor_width_m": 0.20854697376489637,
-      "visor_height_m": 0.06225786685943604,
-      "front_m": 0.12816959965229036,
-      "parts": [
-        "PR_LesCyclopes_Male_Frame_LOD0",
-        "PR_LesCyclopes_Male_Visor_LOD0"
-      ]
+      "iris_coverage": {
+        "-25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "0": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        }
+      }
     },
     "Female": {
-      "triangles": 456,
-      "head_bounds_m": [
+      "triangles": 4034,
+      "uniform_scale": 0.10831440328767757,
+      "translation_m": [
+        -6.136298179626465e-05,
+        0.021387038752436638,
+        1.6450921297073364
+      ],
+      "bounds_m": [
         [
-          -0.08823041617870331,
-          -0.1127585843205452,
-          1.5378490686416626
+          -0.09970063716173172,
+          -0.08153948187828064,
+          1.6107099056243896
         ],
         [
-          0.08823089301586151,
-          0.11192383617162704,
-          1.7662951946258545
+          0.09970063716173172,
+          0.12452801316976547,
+          1.6796457767486572
         ]
       ],
-      "eye_bounds_m": [
-        [
-          -0.05105403810739517,
-          0.04291451722383499,
-          1.6395376920700073
-        ],
-        [
-          0.05105403810739517,
-          0.0753331184387207,
-          1.672553300857544
-        ]
-      ],
-      "eye_centre_z_m": 1.6560454964637756,
-      "visor_width_m": 0.20293050557374953,
-      "visor_height_m": 0.06396491527557374,
-      "front_m": 0.12492383617162704,
-      "parts": [
-        "PR_LesCyclopes_Female_Frame_LOD0",
-        "PR_LesCyclopes_Female_Visor_LOD0"
-      ]
+      "iris_coverage": {
+        "-25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "0": {
+          "iris_samples": 18,
+          "uncovered": 0
+        },
+        "25": {
+          "iris_samples": 18,
+          "uncovered": 0
+        }
+      }
     }
   }
 }

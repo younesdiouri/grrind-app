@@ -1,0 +1,30 @@
+{
+  "concept_v2": {
+    "tool": "Built-in imagegen",
+    "roles": {
+      "cycling-reference.png": "Original silhouette reference; violet/lemon and mirror coating approved in the conversation",
+      "concept-v2.png": "New isolated premium wraparound sunglasses concept, replacing rejected procedural prototype"
+    },
+    "requirements": [
+      "Continuous curved mirrored fuchsia/orange/gold visor",
+      "Violet faceted polymer frame, lemon temples",
+      "Nose opening below eye coverage",
+      "No colored polygon mosaic, no flat blocks",
+      "Independent accessory compatible with hair and headwear"
+    ]
+  },
+  "model": {
+    "tool": "Meshy MCP via official Inspector CLI",
+    "ai_model": "meshy-7.1",
+    "geometry_resolution": "2k",
+    "texture_resolution": "2k",
+    "should_texture": true,
+    "enable_pbr": true,
+    "image_enhancement": false,
+    "remove_lighting": true,
+    "target_formats": [
+      "glb"
+    ],
+    "announced_credits": 35
+  }
+}

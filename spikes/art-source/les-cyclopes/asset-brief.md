@@ -1,25 +1,30 @@
 # PR_LesCyclopes — essai atelier (#350)
 
 ASSET PR_LesCyclopes, « Les Cyclopes », lunettes de cycliste facettées.
-CATEGORY prop, accessoire rigide attaché à Head ; indépendant de HEAD.
-VIEWS ref/cycling-reference.png : photos de produits en perspective, visières larges et enveloppantes. Référence de forme uniquement, pas de marque ni de texte à reproduire. Palette et direction approuvées dans le chat : violet, jaune citron, miroir fuchsia/orange/doré.
-SCALE Ajustement sur les vrais FBX FacetedFace homme/femme, en mètres, Z haut et +Y avant dans Blender. Largeur cible ≈ 1,15 × largeur de tête ; hauteur ≈ 0,28 × hauteur de tête. Aucune modification du corps.
-PROPORTIONS Visière unique, largeur/hauteur indicative 3,2 ; verre ≈ 86 % de la hauteur totale ; cadre de 3 mm ; épaisseur verre 2 mm ; largeur nez ≈ 28 mm ; extrémités enveloppantes ; branches ≈ 110 mm, adaptées aux tempes ; yeux couverts, bouche et pointe du nez dégagées. Rapports de design inférés des photos en perspective, pas de plan orthographique.
-PARTS Visière facettée fermée et opaque avec encoche nasale ; monture violette ; branches jaune citron avec extrémités violettes ; appuis nasaux sombres. Deux meshes/material slots au maximum à l’export, UV de palette partagée. Pas de personnage généré ni de lunettes peintes sur la peau.
-SILHOUETTE Grand écran monobloc anguleux, arc enveloppant, encoche nasale nette, branches sport épaisses.
-MATERIALS Cadre polymère mat violet/citron ; visière miroir fuchsia-orange-or à facettes et reflets sobres du shader Painted Toon existant. Aucun émissif ni transparence/surfaces superposées coûteuses. Palette sans lumière précalculée.
-ARTICULATION Head, suit les mouvements existants ; ne masque pas les cheveux et ne déséquipe aucune coiffe. La Moumoutivation garde sa règle existante de masquage cheveux/bandeau.
-INFERRED Profondeur, courbure, dessous et arrière des branches ; tailles métriques dérivées des têtes Quaternius et de leur position des yeux. Les branches passent sous les mèches/coiffes comme de vraies lunettes ; les contacts cachés sont distingués des traversées visibles de la visière.
-TARGET Unity 6000.3.26f1, FBX, ≤ 1 500 triangles par variante et deux matériaux partagés, visière opaque. Atelier et duel de démonstration sur iPhone ; contrôle proche du visage et au cadrage combat.
+CATEGORY prop rigide attaché à Head, slot Accessoire indépendant de HEAD.
+VIEWS ref/cycling-reference.png : forme enveloppante et couleurs funky, sans marque à reproduire.
+ref/concept-v2.png : concept ImageGen utilisé pour Meshy, miroir rose/orange/or, cadre violet,
+branches jaune citron. Perspective unique : courbure, arrière et dimensions restent inférés.
+SCALE Mètres, Z haut et +Y avant dans Blender. Largeur 1,13 × tête réelle ; adaptation
+uniforme par corps. Irréductible : couvrir les iris, pas seulement éviter la peau.
+PARTS Écran monobloc courbe et opaque, encoche nasale, monture biseautée et branches sport.
+Source Meshy texturée, un mesh et un matériau partagé, aucun personnage dans l’export.
+MATERIALS Verre miroir dichroïque avec reflet de studio mobile dans le shader existant ;
+monture mate violet/citron. Pas d’émissif, de transparence ni de réflexion temps réel de scène.
+ARTICULATION Head suit les animations. Aucune suppression des cheveux/coiffes par les lunettes.
+La Moumoutivation conserve son masquage existant des cheveux et du bandeau.
+TARGET Unity 6000.3.26f1, FBX, ≤ 6 000 triangles par corps, un matériau opaque et deux maps 2k.
+REVIEW Iris masqués de face et à ±25°, 21 combinaisons visage/nez sans verre dans la peau,
+neuf coupes et deux coiffes compatibles. Reflet et raccords jugés sur le vrai iPhone.
 
-## Livraison et contrôle
+## Production et livraison
 
-Pilote atelier/iPhone autorisé : nom, forme, couleurs et slot Accessoire approuvés par l’auteur.
-Deux ajustements à partir des têtes réelles ; contrôles des formes de visage/nez, neuf coupes
-compatibles et deux coiffes actuelles. Export et relecture propres ; mesures des intersections
-de la visière et validation Unity de l’attache, du cumul, du changement de coupe et du retrait.
-Quelques rendus utiles, pas une campagne de captures. Le jugement visuel final appartient à
-l’auteur sur son iPhone. Pas de back, de loot ou de prix dans cet essai.
+ImageGen → Meshy 7.1 (35 crédits) → retopologie Meshy ciblant 4 000 triangles (5 crédits).
+Source finale : 4 034 triangles, UV et normales conservés dans Blender ; rotation, translation
+et échelle uniforme seulement. Les deux coûts ont été annoncés dans le chat avant les appels.
+Le MCP Blender ne répondait pas ; les scripts bpy s’exécutent dans Blender headless.
 
-Production directe Blender : forme géométrique et ajustement reproductible ; aucun appel Meshy
-payant. Le MCP Blender n’est pas connecté ; exécution headless des scripts versionnés.
+Pilote atelier/iPhone autorisé : pas de back, de prix ou de loot. La première version
+procédurale a été rejetée ; le modèle Meshy et la couverture des vrais iris la remplacent.
+Contrôles reproductibles dans les scripts, asset-manifest.json et fit-report.json ;
+quelques rendus dans docs/design/les-cyclopes/. L’acceptation visuelle finale revient à l’auteur.

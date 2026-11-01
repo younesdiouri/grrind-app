@@ -1,62 +1,67 @@
 # Les Cyclopes — pilote iPhone (#350)
 
-Lunettes de cycliste en **Accessoire**, cumulables avec HEAD. Le concept et les couleurs sont
-approuvés : visière unique facettée rose/orange/doré, cadre violet, branches jaune citron.
-Le modèle est construit directement dans Blender ; aucun crédit Meshy consommé.
+Lunettes de cycliste en **Accessoire**, cumulables avec HEAD : miroir rose/orange/doré,
+cadre violet et branches citron. Concept ImageGen conservé dans `ref/concept-v2.png`, puis
+reconstruction Meshy 7.1 et retopologie Meshy. Coût réel : **40 crédits** (35 + 5), tâches
+et paramètres dans `spikes/art-source/les-cyclopes/tasks.json`.
 
-## Production et dimensions
+## Production
 
-Source reproductible : `spikes/art-source/les-cyclopes/`, photo de référence conservée dans
-`ref/`, brief, master Blender local, scripts et manifeste versionnés. La photo est une
-référence de forme en perspective ; les dimensions métriques sont inférées et ajustées aux
-vrais yeux/têtes Quaternius, pas mesurées comme sur un plan orthographique.
+Le GLB retopologisé est la source versionnée. Blender conserve sa topologie, ses UV et ses
+normales ; seuls une rotation, une échelle uniforme et un déplacement adaptent chaque corps.
+Aucun mannequin n’est livré avec les FBX. Les dimensions sont inférées des têtes Quaternius,
+pas mesurées sur la photo de cyclisme en perspective.
 
-| Ajustement | Largeur de visière | Hauteur cible | Triangles | Matériaux |
+| Corps | Largeur totale | Hauteur totale | Triangles | Mesh / matériau |
 | --- | --- | --- | --- | --- |
-| Homme | 208,55 mm | 62,26 mm | 456 | 2 |
-| Femme | 202,93 mm | 63,96 mm | 456 | 2 |
+| Homme | 204,92 mm | 70,84 mm | 4 034 | 1 / 1 |
+| Femme | 199,40 mm | 68,94 mm | 4 034 | 1 / 1 |
 
-Palette sRGB 256 × 32 partagée, opaque et sans lumière précalculée. Painted Toon existant,
-MatCap acier partiel sur la visière, aucun nouveau shader ni émissif. Les exports FBX
-contiennent uniquement cadre et verre ; leur relecture contrôle géométrie, UV et normales.
+Base couleur et masque métallique 2k partagés. Painted Toon réutilise le MatCap acier avec
+une option de teinte miroir : les reflets clairs suivent la vue, le masque laisse la monture
+mate. Ce reflet de studio est stylisé ; il ne reflète pas la scène environnante. L’option
+vaut zéro sur les autres matériaux et conserve leur rendu existant. Verre opaque, sans
+émissif ni transparence.
 
-Pour une première reconstruction du master, utiliser `init_master.py` du skill
-`blender-image-to-3d` avec `--name PR_LesCyclopes --height 0.065` et la photo en `--ref-extra`.
-Puis, avec Blender headless et `--python-exit-code 1` :
+Reproduction avec Blender headless et `--python-exit-code 1` :
 
-1. `02_model_and_fit.py -- --output artifacts/les-cyclopes/fitted` ;
-2. `03_validate_fit.py -- --output artifacts/les-cyclopes/fitted` ;
-3. copier les deux FBX et BaseColor dans `Assets/Characters/LesCyclopes`, puis `LesCyclopes.Build()`
-   via Unity Pipeline. Le builder principal `QuaterniusPoc.Build()` inclut aussi cet accessoire.
+1. `build/02_fit_and_export.py -- --output artifacts/les-cyclopes/fitted-v2` ;
+2. `build/03_validate_fit.py -- --output artifacts/les-cyclopes/fitted-v2` ;
+3. copier les FBX, BaseColor et MetalMask dans `Assets/Characters/LesCyclopes`, puis appeler
+   `LesCyclopes.Build()` via Unity Pipeline. `QuaterniusPoc.Build()` inclut cet accessoire.
+
+Le master Blender reste local. La première géométrie procédurale a été remplacée après
+rejet visuel de l’auteur ; les rendus ci-dessous représentent la version Meshy.
 
 ## Contrôles
 
-`fit-report.json` contrôle les vrais exports contre les surfaces de référence :
+`fit-report.json` contrôle les FBX réimportés : 18 points réels d’iris par corps, vus à -25°,
+0° et +25°, tous derrière le verre métallique ; aucune intersection du verre avec les
+21 combinaisons de visage/nez, les neuf coupes ou leurs bandeaux.
 
-- Visière sans intersection avec les 12 combinaisons homme et 9 combinaisons femme de visage/nez.
-- Aucune intersection dans la partie centrale de la visière avec les 9 coupes et les deux
-  ajustements de la Moumoutivation ; aucune avec les bandeaux correspondants.
-- Les ailes latérales passent sous la laine et les mèches longues : le rapport conserve les
-  intersections brutes (homme/laine 31, femme/laine 37, femme/cheveux longs 8). Ce sont des
-  contacts sur les extrémités couvertes, pas une prétendue absence de contact sur toute la pièce.
+Les ailes latérales passent sous la laine : 8 contacts de triangles côté homme et 9 côté
+femme, aucun dans les 110 mm centraux de la visière. Les rendus vérifient que ces raccords
+restent couverts par la coiffe.
 
-`LesCyclopes.Validate()` contrôle les 27 combinaisons coupe/coiffe des deux corps, les deux
-ordres d’équipement, l’attache Head en rotation et le retrait indépendant. Il ne remplace pas
-le contrôle visuel sur téléphone. Les coiffures restent affichées ; seule la Moumoutivation
-les masque selon sa règle existante.
+`LesCyclopes.Validate()` refait les 54 rayons iris/verre par corps sur les géométries
+effectives Unity et leur masque métallique. Il contrôle les 27 combinaisons coupe/coiffe,
+les deux ordres d’équipement, la rotation Head et le retrait indépendant. Les cheveux
+restent affichés ; seule la Moumoutivation applique sa règle existante de masquage.
 
-Rendus Unity utiles :
+Rendus Unity à 640 × 640 :
 [homme/afro](les-cyclopes/unity-male-afro.png),
 [homme/laine](les-cyclopes/unity-male-moumoutivation.png),
 [femme/cheveux longs/bandeau](les-cyclopes/unity-female-long-bandeau.png),
 [femme/laine](les-cyclopes/unity-female-moumoutivation.png).
+Ils vérifient le placement et le reflet ; le jugement final appartient à l’auteur sur iPhone.
 
-## Essai de l’auteur
+## Essai
 
 GRRIND dev → Réglages → Atelier avatar 3D → **Tester Les Cyclopes**.
 Lien : `grrindapp-dev://character-showcase?item=cyclopes`.
-L’onglet Accessoires permet de garder/retirer les lunettes, le bandeau ou la Moumoutivation.
-Corps, Traits, Cheveux et Mouvements permettent de juger les raccords et le duel de démonstration.
-L’essai ne modifie pas la tenue sauvegardée et ne publie aucun objet dans la boutique serveur.
-Une nouvelle donnée Unity demande la tranche Device, puis l’app hôte du vrai iPhone selon
-`docs/ai/mobile-qa.md`. Aucun EAS/TestFlight pour ce pilote.
+L’onglet Accessoires conserve/retire les lunettes, le bandeau ou la Moumoutivation.
+Corps, Traits, Cheveux et Mouvements permettent de tester les raccords et le duel.
+Cet essai ne modifie pas la tenue sauvegardée et ne publie pas d’objet côté serveur.
+
+Livraison : tranche Unity Device, puis hôte GRRIND dev sur le vrai iPhone selon
+`docs/ai/mobile-qa.md`. Pas de build Simulator, Maestro ni EAS/TestFlight pour ce pilote visuel.

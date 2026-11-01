@@ -20,6 +20,7 @@ Shader "GRRIND/Painted Toon"
         _MatCap ("Metal MatCap", 2D) = "gray" {}
         _MetalMask ("Metal mask", 2D) = "white" {}
         _Metal ("Metal", Range(0, 1)) = 0
+        _MetalTint ("Tint mirror coating with base colour", Range(0, 1)) = 0
         _Facets ("Clay MatCap shading", Range(0, 1)) = 0
         _ReceiveShadows ("Receive shadows", Range(0, 1)) = 1
         _Cull ("Cull", Float) = 2
@@ -47,6 +48,7 @@ Shader "GRRIND/Painted Toon"
             half _RimPower;
             half _RimStrength;
             half _Metal;
+            half _MetalTint;
             half _Facets;
             half _ReceiveShadows;
             half _Cull;
@@ -136,7 +138,11 @@ Shader "GRRIND/Painted Toon"
                 float2 matcapUV = mul((float3x3)UNITY_MATRIX_V, normal).xy * .49 + .5;
                 half value = saturate(dot(albedo.rgb, half3(.3, .59, .11)) * 1.8);
                 half3 matcap = SAMPLE_TEXTURE2D(_MatCap, sampler_MatCap, matcapUV).rgb;
-                colour = lerp(colour, matcap * value * lerp(.65, 1, ramp), metal);
+                // Dichroic mirror lenses keep their pigment while the studio reflection follows the view.
+                half3 coating = lerp(half3(1,1,1), albedo.rgb / max(value, .05), _MetalTint);
+                half glint = smoothstep(.35, .75, max(matcap.r, max(matcap.g, matcap.b))) * _MetalTint;
+                half3 reflection = lerp(matcap * value * coating, half3(1,1,1), glint * .8);
+                colour = lerp(colour, reflection * lerp(.65, 1, ramp), metal);
                 // Faceted cloth: a matte clay MatCap gives every facet its own value from the view, as the
                 // steel does for the iron, while the hue stays the fabric's (#298).
                 colour *= lerp(1, matcap * 1.6, _Facets);

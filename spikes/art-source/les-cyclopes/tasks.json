@@ -1,0 +1,33 @@
+{
+  "task_id": "01a1981a-d68a-7284-9f64-9d80a25b7dda",
+  "status": "SUCCEEDED",
+  "message": "Multi-image 3D generation task created successfully. Task ID: 01a1981a-d68a-7284-9f64-9d80a25b7dda",
+  "estimated_time": "2-3 minutes",
+  "consumed_credits": 35,
+  "remesh": {
+    "task_id": "01a1981e-3166-7605-ac5e-156934f5f950",
+    "status": "SUCCEEDED",
+    "message": "Remesh task created successfully. Task ID: 01a1981e-3166-7605-ac5e-156934f5f950",
+    "estimated_time": "1-2 minutes",
+    "consumed_credits": 5,
+    "topology": "triangle",
+    "target_polycount": 4000
+  },
+  "total_consumed_credits": 40,
+  "output": "source.glb",
+  "original_source": "artifacts/les-cyclopes/meshy-original/source-high.glb (local)",
+  "generation_parameters": {
+    "tool": "Meshy MCP via official Inspector CLI",
+    "ai_model": "meshy-7.1",
+    "geometry_resolution": "2k",
+    "texture_resolution": "2k",
+    "should_texture": true,
+    "enable_pbr": true,
+    "image_enhancement": false,
+    "remove_lighting": true,
+    "target_formats": [
+      "glb"
+    ],
+    "announced_credits": 35
+  }
+}

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Frame
+  m_Name: Cyclopes
   m_Shader: {fileID: 4800000, guid: d4ec64226b4bb4902b015bf3bc4101fe, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -28,11 +28,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MatCap:
-        m_Texture: {fileID: 2800000, guid: b15bdd4f7d0be46e1a2d650aca546625, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1a915a7296aaf4c49a09247281b48c81, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetalMask:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: c1c31a2a849fe4ea0a1600984eccb634, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -40,15 +40,16 @@ Material:
     - _Ambient: 1.3
     - _Cull: 2
     - _EyeMode: 0
-    - _Facets: 0.45
+    - _Facets: 0
     - _HitFlash: 0
     - _IrisScale: 1
-    - _Metal: 0
+    - _Metal: 1
+    - _MetalTint: 1
     - _RampCenter: 0
     - _RampSteps: 0
     - _ReceiveShadows: 0
     - _RimPower: 3.5
-    - _RimStrength: 0.1
+    - _RimStrength: 0.06
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _EyeSkinTint: {r: 1, g: 1, b: 1, a: 1}

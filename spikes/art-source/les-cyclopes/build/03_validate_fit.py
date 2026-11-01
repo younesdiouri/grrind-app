@@ -4,10 +4,16 @@ import itertools
 import json
 from pathlib import Path
 import sys
+import importlib.util
 
 import bpy
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
+
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location('cyclopes_fit', Path(__file__).with_name('02_fit_and_export.py'))
+fit = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(fit)
 
 ASSET = Path(__file__).resolve().parents[1]
 ROOT = ASSET.parents[2]
@@ -23,7 +29,7 @@ def imported(path):
     return list(bpy.context.selected_objects)
 
 
-def tree(objects, central=False):
+def tree(objects, central=False, optics=None):
     vertices, polygons = [], []
     for obj in objects:
         if obj.type != 'MESH':
@@ -33,8 +39,14 @@ def tree(objects, central=False):
         points = [evaluated.matrix_world @ vertex.co for vertex in mesh.vertices]
         offset = len(vertices)
         vertices.extend(points)
-        polygons.extend([tuple(offset + index for index in poly.vertices) for poly in mesh.polygons
-                         if not central or abs(sum(points[i].x for i in poly.vertices) / len(poly.vertices)) < .055])
+        mesh.calc_loop_triangles()
+        uv = mesh.uv_layers.active.data
+        for poly in mesh.loop_triangles:
+            if central and abs(sum(points[i].x for i in poly.vertices) / 3) >= .055:
+                continue
+            if optics and optics.sample(sum((uv[i].uv for i in poly.loops), Vector((0, 0))) / 3) <= .65:
+                continue
+            polygons.append(tuple(offset + index for index in poly.vertices))
         evaluated.to_mesh_clear()
     return BVHTree.FromPolygons(vertices, polygons)
 
@@ -44,25 +56,28 @@ def validate(output):
     for body, styles in STYLES.items():
         bpy.ops.wm.read_factory_settings(use_empty=True)
         glasses = [obj for obj in imported(output / (body + '.fbx')) if obj.type == 'MESH']
-        assert len(glasses) == 2, 'Frame and visor only, no mannequin or rig in delivery'
+        assert len(glasses) == 1, 'One Meshy mesh, no mannequin or rig in delivery'
         count = 0
         for obj in glasses:
             assert obj.data.uv_layers, obj.name
-            # FBX can restore use_smooth=True while retaining flat custom corner normals.
-            assert all(obj.data.corner_normals[loop].vector.dot(face.normal) > .999
-                       for face in obj.data.polygons for loop in face.loop_indices), obj.name
             assert all(abs(value - 1) < 1e-5 for value in obj.scale), obj.name
             obj.data.calc_loop_triangles()
             count += len(obj.data.loop_triangles)
-        assert count <= 1500, count
-        lens = next(obj for obj in glasses if 'Visor' in obj.name)
-        full, central = tree([lens]), tree([lens], central=True)
+        assert count <= 6000, count
+        mask = bpy.data.images.load(str(output / 'MetalMask.png'))
+        mask.colorspace_settings.name = 'Non-Color'
+        optics = fit.Optics(glasses[0], mask)
+        eyes = next(obj for obj in imported(CHARACTERS / 'Quaternius' / ('Superhero_' + body + '_FullBody.fbx'))
+                    if obj.type == 'MESH' and obj.name == 'Eyes')
+        coverage = optics.coverage(fit.iris_points(eyes))
+        assert all(value['uncovered'] == 0 for value in coverage.values()), coverage
+        full, central = tree(glasses, optics=optics), tree(glasses, central=True, optics=optics)
         skin = next(obj for obj in imported(CHARACTERS / 'FacialPilot' / (body + 'SportFace_Faceted.fbx'))
                     if obj.type == 'MESH' and obj.name.endswith('_Sport_Skin'))
         keys = skin.data.shape_keys.key_blocks
         faces = [None] + [key for key in keys if key.name.startswith('Face')]
         noses = [None] + [key for key in keys if key.name.startswith('Nose')]
-        result = {'triangles': count, 'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
+        result = {'triangles': count, 'iris_coverage': coverage, 'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
         for face, nose in itertools.product(faces, noses):
             for key in keys:
                 key.value = int(key in (face, nose))
