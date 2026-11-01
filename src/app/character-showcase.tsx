@@ -37,6 +37,7 @@ function Showcase({ preview }: { preview?: string }) {
   const [noseStyle, setNoseStyle] = useState<UnityAvatar['noseStyle']>('wide');
   const [hairStyle, setHairStyle] = useState<UnityAvatar['hairStyle']>('parted');
   const [headband, setHeadband] = useState(true);
+  const [moumoutivation, setMoumoutivation] = useState(false);
   const [section, setSection] = useState('Corps');
   const [skinTone, setSkinTone] = useState<UnityAvatar['skinTone']>('tan');
   const [eyeColor, setEyeColor] = useState<UnityAvatar['eyeColor']>('blue');
@@ -59,7 +60,7 @@ function Showcase({ preview }: { preview?: string }) {
   const insets = useSafeAreaInsets();
   const traits = TRAITS[body];
   const face = pick(traits.faceStyle, faceStyle), nose = pick(traits.noseStyle, noseStyle), hair = pick(traits.hairStyle, hairStyle);
-  const avatar: UnityAvatar = { body, hairStyle: hair, headband, visible: true,
+  const avatar: UnityAvatar = { body, hairStyle: hair, headband, moumoutivation, visible: true,
     skinTone, eyeColor, hairColor, shirtColor, pantsColor, boxingGloves, dumbbell, weapon,
     weaponType: weapon ? 'SWORD' : 'FIST',
     faceStyle: face, noseStyle: nose };
@@ -142,7 +143,10 @@ function Showcase({ preview }: { preview?: string }) {
             <Choice key={value} label={label} selected={pantsColor === value} onPress={() => setPantsColor(value)} />)}
         </View>
         <View style={styles.row}>
-          {<Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband} onPress={() => setHeadband(!headband)} />}
+          <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband}
+            onPress={() => { setHeadband(!headband); setMoumoutivation(false); }} />
+          <Choice label={moumoutivation ? 'Retirer la Moumoutivation' : 'Équiper la Moumoutivation'} selected={moumoutivation}
+            onPress={() => { setMoumoutivation(!moumoutivation); setHeadband(false); }} />
         </View>
         <View style={styles.row}>
           <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => { setBoxingGloves(!boxingGloves); setDumbbell(false); setWeapon(undefined); }} />

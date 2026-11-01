@@ -32,6 +32,7 @@ public static class QuaterniusPoc
         BuildCharacter(true);
         LePoidsLourd.Build();
         SportsWeapons.Build();
+        Moumoutivation.Build();
     }
     static void BuildCharacter(bool female)
     {

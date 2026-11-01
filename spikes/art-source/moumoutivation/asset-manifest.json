@@ -1,0 +1,80 @@
+{
+  "units": "metres",
+  "authoring_axes": "Z up, +Y front to match imported Quaternius body rest space",
+  "attachment": "Unity Humanoid Head; FBX baked in body rest space, worldPositionStays",
+  "source_task": "01a197d3-445d-77be-84fc-3b9fd1b0243e",
+  "consumed_credits": 35,
+  "texture": {
+    "file": "BaseColor.png",
+    "color_space": "sRGB",
+    "size": 2048
+  },
+  "inferred": [
+    "back and depth",
+    "inner lining",
+    "20 mm below chin",
+    "15 mm rear offset"
+  ],
+  "variants": {
+    "Male": {
+      "triangles": 2094,
+      "head_bounds": [
+        [
+          -0.09067234396934509,
+          -0.1058083102107048,
+          1.58632230758667
+        ],
+        [
+          0.09067285060882568,
+          0.11516959965229034,
+          1.8086718320846558
+        ]
+      ],
+      "dimensions_m": [
+        0.3989594280719757,
+        0.3093690574169159,
+        0.3513122498989105
+      ],
+      "centre_m": [
+        0.0,
+        -0.010319354943931103,
+        1.741978406906128
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "Female": {
+      "triangles": 2094,
+      "head_bounds": [
+        [
+          -0.08823041617870331,
+          -0.1127585843205452,
+          1.5378490686416626
+        ],
+        [
+          0.08823089301586151,
+          0.11192383617162704,
+          1.7662951946258545
+        ]
+      ],
+      "dimensions_m": [
+        0.3882148861885071,
+        0.3145553767681122,
+        0.36094486713409424
+      ],
+      "centre_m": [
+        0.0,
+        -0.015417373739182949,
+        1.6983214616775513
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}

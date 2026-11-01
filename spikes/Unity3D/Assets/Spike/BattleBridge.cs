@@ -15,7 +15,7 @@ public sealed class BattleBridge : MonoBehaviour
 
     [Serializable] public class AvatarConfig {
         public string model="",body="male",hairStyle="parted",skinTone="tan",eyeColor="brown",hairColor="brown",shirtColor="base",pantsColor="base",faceStyle="original",noseStyle="original";
-        public bool visible=true,headband,boxingGloves,dumbbell;
+        public bool visible=true,headband,moumoutivation,boxingGloves,dumbbell;
         public string weapon="",weaponType="FIST";
     }
     [Serializable] public class Configuration
@@ -172,6 +172,7 @@ public sealed class BattleBridge : MonoBehaviour
         var appearance=obj.GetComponent<QuaterniusAppearance>();
         appearance?.SelectHair(config.hairStyle);
         appearance?.SetHeadband(config.headband);
+        appearance?.SetMoumoutivation(config.moumoutivation);
         appearance?.SetBoxingGloves(config.boxingGloves);
         // shortcut: existing boxing clips can intersect large weights; combat trial explicitly accepted by the author.
         obj.GetComponent<WeaponGrip>()?.Select(config.dumbbell?"dumbbell":config.weapon);

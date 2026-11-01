@@ -7,6 +7,7 @@ import type { components } from '@/api/schema';
 export type UnityAvatar = Omit<components['schemas']['Avatar'], 'version'> & {
   model?: 'cailloux';
   headband: boolean; visible: boolean;
+  moumoutivation?: boolean;
   // Unity names the slate t-shirt "cyan"; "base" is the white athlete default.
   shirtColor?: 'base' | 'cyan' | 'coral';
   pantsColor?: 'base' | 'violet' | 'cyan' | 'coral';

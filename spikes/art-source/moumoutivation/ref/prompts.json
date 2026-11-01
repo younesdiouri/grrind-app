@@ -1,0 +1,10 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "approved-concept.png",
+  "shared_prompt": "Production reference for the EXACT approved La Moumoutivation wearable headpiece in the supplied image. Use the LEFT isolated headpiece as the strict identity reference; the human on the right only explains fit. One empty headpiece only, no body, human, mannequin, props or stand. Warm ivory low-poly sheep wool hood, large irregular angular faceted clumps, thick rounded crown, two short taupe sideways drooping sheep ears, thick side fleece descending along the temples and cheeks, open face aperture with thin charcoal textile lining. Preserve the approved design, tuft scale, colors, mass distribution and proportions. No horns, animal eyes, snout, face, hair, neon, patterns or logos. Actual flat shaded low poly 3D game asset, matte solid colors with broad planes, no fur strands or texture noise. White seamless background, neutral soft studio illumination without cast floor shadow, centered entire item with generous margins, square image. EXACTLY ONE single orthographic view, no panels, text, labels, perspective or additional views. ",
+  "views": {
+    "front": "Strict orthographic FRONT view, symmetric composition. The oval human face opening is fully visible and empty. Both ears are visible. Preserve the U-shaped open bottom around the chin, thick fleece surrounding the sides and crown.",
+    "side": "Strict orthographic RIGHT SIDE PROFILE view, with the face opening toward image left. The opening is at the front only; the back and crown are closed fleece, wrapping the nape. Match exactly the same hood proportions and ears as the reference; no invented chin strap.",
+    "back": "Strict orthographic BACK view. The back is entirely covered by the same ivory chunky faceted wool, closed crown and nape, the two taupe ears project sideways. No hole on the back; no human head or neck. Reconstruct the unseen rear conservatively from the supplied approved design."
+  }
+}

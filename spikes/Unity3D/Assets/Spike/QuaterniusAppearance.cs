@@ -7,11 +7,19 @@ public sealed class QuaterniusAppearance : MonoBehaviour
     public GameObject[] headbands = System.Array.Empty<GameObject>();
     public string[] headbandStyles = System.Array.Empty<string>();
     bool equipped;
+    public GameObject moumoutivation;
+    bool woolEquipped;
     string hair = "";
     public void SetHeadband(bool visible)
     {
         equipped=visible;
-        for(int i=0;i<headbands.Length;i++)headbands[i].SetActive(visible&&headbandStyles[i]==hair);
+        for(int i=0;i<headbands.Length;i++)headbands[i].SetActive(visible&&!woolEquipped&&headbandStyles[i]==hair);
+    }
+    public void SetMoumoutivation(bool visible)
+    {
+        woolEquipped = visible && moumoutivation != null;
+        if (moumoutivation != null) moumoutivation.SetActive(woolEquipped);
+        SelectHair(hair);
     }
     // The hairstyles of this body (#304): the first one stands in for a style the body does not wear.
     public string[] hairStyles = System.Array.Empty<string>();
@@ -54,7 +62,7 @@ public sealed class QuaterniusAppearance : MonoBehaviour
     public void SelectHair(string style)
     {
         hair = System.Array.IndexOf(hairStyles, style) >= 0 ? style : hairStyles[0];
-        for (int i = 0; i < hairs.Length; i++) hairs[i].SetActive(hairStyles[i] == hair);
+        for (int i = 0; i < hairs.Length; i++) hairs[i].SetActive(!woolEquipped && hairStyles[i] == hair);
         SetHeadband(equipped);
     }
 
