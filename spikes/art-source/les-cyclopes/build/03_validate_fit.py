@@ -29,7 +29,7 @@ def imported(path):
     return list(bpy.context.selected_objects)
 
 
-def tree(objects, central=False, optics=None):
+def tree(objects, central=False, optics=None, temples=False):
     vertices, polygons = [], []
     for obj in objects:
         if obj.type != 'MESH':
@@ -42,6 +42,8 @@ def tree(objects, central=False, optics=None):
         mesh.calc_loop_triangles()
         uv = mesh.uv_layers.active.data
         for poly in mesh.loop_triangles:
+            if temples and sum(points[i].y for i in poly.vertices) / 3 >= .05:
+                continue
             if central and abs(sum(points[i].x for i in poly.vertices) / 3) >= .055:
                 continue
             if optics and optics.sample(sum((uv[i].uv for i in poly.loops), Vector((0, 0))) / 3) <= .65:
@@ -100,8 +102,11 @@ def validate(output):
         noses = [None] + [key for key in keys if key.name.startswith('Nose')]
         ear_contacts = len(tree(glasses).overlap(ears(skin)))
         assert ear_contacts == 0, f'{body}: temples cross ears ({ear_contacts} contacts)'
+        scalp_contacts = len(tree(glasses, temples=True).overlap(tree([skin])))
+        assert scalp_contacts == 0, f'{body}: stems cross the scalp ({scalp_contacts} contacts)'
         result = {'triangles': count, 'iris_coverage': coverage, 'eye_relief_m': relief,
-                  'ear_intersections': ear_contacts, 'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
+                  'ear_intersections': ear_contacts, 'temple_skin_intersections': scalp_contacts,
+                  'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
         for face, nose in itertools.product(faces, noses):
             for key in keys:
                 key.value = int(key in (face, nose))

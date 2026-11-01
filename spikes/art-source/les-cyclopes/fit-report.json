@@ -1,6 +1,6 @@
 {
   "Male": {
-    "triangles": 4034,
+    "triangles": 3102,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
@@ -20,6 +20,7 @@
       0.02955043688416481
     ],
     "ear_intersections": 0,
+    "temple_skin_intersections": 0,
     "faces_and_noses": {
       "original/original": 0,
       "original/NoseWide": 0,
@@ -76,7 +77,7 @@
     }
   },
   "Female": {
-    "triangles": 4034,
+    "triangles": 3087,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
@@ -96,6 +97,7 @@
       0.029875151813030243
     ],
     "ear_intersections": 0,
+    "temple_skin_intersections": 0,
     "faces_and_noses": {
       "original/original": 0,
       "original/NoseButton": 0,

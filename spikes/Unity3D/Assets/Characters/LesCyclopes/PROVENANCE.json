@@ -1,6 +1,6 @@
 {
   "name": "Les Cyclopes",
-  "source": "ImageGen concept → Meshy 7.1 → Meshy remesh → Blender rigid fitting",
+  "source": "ImageGen concept → Meshy 7.1 → Meshy remesh; original visor/frame retained, rear stems rebuilt in Blender from the author’s natural-fit reference",
   "concept": "spikes/art-source/les-cyclopes/ref/concept-v2.png",
   "reference": "spikes/art-source/les-cyclopes/ref/cycling-reference.png",
   "reference_role": "Shape and funky palette only; no brand or product texture reproduced",
@@ -8,10 +8,13 @@
   "remesh_task": "01a1981e-3166-7605-ac5e-156934f5f950",
   "source_mesh": "spikes/art-source/les-cyclopes/source.glb",
   "authoring_script": "spikes/art-source/les-cyclopes/build/02_fit_and_export.py",
-  "modifications": "Uniform scale and rigid fit per body; visor brought 16/18 mm closer on male/female after iPhone feedback; temples bent above/behind real ears, rear hook positions preserved; topology/UVs unchanged, corner normals transformed with local inverse-transpose Jacobian",
+  "modifications": "16/18 mm approach retained. Meshy rear arms clipped and sections closed; 1038 mirror triangles retain positions, UVs and corner normals. New 3.2x1.8 mm stems follow the scalp with a short 9 mm descending return; colours sampled from matte regions of the existing atlas.",
   "calibration": "Real Quaternius CC0 iris samples and faceted heads; no reference body exported",
   "paid_generation_credits": 40,
-  "triangles_per_body": 4034,
+  "triangles_per_body": {
+    "Male": 3102,
+    "Female": 3087
+  },
   "materials": 1,
   "textures": [
     "BaseColor.png 2048 sRGB",
@@ -22,5 +25,6 @@
   "rights": "Generated through the project’s Meshy account; Quaternius calibration references CC0. Product photo is reference only.",
   "delivery": "Workshop/iPhone pilot; not a published server inventory item",
   "fit_feedback": "spikes/art-source/les-cyclopes/ref/iphone-fit-feedback.jpg",
-  "fit_validation": "Iris coverage, 24–30 mm eye relief, zero ear intersections, all 21 face/nose combinations and headbands clear"
+  "fit_validation": "Iris coverage and 24–30 mm relief unchanged; zero ear and temple-skin intersections; 21 face/nose combinations and headbands clear.",
+  "fit_reference": "spikes/art-source/les-cyclopes/ref/natural-temple-reference.jpg"
 }

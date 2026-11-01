@@ -186,9 +186,12 @@ function Showcase({ preview, item }: { preview?: string; item?: string }) {
         </>}
         <View style={styles.row}>
           {[{ label: 'Face', angle: 0 }, { label: 'Profil', angle: 90 }, { label: 'Trois-quarts', angle: 25 }].map(({ label, angle }) =>
-            <Choice key={label} label={label} selected={view === 0 && azimuth === angle} onPress={() => { setView(0); setAzimuth(angle); }} />)}
-          <Choice label="Visage" selected={view === 1} onPress={() => { setView(1); setAzimuth(25); }} />
-          <Choice label="Tissu" selected={view === 4} onPress={() => { setView(4); setAzimuth(25); }} />
+            <Choice key={label} label={label} selected={azimuth === angle} onPress={() => setAzimuth(angle)} />)}
+        </View>
+        <View style={styles.row}>
+          <Choice label="En pied" selected={view === 0} onPress={() => setView(0)} />
+          <Choice label="Visage" selected={view === 1} onPress={() => setView(1)} />
+          <Choice label="Tissu" selected={view === 4} onPress={() => setView(4)} />
         </View>
         <Button label="Voir le duel PvP" disabled={!ready || failed} onPress={() => setPlaying(true)} />
       </View>
