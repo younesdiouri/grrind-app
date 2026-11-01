@@ -4,6 +4,19 @@ import { DEFAULT_AVATAR, serverAvatar } from './serverAvatar.ts';
 
 const item = (key: string) => ({ key, artworkVersion: null });
 
+test('la Moumoutivation vient de HEAD, remplace le bandeau et disparaît au retrait', () => {
+  for (const body of ['male', 'female'] as const) {
+    const avatar = { ...DEFAULT_AVATAR, body };
+    const hat = serverAvatar(avatar, { HEAD: item('MOUMOUTIVATION') });
+    assert.equal(hat.moumoutivation, true);
+    assert.equal(hat.headband, false);
+    assert.equal(serverAvatar(avatar, { HEAD: item('BANDEAU_ECLAIR') }).moumoutivation, false);
+    assert.equal(serverAvatar(avatar, { WEAPON: item('MOUMOUTIVATION') }).moumoutivation, false);
+    assert.equal(serverAvatar(avatar, { HEAD: item('FUTURE_HAT') }).moumoutivation, false);
+    assert.equal(serverAvatar(avatar).moumoutivation, false);
+  }
+});
+
 test('le Bandeau éclair porté en tête met le bandeau, une autre coiffe non (#306)', () => {
   assert.equal(serverAvatar(DEFAULT_AVATAR, { HEAD: item('BANDEAU_ECLAIR') }).headband, true);
   assert.equal(serverAvatar(DEFAULT_AVATAR, { HEAD: item('TEMPERED_HEADBAND') }).headband, false);

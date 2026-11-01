@@ -12,7 +12,7 @@ export function GuildPortrait({ member, size = leagueArt.thumbnailSize }: {
 }) {
   const { ref, onLayout, visible } = usePortraitVisibility();
   const avatar = serverAvatar(member.avatar, member.headEquipment ? { HEAD: member.headEquipment } : {});
-  const label = `Portrait de ${member.displayName} · Ligue ${leagueLabel[member.league.tier]}${avatar.headband ? ' · Bandeau éclair' : ''}`;
+  const label = `Portrait de ${member.displayName} · Ligue ${leagueLabel[member.league.tier]}${avatar.headband ? ' · Bandeau éclair' : avatar.moumoutivation ? ' · La Moumoutivation' : ''}`;
   return <View ref={ref} collapsable={false} onLayout={onLayout} style={{ width: size, height: size }}
     accessible accessibilityRole="image" accessibilityLabel={label}>
     <View style={StyleSheet.absoluteFill} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">

@@ -16,7 +16,7 @@ export function equippedModels(equipment: Record<string, Pick<NonNullable<Equipm
     : equipment.WEAPON?.key === 'HALTER_EGO' ? 'ego'
     : equipment.WEAPON?.key === 'FER_PLAY' ? 'ferPlay'
     : equipment.WEAPON?.key === 'HUILESSON' ? 'huilesson' : 'unarmed';
-  // Le Bandeau éclair (#306) s'ajuste à toutes les coiffures ; une autre coiffe n'a pas de modèle.
   const headband = equipment.HEAD?.key === 'BANDEAU_ECLAIR';
-  return { shirt, pants, weapon, headband } as const;
+  const moumoutivation = equipment.HEAD?.key === 'MOUMOUTIVATION';
+  return { shirt, pants, weapon, headband, moumoutivation } as const;
 }
