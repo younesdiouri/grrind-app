@@ -60,5 +60,11 @@ ni de publication EAS/TestFlight. Le verdict artistique final revient à
 l’auteur sur son iPhone : volume, ouverture autour du visage, lecture en duel
 et passage homme/femme.
 
+L’export Unity, le framework Device et l’app hôte Debug ont compilé sans erreur.
+L’app `app.grrind.dev` est installée sur l’iPhone de l’auteur via `devicectl`.
+Le framework embarqué conserve l’UUID `AAC6C530-4646-37C3-B9E1-1B86CA598BAE`
+du build courant, ses 16 fichiers Data sont identiques et sa metadata contient
+`SetMoumoutivation`. Metro 8081 reste disponible pour l’essai.
+
 ![Coiffe portée par l’avatar masculin](moumoutivation/unity-male.png)
 ![Coiffe portée par l’avatar féminin](moumoutivation/unity-female.png)
