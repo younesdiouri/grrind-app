@@ -28,6 +28,11 @@ import { InventoryItemDetails } from '@/components/InventoryItemDetails';
 import { ShopCatalog, ShopItemDetails, ShopPurchaseReceipt } from '@/components/ShopCatalog';
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { PlayerIdentity } from '@/components/PlayerIdentity';
+import { PlayerProfile } from '@/components/PlayerProfile';
+import { LeagueWeek } from '@/components/LeagueWeek';
+import { LEAGUE_FIXTURE } from '@/features/league/leagueFixtures';
+import { leagueLabel, type LeagueTier } from '@/features/league/league';
 import { CharacterStatistics } from '@/components/CharacterStatistics';
 import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
@@ -219,6 +224,8 @@ const styles = StyleSheet.create({
   specimenLabel: { ...type.label, color: color.textMuted },
   stack: { gap: space.sm },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
+  leagueComparison: { flexDirection: 'row', gap: space.md },
+  leagueCard: { width: PAGE_WIDTH - space.lg * 2 },
   metaText: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   typeSample: { color: color.text },
   displaySemiBold: { ...type.title, color: color.text, fontFamily: typography.display.semibold },
@@ -259,6 +266,39 @@ const guildRisalat: components['schemas']['Risalat'] = {
 };
 
 export const PREVIEWS: Preview[] = [
+  {
+    slug: 'profil-joueur', name: 'Profil public du joueur', group: 'Composants',
+    element: <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
+      league: LEAGUE_FIXTURE.league }} equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null },
+      WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
+      action={<Button label="Défier" onPress={() => {}} />} />,
+  },
+  {
+    slug: 'identite-ligues', name: 'Identité et régalia de ligue', group: 'Composants',
+    element: <>
+      <View style={styles.leagueComparison}>{(Object.keys(leagueLabel) as LeagueTier[]).map(tier => <View key={tier} style={styles.leagueCard}><Specimen label={leagueLabel[tier]}>
+        <PlayerIdentity player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
+          league: { ...LEAGUE_FIXTURE.league, tier } }} />
+      </Specimen></View>)}</View>
+      <Specimen label="Niveau 80 Bronze, titre et pseudo longs, corps féminin">
+        <PlayerIdentity onLeaguePress={() => {}} player={{ displayName: 'Alexandra au-delà des montagnes',
+          title: { id: 'long', name: 'Celle qui ne renonce jamais, même au sommet', hint: '', unlocked: true,
+            unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' } },
+          level: 80, avatar: { ...DEFAULT_AVATAR, body: 'female', hairStyle: 'long' },
+          league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 } }} />
+      </Specimen>
+    </>,
+  },
+  {
+    slug: 'ligue-semaine', name: 'Ma semaine de ligue', group: 'Composants',
+    element: <>
+      <Specimen label="Projection serveur et résultat précédent"><LeagueWeek state={LEAGUE_FIXTURE} now={Date.parse(LEAGUE_FIXTURE.weekStartsAt)} /></Specimen>
+      <Specimen label="Nouveau compte, sans rang ni résultat"><LeagueWeek state={{ ...LEAGUE_FIXTURE,
+        league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, isParticipating: false, score: 0, rank: null, participantCount: 0,
+        projectedMovement: 'MAINTAINED', lastResult: null }} now={Date.parse(LEAGUE_FIXTURE.weekStartsAt)} /></Specimen>
+      <Specimen label="Échéance passée, attendre le worker"><LeagueWeek state={LEAGUE_FIXTURE} now={Date.parse(LEAGUE_FIXTURE.weekEndsAt)} /></Specimen>
+    </>,
+  },
   {
     slug: 'guilde-semaine', name: 'Guilde · Semaine', group: 'Composants',
     element: <>

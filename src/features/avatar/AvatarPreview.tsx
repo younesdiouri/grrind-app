@@ -1,12 +1,15 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { color, type } from '@/design/tokens';
 import type { UnityAvatar } from '@/features/combat/unityFrame';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import type { PreviewFraming } from './previewConfiguration';
 
-export type AvatarPreviewProps = { avatar: UnityAvatar; label: string };
+export type AvatarPreviewProps = { avatar: UnityAvatar; label: string; framing?: PreviewFraming; fallbackName?: string };
 
-export function AvatarPreview({ label }: AvatarPreviewProps) {
+export function AvatarPreview({ label, framing, fallbackName }: AvatarPreviewProps) {
   return <View style={styles.preview} accessibilityRole="image" accessibilityLabel={label}>
-    <Text style={styles.note}>Aperçu disponible dans l’app iOS.</Text>
+    {framing === 'portrait' ? <PlayerAvatar name={fallbackName ?? ''} />
+      : <Text style={styles.note}>Aperçu disponible dans l’app iOS.</Text>}
   </View>;
 }
 const styles = StyleSheet.create({

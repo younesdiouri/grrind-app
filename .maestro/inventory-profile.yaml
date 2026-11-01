@@ -109,57 +109,27 @@ tags:
 - extendedWaitUntil:
     visible: "QA Equipements"
     timeout: 15000
-- takeScreenshot: player-circles
-- scrollUntilVisible:
-    element:
-      id: "character-tab-statistics"
-    direction: DOWN
-- tapOn:
-    id: "character-tab-statistics"
-- scrollUntilVisible:
-    element:
-      id: "attribute-dexterity"
-    direction: DOWN
-- takeScreenshot: player-statistics
+- extendedWaitUntil:
+    visible:
+      id: "profile-portrait-ready"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "combat-avatar-ready"
+    timeout: 30000
+- takeScreenshot: player-identity-and-avatar
+- assertVisible: ".*Ligue.*"
 - assertNotVisible:
     id: character-tab-appearance
-- scrollUntilVisible:
-    element:
-      id: "stat-dodgePercent"
-    direction: DOWN
-- takeScreenshot: player-combat-statistics
-- scrollUntilVisible:
-    element:
-      id: "stat-precisionPercent"
-    direction: DOWN
-- takeScreenshot: player-combat-statistics-end
-- scrollUntilVisible:
-    element:
-      id: "character-tab-equipment"
-    direction: UP
-- tapOn:
-    id: "character-tab-equipment"
-- scrollUntilVisible:
-    element:
-      text: "Gants de boxe dorés"
-    direction: DOWN
-- takeScreenshot: player-equipment-readonly
-- assertNotVisible: "Retirer"
-- assertNotVisible: "Vendre.*"
-- scrollUntilVisible:
-    element:
-      id: "character-tab-bag"
-    direction: UP
-- tapOn:
-    id: "character-tab-bag"
-- scrollUntilVisible:
-    element:
-      text: "Gants de boxe dorés"
-    direction: DOWN
-- takeScreenshot: player-bag-readonly
-- assertNotVisible: "Valeur"
-- assertNotVisible: "Vendre.*"
-- assertNotVisible: "Ouvrir"
+- assertNotVisible:
+    id: character-tab-equipment
+- assertNotVisible:
+    id: character-tab-bag
+- assertNotVisible:
+    id: character-tab-statistics
+- assertNotVisible: ".*Voir le personnage en 3D.*"
+- assertNotVisible: ".*Progression du personnage.*"
+- assertNotVisible: ".*Vitalité.*"
 
 - swipe:
     start: "2%, 55%"

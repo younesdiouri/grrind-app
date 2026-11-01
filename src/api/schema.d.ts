@@ -348,6 +348,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/league": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_league_state"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/streak": {
         parameters: {
             query?: never;
@@ -1482,6 +1498,70 @@ export interface components {
              */
             nextRevealAt: string;
         };
+        /** @description Statut courant ; nouveau compte = Bronze. Palette, cadre et ornements sont dessinés côté client à partir du tier. */
+        LeagueIdentity: {
+            /** @enum {string} */
+            tier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" | "DIAMOND";
+            tierOrder: number;
+            /** @description Bonus LOOT_LUCK en points de pourcentage, et non probabilité finale de drop. */
+            lootLuckPercent: number;
+        };
+        /** @description Résultat figé à la clôture. Les imports et annulations ultérieurs ne le réécrivent pas. */
+        LeagueResult: {
+            /** Format: date-time */
+            weekStartsAt: string;
+            /** Format: date-time */
+            weekEndsAt: string;
+            /** Format: date-time */
+            settledAt: string;
+            /** @enum {string} */
+            tier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" | "DIAMOND";
+            /** @enum {string} */
+            nextTier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" | "DIAMOND";
+            /** @enum {string} */
+            movement: "PROMOTED" | "MAINTAINED" | "RELEGATED";
+            score: number;
+            rank: number | null;
+            participantCount: number;
+            rulesetVersion: string;
+        };
+        /**
+         * @description Une division commune par ligue, sans limite d'effectif. Score = XP nette du
+         *     ledger datée du sport, bornes [lundi 00:00 Paris, lundi suivant[.
+         *     Le niveau de personnage est indépendant. La course reste provisoire jusqu'à
+         *     sa clôture par le worker (battement chaque minute, rattrapage après arrêt).
+         *     Le top movementPercent % (arrondi inférieur, au moins un) à score positif
+         *     monte d'un palier ; ex æquo = même décision. Score nul = un palier en moins.
+         *     Les derniers movementPercent % descendent si l'effectif atteint le minimum ;
+         *     une égalité traversant cette limite reste maintenue. Bornes Bronze/Diamant.
+         *     Un nouveau compte n'entre dans les effectifs qu'à sa première semaine d'XP
+         *     positive. Aucun profil d'un autre joueur n'est exposé par cet endpoint.
+         */
+        LeagueState: {
+            league: components["schemas"]["LeagueIdentity"];
+            /** Format: date-time */
+            weekStartsAt: string;
+            /** Format: date-time */
+            weekEndsAt: string;
+            /** @enum {string} */
+            timezone: "Europe/Paris";
+            isParticipating: boolean;
+            score: number;
+            /** @description Rang de compétition dans sa ligue (1, 1, 3) ; null si score nul ou pas encore engagé. */
+            rank: number | null;
+            participantCount: number;
+            /**
+             * @description Projection calculée par le serveur ; ne jamais déduire une promotion du seul rang.
+             * @enum {string}
+             */
+            projectedMovement: "PROMOTED" | "MAINTAINED" | "RELEGATED";
+            movementPercent: number;
+            minimumPlayersForRelegation: number;
+            lastResult: components["schemas"]["LeagueResult"] | null;
+        };
+        CurrentUserProfile: components["schemas"]["UserProfile"] & {
+            league: components["schemas"]["LeagueIdentity"];
+        };
         UserProfile: {
             /** Format: uuid */
             id: string;
@@ -2021,6 +2101,7 @@ export interface components {
         };
         /** @description Profil autorisé complet. Les listes de guilde conservent Player pour éviter de charger tous les sacs. */
         PlayerDetail: components["schemas"]["Player"] & {
+            league: components["schemas"]["LeagueIdentity"];
             inventory: components["schemas"]["PublicInventory"];
             statistics: components["schemas"]["PlayerStatistics"];
         };
@@ -4272,6 +4353,27 @@ export interface operations {
             };
         };
     };
+    get_league_state: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La ligue du joueur, sa course hebdomadaire provisoire et son dernier résultat figé. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeagueState"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     get_streak_state: {
         parameters: {
             query?: never;
@@ -4437,7 +4539,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserProfile"];
+                    "application/json": components["schemas"]["CurrentUserProfile"];
                 };
             };
             401: components["responses"]["Unauthorized"];
