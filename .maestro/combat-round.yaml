@@ -56,8 +56,13 @@ appId: app.grrind.dev
 - tapOn:
     id: "battle-exit"
 - extendedWaitUntil:
-    visible: "Cailloux dans la Chaussure"
+    visible:
+      id: "combat-mode-pve"
     timeout: 15000
 - takeScreenshot: portrait-return-before-device-reset
 # L’app a déjà rétabli le portrait ; aligner maintenant les coordonnées du pilote iOS.
+# Le titre est sous l’ancienne hauteur paysage et Maestro le croit encore hors écran (#339).
 - setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Cailloux dans la Chaussure"
+    timeout: 15000
