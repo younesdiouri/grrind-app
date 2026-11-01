@@ -20,12 +20,29 @@ describe('batchGains', () => {
     assert.deepEqual(gains.titles.map((title) => title.name), ['Premiers pas']);
   });
 
-  it('additionne les caractéristiques créditées jusqu’à l’XP accordée', () => {
+  it('additionne les seuls deltas de caractéristiques rendus par le serveur', () => {
     const summary = fixture('quinze-workouts');
     const credited = batchGains(summary)
       .attributes.filter(({ attribute }) => attribute !== 'vitality')
       .reduce((sum, { gained }) => sum + gained, 0);
-    assert.equal(credited, summary.totals?.xpAwarded);
+    assert.equal(credited, summary.imported.reduce((sum, workout) => sum + workout.attributes.strength.gained
+      + workout.attributes.endurance.gained + workout.attributes.mobility.gained + workout.attributes.dexterity.gained, 0));
+  });
+
+  it('conserve l’XP et le niveau d’un import ancien sans remplir les jauges courantes', () => {
+    const summary = fixture('un-workout');
+    for (const workout of summary.imported) {
+      for (const gauge of Object.values(workout.attributes)) {
+        if ('gained' in gauge) gauge.gained = 0;
+        gauge.before = 0; gauge.after = 0;
+      }
+    }
+    const gains = batchGains(summary);
+    assert.ok(gains.totals!.xpAwarded > 0);
+    assert.deepEqual(gains.totals, summary.totals);
+    assert.ok(gains.bar.end > gains.bar.start);
+    assert.equal(gains.noCredit, null);
+    assert.deepEqual(gains.attributes, []);
   });
 
   it('ne rend rien quand rien n’a été crédité', () => {

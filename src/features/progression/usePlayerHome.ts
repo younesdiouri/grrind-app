@@ -6,6 +6,7 @@ import { failureFrom, type Failure } from '@/features/auth/problems';
 import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
 import { publishProgression } from '@/features/widget/publish';
 import { togetherInbox } from '@/features/health/togetherBonuses';
+import { getProgressionRevision, subscribeToProgression } from './weeklyRefresh';
 
 export type Progression = components['schemas']['Progression'];
 export type Workout = components['schemas']['Workout'];
@@ -83,8 +84,10 @@ export function usePlayerHome(): {
   // serveur ont pu bouger. S'abonner au statut rechargerait aussi au départ d'une
   // synchronisation, avant que rien n'ait changé.
   const settled = useSyncExternalStore(subscribeToSync, getSettledRevision);
+  const progressionRevision = useSyncExternalStore(subscribeToProgression, getProgressionRevision);
   const together = useSyncExternalStore(togetherInbox.subscribe, () => togetherInbox.getSnapshot().bonuses);
   const previousTogether = useRef(together);
+  const previousProgressionRevision = useRef(progressionRevision);
 
   const load = useCallback(async (): Promise<PlayerHome> => {
     // En parallèle : elles ne dépendent pas l'une de l'autre, et les enchaîner doublerait
@@ -137,9 +140,11 @@ export function usePlayerHome(): {
     let current = true;
     const evidenceChanged = previousTogether.current !== together;
     previousTogether.current = together;
+    const progressionChanged = previousProgressionRevision.current !== progressionRevision;
+    previousProgressionRevision.current = progressionRevision;
 
     // Une preuve peut créditer pendant une lecture précédente : ne pas réutiliser son ancien verdict.
-    void (evidenceChanged ? load() : loadOnce()).then(
+    void (evidenceChanged || progressionChanged ? load() : loadOnce()).then(
       (next) => {
         if (current) {
           setHome(next);
@@ -156,7 +161,7 @@ export function usePlayerHome(): {
       current = false;
     };
     // `settled` change à chaque verdict de synchronisation, ce qui relance ce chargement.
-  }, [load, loadOnce, settled, together]);
+  }, [load, loadOnce, settled, together, progressionRevision]);
 
   const reload = useCallback(() => {
     setHome({ step: 'loading' });

@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 import type { components } from '@/api/schema';
 import { attributeLabel } from '@/design/tokens';
-import { alamStyles as s } from './styles';
+import { alamStyles as s } from './styles.ts';
 
 export function AlamGauges({ gauges }: { gauges: components['schemas']['AlamGauge'][] }) {
   return <View style={s.group}>{gauges.map((gauge) => <View key={gauge.attribute} style={s.group}

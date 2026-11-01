@@ -8,9 +8,11 @@ import type { Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { shopActionKeys } from '@/features/shop/actionKeyStore';
 import { createConfirmedAction } from './confirmedAction';
+import { createAlamPreferences } from './preferences';
 
 export type AlamRun = components['schemas']['AlamRun'];
 export const ALAM_KEY = ['alam'] as const;
+export const alamPreferences = createAlamPreferences(shopActionKeys, api);
 const launch = createConfirmedAction(shopActionKeys, (_intention, key) =>
   api.POST('/api/guild/alam/runs', { params: { header: { 'Idempotency-Key': key } } }));
 
@@ -18,8 +20,9 @@ export function launchAlam(playerId: string, guildId: string) { return launch(`a
 
 export function useAlamCurrent(guildId: string | undefined) {
   const focused = useIsFocused();
+  const auth = useAuth();
   return useQuery<components['schemas']['AlamCurrent'], Failure>({
-    queryKey: [...ALAM_KEY, 'current', guildId], enabled: !!guildId && focused,
+    queryKey: [...ALAM_KEY, 'current', auth.status === 'signedIn' ? auth.user.id : null, guildId], enabled: !!guildId && focused,
     queryFn: () => queryOrFailure(() => api.GET('/api/guild/alam')),
     refetchInterval: (query) => focused && !query.state.error
       ? Math.min(alamMotion.pollMaxMs, Math.max(1000, (query.state.data?.pollAfterSeconds ?? 5) * 1000)) : false,

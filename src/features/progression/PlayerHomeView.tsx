@@ -197,6 +197,7 @@ export function LevelCard({
           {progression.skillPoints.available > 1 ? 's' : ''} de compétence
         </Text>
       ) : null}
+      <Text style={styles.levelFoot}>XP, niveau et compétences restent acquis entre les semaines.</Text>
       </View>
     </SystemFrame>
   );
@@ -290,6 +291,8 @@ export function AttributeCard({
       segments={orbit.effect === undefined ? undefined : <Seam offset={motion.seam.phase.ring} />}
     >
       <View style={styles.attributesBody} onLayout={play}>
+      <Text style={styles.overline}>CARACTÉRISTIQUES DE LA SEMAINE</Text>
+      <Text style={styles.levelFoot}>Remise à zéro dimanche à 20 h Europe/Paris, en PvE et PvP. Titres et possessions restent acquis.</Text>
       <View style={styles.attributesRow}>
         <AttributeRing
           attributes={arcs}

@@ -115,6 +115,10 @@ export function messageFor(failure: Failure): string {
 
 function messageForProblem(problem: ProblemDetails): string {
   switch (problem.type) {
+    case 'https://grrind.app/problems/alam-difficulty-closed':
+      return 'Le choix est clôturé pour cette édition. Le combat conserve sa difficulté.';
+    case 'https://grrind.app/problems/alam-difficulty-forbidden':
+      return 'Seul le chef de guilde peut choisir la difficulté.';
     case 'https://grrind.app/problems/recipe-unavailable':
       return 'Cette recette n’est plus disponible. Recharge l’atelier.';
     case 'https://grrind.app/problems/insufficient-crafting-resources':

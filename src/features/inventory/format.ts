@@ -14,9 +14,8 @@ type DroppedItemModifier = components['schemas']['DroppedItemModifier'];
  * implicite, treize fois.
  *
  * - `XP_MULTIPLIER`, `LOOT_LUCK` sont déjà des pourcentages.
- * - Les quatre bonus de caractéristique (`STRENGTH_BONUS`…) sont des **points d'XP
- *   répartis** — l'unité du ledger, celle des jauges du cercle de vie. « +1000 » s'y lit à
- *   l'échelle de ce qu'une séance rapporte, jamais comme un score abstrait.
+ * - Les anciens bonus de caractéristique (`STRENGTH_BONUS`…) restent lisibles en points
+ *   pour l’historique ; les équipements actuels ne donnent plus de caractéristiques.
  * - `HP_BONUS`, `DAMAGE_BONUS` sont des points, déjà l'effet final — rien à convertir.
  * - `MITIGATION_BONUS`, `COMBO_BONUS`, `DODGE_BONUS` sont des **millièmes**, et c'est
  *   une décision d'affichage de ce ticket de les rendre en pourcentage avec une décimale :

@@ -20,7 +20,9 @@ test('la fiche montre chaque total serveur, sa ventilation et les onze statistiq
       maintenancePercent: 0, criticalChancePercent: 0, guardPercent: 0,
       criticalResistancePercent: 0, cooldownReductionPercent: 0, precisionPercent: 0 },
   } }));
-  assert.match(markup, /Force, 149, 120 de base · \+15 équipement/);
+  assert.match(markup, /Force, 149, 120 cette semaine/);
+  assert.match(markup, /20 h Europe\/Paris/);
+  assert.match(markup, /taux de combat viennent uniquement/);
   assert.match(markup, /Armure, 8 %/);
   assert.match(markup, /Esquive, 7 %/);
   assert.equal((markup.match(/data-testid="attribute-/g) ?? []).length, 5);
