@@ -1,4 +1,4 @@
-"""Preserve the Meshy visor and fit slim, natural stems to the real eyes and ears."""
+"""Preserve the Meshy visor and build connected, straight cycling temples."""
 import argparse
 import json
 import math
@@ -125,7 +125,7 @@ def ear_tops(head):
 
 
 def rebuild_temples(model, skin, head, approach, optics):
-    # The photo calls for a slim temple stem and a short, tucked return, not an arch around the pinna.
+    # Sport reference: a substantial endpiece joins a level beam; only the rear tip descends.
     mesh = model.data
     mesh.calc_loop_triangles()
     points = [vertex.co.copy() for vertex in mesh.vertices]
@@ -139,7 +139,7 @@ def rebuild_temples(model, skin, head, approach, optics):
     matte = optics.pixels.reshape(-1, 4)[:, 0] < .05
 
     def colour_uv(purple):
-        score = -np.abs(rgb - np.array([.05, .01, .15])).sum(axis=1) if purple else np.minimum(rgb[:, 0], rgb[:, 1]) - rgb[:, 2]
+        score = -np.abs(rgb - np.array([.25, .04, .65])).sum(axis=1) if purple else np.minimum(rgb[:, 0], rgb[:, 1]) - rgb[:, 2]
         valid = matte & (rgb[:, 2] > rgb[:, 0]) if purple else matte
         index = int(np.argmax(np.where(valid, score, -100)))
         return Vector(((index % base.size[0] + .5) / base.size[0], (index // base.size[0] + .5) / base.size[1]))
@@ -189,44 +189,61 @@ def rebuild_temples(model, skin, head, approach, optics):
 
     surface_points = [skin.matrix_world @ vertex.co for vertex in skin.data.vertices]
     surface = BVHTree.FromPolygons(surface_points, [tuple(poly.vertices) for poly in skin.data.polygons])
+    frame_tree = BVHTree.FromPolygons([Vector(point) for point in vertices], faces)
     report = {'retained_mirror_triangles': kept_lens, 'sides': {}}
     for side, ear in ear_tops(head).items():
         outer = max(point.x * side for point in head)
-        anchor = max((point for point in points if point.x * side > outer * .95 and cut_y < point.y < cut_y + .012),
-                     key=lambda point: point.z).copy()
-        path = [anchor]
+        # The upper rim is the endpiece's anchor, not the old low hinge that made the beam rise.
+        anchor = max((point for point in points if point.x * side > outer * .83
+                      and cut_y + .014 < point.y < cut_y + .040), key=lambda point: point.z).copy()
         crest = max(point.z for point in head if point.x * side > outer * .8
                     and abs(point.y - ear.y) < .025 and point.z < ear.z + .008)
-        # Follow the scalp beside the superior ear fold; only the short rear return descends.
-        controls = [(ear.y + dy, crest + dz) for dy, dz in ((.045, .002), (.006, .002), (-.005, .002), (-.014, -.002), (-.023, -.007))]
-        for i, (y, z) in enumerate(controls):
+        level = crest + .0055
+        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < crest)
+        front_x = max(point.x * side for point in points) - .001
+        support_x = max(outer + .004, front_x - .007)
+        path = [Vector((anchor.x - side * .001, anchor.y + .003, level)),
+                Vector((side * front_x, cut_y + .004, level)),
+                Vector((side * support_x, ear.y + .010, level)),
+                Vector((side * support_x, ear.y - .014, level))]
+        for y, z in ((ear_back - .010, level - .004), (ear_back - .025, level - .015)):
+            hits = [surface.ray_cast(Vector((0, y, z + dz)), Vector((side, 0, 0)), .15)[0] for dz in (-.002, 0, .002)]
+            assert all(hit is not None for hit in hits)
+            target = Vector((side * (max(hit.x * side for hit in hits) + .003), y, z))
             previous = path[-1]
-            count = 1 if i == 0 else max(1, math.ceil(abs(y - previous.y) / .004))
-            for step in range(1, count + 1):
-                t = step / count
-                sample_y, sample_z = previous.y + (y - previous.y) * t, previous.z + (z - previous.z) * t
-                hits = [surface.ray_cast(Vector((0, sample_y, sample_z + dz)), Vector((side, 0, 0)), .15)[0]
-                        for dz in (-.0016, 0, .0016)]
+            steps = max(1, math.ceil(abs(y - previous.y) / .003))
+            for step in range(1, steps + 1):
+                point = previous.lerp(target, step / steps)
+                hits = [surface.ray_cast(Vector((0, point.y, point.z + dz)), Vector((side, 0, 0)), .15)[0]
+                        for dz in (-.002, 0, .002)]
                 assert all(hit is not None for hit in hits)
-                x = max(hit.x * side for hit in hits) + .0025
-                path.append(Vector((side * x, sample_y, sample_z)))
+                point.x = side * max(point.x * side, max(hit.x * side for hit in hits) + .003)
+                path.append(point)
+        assert max(point.z for point in path[:4]) - min(point.z for point in path[:4]) < 1e-7
         rings = []
         for i, centre in enumerate(path):
-            half_x, half_z, bevel = .0009, (.002 if i == 0 else .0016), .00045
-            cross = [(-half_x + bevel, -half_z), (half_x - bevel, -half_z), (half_x, -half_z + bevel),
-                     (half_x, half_z - bevel), (half_x - bevel, half_z), (-half_x + bevel, half_z),
-                     (-half_x, half_z - bevel), (-half_x, -half_z + bevel)]
+            half_x = .004 if i == 0 else .002 if i < 4 else .0015
+            bottom, top = (-.008 if i == 0 else -.004 if i < 4 else -.002), (.004 if i < 4 else .002)
+            bevel = .0007
+            cross = [(-half_x + bevel, bottom), (half_x - bevel, bottom), (half_x, bottom + bevel),
+                     (half_x, top - bevel), (half_x - bevel, top), (-half_x + bevel, top),
+                     (-half_x, top - bevel), (-half_x, bottom + bevel)]
             rings.append([centre + Vector((x, 0, z)) for x, z in cross])
+        first_face = len(faces)
         for i, (a, b) in enumerate(zip(rings, rings[1:])):
-            colour = yellow if path[i].y > ear.y + .006 and i > 0 else purple
             for j in range(8):
                 quad = [a[j], a[(j + 1) % 8], b[(j + 1) % 8], b[j]]
                 normal = (quad[1] - quad[0]).cross(quad[2] - quad[0]).normalized()
+                colour = yellow if i < 3 and j == (2 if side > 0 else 6) else purple
                 face([(point, colour, normal) for point in quad])
         face([(point, purple, Vector((0, 1, 0))) for point in reversed(rings[0])])
         face([(point, purple, Vector((0, -1, 0))) for point in rings[-1]])
+        stem_tree = BVHTree.FromPolygons([Vector(point) for point in vertices], faces[first_face:])
+        joint_contacts = len(frame_tree.overlap(stem_tree))
+        assert joint_contacts > 0, 'The endpiece must overlap the frame, not float beside it'
         report['sides'][side] = {'ear_top_m': list(ear), 'centreline_m': [list(point) for point in path],
-                                 'stem_height_m': .0032, 'stem_thickness_m': .0018, 'return_drop_m': .009}
+                                 'stem_height_m': .008, 'stem_thickness_m': .004, 'return_drop_m': .015,
+                                 'straight_run_rise_m': 0, 'frame_joint_intersections': joint_contacts}
     result = bpy.data.meshes.new(model.name + '_NaturalTemples')
     result.from_pydata(vertices, [], faces)
     layer = result.uv_layers.new(name='UVMap')
@@ -250,7 +267,7 @@ def fit(output):
     output.mkdir(parents=True, exist_ok=True)
     mask = bpy.data.images.load(str(ASSET / 'source_textures/metallic.png'))
     mask.colorspace_settings.name = 'Non-Color'
-    report = {'source': 'Meshy mirror/frame retained; rear arms replaced by slim stems fitted to the scalp and ear fold', 'units': 'metres',
+    report = {'source': 'Meshy visor retained; straight sport beams and overlapping endpieces replace the previous thin stems', 'units': 'metres',
               'axes': 'Z up, +Y front in Blender; body-rest-space FBX, Humanoid Head attachment', 'variants': {}}
     for body in ('Male', 'Female'):
         refs = imported(CHARACTERS / 'Quaternius' / ('Superhero_' + body + '_FullBody.fbx'), 'fbx')
