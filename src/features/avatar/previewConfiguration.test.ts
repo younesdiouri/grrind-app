@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { DEFAULT_AVATAR, serverAvatar } from '@/features/combat/serverAvatar.ts';
 import { previewConfiguration } from './previewConfiguration.ts';
 
-test('le portrait cadre la tête personnalisée sans transmettre aucun équipement', () => {
+test('le portrait cadre la tête personnalisée avec sa coiffe, sans arme ni tenue équipée', () => {
   for (const body of ['male', 'female'] as const) {
     const saved = { ...DEFAULT_AVATAR, body, hairStyle: 'long' as const, skinTone: 'deep' as const };
     const equipped = { ...serverAvatar(saved), headband: true, boxingGloves: true, dumbbell: true,
@@ -11,7 +11,7 @@ test('le portrait cadre la tête personnalisée sans transmettre aucun équipeme
     const config = previewConfiguration(equipped, { width: 128, height: 128 }, 'portrait');
     assert.equal(config.view, 1);
     assert.equal(config.azimuth, 0);
-    assert.deepEqual(config.player, serverAvatar(saved));
+    assert.deepEqual(config.player, { ...serverAvatar(saved), headband: true });
     assert.equal(config.enemy.visible, false);
     assert.equal(config.previewWidth, 410);
     assert.equal(config.previewHeight, 410);

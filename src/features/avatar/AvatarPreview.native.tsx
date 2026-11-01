@@ -50,7 +50,7 @@ export function AvatarPreview({ avatar, label, framing = 'full', fallbackName }:
   const identityFallback = framing === 'portrait' ? <View accessible accessibilityRole="image"
     accessibilityLabel={`${label} · aperçu indisponible`}><PlayerAvatar name={fallbackName ?? ''} /></View> : null;
   return <View style={styles.preview} onLayout={event => setSize(event.nativeEvent.layout)}
-    testID={current && loaded === configuration ? 'combat-avatar-ready' : 'combat-avatar-loading'}>
+    testID={`${framing === 'portrait' ? 'profile-portrait' : 'combat-avatar'}-${current && loaded === configuration ? 'ready' : 'loading'}`}>
     {current ? <>
       <Image source={{ uri: image.uri }} recyclingKey={configuration} style={framing === 'portrait' ? styles.headImage : StyleSheet.absoluteFill}
         contentFit="contain" accessible accessibilityLabel={label} onLoad={() => setLoaded(configuration)}

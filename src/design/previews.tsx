@@ -29,6 +29,7 @@ import { ShopCatalog, ShopItemDetails, ShopPurchaseReceipt } from '@/components/
 import { NoCreditRow } from '@/components/NoCreditRow';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { PlayerIdentity } from '@/components/PlayerIdentity';
+import { PlayerProfile } from '@/components/PlayerProfile';
 import { LeagueWeek } from '@/components/LeagueWeek';
 import { LEAGUE_FIXTURE } from '@/features/league/leagueFixtures';
 import { leagueLabel, type LeagueTier } from '@/features/league/league';
@@ -265,6 +266,13 @@ const guildRisalat: components['schemas']['Risalat'] = {
 };
 
 export const PREVIEWS: Preview[] = [
+  {
+    slug: 'profil-joueur', name: 'Profil public du joueur', group: 'Composants',
+    element: <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
+      league: LEAGUE_FIXTURE.league }} equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null },
+      WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
+      action={<Button label="Défier" onPress={() => {}} />} />,
+  },
   {
     slug: 'identite-ligues', name: 'Identité et régalia de ligue', group: 'Composants',
     element: <>

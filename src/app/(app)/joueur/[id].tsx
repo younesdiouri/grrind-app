@@ -2,24 +2,18 @@ import { Stack, router, useIsFocused, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { CharacterInventory } from '@/components/CharacterInventory';
 import { Button } from '@/components/Button';
-import { PlayerIdentity } from '@/components/PlayerIdentity';
-import { XpBar } from '@/components/XpBar';
-import { progressFill } from '@/components/guildProgress';
+import { PlayerProfile } from '@/components/PlayerProfile';
 import { color, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { challenge } from '@/features/combat/fight';
-import { formatCalendarDate } from '@/features/community/format';
-import { usePlayer, type Player } from '@/features/community/usePlayer';
-import { VitalityNote } from '@/features/progression/PlayerHomeView';
+import { usePlayer } from '@/features/community/usePlayer';
 import { LeagueMotion } from '@/features/league/LeagueMotion';
 import { LeagueSheet } from '@/features/league/LeagueSheet';
 import { useLeague } from '@/features/league/useLeague';
 
-/** Profil public : cercles, équipement, sac et statistiques, protégé par le voter serveur. */
+/** Identité de ligue et personnage équipé, protégés par le voter serveur. */
 export default function JoueurScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const player = usePlayer(id);
@@ -47,62 +41,13 @@ export default function JoueurScreen() {
         </ScrollView>
       ) : (
         <ScrollView contentContainerStyle={styles.screen}>
-          <PlayerIdentity player={{ ...player.data, league: own && league.data ? league.data.league : player.data.league }}
+          <PlayerProfile player={{ ...player.data, league: own && league.data ? league.data.league : player.data.league }}
+            equipment={player.data.inventory.equipment} action={<Challenge id={id} name={player.data.displayName} />}
             onLeaguePress={own ? () => { setWeekOpen(true); void league.refetch(); } : undefined}
             motion={<LeagueMotion tier={own && league.data ? league.data.league.tier : player.data.league.tier} />} />
-
-          {/* Au-dessus des cercles et de l'équipement, pas sous eux : c'est l'action de
-              l'écran, et le plateau d'équipement fait à lui seul plus d'une hauteur de
-              téléphone — un bouton placé après lui ne se découvre qu'en cherchant. */}
-          <Challenge id={id} name={player.data.displayName} />
-
-          <PlayerAttributes player={player.data} />
-          <View style={styles.progress}>
-            <Text style={styles.level}>Progression du personnage · niveau {player.data.level}</Text>
-            <XpBar size="hero" fill={progressFill(player.data)} />
-          </View>
-          <CharacterInventory inventory={player.data.inventory} statistics={player.data.statistics}
-            avatar={player.data.avatar} onAvatarPress={() => router.push({ pathname: '/apparence', params: { playerId: id } })} />
-
-          <Text style={styles.body}>
-            Membre GRRIND depuis le {formatCalendarDate(player.data.registeredAt)}.
-          </Text>
         </ScrollView>
       )}
       {own && <LeagueSheet visible={weekOpen && focused} onClose={() => setWeekOpen(false)} query={league} />}
-    </>
-  );
-}
-
-/**
- * Le cercle de vie (#69) d'un co-équipier, sous sa barre d'XP.
- *
- * `Player.attributes` est un **état**, jamais un passage — à la différence de
- * `RewardSummary.attributes`, il ne porte ni `gained` ni avant/après (#70). Rien ici ne
- * s'anime donc au montage, à la différence de la même donnée sur son propre accueil : ce
- * profil affiche ce qui est, pas ce qui vient de se passer.
- *
- * `vitalityBreakdown` est rendu ici aussi (#77), et pour la même raison que sur son propre
- * accueil : la moitié « santé de fond » de Vitality bouge sans qu'aucune séance ne l'explique.
- * Un chiffre au centre d'un cercle, sans sa cause, ne récompense rien — et il en dit encore
- * moins sur le profil de quelqu'un d'autre, où on n'a pas la mémoire de ce qu'il a fait.
- */
-function PlayerAttributes({ player }: { player: Player }) {
-  const { vitality, ...attributes } = player.attributes;
-  const empty = vitality <= 0 && Object.values(attributes).every((value) => value <= 0);
-
-  return (
-    <>
-      <View style={styles.attributesRow}>
-        <AttributeRing attributes={attributes} vitality={vitality} size="hero" />
-        <View style={styles.legendWrap}>
-          <AttributeLegend attributes={attributes} />
-        </View>
-      </View>
-
-      {empty ? <Text style={styles.body}>Rien à répartir pour l&apos;instant.</Text> : null}
-
-      <VitalityNote breakdown={player.vitalityBreakdown} />
     </>
   );
 }
@@ -168,11 +113,7 @@ function Challenge({ id, name }: { id: string; name: string }) {
 const styles = StyleSheet.create({
   screen: { padding: space.lg, gap: space.md },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  progress: { gap: space.xs },
-  level: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   title: { ...type.title, color: color.text },
   body: { ...type.body, color: color.textMuted },
   challenge: { gap: space.xs },
-  attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  legendWrap: { flex: 1 },
 });

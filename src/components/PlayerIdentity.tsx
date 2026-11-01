@@ -6,17 +6,18 @@ import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { color, control, leagueArt, opacity, radius, space, type, typography } from '@/design/tokens';
 import { AvatarPreview } from '@/features/avatar/AvatarPreview';
-import { serverAvatar } from '@/features/combat/serverAvatar';
+import { serverAvatar, type AvatarEquipment } from '@/features/combat/serverAvatar';
 import { AVATAR_FIELDS, AVATAR_LABELS } from '@/features/avatar/avatar';
 import { leagueLabel } from '@/features/league/league';
 
 export type IdentityPlayer = Pick<components['schemas']['PlayerDetail'], 'displayName' | 'title' | 'level' | 'avatar' | 'league'>;
 
-export function PlayerIdentity({ player, onLeaguePress, motion }: {
-  player: IdentityPlayer; onLeaguePress?(): void; motion?: ReactNode;
+export function PlayerIdentity({ player, equipment = {}, onLeaguePress, motion }: {
+  player: IdentityPlayer; equipment?: AvatarEquipment; onLeaguePress?(): void; motion?: ReactNode;
 }) {
+  const avatar = serverAvatar(player.avatar, equipment);
   const label = `Portrait de ${player.displayName} · ${AVATAR_FIELDS.map(field =>
-    (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}`;
+    (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}${avatar.headband ? ' · Bandeau éclair' : ''}`;
   const league = `Ligue ${leagueLabel[player.league.tier]}`;
   const tint = leagueArt.presets[player.league.tier].metal;
   return <SystemFrame contentStyle={styles.identity}>
@@ -25,7 +26,7 @@ export function PlayerIdentity({ player, onLeaguePress, motion }: {
         <LeagueBackdrop tier={player.league.tier} />{motion}
       </View>
       <View style={styles.portrait}>
-        <AvatarPreview avatar={serverAvatar(player.avatar)} framing="portrait" fallbackName={player.displayName} label={label} />
+        <AvatarPreview avatar={avatar} framing="portrait" fallbackName={player.displayName} label={label} />
       </View>
     </View>
     <Text style={styles.name} accessibilityRole="header">{player.displayName}</Text>
