@@ -1,0 +1,17 @@
+{
+  "name": "La Moumoutivation",
+  "source": "Meshy 7.1 multi-image-to-3d",
+  "task_id": "01a197d3-445d-77be-84fc-3b9fd1b0243e",
+  "credits": 35,
+  "license": "Meshy generated asset; not Quaternius CC0",
+  "concept": "Built-in ImageGen; approved by author on 2026-11-01",
+  "changes": "Body-specific affine fit in Blender, flat face shading; topology and UVs preserved",
+  "triangles_per_fit": 2094,
+  "texture": "BaseColor.png, sRGB, 2048x2048",
+  "inferred": [
+    "back and depth",
+    "inner lining",
+    "20 mm below chin",
+    "15 mm rear offset"
+  ]
+}

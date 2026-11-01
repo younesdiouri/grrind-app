@@ -1,0 +1,29 @@
+{
+  "task_id": "01a197d3-445d-77be-84fc-3b9fd1b0243e",
+  "task_type": "multi-image-to-3d",
+  "status": "SUCCEEDED",
+  "consumed_credits": 35,
+  "generation_parameters": {
+    "file_paths": [
+      "ref/front.png",
+      "ref/side.png",
+      "ref/back.png"
+    ],
+    "ai_model": "meshy-7.1",
+    "geometry_resolution": "2k",
+    "topology": "triangle",
+    "target_polycount": 2000,
+    "should_remesh": true,
+    "should_texture": true,
+    "texture_resolution": "2k",
+    "image_enhancement": false,
+    "remove_lighting": true,
+    "target_formats": [
+      "glb"
+    ],
+    "response_format": "json"
+  },
+  "references": "Built-in ImageGen views derived from approved-concept.png; unseen back inferred",
+  "output": "source.glb",
+  "texture": "source_base_color.png"
+}
