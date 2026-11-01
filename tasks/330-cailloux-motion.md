@@ -40,5 +40,10 @@ retour arrière et réduction des animations passent. Capture Unity à 2622 × 1
 
 Typecheck, lint, 637 tests et 37 previews passent. Export Unity Device et compilation
 du framework iPhone réussis (UUID `7A0CA2A6-D8A2-39C4-8468-4C1B284F57FB`).
+Le development build Debug compile avec zéro erreur et est installé sur Dyoxel via
+`devicectl` (`app.grrind.dev`, installation `F4ABB270-9F95-41B3-9192-F1E826AA35F8`).
+Le framework embarqué a le même UUID et ses 16 fichiers Data sont identiques à
+l’export Device. Metro 8081 est conservé. Expo a refusé le lancement automatique
+pendant le verrouillage du téléphone ; l’installation directe a ensuite réussi.
 Validation artistique à faire par l’auteur dans un combat
 contre Cailloux, en observant la garde, l’armé/impact/retour et les deux supporters signalés.
