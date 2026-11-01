@@ -33,13 +33,16 @@ export default function CharacterShowcaseScreen() {
 
 function Showcase({ preview, item }: { preview?: string; item?: string }) {
   const tryingMoumoutivation = item === 'moumoutivation';
+  const tryingCyclopes = item === 'cyclopes';
+  const tryingAccessory = tryingMoumoutivation || tryingCyclopes;
   const [body, setBody] = useState<UnityAvatar['body']>('male');
   const [faceStyle, setFaceStyle] = useState<UnityAvatar['faceStyle']>('original');
   const [noseStyle, setNoseStyle] = useState<UnityAvatar['noseStyle']>('wide');
   const [hairStyle, setHairStyle] = useState<UnityAvatar['hairStyle']>('parted');
-  const [headband, setHeadband] = useState(!tryingMoumoutivation);
+  const [headband, setHeadband] = useState(!tryingAccessory);
   const [moumoutivation, setMoumoutivation] = useState(tryingMoumoutivation);
-  const [section, setSection] = useState(tryingMoumoutivation ? 'Tenue' : 'Corps');
+  const [cyclopes, setCyclopes] = useState(tryingCyclopes);
+  const [section, setSection] = useState(tryingAccessory ? 'Accessoires' : 'Corps');
   const [skinTone, setSkinTone] = useState<UnityAvatar['skinTone']>('tan');
   const [eyeColor, setEyeColor] = useState<UnityAvatar['eyeColor']>('blue');
   const [hairColor, setHairColor] = useState<UnityAvatar['hairColor']>('brown');
@@ -51,7 +54,7 @@ function Showcase({ preview, item }: { preview?: string; item?: string }) {
   const [pose, setPose] = useState<FighterPose>('idle');
   const [animated, setAnimated] = useState(true);
   const [azimuth, setAzimuth] = useState(25);
-  const [view, setView] = useState(tryingMoumoutivation ? 1 : 0);
+  const [view, setView] = useState(tryingAccessory ? 1 : 0);
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -61,7 +64,7 @@ function Showcase({ preview, item }: { preview?: string; item?: string }) {
   const insets = useSafeAreaInsets();
   const traits = TRAITS[body];
   const face = pick(traits.faceStyle, faceStyle), nose = pick(traits.noseStyle, noseStyle), hair = pick(traits.hairStyle, hairStyle);
-  const avatar: UnityAvatar = { body, hairStyle: hair, headband, moumoutivation, visible: true,
+  const avatar: UnityAvatar = { body, hairStyle: hair, headband, moumoutivation, cyclopes, visible: true,
     skinTone, eyeColor, hairColor, shirtColor, pantsColor, boxingGloves, dumbbell, weapon,
     weaponType: weapon ? 'SWORD' : 'FIST',
     faceStyle: face, noseStyle: nose };
@@ -87,7 +90,7 @@ function Showcase({ preview, item }: { preview?: string; item?: string }) {
         <Text style={styles.subtitle} testID={ready && !failed ? 'quaternius-ready' : undefined}>
           {preview === 'inventory' ? 'Aperçu inventaire' : !unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
             : failed ? 'Le rendu 3D n’a pas démarré.' : ready
-              ? (moumoutivation ? 'Moumoutivation · essai local' : 'Spike local · Visage et nez') : 'Chargement…'}
+              ? (cyclopes ? 'Les Cyclopes · essai local' : moumoutivation ? 'Moumoutivation · essai local' : 'Spike local · Visage et nez') : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo?mob=pebble');
@@ -98,7 +101,7 @@ function Showcase({ preview, item }: { preview?: string; item?: string }) {
       </View>}
       <View style={styles.controls} onLayout={({ nativeEvent }) => setControlsHeight(nativeEvent.layout.height)}>
         <View style={styles.row}>
-          {['Corps', 'Traits', 'Cheveux', 'Tenue', 'Mouvements'].map(label =>
+          {['Corps', 'Traits', 'Cheveux', 'Accessoires', 'Tenue', 'Mouvements'].map(label =>
             <Choice key={label} label={label} selected={section === label} onPress={() => setSection(label)} />)}
         </View>
         {section === 'Corps' && <>
@@ -133,6 +136,18 @@ function Showcase({ preview, item }: { preview?: string; item?: string }) {
             <Choice key={value} label={label} selected={hairColor === value} onPress={() => setHairColor(value)} />)}
         </View>
         </>}
+        {section === 'Accessoires' && <>
+        <View style={styles.row}>
+          <Choice label={cyclopes ? 'Retirer Les Cyclopes' : 'Équiper Les Cyclopes'} selected={cyclopes}
+            onPress={() => setCyclopes(!cyclopes)} />
+        </View>
+        <View style={styles.row}>
+          <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband}
+            onPress={() => { setHeadband(!headband); setMoumoutivation(false); }} />
+          <Choice label={moumoutivation ? 'Retirer la Moumoutivation' : 'Équiper la Moumoutivation'} selected={moumoutivation}
+            onPress={() => { setMoumoutivation(!moumoutivation); setHeadband(false); }} />
+        </View>
+        </>}
         {section === 'Tenue' && <>
         <View style={styles.row}>
           <Choice label="Blanc" selected={shirtColor === 'base'} onPress={() => setShirtColor('base')} />
@@ -143,12 +158,6 @@ function Showcase({ preview, item }: { preview?: string; item?: string }) {
           {([{ label: 'Jogging', value: 'base' }, { label: 'Guinzz violet', value: 'violet' },
             { label: 'Guinzz cyan', value: 'cyan' }, { label: 'Guinzz corail', value: 'coral' }] as const).map(({ label, value }) =>
             <Choice key={value} label={label} selected={pantsColor === value} onPress={() => setPantsColor(value)} />)}
-        </View>
-        <View style={styles.row}>
-          <Choice label={headband ? 'Retirer le bandeau' : 'Équiper le bandeau'} selected={headband}
-            onPress={() => { setHeadband(!headband); setMoumoutivation(false); }} />
-          <Choice label={moumoutivation ? 'Retirer la Moumoutivation' : 'Équiper la Moumoutivation'} selected={moumoutivation}
-            onPress={() => { setMoumoutivation(!moumoutivation); setHeadband(false); }} />
         </View>
         <View style={styles.row}>
           <Choice label={boxingGloves ? 'Retirer les gants' : 'Équiper les gants dorés'} selected={boxingGloves} onPress={() => { setBoxingGloves(!boxingGloves); setDumbbell(false); setWeapon(undefined); }} />

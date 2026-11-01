@@ -33,6 +33,7 @@ public static class QuaterniusPoc
         LePoidsLourd.Build();
         SportsWeapons.Build();
         Moumoutivation.Build();
+        LesCyclopes.Build();
     }
     static void BuildCharacter(bool female)
     {

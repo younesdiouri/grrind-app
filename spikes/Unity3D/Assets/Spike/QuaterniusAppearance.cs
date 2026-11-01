@@ -7,6 +7,11 @@ public sealed class QuaterniusAppearance : MonoBehaviour
     public GameObject[] headbands = System.Array.Empty<GameObject>();
     public string[] headbandStyles = System.Array.Empty<string>();
     bool equipped;
+    public GameObject cyclopes;
+    public void SetCyclopes(bool visible)
+    {
+        if (cyclopes != null) cyclopes.SetActive(visible);
+    }
     public GameObject moumoutivation;
     bool woolEquipped;
     string hair = "";

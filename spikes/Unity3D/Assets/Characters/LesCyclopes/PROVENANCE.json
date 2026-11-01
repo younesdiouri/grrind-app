@@ -1,0 +1,15 @@
+{
+  "name": "Les Cyclopes",
+  "source": "Original GRRIND model constructed in Blender 4.5.14 from the cycling photo reference and approved design",
+  "authoring_script": "spikes/art-source/les-cyclopes/build/02_model_and_fit.py",
+  "reference": "spikes/art-source/les-cyclopes/ref/cycling-reference.png",
+  "reference_role": "Shape only; no brand or product texture reproduced",
+  "calibration": "Existing Quaternius CC0 eye landmarks and faceted heads; no reference body exported",
+  "paid_generation_credits": 0,
+  "triangles_per_body": 456,
+  "materials": 2,
+  "texture": "BaseColor.png, 256x32 sRGB palette without baked lighting",
+  "attachment": "Humanoid Head, rigid, rest-space export",
+  "inferred": ["Wrap depth", "Temple and rear construction", "Metric proportions and clearances"],
+  "delivery": "Workshop/iPhone pilot; not a published server inventory item"
+}
