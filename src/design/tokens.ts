@@ -931,7 +931,9 @@ export const leagueArt = {
   portraitTop: '20.65%' as const, portraitLeft: '31.25%' as const,
   // The calibrated Unity head view is 0.5 m high; show its upper 0.3125 m, face and neck only.
   headImageSize: '160%' as const, headImageTop: '-20%' as const, headImageLeft: '-30%' as const,
-  headCaptureScale: 3.2,
+  headCaptureSize: 410,
+  thumbnailSize: 56, thumbnailPortraitTop: '21.875%' as const, thumbnailPortraitLeft: '18.75%' as const,
+  thumbnailPortraitWidth: '62.5%' as const,
   nameSize: 24, sheetMaxWidth: 520, sheetMaxHeight: '90%' as const,
   lightOpacity: .38, floatDistance: 3, pollMs: 60_000, settlementPollMs: 5000,
   presets: {

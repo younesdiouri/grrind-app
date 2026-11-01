@@ -8,10 +8,10 @@ const facet = 'M0 -13L8 0L0 13L-8 0Z';
 const fin = 'M0 0L-34 -18L-24 12L-6 26L4 16Z';
 
 /** A mirrored fin and a crystal, repeated by preset; the face remains the quiet center. */
-export function LeagueBackdrop({ tier, highlights = false }: { tier: LeagueTier; highlights?: boolean }) {
+export function LeagueBackdrop({ tier, highlights = false, compact = false }: { tier: LeagueTier; highlights?: boolean; compact?: boolean }) {
   const preset = leagueArt.presets[tier];
   const id = useId().replace(/:/g, '');
-  return <Svg width="100%" height="100%" viewBox="0 0 320 184" aria-hidden>
+  return <Svg width="100%" height="100%" viewBox={compact ? '64 -4 192 192' : '0 0 320 184'} aria-hidden>
     <Defs>
       <LinearGradient id={`${id}metal`} x1="0%" y1="0%" x2="85%" y2="100%">
         <Stop offset="0" stopColor={preset.light} /><Stop offset="0.38" stopColor={preset.metal} />
