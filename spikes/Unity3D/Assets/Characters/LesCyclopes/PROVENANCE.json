@@ -8,12 +8,12 @@
   "remesh_task": "01a1981e-3166-7605-ac5e-156934f5f950",
   "source_mesh": "spikes/art-source/les-cyclopes/source.glb",
   "authoring_script": "spikes/art-source/les-cyclopes/build/02_fit_and_export.py",
-  "modifications": "Mirror triangles retain positions, UVs and normals. Protected glass boundaries stay fixed while the matte lateral frame turns into the arm section. Frame and arms share actual boundary vertices/edges, without an end cap or overlapping bar. Violet is continuous through the junction; citron begins behind it. The 8x4 mm straight beam, 15 mm rear drop and 16/18 mm approach are retained.",
+  "modifications": "Mirror triangles retain positions, UVs and normals. The author sketch replaces the high 8 mm top bar: the shared purple side wing starts 11/13 mm below the ear top, tapers from 18 to 6 mm at the ear support, then curls down behind the ear. Hook sections turn perpendicular to their path. Frame and branches still share actual boundary edges. Violet/citron palette and the 16/18 mm approach are retained.",
   "calibration": "Real Quaternius CC0 iris samples and faceted heads; no reference body exported",
   "paid_generation_credits": 40,
   "triangles_per_body": {
-    "Male": 3735,
-    "Female": 3633
+    "Male": 3381,
+    "Female": 3387
   },
   "materials": 1,
   "textures": [
@@ -25,6 +25,6 @@
   "rights": "Generated through the project’s Meshy account; Quaternius calibration references CC0. Product photo is reference only.",
   "delivery": "Workshop/iPhone pilot; not a published server inventory item",
   "fit_feedback": "spikes/art-source/les-cyclopes/ref/iphone-fit-feedback.jpg",
-  "fit_validation": "FBX reimport confirms 30/29 shared frame edges male and 32/29 female. The previous overlaid-bar export fails this test. Iris, mohawk visibility, ear/temple skin and headwear checks pass.",
-  "fit_reference": "spikes/art-source/les-cyclopes/ref/continuous-frame-reference.webp"
+  "fit_validation": "FBX reimport: low 18 mm side wing narrowing to 6 mm at ear support, approximately 21 mm hook below the ear top, no ear/skin intersections, shared frame edges and iris/hair/headwear checks PASS. The previous high-bar v6 fails the new anatomical route check. Reference comparison aligns unchanged anatomy; sampled arm edges differ by at most 4 px in the author capture.",
+  "fit_reference": "spikes/art-source/les-cyclopes/ref/ear-route-author-sketch.jpg"
 }

@@ -1,0 +1,139 @@
+{
+  "unmodified_anatomy_matches": 41,
+  "mean_anatomy_alignment_error_px": 1.3633713722229004,
+  "render_to_author_affine": [
+    [
+      2.972115892792215,
+      -0.08031336986431038,
+      -256.97677076163285
+    ],
+    [
+      0.08031336986431038,
+      2.972115892792215,
+      -5.703840709615202
+    ]
+  ],
+  "reference_crop_px": [
+    140,
+    460,
+    560,
+    700
+  ],
+  "note": "Alignment uses unchanged anatomy, excluding the glasses. Red is the author sketch, not a computed silhouette.",
+  "arm_outline_samples": [
+    {
+      "x_reference_px": 280,
+      "sketch_top_bottom_px": [
+        510.234375,
+        526.9411764705883
+      ],
+      "render_top_bottom_px": [
+        509,
+        523
+      ],
+      "difference_px": [
+        -1.23,
+        -3.94
+      ]
+    },
+    {
+      "x_reference_px": 320,
+      "sketch_top_bottom_px": [
+        510.859375,
+        530.26
+      ],
+      "render_top_bottom_px": [
+        511,
+        532
+      ],
+      "difference_px": [
+        0.14,
+        1.74
+      ]
+    },
+    {
+      "x_reference_px": 360,
+      "sketch_top_bottom_px": [
+        514.72,
+        540.66
+      ],
+      "render_top_bottom_px": [
+        513,
+        543
+      ],
+      "difference_px": [
+        -1.72,
+        2.34
+      ]
+    },
+    {
+      "x_reference_px": 390,
+      "sketch_top_bottom_px": [
+        516.8,
+        549.8571428571429
+      ],
+      "render_top_bottom_px": [
+        517,
+        547
+      ],
+      "difference_px": [
+        0.2,
+        -2.86
+      ]
+    }
+  ],
+  "max_arm_outline_deviation_px": 3.94,
+  "anatomy_registration_source_commit": "2e29db9ba99c1d17683ef2f5a1abe5af5809efde",
+  "anatomy_registration_source_sha256": "c758f9346b27e36b03fea114de7a86bf08ee37aaba0bbbde7cbcabc9d5f68ecc",
+  "reference_top_edge_px": [
+    [
+      265,
+      510
+    ],
+    [
+      329,
+      511
+    ],
+    [
+      379,
+      517
+    ],
+    [
+      434,
+      516
+    ]
+  ],
+  "reference_bottom_edge_px": [
+    [
+      268,
+      526
+    ],
+    [
+      319,
+      530
+    ],
+    [
+      369,
+      543
+    ],
+    [
+      418,
+      559
+    ]
+  ],
+  "camera": {
+    "azimuth": 90,
+    "view": 1,
+    "phase": 0.5,
+    "orthographic_half_height_m": 0.23,
+    "capture_px": [
+      360,
+      360
+    ],
+    "body": "Male",
+    "hair": "parted",
+    "face": "original",
+    "nose": "wide"
+  },
+  "method": "SIFT on unchanged anatomy outside the old eyewear rectangle; partial affine RANSAC at 4 px. Reuse this registration on the new profile. Compare top/bottom arm contour at four manually marked red-guide abscissae. Local diagnostic, not a whole-object silhouette score."
+}

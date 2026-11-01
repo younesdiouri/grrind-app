@@ -117,6 +117,45 @@ def frame_junctions(glasses, cut_y):
     return result
 
 
+def ear_route(glasses, skin, cut_y):
+    mesh = glasses[0].data
+    mesh.calc_loop_triangles()
+    points = [glasses[0].matrix_world @ vertex.co for vertex in mesh.vertices]
+    group = skin.vertex_groups['Head'].index
+    head = [skin.matrix_world @ vertex.co for vertex in skin.data.vertices
+            if any(g.group == group and g.weight > .5 for g in vertex.groups)]
+
+    def section(side, y):
+        found = []
+        for triangle in mesh.loop_triangles:
+            for i, j in zip(triangle.vertices, (*triangle.vertices[1:], triangle.vertices[0])):
+                a, b = points[i], points[j]
+                if (a.y - y) * (b.y - y) > 0:
+                    continue
+                point = a if abs(a.y - b.y) < 1e-8 else a.lerp(b, (y - a.y) / (b.y - a.y))
+                if point.x * side > .085:
+                    found.append(point.z)
+        assert found, 'Missing exported arm cross-section'
+        return min(found), max(found)
+
+    result = {}
+    for side, ear in fit.ear_tops(head).items():
+        root = section(side, cut_y)
+        support = section(side, ear.y + .006)
+        root_height, support_height = root[1] - root[0], support[1] - support[0]
+        root_below_ear = ear.z - sum(root) / 2
+        assert root_below_ear > .008, f'{side}: the branch still starts above the ear as a top bar'
+        assert root_height > support_height * 2.5, f'{side}: the low frame wing must narrow toward the ear'
+        assert abs(sum(support) / 2 - ear.z) < .003, f'{side}: the branch floats above its ear support'
+        outer = max(point.x * side for point in head)
+        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < ear.z)
+        hook = [point for point in points if point.x * side > .06 and point.y < ear_back - .006]
+        assert hook and min(point.z for point in hook) < ear.z - .018, f'{side}: missing downward return behind the ear'
+        result[str(side)] = {'root_height_m': root_height, 'ear_support_height_m': support_height,
+                             'root_below_ear_m': root_below_ear, 'hook_below_ear_m': ear.z - min(point.z for point in hook)}
+    return result
+
+
 def validate(output):
     report = {}
     for body, styles in STYLES.items():
@@ -152,6 +191,7 @@ def validate(output):
         result = {'triangles': count, 'iris_coverage': coverage, 'eye_relief_m': relief,
                   'ear_intersections': ear_contacts, 'temple_skin_intersections': scalp_contacts,
                   'shared_frame_edges': frame_junctions(glasses, json.loads((ASSET / 'asset-manifest.json').read_text())['variants'][body]['temples']['junction_y_m']),
+                  'ear_route': ear_route(glasses, skin, json.loads((ASSET / 'asset-manifest.json').read_text())['variants'][body]['temples']['junction_y_m']),
                   'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
         for face, nose in itertools.product(faces, noses):
             for key in keys:

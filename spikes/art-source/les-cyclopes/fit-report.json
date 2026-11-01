@@ -1,6 +1,6 @@
 {
   "Male": {
-    "triangles": 3735,
+    "triangles": 3381,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
@@ -24,6 +24,20 @@
     "shared_frame_edges": {
       "-1": 30,
       "1": 29
+    },
+    "ear_route": {
+      "-1": {
+        "root_height_m": 0.017999887466430664,
+        "ear_support_height_m": 0.006000041961669922,
+        "root_below_ear_m": 0.011198759078979492,
+        "hook_below_ear_m": 0.021028995513916016
+      },
+      "1": {
+        "root_height_m": 0.017999887466430664,
+        "ear_support_height_m": 0.006000041961669922,
+        "root_below_ear_m": 0.011198759078979492,
+        "hook_below_ear_m": 0.021028995513916016
+      }
     },
     "faces_and_noses": {
       "original/original": 0,
@@ -89,7 +103,7 @@
     }
   },
   "Female": {
-    "triangles": 3633,
+    "triangles": 3387,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
@@ -114,6 +128,20 @@
       "-1": 32,
       "1": 29
     },
+    "ear_route": {
+      "-1": {
+        "root_height_m": 0.018000006675720215,
+        "ear_support_height_m": 0.006000041961669922,
+        "root_below_ear_m": 0.012999951839447021,
+        "hook_below_ear_m": 0.021028995513916016
+      },
+      "1": {
+        "root_height_m": 0.018000006675720215,
+        "ear_support_height_m": 0.006000041961669922,
+        "root_below_ear_m": 0.013000071048736572,
+        "hook_below_ear_m": 0.021028995513916016
+      }
+    },
     "faces_and_noses": {
       "original/original": 0,
       "original/NoseButton": 0,
@@ -132,7 +160,7 @@
       },
       "long": {
         "central_visor_intersections": 0,
-        "all_visor_intersections": 81
+        "all_visor_intersections": 75
       },
       "buzzed": {
         "central_visor_intersections": 0,
