@@ -1,4 +1,4 @@
-"""Preserve the Meshy visor and build connected, straight cycling temples."""
+"""Preserve the mirror visor and extend its purple frame into continuous cycling temples."""
 import argparse
 import json
 import math
@@ -125,7 +125,7 @@ def ear_tops(head):
 
 
 def rebuild_temples(model, skin, head, approach, optics):
-    # Sport reference: a substantial endpiece joins a level beam; only the rear tip descends.
+    # The purple frame itself turns into the arm: share the cut boundary, without a cap or overlaid bar.
     mesh = model.data
     mesh.calc_loop_triangles()
     points = [vertex.co.copy() for vertex in mesh.vertices]
@@ -144,25 +144,23 @@ def rebuild_temples(model, skin, head, approach, optics):
         index = int(np.argmax(np.where(valid, score, -100)))
         return Vector(((index % base.size[0] + .5) / base.size[0], (index // base.size[0] + .5) / base.size[1]))
 
+    def key(point):
+        return tuple(round(value, 6) for value in point)
+
     purple, yellow = colour_uv(True), colour_uv(False)
-    vertices, faces, uvs, normals, cuts = [], [], [], [], []
-
-    def face(corners):
-        offset = len(vertices)
-        vertices.extend(tuple(point) for point, texcoord, normal in corners)
-        uvs.extend(tuple(texcoord) for point, texcoord, normal in corners)
-        normals.extend(tuple(normal) for point, texcoord, normal in corners)
-        faces.append(tuple(range(offset, offset + len(corners))))
-
+    polygons, graph, boundary_points, locked = [], {}, {}, set()
+    cut_points = []
     kept_lens = 0
     for triangle in mesh.loop_triangles:
         polygon = [(points[index].copy(), uv[loop].uv.copy(), corner_normals[loop].copy())
                    for index, loop in zip(triangle.vertices, triangle.loops)]
-        if optics.sample(sum((corner[1] for corner in polygon), Vector((0, 0))) / 3) > .65:
-            assert all(corner[0].y > cut_y for corner in polygon), 'The cut must leave the complete Meshy lens intact'
+        metal = optics.sample(sum((corner[1] for corner in polygon), Vector((0, 0))) / 3)
+        if metal > .65:
+            assert all(corner[0].y > cut_y for corner in polygon)
             kept_lens += 1
-        clipped = []
-        previous = polygon[-1]
+        if metal > .1:
+            locked.update(key(corner[0]) for corner in polygon if corner[0].y > cut_y + .002)
+        clipped, previous = [], polygon[-1]
         for current in polygon:
             before, after = previous[0].y >= cut_y, current[0].y >= cut_y
             if before != after:
@@ -170,81 +168,175 @@ def rebuild_temples(model, skin, head, approach, optics):
                 corner = tuple(a.lerp(b, t) for a, b in zip(previous, current))
                 corner[0].y = cut_y
                 clipped.append(corner)
-                cuts.append(corner[0])
             if after:
                 clipped.append(current)
             previous = current
-        for i in range(1, len(clipped) - 1):
-            face([clipped[0], clipped[i], clipped[i + 1]])
+        if len(clipped) < 3:
+            continue
+        # UV seams compute the same cut with slightly different floats; share a geometric point.
+        for i, (point, texcoord, normal) in enumerate(clipped):
+            if abs(point.y - cut_y) < 1e-7:
+                canonical = next((p for p in cut_points if (p - point).length < 2e-6), None)
+                if canonical is None:
+                    canonical = point.copy()
+                    cut_points.append(canonical)
+                clipped[i] = (canonical, texcoord, normal)
+        polygons.append((clipped, metal))
+        edge = {key(corner[0]): corner[0] for corner in clipped if abs(corner[0].y - cut_y) < 1e-7}
+        if len(edge) == 2:
+            u, v = edge
+            graph.setdefault(u, set()).add(v)
+            graph.setdefault(v, set()).add(u)
+            boundary_points.update(edge)
+    assert graph and all(len(neighbours) == 2 for neighbours in graph.values()), 'Inspect the source cut before joining the frame'
+    remaining = {tuple(sorted((u, v))) for u, neighbours in graph.items() for v in neighbours}
+    loops = []
+    while remaining:
+        start = next(iter(remaining))[0]
+        ordered, current = [start], start
+        while True:
+            following = next((v for v in graph[current] if tuple(sorted((current, v))) in remaining), None)
+            assert following is not None
+            remaining.remove(tuple(sorted((current, following))))
+            if following == start:
+                break
+            ordered.append(following)
+            current = following
+        ring = [boundary_points[k].copy() for k in ordered]
+        area = sum(a.x * b.z - b.x * a.z for a, b in zip(ring, ring[1:] + ring[:1]))
+        loops.append(ring if area > 0 else list(reversed(ring)))
 
-    # Close each removed arm section; the visor's UVs and corner normals above are copied exactly.
-    for side in (-1, 1):
-        boundary = {tuple(round(value, 6) for value in point): point for point in cuts if point.x * side > 0}
-        ring = list(boundary.values())
-        assert len(ring) >= 3
-        centre = sum(ring, Vector()) / len(ring)
-        ring.sort(key=lambda point: math.atan2(point.z - centre.z, point.x - centre.x))
-        for a, b in zip(ring, ring[1:] + ring[:1]):
+    specifications = {}
+    for side, ear in ear_tops(head).items():
+        candidates = [ring for ring in loops if sum(point.x * side for point in ring) / len(ring) > .065]
+        root = max(candidates, key=lambda ring: sum(point.x * side for point in ring) / len(ring))
+        low, high = bounds(root)
+        crest = max(point.z for point in head if point.x * side > max(p.x * side for p in head) * .8
+                    and abs(point.y - ear.y) < .025 and point.z < ear.z + .008)
+        specifications[side] = {'root': root, 'centre': (low + high) / 2, 'level': crest + .0055,
+                                'scale_x': .004 / (high.x - low.x), 'scale_z': .008 / (high.z - low.z), 'ear': ear}
+
+    def warp(point):
+        if key(point) in locked:
+            return point.copy()
+        side = 1 if point.x > 0 else -1
+        spec = specifications[side]
+        tx = max(0, min(1, (abs(point.x) - .060) / .028))
+        ty = max(0, min(1, (cut_y + .030 - point.y) / .030))
+        weight = tx * tx * (3 - 2 * tx) * ty * ty * (3 - 2 * ty)
+        target = Vector((spec['centre'].x + (point.x - spec['centre'].x) * spec['scale_x'], point.y,
+                         spec['level'] + (point.z - spec['centre'].z) * spec['scale_z']))
+        return point.lerp(target, weight)
+
+    vertices, faces, uvs, normals, vertex_indices = [], [], [], [], {}
+
+    def face(corners):
+        cleaned = []
+        for corner in corners:
+            if not cleaned or key(corner[0]) != key(cleaned[-1][0]):
+                cleaned.append(corner)
+        if len(cleaned) > 1 and key(cleaned[0][0]) == key(cleaned[-1][0]):
+            cleaned.pop()
+        corners = cleaned
+        indices = []
+        for point, texcoord, normal in corners:
+            k = key(point)
+            if k not in vertex_indices:
+                vertex_indices[k] = len(vertices)
+                vertices.append(tuple(point))
+            indices.append(vertex_indices[k])
+        if len(set(indices)) < 3:
+            return
+        faces.append(tuple(indices))
+        uvs.extend(tuple(texcoord) for point, texcoord, normal in corners)
+        normals.extend(tuple(normal) for point, texcoord, normal in corners)
+
+    for polygon, metal in polygons:
+        transformed = [(warp(point), texcoord, normal) for point, texcoord, normal in polygon]
+        changed = any((a[0] - b[0]).length > 1e-8 for a, b in zip(polygon, transformed))
+        for i in range(1, len(transformed) - 1):
+            triangle = [transformed[0], transformed[i], transformed[i + 1]]
+            if changed:
+                normal = (triangle[1][0] - triangle[0][0]).cross(triangle[2][0] - triangle[0][0]).normalized()
+                triangle = [(point, purple if metal < .1 else texcoord, normal) for point, texcoord, previous_normal in triangle]
+            face(triangle)
+    roots = {id(spec['root']) for spec in specifications.values()}
+    for ring in loops:
+        if id(ring) in roots:
+            continue
+        transformed = [warp(point) for point in ring]
+        centre = sum(transformed, Vector()) / len(transformed)
+        for a, b in zip(transformed, transformed[1:] + transformed[:1]):
             face([(point, purple, Vector((0, -1, 0))) for point in (centre, a, b)])
 
     surface_points = [skin.matrix_world @ vertex.co for vertex in skin.data.vertices]
     surface = BVHTree.FromPolygons(surface_points, [tuple(poly.vertices) for poly in skin.data.polygons])
-    frame_tree = BVHTree.FromPolygons([Vector(point) for point in vertices], faces)
-    report = {'retained_mirror_triangles': kept_lens, 'sides': {}}
-    for side, ear in ear_tops(head).items():
+    report = {'retained_mirror_triangles': kept_lens, 'junction_y_m': cut_y, 'sides': {}}
+    joined_rings = {}
+    for side, spec in specifications.items():
+        ear, level = spec['ear'], spec['level']
+        root = [warp(point) for point in spec['root']]
+        root_centre = Vector((spec['centre'].x, cut_y, level))
         outer = max(point.x * side for point in head)
-        # The upper rim is the endpiece's anchor, not the old low hinge that made the beam rise.
-        anchor = max((point for point in points if point.x * side > outer * .83
-                      and cut_y + .014 < point.y < cut_y + .040), key=lambda point: point.z).copy()
-        crest = max(point.z for point in head if point.x * side > outer * .8
-                    and abs(point.y - ear.y) < .025 and point.z < ear.z + .008)
-        level = crest + .0055
-        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < crest)
-        front_x = max(point.x * side for point in points) - .001
-        support_x = max(outer + .004, front_x - .007)
-        path = [Vector((anchor.x - side * .001, anchor.y + .003, level)),
-                Vector((side * front_x, cut_y + .004, level)),
-                Vector((side * support_x, ear.y + .010, level)),
-                Vector((side * support_x, ear.y - .014, level))]
+        support_x = max(outer + .004, abs(root_centre.x) - .007)
+        path = [root_centre, Vector((root_centre.x, cut_y - .012, level)),
+                Vector((side * support_x, ear.y + .010, level)), Vector((side * support_x, ear.y - .014, level))]
+        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < level)
         for y, z in ((ear_back - .010, level - .004), (ear_back - .025, level - .015)):
             hits = [surface.ray_cast(Vector((0, y, z + dz)), Vector((side, 0, 0)), .15)[0] for dz in (-.002, 0, .002)]
             assert all(hit is not None for hit in hits)
             target = Vector((side * (max(hit.x * side for hit in hits) + .003), y, z))
             previous = path[-1]
-            steps = max(1, math.ceil(abs(y - previous.y) / .003))
+            steps = max(1, math.ceil(abs(y - previous.y) / .004))
             for step in range(1, steps + 1):
                 point = previous.lerp(target, step / steps)
-                hits = [surface.ray_cast(Vector((0, point.y, point.z + dz)), Vector((side, 0, 0)), .15)[0]
-                        for dz in (-.002, 0, .002)]
+                hits = [surface.ray_cast(Vector((0, point.y, point.z + dz)), Vector((side, 0, 0)), .15)[0] for dz in (-.002, 0, .002)]
                 assert all(hit is not None for hit in hits)
                 point.x = side * max(point.x * side, max(hit.x * side for hit in hits) + .003)
                 path.append(point)
         assert max(point.z for point in path[:4]) - min(point.z for point in path[:4]) < 1e-7
-        rings = []
-        for i, centre in enumerate(path):
-            half_x = .004 if i == 0 else .002 if i < 4 else .0015
-            bottom, top = (-.008 if i == 0 else -.004 if i < 4 else -.002), (.004 if i < 4 else .002)
+
+        def section(direction, half_x, half_z):
             bevel = .0007
-            cross = [(-half_x + bevel, bottom), (half_x - bevel, bottom), (half_x, bottom + bevel),
-                     (half_x, top - bevel), (half_x - bevel, top), (-half_x + bevel, top),
-                     (-half_x, top - bevel), (-half_x, bottom + bevel)]
-            rings.append([centre + Vector((x, 0, z)) for x, z in cross])
-        first_face = len(faces)
+            outline = [(-1 + bevel / half_x, -1), (1 - bevel / half_x, -1), (1, -1 + bevel / half_z),
+                       (1, 1 - bevel / half_z), (1 - bevel / half_x, 1), (-1 + bevel / half_x, 1),
+                       (-1, 1 - bevel / half_z), (-1, -1 + bevel / half_z)]
+            for a, b in zip(outline, outline[1:] + outline[:1]):
+                edge = Vector(b) - Vector(a)
+                det = direction.x * edge.y - direction.y * edge.x
+                if abs(det) < 1e-10:
+                    continue
+                t = (a[0] * edge.y - a[1] * edge.x) / det
+                u = (a[0] * direction.y - a[1] * direction.x) / det
+                if t >= 0 and -.00001 <= u <= 1.00001:
+                    return Vector((direction.x * t * half_x, 0, direction.y * t * half_z))
+            raise RuntimeError('Invalid frame section')
+
+        directions = [Vector(((point.x - root_centre.x) / .002, (point.z - level) / .004)) for point in root]
+        rings = [root]
+        for i, centre in enumerate(path[1:], 1):
+            rings.append([centre + section(direction, .002 if i < 4 else .0015, .004 if i < 4 else .002)
+                          for direction in directions])
         for i, (a, b) in enumerate(zip(rings, rings[1:])):
-            for j in range(8):
-                quad = [a[j], a[(j + 1) % 8], b[(j + 1) % 8], b[j]]
+            for j in range(len(root)):
+                quad = [a[j], a[(j + 1) % len(root)], b[(j + 1) % len(root)], b[j]]
                 normal = (quad[1] - quad[0]).cross(quad[2] - quad[0]).normalized()
-                colour = yellow if i < 3 and j == (2 if side > 0 else 6) else purple
+                colour = yellow if 1 <= i < 3 and normal.x * side > .75 and abs(normal.z) < .4 else purple
                 face([(point, colour, normal) for point in quad])
-        face([(point, purple, Vector((0, 1, 0))) for point in reversed(rings[0])])
-        face([(point, purple, Vector((0, -1, 0))) for point in rings[-1]])
-        stem_tree = BVHTree.FromPolygons([Vector(point) for point in vertices], faces[first_face:])
-        joint_contacts = len(frame_tree.overlap(stem_tree))
-        assert joint_contacts > 0, 'The endpiece must overlap the frame, not float beside it'
+        for a, b in zip(rings[-1], rings[-1][1:] + rings[-1][:1]):
+            face([(point, purple, Vector((0, -1, 0))) for point in (path[-1], a, b)])
+        joined_rings[side] = [vertex_indices[key(point)] for point in root]
         report['sides'][side] = {'ear_top_m': list(ear), 'centreline_m': [list(point) for point in path],
                                  'stem_height_m': .008, 'stem_thickness_m': .004, 'return_drop_m': .015,
-                                 'straight_run_rise_m': 0, 'frame_joint_intersections': joint_contacts}
-    result = bpy.data.meshes.new(model.name + '_NaturalTemples')
+                                 'straight_run_rise_m': 0, 'shared_frame_edges': len(root)}
+    edge_counts = {}
+    for polygon in faces:
+        for a, b in zip(polygon, polygon[1:] + polygon[:1]):
+            edge = tuple(sorted((a, b)))
+            edge_counts[edge] = edge_counts.get(edge, 0) + 1
+    for ring in joined_rings.values():
+        assert all(edge_counts[tuple(sorted((a, b)))] == 2 for a, b in zip(ring, ring[1:] + ring[:1])), 'The frame/arm junction must be a shared closed surface'
+    result = bpy.data.meshes.new(model.name + '_ContinuousFrame')
     result.from_pydata(vertices, [], faces)
     layer = result.uv_layers.new(name='UVMap')
     for loop, texcoord in zip(layer.data, uvs):
@@ -267,7 +359,7 @@ def fit(output):
     output.mkdir(parents=True, exist_ok=True)
     mask = bpy.data.images.load(str(ASSET / 'source_textures/metallic.png'))
     mask.colorspace_settings.name = 'Non-Color'
-    report = {'source': 'Meshy visor retained; straight sport beams and overlapping endpieces replace the previous thin stems', 'units': 'metres',
+    report = {'source': 'Meshy mirror retained; the purple side frame is shaped and welded directly into the sport temples', 'units': 'metres',
               'axes': 'Z up, +Y front in Blender; body-rest-space FBX, Humanoid Head attachment', 'variants': {}}
     for body in ('Male', 'Female'):
         refs = imported(CHARACTERS / 'Quaternius' / ('Superhero_' + body + '_FullBody.fbx'), 'fbx')
