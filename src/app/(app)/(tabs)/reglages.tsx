@@ -116,6 +116,13 @@ export default function ReglagesScreen() {
         </View>
       ) : null}
 
+      {__DEV__ ? <View style={styles.card}>
+        <Text style={styles.cardTitle}>Atelier avatar 3D</Text>
+        <Text style={styles.body}>La Moumoutivation est prête à essayer sur ton personnage.</Text>
+        <Button label="Tester la Moumoutivation" variant="quiet"
+          onPress={() => router.push({ pathname: '/character-showcase', params: { item: 'moumoutivation' } })} />
+      </View> : null}
+
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Santé</Text>
         <Text style={styles.body}>Tes activités, les autorisations de lecture et la synchronisation avec Santé.</Text>

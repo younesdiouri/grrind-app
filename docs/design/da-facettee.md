@@ -1,12 +1,20 @@
 # DA facettée — feuille de style
 
-Fixée par le pilote #281 (baskets athlète) ; l'éclairage vient de #280. Elle s'applique à tout ce
-qu'on ajoute au combat : équipement, armes, mobs, décor.
+Source de vérité actuelle pour le combat : style fixé par #281, personnages facettés depuis
+#299/#304, éclairage #280. Elle s'applique aux personnages, équipements, armes, mobs et décors.
+Les captures récentes de l'app et les concepts approuvés de l'item priment sur les anciennes
+planches. Le workflow est dans `.claude/skills/grrind-character-art/SKILL.md`.
 
 ## Règle
 
-Les facettes vont dans **l'équipement, la lumière et le décor**, jamais sur la peau ni les visages.
-Un personnage reste un corps Quaternius lisse ; ce qu'il porte est taillé.
+Personnages Quaternius, peau, visage, coiffures, équipements et décors ont des **facettes
+lisibles et des masses simples**. Préserver l'anatomie, le rig et les choix d'apparence existants.
+Le personnage porte des pièces amovibles ; aucun équipement peint dans son corps de base.
+
+Références récentes : `docs/design/moumoutivation/unity-male.png` et
+`docs/design/moumoutivation/unity-female.png`
+pour les têtes et la laine ; `docs/design/sword-guard/ios-inventory-preview-huilesson-male.png`
+pour l'avatar équipé dans l'app. Chaque référence guide seulement les parties qu'elle montre.
 
 ## Défaut d'un combattant
 
@@ -16,13 +24,15 @@ Plus de tenue Peasant (« pas finie », hors DA) ni de pieds nus.
 
 ## Géométrie
 
-- Low-poly à la main dans Blender, script versionné dans `spikes/art-source/<objet>/`.
-- Arêtes vives, **un seul biseau** de 3 mm (`segments = 1`, limite d'angle ~35°) : la lumière
-  accroche le chanfrein, l'objet ne devient pas une goutte arrondie.
+- Low-poly construit dans Blender ou généré depuis un concept déjà dans cette DA, puis ajusté
+  avec un script versionné dans `spikes/art-source/<objet>/`.
+- Pour les pièces dures construites dans Blender : arêtes vives et biseau simple. Le réglage
+  des baskets (#281), 3 mm et un segment, est une référence locale à adapter aux dimensions.
+  La laine de la Moumoutivation utilise des touffes anguleuses, sans biseau imposé.
 - Shading plat, normales par face. Budget : ~600 triangles par chaussure, ≤ 2 000 par objet tenu.
-- Aucune texture bruitée : des matériaux de palette unis. Exception assumée (#295) : Al Kasal
-  garde sa texture peinte, posée sur un mesh facetté (`facet_skin.py`) ; la palette unie effaçait
-  son visage. Les canapés, déjà en blocs de couleurs unies, restent tels quels.
+- Matières simples, sans bruit ni microtexture. Préférer la palette unie ; conserver une texture
+  peinte sobre lorsqu'elle porte les couleurs de l'objet (Moumoutivation, armes) ou l'identité
+  du personnage (Al Kasal, #295), avec la lumière traitée dans Unity.
 - Personnages (#299) : peau, visage et coiffures facettés par décimation, rig et poids intacts. Variantes de visage et de nez en shape keys, coiffures neuves en low poly direct (#304).
 
 ## Palette

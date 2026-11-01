@@ -19,7 +19,9 @@ têtes Quaternius et utilise un ombrage par face. Aucun nouveau corps ni rig.
 | Femme | 388 × 315 × 361 mm |
 
 Le script reproductible est `build/01_fit_and_export.py`, dans le même dossier
-que le GLB source, la texture, `tasks.json` et `asset-manifest.json`. Le master
+que le GLB source, la texture, `tasks.json` et `asset-manifest.json`. Il utilise
+le script commun du skill `grrind-character-art` et le profil `headwear-fit.json` ;
+son test reproduit exactement les géométries et UV des deux FBX livrés. Le master
 Blender reste local conformément au `.gitignore`. Les deux FBX livrés et leur
 provenance sont dans `spikes/Unity3D/Assets/Characters/Moumoutivation/`.
 Dos, profondeur et doublure sont inférés. La conversion de Meshy vers le repère
@@ -35,7 +37,9 @@ concept. Le rendu Unity est plus contrasté que l’illustration initiale.
 
 ## Essayer
 
-Dans **GRRIND dev → Atelier avatar → Tenue → Équiper la Moumoutivation**.
+Dans **GRRIND dev → Réglages → Atelier avatar 3D → Tester la Moumoutivation** :
+la coiffe est présélectionnée, avec Tenue et le cadrage Visage ouverts. Le lien direct
+`grrindapp-dev://character-showcase?item=moumoutivation` ouvre le même essai.
 Le bouton de retrait restitue la coiffure choisie ; équiper le bandeau retire
 la coiffe. Le changement homme/femme conserve la sélection. Le duel de
 démonstration reçoit aussi la coiffe. Aucun équipement serveur ni loot ajouté.
