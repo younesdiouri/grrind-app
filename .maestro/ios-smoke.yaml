@@ -19,6 +19,7 @@ tags:
 # fragments, jamais un texte exact.
 
 - launchApp
+- setOrientation: PORTRAIT
 
 # iOS peut demander confirmation pour ouvrir le lien Metro après une réinstallation.
 - runFlow:
@@ -36,6 +37,13 @@ tags:
       - extendedWaitUntil:
           visible: "Close"
           timeout: 5000
+      - tapOn: "Close"
+
+# Le menu peut déjà être ouvert sans l’écran « Continue ».
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
       - tapOn: "Close"
 
 - runFlow:
