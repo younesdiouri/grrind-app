@@ -204,6 +204,8 @@ function XpPage({ gains, progress, together }: { gains: BatchGains; progress: Pr
       ))}
 
       <View style={styles.attributes}>
+        <Text style={styles.label}>CARACTÉRISTIQUES DE LA SEMAINE</Text>
+        {xp > 0 && gains.attributes.length === 0 && <Text style={styles.label}>XP conservée · aucun gain pour les caractéristiques courantes.</Text>}
         {gains.attributes.map(({ attribute, gained }) => (
           <View key={attribute} style={styles.attributeRow}>
             <View

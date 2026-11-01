@@ -14,6 +14,7 @@ import { raidMembers } from '@/features/alam/presentation';
 import { alamStyles as s } from '@/features/alam/styles';
 import { useAlamSound } from '@/features/alam/useAlamSound';
 import { useRaidClock } from '@/features/alam/useRaidClock';
+import { AlamDifficultyOptions } from '@/features/alam/AlamDifficultyOptions';
 
 export default function AlamEdition() {
   const { id, replay } = useLocalSearchParams<{ id: string; replay?: string }>();
@@ -55,7 +56,8 @@ function Edition({ run, receivedAt, replay }: { run: AlamRun; receivedAt: number
       <View style={s.raidHeader}>
         <View style={s.raidHeading}><Text style={s.label}>{presentation.finished ? 'HISTOIRE DE LA GUILDE' : presentation.replaying ? 'REPLAY' : 'EN DIRECT'}</Text>
           <Text style={s.raidTitle}>{encounter?.enemyName ?? 'Al Kasal'}</Text>
-          {encounter && <Text style={s.raidRoster}>Rencontre {encounter.index} · seuil {encounter.thresholdPermille / 10} %</Text>}</View>
+          {encounter && <Text style={s.raidRoster}>{run.difficulty === null ? `Rencontre ${encounter.index}`
+            : run.difficultyOptions.find(option => option.difficulty === run.difficulty)?.label} · cible {encounter.thresholdPermille / 10} %</Text>}</View>
         <Button label="Fermer" onPress={() => router.canGoBack() ? router.back() : router.replace('/(app)/(tabs)/combat')} variant="quiet" />
       </View>
       <View style={s.raidPanel}>
@@ -71,6 +73,7 @@ function Edition({ run, receivedAt, replay }: { run: AlamRun; receivedAt: number
       <Button label="Revenir à la scène" onPress={() => setSummary(false)} variant="quiet" />
       <Text style={s.title}>Le fruit de vos efforts</Text>
       <Text style={s.muted}>Les récompenses ont été enregistrées. Rejouer cette histoire ne donne aucun gain supplémentaire.</Text>
+      <AlamDifficultyOptions run={run} canChoose={false} busy={false} onChoose={() => undefined} />
       {run.encounters.map((entry) => <SystemFrame key={entry.index} contentStyle={s.card}>
         <Text style={s.label}>Rencontre {entry.index} · {entry.won ? 'Victoire' : 'Défaite'}</Text>
         <Text style={s.body}>{entry.narration}</Text>

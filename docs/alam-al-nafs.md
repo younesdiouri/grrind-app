@@ -6,9 +6,25 @@ facetté et ses petits canapés utilisent une seule scène 3D paysage, sans barr
 Les participants viennent frapper au corps à corps depuis les efforts du journal serveur.
 Le récit, les commandes et le bilan restent accessibles dans React Native.
 
-**Refonte métier distincte prévue côté backend :**
-[grrind-back#317](https://github.com/younesdiouri/grrind-back/issues/317).
-Les nouvelles règles restent à cadrer avec l’auteur avant implémentation.
+**Règles hebdomadaires (#333) :** le contrat de
+[grrind-back#333](https://github.com/younesdiouri/grrind-back/pull/333) est livré en production.
+L’inscription est personnelle et persistante dans la guilde. Seuls les inscrits contribuent
+et peuvent recevoir du butin selon leur effort. Le chef choisit avant dimanche 19 h Paris
+une difficulté parmi les trois options serveur ; chaque semaine commence en facile.
+Un seul combat se résout automatiquement à 19 h, avec le butin du choix. Les inscriptions
+modifiées après clôture concernent les éditions suivantes, sans modifier le replay.
+
+Les cartes distinguent les cibles (`thresholdPermille`) et la probabilité de victoire
+(`probabilityMillionths`, dont 1 000 000 vaut 100 %). Ni probabilité, ni gains, ni règles
+de combat ne sont calculés sur le mobile. Les éditions historiques gardent leurs rencontres
+et leur difficulté nulle ; les événements et timestamps serveur conduisent toujours le replay.
+
+Les cinq caractéristiques sont hebdomadaires : remise à zéro dimanche à 20 h Europe/Paris,
+en PvE et PvP. XP, niveau, compétences, titres et possessions restent acquis. Les taux de
+combat viennent uniquement des équipements portés. Un import historique peut créditer de
+l’XP sans augmenter les caractéristiques courantes. Au retour au premier plan et à la
+frontière hebdomadaire (changements d’heure inclus), le mobile relit les valeurs serveur.
+Le profil public reste compact, sans ajout de statistiques conformément au #328.
 
 Le [cadrage visuel Unity et nouveau bestiaire](design/unity-pve-alam.md) distingue
 la création des adversaires [#251](https://github.com/younesdiouri/grrind-app/issues/251)
@@ -28,12 +44,12 @@ propose de vérifier une fabrication interrompue avant de permettre une nouvelle
 
 ## Contrat et configuration
 
-Le contrat est généré dans grrind-back#279 puis consommé sans modification manuelle :
+Le contrat est généré dans grrind-back puis consommé depuis `main` sans modification manuelle :
 
 ```sh
-GRRIND_API_REF=<branche-backend> npm run api:pull
+npm run api:pull
 npm run api:generate
-GRRIND_API_REF=<branche-backend> npm run api:check
+npm run api:check
 ```
 
 Pendant un développement parallèle avant push, `GRRIND_API_FILE=/chemin/openapi.yaml` peut
@@ -50,6 +66,56 @@ le composant de profil existant ; tant que le serveur ne fournit pas d’avatar,
 initiales. Les anciens combats restent accessibles depuis le bas de l’écran ʿĀlam.
 
 ## QA reproductible
+
+Le flux invisible inscription/choix/reprise au premier plan dispose de
+`.maestro/alam-preferences.yaml` : `npm run e2e:ios:flow -- .maestro/alam-preferences.yaml`.
+Il crée une guilde avec l’unique compte jetable du harness et utilise les vrais PUT.
+Il se joue pendant la collecte, avant dimanche 19 h Paris. Les refus 403/409/404/422,
+la clé stable après coupure/redémarrage et les replays à une/trois rencontres ont des tests
+ciblés sur le vrai client HTTP et les fonctions de présentation.
+
+### Essai iPhone avant fusion du #333
+
+Branche `feat/333-weekly-alam`, development build déjà installé, même réseau que le Mac :
+
+```sh
+EXPO_PUBLIC_API_URL=https://grrind-back.fly.dev npm start -- --lan
+```
+
+Ouvrir **GRRIND dev** et choisir le Metro du Mac (8081). Aucun rebuild natif ni publication
+n’est nécessaire. Si Metro tourne déjà, conserver son terminal et définir l’URL dans
+`.env.local`, puis recharger le bundle. Utiliser son propre compte et sa propre guilde
+pour cet essai.
+
+1. Accueil et Inventaire → Statistiques : valeurs de la semaine, échéance 20 h Paris,
+   XP/niveau permanents ; équiper/retirer un objet change les taux serveur, pas les
+   caractéristiques de base.
+2. Combat : s’inscrire, quitter/revenir ou rouvrir l’app, puis se désinscrire/réinscrire.
+   Vérifier le texte de persistance et que seuls les inscrits contribuent.
+3. Avec le chef : comparer les trois probabilités et leurs jauges, choisir Intermédiaire
+   puis Difficile et rouvrir l’écran. Avec un membre : les prévisions restent lisibles et
+   aucun bouton de choix n’apparaît.
+4. Après dimanche 19 h : vérifier l’unique combat et son butin, rejouer sans gain nouveau,
+   changer l’inscription sans modifier le résultat clôturé. Ouvrir aussi une ancienne
+   édition à trois rencontres. Dimanche 20 h : les lectures courantes repartent de la
+   réponse serveur, XP et possessions demeurent.
+
+La PR front reste ouverte jusqu’au test iPhone et à l’accord explicite de l’auteur.
+Ne pas fusionner, publier, lancer EAS ou soumettre à l’App Store avant cet accord.
+
+### Vérifications du 1er novembre 2026
+
+- Typecheck, lint et 643 tests unitaires : verts ; contrat tiré de `grrind-back/main`.
+- Client HTTP front exécuté contre le backend local réel avec un compte jetable existant :
+  login et état en 200, inscription, choix HARD, trois probabilités serveur, persistance par
+  un nouveau GET, désinscription et aucune clé en attente après confirmation. Aucun reset,
+  migration ni modification du dépôt backend.
+- Le bundle du Metro iPhone existant (8081) confirme `https://grrind-back.fly.dev`.
+- Flow Maestro `alam-preferences` **non validé** : les deux exécutions (localhost puis
+  127.0.0.1) restent sur le témoin de connexion et expirent avant `NIVEAU`, donc avant
+  l’accès à Ālam. Cause non identifiée. Development build existant réutilisé, aucun rebuild.
+  Le dernier rapport est `artifacts/e2e/report.xml` ; pas de troisième tentative identique.
+- Essai visuel et parcours sur l’iPhone de l’auteur en attente. Aucun changement Unity/natif.
 
 Préparer le build Metro avec `npm run e2e:ios:dev`. La scène autonome, sans gain, est accessible
 en développement via `grrindapp-dev://alam-demo` et `.maestro/alam-scene.yaml`.

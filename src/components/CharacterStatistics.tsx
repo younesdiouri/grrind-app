@@ -33,7 +33,8 @@ export function CharacterStatistics({ statistics }: { statistics: components['sc
   return (
     <View style={styles.sections} testID="character-statistics">
       <SystemFrame contentStyle={styles.frame}>
-        <Text style={styles.heading}>Caractéristiques</Text>
+        <Text style={styles.heading}>Caractéristiques de la semaine</Text>
+        <Text style={styles.note}>Remise à zéro dimanche à 20 h Europe/Paris, en PvE et PvP. XP, niveau, compétences, titres et possessions restent acquis.</Text>
         {(Object.keys(attributeLabel) as AttributeState[]).map((key) => (
           <StatisticRow key={key} id={`attribute-${key}`} icon={attributeIcon[key]}
             label={attributeLabel[key]} value={String(statistics.attributes[key].effective)}
@@ -42,7 +43,7 @@ export function CharacterStatistics({ statistics }: { statistics: components['sc
       </SystemFrame>
       <SystemFrame contentStyle={styles.frame}>
         <Text style={styles.heading}>Combat</Text>
-        <Text style={styles.note}>Équipement compris</Text>
+        <Text style={styles.note}>Les taux de combat viennent uniquement de l’équipement porté.</Text>
         {(Object.keys(combatStat) as (keyof Fighter)[]).map((key) => (
           <StatisticRow key={key} id={`stat-${key}`} {...combatStat[key]}
             value={combatValue(key, statistics.fighter[key])} />

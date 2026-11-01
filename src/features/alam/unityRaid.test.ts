@@ -47,3 +47,18 @@ it('montre la défaite serveur et conserve les mêmes événements en mouvements
   assert.deepEqual(events, snapshot);
   assert.equal(raidFrameAt([], [], 0, 0, false).verdict, 0);
 });
+
+it('rejoue aussi bien l’unique combat choisi que les trois rencontres historiques', () => {
+  for (const count of [1, 3]) {
+    const timeline = Array.from({ length: count }, (_, index) => [
+      { ...events[0], id: `arrival-${index}`, encounterIndex: index + 1, offsetMs: index * 5000 },
+      { ...events[2], id: `outcome-${index}`, encounterIndex: index + 1, offsetMs: index * 5000 + 3000 },
+    ]).flat();
+    for (let encounter = 1; encounter <= count; encounter++) {
+      const frame = raidFrameAt(timeline, ids, (encounter - 1) * 5000 + 3500, count, false);
+      assert.equal(frame.encounter, encounter);
+      assert.equal(frame.boss, encounter === count);
+      assert.equal(frame.verdict, 1);
+    }
+  }
+});

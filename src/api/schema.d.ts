@@ -84,6 +84,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/guild/alam/registration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_alam_registration"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guild/alam/difficulty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["put_alam_difficulty"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/guild/alam/runs": {
         parameters: {
             query?: never;
@@ -1075,6 +1107,12 @@ export interface components {
             narrationSource: "LOCAL" | "OPENAI";
             /** Format: date-time */
             serverNow: string;
+            /**
+             * @description Null pour les anciennes éditions à trois rencontres.
+             * @enum {string|null}
+             */
+            difficulty: "EASY" | "INTERMEDIATE" | "HARD" | null;
+            difficultyOptions: components["schemas"]["AlamDifficultyOption"][];
         };
         AlamCurrent: {
             /** Format: date-time */
@@ -1082,6 +1120,23 @@ export interface components {
             canLaunchManual: boolean;
             pollAfterSeconds: number;
             current: components["schemas"]["AlamRun"];
+            registered: boolean;
+            canChooseDifficulty: boolean;
+        };
+        AlamRegistrationRequest: {
+            registered: boolean;
+        };
+        AlamDifficultyRequest: {
+            /** @enum {string} */
+            difficulty: "EASY" | "INTERMEDIATE" | "HARD";
+        };
+        AlamDifficultyOption: {
+            /** @enum {string} */
+            difficulty: "EASY" | "INTERMEDIATE" | "HARD";
+            label: string;
+            thresholdPermille: number;
+            probabilityMillionths: number;
+            gauges: components["schemas"]["AlamGauge"][];
         };
         AlamPage: {
             runs: components["schemas"]["AlamRun"][];
@@ -1149,7 +1204,7 @@ export interface components {
              *     deux sens : elle ne peut ni oublier une panne ni en garder une disparue.
              * @enum {string}
              */
-            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/recipe-unavailable" | "https://grrind.app/problems/insufficient-crafting-resources" | "https://grrind.app/problems/alam-manual-disabled" | "https://grrind.app/problems/alam-run-not-found" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/opponent-not-found" | "https://grrind.app/problems/cannot-challenge-yourself" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/item-not-sellable" | "https://grrind.app/problems/item-equipped" | "https://grrind.app/problems/sale-price-changed" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
+            type: "https://grrind.app/problems/bad-request" | "https://grrind.app/problems/not-found" | "https://grrind.app/problems/forbidden" | "https://grrind.app/problems/method-not-allowed" | "https://grrind.app/problems/too-many-requests" | "https://grrind.app/problems/unsupported-media-type" | "https://grrind.app/problems/validation-failed" | "https://grrind.app/problems/recipe-unavailable" | "https://grrind.app/problems/insufficient-crafting-resources" | "https://grrind.app/problems/alam-difficulty-closed" | "https://grrind.app/problems/alam-difficulty-forbidden" | "https://grrind.app/problems/alam-manual-disabled" | "https://grrind.app/problems/alam-run-not-found" | "https://grrind.app/problems/internal-error" | "https://grrind.app/problems/idempotency-key-required" | "https://grrind.app/problems/idempotency-key-in-flight" | "https://grrind.app/problems/idempotency-key-reused" | "https://grrind.app/problems/email-already-used" | "https://grrind.app/problems/email-belongs-to-another-account" | "https://grrind.app/problems/invalid-credentials" | "https://grrind.app/problems/access-token-missing" | "https://grrind.app/problems/access-token-expired" | "https://grrind.app/problems/access-token-invalid" | "https://grrind.app/problems/invalid-refresh-token" | "https://grrind.app/problems/social-sign-in-rejected" | "https://grrind.app/problems/social-profile-incomplete" | "https://grrind.app/problems/title-unknown" | "https://grrind.app/problems/title-not-unlocked" | "https://grrind.app/problems/guild-is-full" | "https://grrind.app/problems/player-already-in-a-guild" | "https://grrind.app/problems/guild-not-found" | "https://grrind.app/problems/invite-code-not-usable" | "https://grrind.app/problems/player-is-not-a-member" | "https://grrind.app/problems/founder-cannot-exclude-himself" | "https://grrind.app/problems/player-not-found" | "https://grrind.app/problems/risala-turn-is-closed" | "https://grrind.app/problems/discipline-does-not-credit" | "https://grrind.app/problems/discipline-already-challenged" | "https://grrind.app/problems/risala-turn-is-not-open" | "https://grrind.app/problems/risala-turn-is-not-yours" | "https://grrind.app/problems/battle-not-found" | "https://grrind.app/problems/enemy-key-unknown" | "https://grrind.app/problems/enemy-level-too-low" | "https://grrind.app/problems/opponent-not-found" | "https://grrind.app/problems/cannot-challenge-yourself" | "https://grrind.app/problems/insufficient-coin-balance" | "https://grrind.app/problems/item-not-owned" | "https://grrind.app/problems/item-not-sellable" | "https://grrind.app/problems/item-equipped" | "https://grrind.app/problems/sale-price-changed" | "https://grrind.app/problems/equipment-slot-unknown" | "https://grrind.app/problems/equipment-slot-incompatible" | "https://grrind.app/problems/item-not-purchasable" | "https://grrind.app/problems/item-already-owned" | "https://grrind.app/problems/shop-level-too-low" | "https://grrind.app/problems/item-not-a-chest";
             /** @example Conflict */
             title: string;
             /** @example 409 */
@@ -3072,6 +3127,16 @@ export interface components {
             /** @default 20 */
             limit: number;
         };
+        AlamRegistrationRequest2: {
+            /** @default null */
+            registered: boolean | null;
+        };
+        /** @enum {string} */
+        AlamDifficulty: "EASY" | "INTERMEDIATE" | "HARD";
+        AlamDifficultyRequest2: {
+            /** @default null */
+            difficulty: components["schemas"]["AlamDifficulty"] | null;
+        };
         AlamHistoryQuery: {
             /** @default 20 */
             limit: number;
@@ -3640,6 +3705,78 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    put_alam_registration: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlamRegistrationRequest"];
+            };
+        };
+        responses: {
+            /** @description Inscription personnelle persistante et état courant. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlamCurrent"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    put_alam_difficulty: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Une clé propre à cette tentative, stable au travers des rejeus du client.
+                 *     Rejouer la même clé sur la même requête rend la réponse d'origine sans rien
+                 *     réexécuter, et l'en-tête `Idempotent-Replay: true` le signale. La même clé sur
+                 *     une requête différente est un abus et vaut un 409.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlamDifficultyRequest"];
+            };
+        };
+        responses: {
+            /** @description Difficulté choisie par le chef avant le combat. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlamCurrent"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
         };
     };
     get_alam_history: {

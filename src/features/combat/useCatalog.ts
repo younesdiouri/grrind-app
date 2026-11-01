@@ -8,6 +8,7 @@ import {
   subscribeToEquipment,
 } from '@/features/inventory/equipmentRevision';
 import { catalogFor, type CatalogEntry } from './catalog.ts';
+import { getProgressionRevision, subscribeToProgression } from '../progression/weeklyRefresh';
 
 /**
  * Le catalogue des adversaires, et le niveau qui décide de ce qui est accessible.
@@ -86,6 +87,7 @@ export function useCatalog(): { catalog: Catalog; reload: () => void } {
    * à relire plus finement, et une route de moins vaut mieux qu'une lecture partielle.
    */
   const equipped = useSyncExternalStore(subscribeToEquipment, getEquipmentRevision);
+  const progression = useSyncExternalStore(subscribeToProgression, getProgressionRevision);
 
   useEffect(() => {
     let alive = true;
@@ -99,7 +101,7 @@ export function useCatalog(): { catalog: Catalog; reload: () => void } {
     return () => {
       alive = false;
     };
-  }, [load, equipped]);
+  }, [load, equipped, progression]);
 
   return { catalog, reload };
 }

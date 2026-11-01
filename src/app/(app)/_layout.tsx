@@ -11,6 +11,7 @@ import { useDeviceRegistration } from '@/features/notifications/useDeviceRegistr
 import { usePendingPushRoute } from '@/features/notifications/usePendingPushRoute';
 import { markInteracted } from '@/features/reward/launchGate';
 import { usePendingReward } from '@/features/reward/usePendingReward';
+import { useProgressionRefresh } from '@/features/progression/useProgressionRefresh';
 
 // Expo Router 57 exporte directement le thème de navigation. Son fond transparent laisse le
 // champ fixe du shell traverser Tabs et Stack sans poser un calque au-dessus de l'accessibilité.
@@ -49,6 +50,7 @@ const connectedTheme = {
  * atteindre.
  */
 export default function AppLayout() {
+  useProgressionRefresh();
   useSyncTriggers();
   useDeviceRegistration();
   usePendingPushRoute();

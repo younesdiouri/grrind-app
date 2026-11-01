@@ -1,0 +1,89 @@
+appId: app.grrind.dev
+tags:
+  - ios
+  - alam
+---
+# Un compte jetable, aucune résolution manuelle ni modification du backend.
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+- extendedWaitUntil:
+    visible: "Se connecter|NIVEAU"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Se connecter"
+    commands:
+      - runFlow:
+          file: login.yaml
+          env:
+            EMAIL: ${EMPTY_EMAIL}
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 90000
+- tapOn:
+    id: tab-guilde
+- tapOn: "Fonder une guilde"
+- tapOn:
+    id: guild-name
+- inputText: "QA Alam preferences"
+- tapOn: "Fonder"
+- runFlow:
+    when:
+      visible: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+    commands:
+      - tapOn: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+- tapOn:
+    id: tab-combat
+- extendedWaitUntil:
+    visible: "INSCRIS-TOI.*"
+    timeout: 30000
+- tapOn: "M’inscrire au raid"
+- extendedWaitUntil:
+    visible: "TU ES INSCRIT.*"
+    timeout: 30000
+- scrollUntilVisible:
+    element: "Facile choisie"
+    direction: DOWN
+- assertVisible: "Probabilité de victoire : 0 %"
+- scrollUntilVisible:
+    element: "Choisir Intermédiaire"
+    direction: DOWN
+- tapOn: "Choisir Intermédiaire"
+- extendedWaitUntil:
+    visible: "Intermédiaire choisie"
+    timeout: 30000
+- scrollUntilVisible:
+    element: "Choisir Difficile"
+    direction: DOWN
+- tapOn: "Choisir Difficile"
+- extendedWaitUntil:
+    visible: "Difficile choisie"
+    timeout: 30000
+- pressKey: Home
+- launchApp:
+    stopApp: false
+- scrollUntilVisible:
+    element: "Me désinscrire"
+    direction: UP
+- tapOn: "Me désinscrire"
+- extendedWaitUntil:
+    visible: "INSCRIS-TOI.*"
+    timeout: 30000
+- tapOn: "M’inscrire au raid"
+- extendedWaitUntil:
+    visible: "TU ES INSCRIT.*"
+    timeout: 30000

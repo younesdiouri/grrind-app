@@ -1,4 +1,5 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useIsFocused } from 'expo-router';
 
 import { api } from '@/api/client';
 import { queryOrFailure } from '@/api/queryOrFailure';
@@ -25,8 +26,10 @@ async function fetchInventory(): Promise<Inventory> {
  * `equipmentActions.ts`.
  */
 export function useInventory(): UseQueryResult<Inventory, Failure> {
+  const focused = useIsFocused();
   return useQuery({
     queryKey: INVENTORY_QUERY_KEY,
     queryFn: fetchInventory,
+    enabled: focused,
   });
 }

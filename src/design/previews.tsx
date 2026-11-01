@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
+import { AlamDifficultyOptions } from '@/features/alam/AlamDifficultyOptions';
 import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar';
 import { AttributeLegend, AttributeRing } from '@/components/AttributeRing';
 import { BattleResultBadge } from '@/components/BattleResultBadge';
@@ -1110,7 +1111,7 @@ export const PREVIEWS: Preview[] = [
               slot: 'CHEST',
               modifiers: [
                 { type: 'XP_MULTIPLIER', value: 8, discipline: 'RUNNING' },
-                { type: 'ENDURANCE_BONUS', value: 1200, discipline: null },
+                { type: 'MITIGATION_BONUS', value: 120, discipline: null },
                 { type: 'DODGE_BONUS', value: 30, discipline: null },
               ],
               priceCoins: 80,
@@ -1155,6 +1156,21 @@ export const PREVIEWS: Preview[] = [
         <InventoryBag items={[]} equipment={inventoryEquipment} onSelect={() => {}} />
       </Specimen>
     </>,
+  },
+  {
+    slug: 'alam-difficultes',
+    name: 'Ālam — prévisions de difficulté',
+    group: 'Composants',
+    element: <Specimen label="Choix serveur — cibles et probabilités distinctes">
+      <AlamDifficultyOptions run={{ difficulty: 'EASY', difficultyOptions: [
+        { difficulty: 'EASY', label: 'Facile', thresholdPermille: 250, probabilityMillionths: 983400,
+          gauges: [{ attribute: 'strength', current: 900, target: 1000, progressPermille: 900 }] },
+        { difficulty: 'INTERMEDIATE', label: 'Intermédiaire', thresholdPermille: 550, probabilityMillionths: 653210,
+          gauges: [{ attribute: 'strength', current: 900, target: 2200, progressPermille: 409 }] },
+        { difficulty: 'HARD', label: 'Difficile', thresholdPermille: 1000, probabilityMillionths: 250000,
+          gauges: [{ attribute: 'strength', current: 900, target: 4000, progressPermille: 225 }] },
+      ] }} canChoose busy={false} onChoose={() => {}} />
+    </Specimen>,
   },
   {
     slug: 'boutique-rpg',

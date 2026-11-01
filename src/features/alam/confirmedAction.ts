@@ -4,18 +4,20 @@ import type { ActionKeys } from '../shop/actionKeys.ts';
 export type Confirmed<T> = { kind: 'done'; data: T } | { kind: 'refused'; failure: Failure };
 
 /** Raid et fabrication conservent leur intention tant que le serveur n'a pas confirmé le résultat. */
-export function createConfirmedAction<T>(keys: ActionKeys,
-  post: (intention: string, key: string) => Promise<{ data?: T; error?: unknown }>,
+export function createConfirmedAction<T, Input = string>(keys: ActionKeys,
+  post: (input: Input, key: string) => Promise<{ data?: T; error?: unknown }>,
   definitive: (failure: Failure) => boolean = () => false,
+  identify: (input: Input) => string = String,
 ) {
   const pending = new Map<string, Promise<Confirmed<T>>>();
-  return (intention: string): Promise<Confirmed<T>> => {
+  return (input: Input): Promise<Confirmed<T>> => {
+    const intention = identify(input);
     const existing = pending.get(intention);
     if (existing) return existing;
     const promise = (async (): Promise<Confirmed<T>> => {
       try {
         const key = await keys.keyFor(intention);
-        const reply = await post(intention, key);
+        const reply = await post(input, key);
         if (reply.data !== undefined) {
           await keys.forget(intention);
           return { kind: 'done', data: reply.data };
