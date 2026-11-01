@@ -12,7 +12,7 @@ function member(
   return {
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'Sam Petit',
-    league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, headEquipment: null,
+    league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, headEquipment: null, accessoryEquipment: null,
     appearance: 'STRENGTH_V1',
     avatar: DEFAULT_AVATAR,
     registeredAt: '2026-01-01T00:00:00Z',

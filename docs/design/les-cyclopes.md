@@ -1,8 +1,21 @@
-# Les Cyclopes — pilote iPhone (#350)
+# Les Cyclopes — accessoire de cyclisme
 
 Accessoire de cyclisme cumulable avec HEAD : visière Meshy miroir rose/orange/or, monture
-violette continue vers des branches sport violet/citron. Atelier uniquement, sans catalogue
-serveur, loot ni tenue sauvegardée. L’auteur juge le modèle porté sur son iPhone.
+violette continue vers des branches sport violet/citron. Le modèle porté est validé sur
+iPhone après le pilote #350. Sa clé serveur `LES_CYCLOPES` est équipée en `ACCESSORY` ; les
+prix, bonus et possessions restent gérés par le catalogue du back.
+
+## Catalogue et rendu du compte — #358 / grrind-back#340
+
+Boutique : 10 pièces, +2 points de précision lorsque les lunettes sont équipées. Le rendu
+utilise la clé et le slot du compte ou du snapshot de combat : profils, portraits de guilde,
+inventaire, PvE, PvP et rejeux. `ACCESSORY` reste indépendant de la coiffe `HEAD`.
+Le contrat fournit `accessoryEquipment` aux portraits de guilde sans charger leur sac.
+
+L’icône `spikes/art-source/les-cyclopes/catalog-icon.png` est un rendu RGBA 512 px du mesh
+et du matériau Unity approuvés. Reproduction : exécuter `build/04_catalog_icon.cs` via
+Unity Pipeline `eval_file`. Le back livre le PNG sous son nom SHA-1 dans le stockage
+d’images existant. Il reste hors des tables de loot.
 
 ## Trajet de la branche — schéma de l’auteur
 
@@ -102,4 +115,7 @@ GRRIND dev → Réglages → Atelier avatar 3D → Tester Les Cyclopes.
 Lien : `grrindapp-dev://character-showcase?item=cyclopes`.
 Visage puis Profil conserve le gros plan ; les angles sont indépendants du cadrage.
 Livraison : tranche Unity Device puis app hôte sur Dyoxel selon `docs/ai/mobile-qa.md`.
-Pas de build Simulator, Maestro ou EAS/TestFlight pour ce pilote visuel.
+Le pilote visuel ne demandait pas de sortie TestFlight. La livraison catalogue #358 est
+une sortie de production explicitement demandée : framework Device actuel embarqué par
+EAS, puis soumission à TestFlight. Les vérifications d’achat/équipement portent sur le vrai
+flux serveur ; le rendu artistique reste jugé sur l’iPhone.

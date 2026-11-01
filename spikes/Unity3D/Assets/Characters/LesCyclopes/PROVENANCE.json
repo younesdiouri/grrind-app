@@ -23,8 +23,9 @@
   "mirror": "View-dependent tinted studio MatCap in existing Painted Toon; no scene reflection",
   "attachment": "Humanoid Head, rigid, rest-space export",
   "rights": "Generated through the project’s Meshy account; Quaternius calibration references CC0. Product photo is reference only.",
-  "delivery": "Workshop/iPhone pilot; not a published server inventory item",
+  "delivery": "Catalog item LES_CYCLOPES in ACCESSORY (grrind-back#340 / grrind-app#358), model approved on the author iPhone. Gameplay values remain server-owned.",
   "fit_feedback": "spikes/art-source/les-cyclopes/ref/iphone-fit-feedback.jpg",
   "fit_validation": "Zero ear/scalp intersections after FBX reimport. All 615 sampled lower-tip triangles are occluded by the ear in left/right profile across both bodies. Previous exterior v7 return fails the new anatomical-volume check. Front centreline unchanged; iris, 24 front stem visibility rays and headwear checks PASS.",
-  "fit_reference": "spikes/art-source/les-cyclopes/ref/outer-ear-tip-feedback.png"
+  "fit_reference": "spikes/art-source/les-cyclopes/ref/outer-ear-tip-feedback.png",
+  "catalog_icon": "spikes/art-source/les-cyclopes/catalog-icon.png, transparent Unity RGBA 512x512 from build/04_catalog_icon.cs"
 }

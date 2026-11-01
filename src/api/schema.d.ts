@@ -1406,6 +1406,8 @@ export interface components {
             league: components["schemas"]["LeagueIdentity"];
             /** @description Coiffe réellement portée, jamais le sac ; null si HEAD est vide. */
             headEquipment: components["schemas"]["EquipmentReference"] | null;
+            /** @description Accessoire réellement porté pour le portrait, jamais le sac ; null si ACCESSORY est vide. */
+            accessoryEquipment: components["schemas"]["EquipmentReference"] | null;
         };
         /**
          * @description Classement des membres actuels par nombre de séances validées, jamais par XP.
