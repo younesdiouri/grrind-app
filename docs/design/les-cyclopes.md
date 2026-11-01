@@ -6,8 +6,10 @@ serveur, loot ni tenue sauvegardée. L’auteur juge le modèle porté sur son i
 
 ## Trajet de la branche — schéma de l’auteur
 
-La référence actuelle est `ref/ear-route-author-sketch.jpg` : départ bas et large dans le
-côté violet, amincissement vers le sommet de l’oreille, puis coude descendant derrière elle.
+Le schéma `ref/ear-route-author-sketch.jpg` fixe le contour avant : départ bas et large dans
+le côté violet, amincissement vers le sommet de l’oreille. Le retour porté
+`ref/outer-ear-tip-feedback.png` précise la profondeur du retour : il doit être masqué par
+le pavillon en profil, et non rester visible à son extérieur.
 La photo `continuous-frame-reference.webp` guide la continuité de matière. Les deux dernières
 corrections restaient trop hautes : souder la branche à la monture ne suffisait pas à obtenir
 la silhouette tracée. La barre haute uniforme de 8 mm est remplacée, sans déplacer le verre.
@@ -20,16 +22,21 @@ sur la face extérieure de la branche.
 
 | Corps | Triangles livrés | Distance iris/verre | Départ / appui d’oreille | Arêtes partagées gauche/droite |
 | --- | --- | --- | --- | --- |
-| Homme | 3 381 | 24,7–29,6 mm | 18 / 6 mm de haut | 30 / 29 |
-| Femme | 3 387 | 24,4–29,9 mm | 18 / 6 mm de haut | 32 / 29 |
+| Homme | 4 089 | 24,7–29,6 mm | 18 / 6 mm de haut | 30 / 29 |
+| Femme | 4 099 | 24,4–29,9 mm | 18 / 6 mm de haut | 32 / 29 |
 
 Le centre du départ est 11,2 / 13 mm sous le sommet de l’oreille. Son bord supérieur reste
-presque droit, tandis que le bas s’affine vers l’appui. L’épaisseur est de 4 mm. Le retour
-commence derrière le contour postérieur de l’oreille et finit environ 21 mm sous son sommet,
-avec une pointe légèrement recourbée vers l’avant. Ses sections suivent la courbure pour
-conserver une vraie épaisseur. Les UV et normales du verre miroir restent intacts.
+presque droit, tandis que le bas s’affine vers l’appui. L’épaisseur visible reste de 4 mm.
+Les trois premiers centres de section sont identiques à la version jugée meilleure par
+l’auteur. Le retour franchit le haut du pavillon, rentre vers la tête, puis descend dans
+l’espace entre le cuir chevelu et l’oreille jusqu’à environ 20 mm sous son sommet. Sa section
+cachée mesure 2 × 3 mm ; elle est ajustée au vrai passage libre de chaque corps, sans traversée.
+Les UV et normales du verre miroir restent intacts.
 
-[Comparaison du profil au schéma rouge](les-cyclopes/ear-route-compare.png) : recalage sur
+[Avant/après en profil](les-cyclopes/ear-tip-occlusion-compare.png) : même avatar/caméra,
+recadrage de l’oreille agrandi ×3. L’extrémité violette extérieure disparaît derrière le pavillon.
+
+[Comparaison historique v7 du contour avant au schéma rouge](les-cyclopes/ear-route-compare.png) : recalage sur
 41 repères d’anatomie inchangée, lunettes exclues ; erreur moyenne de recalage 1,36 px.
 Aux quatre abscisses mesurées entre la monture et l’oreille, l’écart des bords est de 3,94 px
 au maximum dans la capture d’origine ([mesures](les-cyclopes/ear-route-compare.json)).
@@ -54,8 +61,8 @@ dimensions masqués sur les photos restent inférés des vrais meshes Quaternius
 
 Avec Blender headless et `--python-exit-code 1` :
 
-1. `build/02_fit_and_export.py -- --output artifacts/les-cyclopes/fitted-v7` ;
-2. `build/03_validate_fit.py -- --output artifacts/les-cyclopes/fitted-v7` ;
+1. `build/02_fit_and_export.py -- --output artifacts/les-cyclopes/fitted-v8` ;
+2. `build/03_validate_fit.py -- --output artifacts/les-cyclopes/fitted-v8` ;
 3. copier les FBX, BaseColor et MetalMask dans `Assets/Characters/LesCyclopes`, puis appeler
    `LesCyclopes.Build()` via Unity Pipeline. `QuaterniusPoc.Build()` inclut cet accessoire.
 
@@ -67,9 +74,17 @@ sections réimportées : départ sous le sommet de l’oreille, largeur décrois
 retour descendant derrière l’oreille. L’export v6 à barre haute échoue à ce contrôle, alors
 que ses arêtes étaient déjà soudées.
 
+Pour le retour caché, les rayons latéraux identifient la sortie du cuir chevelu puis l’entrée
+dans le pavillon. Neuf rayons autour de chaque section mesurent l’espace libre avant de la
+placer. Au réimport, les 615 centres de triangles de l’extrémité inférieure sélectionnée
+sont tous masqués par l’oreille en profil gauche/droit sur les deux corps (295 homme,
+320 femme). L’ancien retour extérieur v7 échoue au nouveau contrôle du volume derrière
+le pavillon ; le contrôle de simples intersections ne suffisait pas.
+
 La relecture conserve les 54 rayons d’iris par corps, la distance iris/verre, zéro traversée
-des oreilles/peau par les branches, et 36 rayons profil/trois-quarts avec la crête homme :
-aucun cheveu devant les lunettes. Les 21 visages/nez et les bandeaux gardent le verre dégagé.
+des oreilles/peau par les branches, et 24 rayons profil/trois-quarts sur la partie avant
+visible avec la crête homme. Le retour arrière est volontairement masqué. Les 21 visages/nez
+et les bandeaux gardent le verre dégagé.
 Unity valide aussi les 27 combinaisons coupe/coiffe, ordre d’équipement, rotation Head et
 retrait indépendant. Les contacts latéraux sous laine/cheveux longs restent consignés dans
 `fit-report.json`, aucun dans les 110 mm centraux de visière.

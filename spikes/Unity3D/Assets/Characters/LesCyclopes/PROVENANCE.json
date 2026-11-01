@@ -8,12 +8,12 @@
   "remesh_task": "01a1981e-3166-7605-ac5e-156934f5f950",
   "source_mesh": "spikes/art-source/les-cyclopes/source.glb",
   "authoring_script": "spikes/art-source/les-cyclopes/build/02_fit_and_export.py",
-  "modifications": "Mirror triangles retain positions, UVs and normals. The author sketch replaces the high 8 mm top bar: the shared purple side wing starts 11/13 mm below the ear top, tapers from 18 to 6 mm at the ear support, then curls down behind the ear. Hook sections turn perpendicular to their path. Frame and branches still share actual boundary edges. Violet/citron palette and the 16/18 mm approach are retained.",
+  "modifications": "The low 18-to-6 mm front wing and mirror are retained. The rear return now crosses above the pinna then descends medially into the measured scalp/ear air gap, with a 2x3 mm hidden section. No tip outside the ear silhouette. Frame and branches retain shared boundary edges; violet/citron palette and 16/18 mm approach preserved.",
   "calibration": "Real Quaternius CC0 iris samples and faceted heads; no reference body exported",
   "paid_generation_credits": 40,
   "triangles_per_body": {
-    "Male": 3381,
-    "Female": 3387
+    "Male": 4089,
+    "Female": 4099
   },
   "materials": 1,
   "textures": [
@@ -25,6 +25,6 @@
   "rights": "Generated through the project’s Meshy account; Quaternius calibration references CC0. Product photo is reference only.",
   "delivery": "Workshop/iPhone pilot; not a published server inventory item",
   "fit_feedback": "spikes/art-source/les-cyclopes/ref/iphone-fit-feedback.jpg",
-  "fit_validation": "FBX reimport: low 18 mm side wing narrowing to 6 mm at ear support, approximately 21 mm hook below the ear top, no ear/skin intersections, shared frame edges and iris/hair/headwear checks PASS. The previous high-bar v6 fails the new anatomical route check. Reference comparison aligns unchanged anatomy; sampled arm edges differ by at most 4 px in the author capture.",
-  "fit_reference": "spikes/art-source/les-cyclopes/ref/ear-route-author-sketch.jpg"
+  "fit_validation": "Zero ear/scalp intersections after FBX reimport. All 615 sampled lower-tip triangles are occluded by the ear in left/right profile across both bodies. Previous exterior v7 return fails the new anatomical-volume check. Front centreline unchanged; iris, 24 front stem visibility rays and headwear checks PASS.",
+  "fit_reference": "spikes/art-source/les-cyclopes/ref/outer-ear-tip-feedback.png"
 }
