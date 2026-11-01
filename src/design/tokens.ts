@@ -924,3 +924,24 @@ export const modifierLabel: Record<ModifierType, string> = {
 export const appearanceArt = { choiceWidth: '47%' as const, choiceHeight: 180, overviewHeight: 380, itemIconSize: 48 } as const;
 export const avatarScene = { flakes: [7, 19, 30, 42, 58, 70, 81, 93], snowSize: 3, snowOpacity: .55,
   snowColor: '#C5EDFF', drift: 12 } as const;
+
+/** One regalia assembly: silhouette and material grow independently of character level. */
+export const leagueArt = {
+  stageWidth: 320, stageHeight: 184, cardMinHeight: 280, portraitWidth: '37.5%' as const,
+  portraitTop: '20.65%' as const, portraitLeft: '31.25%' as const,
+  // The calibrated Unity head view is 0.5 m high; show its upper 0.3125 m, face and neck only.
+  headImageSize: '160%' as const, headImageTop: '-20%' as const, headImageLeft: '-30%' as const,
+  headCaptureScale: 3.2,
+  nameSize: 24, sheetMaxWidth: 520, sheetMaxHeight: '90%' as const,
+  lightOpacity: .38, floatDistance: 3, pollMs: 60_000, settlementPollMs: 5000,
+  presets: {
+    BRONZE: { metal: '#D2936A', light: '#F3C6A1', shade: '#6F4738', fins: 0, spread: 0, rows: 1, crown: 0, double: false, halo: false, period: 0 },
+    SILVER: { metal: '#AFC4D9', light: '#E6F1FF', shade: '#43576F', fins: 1, spread: 12, rows: 1, crown: 0, double: true, halo: false, period: 5200 },
+    GOLD: { metal: '#E5B75C', light: '#FFF0B0', shade: '#79562D', fins: 3, spread: 22, rows: 1, crown: 1, double: true, halo: false, period: 7000 },
+    PLATINUM: { metal: '#72D9D0', light: '#CCFFF4', shade: '#2A666C', fins: 3, spread: 29, rows: 2, crown: 3, double: true, halo: true, period: 4200 },
+    DIAMOND: { metal: '#BDA5F2', light: '#F3EDFF', shade: '#575481', fins: 5, spread: 34, rows: 2, crown: 5, double: true, halo: true, period: 3600 },
+  } satisfies Record<components['schemas']['LeagueIdentity']['tier'], {
+    metal: string; light: string; shade: string; fins: number; spread: number; rows: number;
+    crown: number; double: boolean; halo: boolean; period: number;
+  }>,
+} as const;
