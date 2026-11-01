@@ -274,6 +274,26 @@ def rebuild_temples(model, skin, head, approach, optics):
 
     surface_points = [skin.matrix_world @ vertex.co for vertex in skin.data.vertices]
     surface = BVHTree.FromPolygons(surface_points, [tuple(poly.vertices) for poly in skin.data.polygons])
+
+    def skin_crossings(side, y, z):
+        origin, hits = Vector((0, y, z)), []
+        for _ in range(3):
+            point = surface.ray_cast(origin, Vector((side, 0, 0)), .15)[0]
+            if point is None:
+                break
+            hits.append(point.x * side)
+            origin = point + Vector((side * .00001, 0, 0))
+        return hits
+
+    def ear_gap(side, y, z):
+        # First crossing leaves the scalp; second enters the ear. Fit the whole 3 mm section.
+        samples = [skin_crossings(side, y + dy, z + dz)
+                   for dy in (-.0015, 0, .0015) for dz in (-.0015, 0, .0015)]
+        if any(len(hits) != 3 for hits in samples):
+            return None
+        low, high = max(hits[0] for hits in samples), min(hits[1] for hits in samples)
+        return side * (low + high) / 2 if high - low >= .0032 else None
+
     report = {'retained_mirror_triangles': kept_lens, 'junction_y_m': cut_y, 'sides': {}}
     joined_rings = {}
     for side, spec in specifications.items():
@@ -288,24 +308,29 @@ def rebuild_temples(model, skin, head, approach, optics):
         path = [root_centre, Vector((root_centre.x, cut_y - .012, level + (support_z - level) * t)),
                 Vector((side * support_x, support_y, support_z))]
         heights = [.018, .018 + (.006 - .018) * t, .006]
-        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < ear.z)
-        path.append(Vector((side * support_x, ear_back - .004, ear.z - .0005)))
-        heights.append(.006)
-        # Turn down immediately behind the ear, then curl the tip slightly forward.
-        for y, z in ((ear_back - .010, ear.z - .004), (ear_back - .016, ear.z - .015),
-                     (ear_back - .013, ear.z - .020)):
-            hits = [surface.ray_cast(Vector((0, y, z + dz)), Vector((side, 0, 0)), .15)[0] for dz in (-.002, 0, .002)]
-            assert all(hit is not None for hit in hits)
-            target = Vector((side * (max(hit.x * side for hit in hits) + .003), y, z))
+        # Clear the top edge before moving medially into the ear/scalp gap.
+        path.append(Vector((side * support_x, ear.y - .004, ear.z + .0035)))
+        heights.append(.002)
+        bridge_y, bridge_z = ear.y - .010, ear.z + .0045
+        bridge_x = max(skin_crossings(side, bridge_y, bridge_z + dz)[0] for dz in (-.0015, .0015)) + .0025
+        path.append(Vector((side * bridge_x, bridge_y, bridge_z)))
+        heights.append(.002)
+        hook_centres = []
+        # The descending tip belongs in the scalp/pinna air gap, not beyond the ear silhouette.
+        for drop in (.008, .012, .020):
+            z = ear.z - drop
+            candidates = sorted(range(6, 41), key=lambda mm: abs(mm - 24))
+            fitted = [(ear.y - mm * .0005, ear_gap(side, ear.y - mm * .0005, z)) for mm in candidates]
+            y, x = next(((y, x) for y, x in fitted if x is not None), (None, None))
+            assert x is not None, 'No safe air gap between the ear and scalp for the return'
+            target = Vector((x, y, z))
+            hook_centres.append(list(target))
             previous = path[-1]
-            steps = max(1, math.ceil(abs(y - previous.y) / .004))
+            steps = max(1, math.ceil((target - previous).length / .003))
             for step in range(1, steps + 1):
                 point = previous.lerp(target, step / steps)
-                hits = [surface.ray_cast(Vector((0, point.y, point.z + dz)), Vector((side, 0, 0)), .15)[0] for dz in (-.002, 0, .002)]
-                assert all(hit is not None for hit in hits)
-                point.x = side * max(point.x * side, max(hit.x * side for hit in hits) + .003)
                 path.append(point)
-                heights.append(.004)
+                heights.append(.003)
         assert path[0].z < ear.z - .006 and path[2].z > path[0].z + .009
 
         def section(direction, half_x, half_z):
@@ -329,7 +354,7 @@ def rebuild_temples(model, skin, head, approach, optics):
         for i, centre in enumerate(path[1:], 1):
             tangent = path[min(i + 1, len(path) - 1)] - path[i - 1]
             up = Vector((0, tangent.z, -tangent.y)).normalized() if i >= 4 else Vector((0, 0, 1))
-            offsets = [section(direction, .002 if i < 4 else .0015, heights[i] / 2) for direction in directions]
+            offsets = [section(direction, .002 if i < 3 else .001, heights[i] / 2) for direction in directions]
             rings.append([centre + Vector((offset.x, 0, 0)) + up * offset.z for offset in offsets])
         for i, (a, b) in enumerate(zip(rings, rings[1:])):
             for j in range(len(root)):
@@ -342,7 +367,8 @@ def rebuild_temples(model, skin, head, approach, optics):
         joined_rings[side] = [vertex_indices[key(point)] for point in root]
         report['sides'][side] = {'ear_top_m': list(ear), 'centreline_m': [list(point) for point in path],
                                  'section_heights_m': heights, 'stem_thickness_m': .004,
-                                 'return_drop_m': path[3].z - path[-1].z,
+                                 'hidden_hook_centres_m': hook_centres,
+                                 'return_drop_m': max(point.z for point in path) - path[-1].z,
                                  'front_to_ear_rise_m': path[2].z - path[0].z, 'shared_frame_edges': len(root)}
     edge_counts = {}
     for polygon in faces:

@@ -78,7 +78,8 @@ def stem_visibility(glasses, hair, body):
     eyewear, hairstyle = tree(glasses), tree(hair)
     checked, hidden = 0, 0
     for side, specification in paths.items():
-        points = [Vector(point) for point in specification['centreline_m'][:4]]
+        # The visible front remains clear; the return is deliberately hidden by the ear/hair.
+        points = [Vector(point) for point in specification['centreline_m'][:3]]
         for a, b in zip(points, points[1:]):
             for t in (.25, .5, .75):
                 point = a.lerp(b, t)
@@ -139,6 +140,7 @@ def ear_route(glasses, skin, cut_y):
         return min(found), max(found)
 
     result = {}
+    ear_surface = ears(skin)
     for side, ear in fit.ear_tops(head).items():
         root = section(side, cut_y)
         support = section(side, ear.y + .006)
@@ -147,12 +149,23 @@ def ear_route(glasses, skin, cut_y):
         assert root_below_ear > .008, f'{side}: the branch still starts above the ear as a top bar'
         assert root_height > support_height * 2.5, f'{side}: the low frame wing must narrow toward the ear'
         assert abs(sum(support) / 2 - ear.z) < .003, f'{side}: the branch floats above its ear support'
-        outer = max(point.x * side for point in head)
-        ear_back = min(point.y for point in head if point.x * side > outer * .9 and point.z < ear.z)
-        hook = [point for point in points if point.x * side > .06 and point.y < ear_back - .006]
+        hook = [point for point in points if point.x * side > .06
+                and ear.y - .025 < point.y < ear.y + .004 and ear.z - .03 < point.z < ear.z - .014]
         assert hook and min(point.z for point in hook) < ear.z - .018, f'{side}: missing downward return behind the ear'
+        hidden = 0
+        for triangle in mesh.loop_triangles:
+            point = sum((points[i] for i in triangle.vertices), Vector()) / 3
+            if not (point.x * side > .06 and ear.y - .025 < point.y < ear.y + .004
+                    and ear.z - .023 < point.z < ear.z - .014):
+                continue
+            direction = Vector((side, 0, 0))
+            hit = ear_surface.ray_cast(point + direction * .3, -direction, .3)
+            assert hit[0] is not None and hit[3] < .2995, f'{side}: the tip is visible outside the ear in profile'
+            hidden += 1
+        assert hidden >= 12, f'{side}: missing exported tip in the ear/scalp gap'
         result[str(side)] = {'root_height_m': root_height, 'ear_support_height_m': support_height,
-                             'root_below_ear_m': root_below_ear, 'hook_below_ear_m': ear.z - min(point.z for point in hook)}
+                             'root_below_ear_m': root_below_ear, 'hook_below_ear_m': ear.z - min(point.z for point in hook),
+                             'tip_triangles_occluded_by_ear': hidden}
     return result
 
 

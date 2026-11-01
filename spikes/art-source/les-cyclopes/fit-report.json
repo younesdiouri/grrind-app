@@ -1,6 +1,6 @@
 {
   "Male": {
-    "triangles": 3381,
+    "triangles": 4089,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
@@ -28,15 +28,17 @@
     "ear_route": {
       "-1": {
         "root_height_m": 0.017999887466430664,
-        "ear_support_height_m": 0.006000041961669922,
+        "ear_support_height_m": 0.005999922752380371,
         "root_below_ear_m": 0.011198759078979492,
-        "hook_below_ear_m": 0.021028995513916016
+        "hook_below_ear_m": 0.020093560218811035,
+        "tip_triangles_occluded_by_ear": 150
       },
       "1": {
         "root_height_m": 0.017999887466430664,
-        "ear_support_height_m": 0.006000041961669922,
+        "ear_support_height_m": 0.005999922752380371,
         "root_below_ear_m": 0.011198759078979492,
-        "hook_below_ear_m": 0.021028995513916016
+        "hook_below_ear_m": 0.020093560218811035,
+        "tip_triangles_occluded_by_ear": 145
       }
     },
     "faces_and_noses": {
@@ -66,7 +68,7 @@
         "central_visor_intersections": 0,
         "all_visor_intersections": 0,
         "stem_visibility": {
-          "rays": 36,
+          "rays": 24,
           "hair_in_front": 0,
           "angles_degrees": [
             25,
@@ -103,7 +105,7 @@
     }
   },
   "Female": {
-    "triangles": 3387,
+    "triangles": 4099,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
@@ -131,15 +133,17 @@
     "ear_route": {
       "-1": {
         "root_height_m": 0.018000006675720215,
-        "ear_support_height_m": 0.006000041961669922,
+        "ear_support_height_m": 0.00599980354309082,
         "root_below_ear_m": 0.012999951839447021,
-        "hook_below_ear_m": 0.021028995513916016
+        "hook_below_ear_m": 0.02018606662750244,
+        "tip_triangles_occluded_by_ear": 163
       },
       "1": {
         "root_height_m": 0.018000006675720215,
-        "ear_support_height_m": 0.006000041961669922,
+        "ear_support_height_m": 0.00599980354309082,
         "root_below_ear_m": 0.013000071048736572,
-        "hook_below_ear_m": 0.021028995513916016
+        "hook_below_ear_m": 0.02018606662750244,
+        "tip_triangles_occluded_by_ear": 157
       }
     },
     "faces_and_noses": {
