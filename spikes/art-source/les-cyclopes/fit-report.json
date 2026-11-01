@@ -15,6 +15,11 @@
         "uncovered": 0
       }
     },
+    "eye_relief_m": [
+      0.024729974567890167,
+      0.02955043688416481
+    ],
+    "ear_intersections": 0,
     "faces_and_noses": {
       "original/original": 0,
       "original/NoseWide": 0,
@@ -50,7 +55,7 @@
     "headwear": {
       "moumoutivation": {
         "central_visor_intersections": 0,
-        "all_visor_intersections": 8
+        "all_visor_intersections": 74
       },
       "bandeau-parted": {
         "central_visor_intersections": 0,
@@ -86,6 +91,11 @@
         "uncovered": 0
       }
     },
+    "eye_relief_m": [
+      0.0244268961250782,
+      0.029875151813030243
+    ],
+    "ear_intersections": 0,
     "faces_and_noses": {
       "original/original": 0,
       "original/NoseButton": 0,
@@ -104,7 +114,7 @@
       },
       "long": {
         "central_visor_intersections": 0,
-        "all_visor_intersections": 0
+        "all_visor_intersections": 71
       },
       "buzzed": {
         "central_visor_intersections": 0,
@@ -122,7 +132,7 @@
     "headwear": {
       "moumoutivation": {
         "central_visor_intersections": 0,
-        "all_visor_intersections": 9
+        "all_visor_intersections": 79
       },
       "bandeau-buns": {
         "central_visor_intersections": 0,

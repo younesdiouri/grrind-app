@@ -1,4 +1,4 @@
-"""Fit the Meshy visor to real iris samples, retaining source topology, UVs and normals."""
+"""Seat the Meshy visor and temples on the real eyes and ears; retain topology and UVs."""
 import argparse
 import json
 import math
@@ -112,6 +112,64 @@ class Optics:
         assert len(indices) > 100, 'The PBR mask must identify the mirror lens'
         return [self.obj.matrix_world @ self.obj.data.vertices[i].co for i in indices]
 
+    def eye_relief(self, pupils):
+        self.update()
+        distances = [self.tree.ray_cast(point, Vector((0, 1, 0)), .15)[3] for point in pupils]
+        assert all(distance is not None for distance in distances)
+        return [min(distances), max(distances)]
+
+
+def ear_tops(head):
+    return {side: max((point for point in head if point.x * side > max(p.x * side for p in head) * .9),
+                      key=lambda point: point.z) for side in (-1, 1)}
+
+
+def seat_temples(model, head, approach):
+    # iPhone fit review: the source arms crossed the pinnae. Bend only behind the hinges.
+    hinge_y, length = .070 - approach, .080
+    mesh = model.data
+    points = [vertex.co.copy() for vertex in mesh.vertices]
+    normals = [corner.vector.copy() for corner in mesh.corner_normals]
+
+    def weight(y):
+        t = max(0, min(1, (hinge_y - y) / length))
+        return t * t * (3 - 2 * t), -6 * t * (1 - t) / length
+
+    adjustments = {}
+    for side, ear in ear_tops(head).items():
+        support = [point for point in points if point.x * side > .055 and abs(point.y - ear.y) < .003]
+        assert support and all(weight(point.y)[0] > .2 for point in support)
+        lift = max((ear.z + .002 - point.z) / weight(point.y)[0] for point in support)
+        inward = max(0, (float(np.median([point.x * side for point in support])) - abs(ear.x) - .002)
+                     / float(np.mean([weight(point.y)[0] for point in support])))
+        adjustments[side] = {'ear_top_m': list(ear), 'lift_m': lift, 'inward_m': inward,
+                             'rear_start_m': ear.y - .035, 'rear_end_m': min(point.y for point in points if point.x * side > 0)}
+
+    def bend(y, adjustment):
+        span = adjustment['rear_start_m'] - adjustment['rear_end_m']
+        t = max(0, min(1, (adjustment['rear_start_m'] - y) / span))
+        rear, rear_derivative = t * t * (3 - 2 * t), -6 * t * (1 - t) / span
+        w, derivative = weight(y)
+        return w * (1 - rear), derivative * (1 - rear) - w * rear_derivative, rear, rear_derivative
+
+    for vertex, point in zip(mesh.vertices, points):
+        side = 1 if point.x > 0 else -1
+        w, derivative, rear, rear_derivative = bend(point.y, adjustments[side])
+        vertex.co.x -= side * adjustments[side]['inward_m'] * w
+        vertex.co.z += adjustments[side]['lift_m'] * w
+        # Keep the original hook position behind the ear when bringing the visor closer.
+        vertex.co.y += approach * rear
+    # Inverse-transpose of the bend Jacobian preserves the existing corner-normal treatment.
+    for loop, normal in zip(mesh.loops, normals):
+        point = points[loop.vertex_index]
+        side = 1 if point.x > 0 else -1
+        w, derivative, rear, rear_derivative = bend(point.y, adjustments[side])
+        normal.y += derivative * (side * adjustments[side]['inward_m'] * normal.x - adjustments[side]['lift_m'] * normal.z)
+        normal.y /= 1 + approach * rear_derivative
+        normal.normalize()
+    mesh.normals_split_custom_set(normals)
+    return adjustments
+
 
 def fit(output):
     if not bpy.app.background:
@@ -122,7 +180,7 @@ def fit(output):
     output.mkdir(parents=True, exist_ok=True)
     mask = bpy.data.images.load(str(ASSET / 'source_textures/metallic.png'))
     mask.colorspace_settings.name = 'Non-Color'
-    report = {'source': 'Meshy 7.1 + Meshy remesh; UVs/topology/normals retained', 'units': 'metres',
+    report = {'source': 'Meshy 7.1 + Meshy remesh; UVs/topology retained, temple normals follow the bend', 'units': 'metres',
               'axes': 'Z up, +Y front in Blender; body-rest-space FBX, Humanoid Head attachment', 'variants': {}}
     for body in ('Male', 'Female'):
         refs = imported(CHARACTERS / 'Quaternius' / ('Superhero_' + body + '_FullBody.fbx'), 'fbx')
@@ -153,7 +211,9 @@ def fit(output):
         model.matrix_world = linear
         lens_min, lens_max = bounds(optics.lens_points())
         all_min, all_max = bounds([linear @ vertex.co for vertex in model.data.vertices])
-        base = Vector((-(all_min.x + all_max.x) / 2, head_max.y + .012 - lens_max.y,
+        # Measured closest fit retaining nose and all headband clearances in the phone pilot.
+        approach = .016 if body == 'Male' else .018
+        base = Vector((-(all_min.x + all_max.x) / 2, head_max.y + .012 - approach - lens_max.y,
                        eye_centre.z + .020 - lens_max.z))
         best = None
         # Optical calibration: the lens must cover irises, not merely avoid intersecting skin.
@@ -171,6 +231,7 @@ def fit(output):
         model.select_set(True)
         bpy.context.view_layer.objects.active = model
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        temples = seat_temples(model, head, approach)
         assert original_faces == [tuple(face.vertices) for face in model.data.polygons]
         assert original_uv == [tuple(loop.uv) for loop in model.data.uv_layers.active.data]
         model.data.calc_loop_triangles()
@@ -180,7 +241,8 @@ def fit(output):
                                  bake_anim=False, apply_scale_options='FBX_SCALE_ALL', path_mode='STRIP')
         extent_min, extent_max = bounds([model.matrix_world @ vertex.co for vertex in model.data.vertices])
         report['variants'][body] = {'triangles': triangles, 'uniform_scale': scale, 'translation_m': list(offset),
-                                    'bounds_m': [list(extent_min), list(extent_max)], 'iris_coverage': coverage}
+                                    'bounds_m': [list(extent_min), list(extent_max)], 'iris_coverage': coverage,
+                                    'eye_relief_m': optics.eye_relief(pupils), 'approach_m': approach, 'temples': temples}
         model.hide_render = body != 'Male'
         model.hide_set(body != 'Male')
     for source, target in [('base_color.png', 'BaseColor.png'), ('metallic.png', 'MetalMask.png')]:

@@ -51,6 +51,25 @@ def tree(objects, central=False, optics=None):
     return BVHTree.FromPolygons(vertices, polygons)
 
 
+def ears(skin):
+    mesh = skin.data
+    mesh.calc_loop_triangles()
+    points = [skin.matrix_world @ vertex.co for vertex in mesh.vertices]
+    group = skin.vertex_groups['Head'].index
+    head = [point for point, vertex in zip(points, mesh.vertices)
+            if any(g.group == group and g.weight > .5 for g in vertex.groups)]
+    tops = fit.ear_tops(head)
+    polygons = []
+    for triangle in mesh.loop_triangles:
+        centre = sum((points[i] for i in triangle.vertices), Vector()) / 3
+        side = 1 if centre.x > 0 else -1
+        top = tops[side]
+        if centre.x * side > abs(top.x) * .8 and abs(centre.y - top.y) < .035 and top.z - .065 < centre.z < top.z + .003:
+            polygons.append(tuple(triangle.vertices))
+    assert polygons
+    return BVHTree.FromPolygons(points, polygons, all_triangles=True)
+
+
 def validate(output):
     report = {}
     for body, styles in STYLES.items():
@@ -71,13 +90,18 @@ def validate(output):
                     if obj.type == 'MESH' and obj.name == 'Eyes')
         coverage = optics.coverage(fit.iris_points(eyes))
         assert all(value['uncovered'] == 0 for value in coverage.values()), coverage
+        relief = optics.eye_relief(fit.iris_points(eyes))
+        assert .015 < relief[0] <= relief[1] < .032, f'{body}: glasses float too far from the eyes: {relief}'
         full, central = tree(glasses, optics=optics), tree(glasses, central=True, optics=optics)
         skin = next(obj for obj in imported(CHARACTERS / 'FacialPilot' / (body + 'SportFace_Faceted.fbx'))
                     if obj.type == 'MESH' and obj.name.endswith('_Sport_Skin'))
         keys = skin.data.shape_keys.key_blocks
         faces = [None] + [key for key in keys if key.name.startswith('Face')]
         noses = [None] + [key for key in keys if key.name.startswith('Nose')]
-        result = {'triangles': count, 'iris_coverage': coverage, 'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
+        ear_contacts = len(tree(glasses).overlap(ears(skin)))
+        assert ear_contacts == 0, f'{body}: temples cross ears ({ear_contacts} contacts)'
+        result = {'triangles': count, 'iris_coverage': coverage, 'eye_relief_m': relief,
+                  'ear_intersections': ear_contacts, 'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
         for face, nose in itertools.product(faces, noses):
             for key in keys:
                 key.value = int(key in (face, nose))
