@@ -94,6 +94,29 @@ def stem_visibility(glasses, hair, body):
     return {'rays': checked, 'hair_in_front': hidden, 'angles_degrees': [25, 90]}
 
 
+def frame_junctions(glasses, cut_y):
+    edges = {}
+    for obj in glasses:
+        mesh = obj.data
+        mesh.calc_loop_triangles()
+        points = [obj.matrix_world @ vertex.co for vertex in mesh.vertices]
+        for triangle in mesh.loop_triangles:
+            centre_y = sum(points[i].y for i in triangle.vertices) / 3
+            for a, b in zip(triangle.vertices, (*triangle.vertices[1:], triangle.vertices[0])):
+                pa, pb = points[a], points[b]
+                if abs(pa.y - cut_y) > 1e-5 or abs(pb.y - cut_y) > 1e-5 or min(abs(pa.x), abs(pb.x)) < .065:
+                    continue
+                edge = tuple(sorted(tuple(round(value, 6) for value in point) for point in (pa, pb)))
+                edges.setdefault(edge, []).append(centre_y)
+    result = {}
+    for side in (-1, 1):
+        shared = [ys for edge, ys in edges.items() if edge[0][0] * side > 0
+                  and min(ys) < cut_y - 1e-6 and max(ys) > cut_y + 1e-6]
+        assert len(shared) >= 6 and all(len(ys) == 2 for ys in shared), f'{side}: the branch must continue the frame through shared edges'
+        result[str(side)] = len(shared)
+    return result
+
+
 def validate(output):
     report = {}
     for body, styles in STYLES.items():
@@ -128,6 +151,7 @@ def validate(output):
         assert scalp_contacts == 0, f'{body}: stems cross the scalp ({scalp_contacts} contacts)'
         result = {'triangles': count, 'iris_coverage': coverage, 'eye_relief_m': relief,
                   'ear_intersections': ear_contacts, 'temple_skin_intersections': scalp_contacts,
+                  'shared_frame_edges': frame_junctions(glasses, json.loads((ASSET / 'asset-manifest.json').read_text())['variants'][body]['temples']['junction_y_m']),
                   'faces_and_noses': {}, 'hair': {}, 'headwear': {}}
         for face, nose in itertools.product(faces, noses):
             for key in keys:
