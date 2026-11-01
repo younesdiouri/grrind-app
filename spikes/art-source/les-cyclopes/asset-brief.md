@@ -20,11 +20,20 @@ neuf coupes et deux coiffes compatibles. Reflet et raccords jugés sur le vrai i
 ## Production et livraison
 
 ImageGen → Meshy 7.1 (35 crédits) → retopologie Meshy ciblant 4 000 triangles (5 crédits).
-Source finale : 4 034 triangles, UV et normales conservés dans Blender ; rotation, translation
-et échelle uniforme seulement. Les deux coûts ont été annoncés dans le chat avant les appels.
+Source finale : 4 034 triangles, UV et topologie conservés dans Blender ; rotation, translation,
+échelle uniforme et cintrage local des branches. Leurs normales suivent la déformation. Les deux coûts ont été annoncés dans le chat avant les appels.
 Le MCP Blender ne répondait pas ; les scripts bpy s’exécutent dans Blender headless.
 
 Pilote atelier/iPhone autorisé : pas de back, de prix ou de loot. La première version
 procédurale a été rejetée ; le modèle Meshy et la couverture des vrais iris la remplacent.
 Contrôles reproductibles dans les scripts, asset-manifest.json et fit-report.json ;
 quelques rendus dans docs/design/les-cyclopes/. L’acceptation visuelle finale revient à l’auteur.
+
+## Retour porté et retouche
+
+La capture `ref/iphone-fit-feedback.jpg` confirme le rendu Meshy apprécié, mais des branches
+qui traversent les oreilles et un verre trop avancé. Rapprochement de 16/18 mm homme/femme,
+sans changement de hauteur ni de silhouette de la visière. Cintrage local des branches
+au-dessus puis derrière les oreilles réelles, sans rallonger le retour arrière.
+Cibles observables : distance iris/verre < 32 mm, zéro intersection des deux oreilles,
+nez et bandeaux dégagés, contrôle de profil homme et femme coupe courte. Aucun nouvel appel payant.
