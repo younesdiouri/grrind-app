@@ -14,6 +14,11 @@ TARGET Unity 6000.3.26f1, FBX, ≈ 2 000 triangles à la génération ; iPhone p
 
 ## Acceptation
 
-La référence est validée (« ok j’aime bien, c’est top go pour l’intégrer »). Livrer un premier pilote dans l’atelier, sans ajouter de loot serveur. L’auteur juge le modèle final sur son iPhone. Aucun EAS/TestFlight ni modification du backend.
+La référence est validée (« ok j’aime bien, c’est top go pour l’intégrer »). Le pilote atelier/iPhone
+est livré (#344). Le 1er novembre, l’auteur demande aussi le catalogue jouable : clé
+`MOUMOUTIVATION`, slot HEAD, deux corps, achat 10 pièces, revente 5, +2 points de chance
+critique calculés par le serveur (`CRITICAL_CHANCE_BONUS: 20`). Boutique niveau 1, hors coffre.
+Le back publie cet ajout dans #338 ; l’app relie l’inventaire, les portraits et les snapshots
+dans #347. L’auteur juge le modèle porté sur son iPhone. Aucun EAS/TestFlight nécessaire.
 
 Repère de livraison : les FBX Quaternius importés font face à +Y dans Blender. Le mesh Meshy, qui fait face à −Y, est tourné de 180° autour de Z avant l’ajustement et l’export.

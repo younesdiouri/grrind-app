@@ -2631,7 +2631,7 @@ export interface components {
             key: string;
             compatibleBodies: ("male" | "female")[];
         };
-        /** @description Catalogue cosmétique versionné. Les coiffes sont des équipements HEAD, séparés des coiffures ; headwear liste les clés rendues par Unity sur toutes les coiffures (BANDEAU_ECLAIR, #325). */
+        /** @description Catalogue cosmétique versionné. Les coiffes sont des équipements HEAD, séparés des coiffures ; headwear liste les clés rendues par Unity (BANDEAU_ECLAIR, MOUMOUTIVATION). La Moumoutivation masque les cheveux sans modifier l'avatar sauvegardé. */
         AvatarCatalog: {
             /** @enum {integer} */
             version: 1;

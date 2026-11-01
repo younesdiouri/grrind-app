@@ -6,16 +6,16 @@ import { previewConfiguration } from './previewConfiguration.ts';
 test('le portrait cadre la tête personnalisée avec sa coiffe, sans arme ni tenue équipée', () => {
   for (const body of ['male', 'female'] as const) {
     const saved = { ...DEFAULT_AVATAR, body, hairStyle: 'long' as const, skinTone: 'deep' as const };
-    const equipped = { ...serverAvatar(saved), headband: true, boxingGloves: true, dumbbell: true,
+    const equipped = { ...serverAvatar(saved), moumoutivation: true, boxingGloves: true, dumbbell: true,
       weapon: 'ferPlay' as const, shirtColor: 'coral' as const };
     const config = previewConfiguration(equipped, { width: 128, height: 128 }, 'portrait');
     assert.equal(config.view, 1);
     assert.equal(config.azimuth, 0);
-    assert.deepEqual(config.player, { ...serverAvatar(saved), headband: true });
+    assert.deepEqual(config.player, { ...serverAvatar(saved), moumoutivation: true });
     assert.equal(config.enemy.visible, false);
     assert.equal(config.previewWidth, 410);
     assert.equal(config.previewHeight, 410);
-    assert.equal(equipped.headband, true);
+    assert.equal(equipped.moumoutivation, true);
   }
 });
 
@@ -24,6 +24,7 @@ test('le profil et les petites vignettes partagent leur capture, mais toute modi
   const portrait = previewConfiguration(avatar, { width: 128, height: 128 }, 'portrait');
   assert.deepEqual(previewConfiguration(avatar, { width: 35, height: 35 }, 'portrait'), portrait);
   assert.notDeepEqual(previewConfiguration({ ...avatar, headband: true }, { width: 35, height: 35 }, 'portrait'), portrait);
+  assert.notDeepEqual(previewConfiguration({ ...avatar, moumoutivation: true }, { width: 35, height: 35 }, 'portrait'), portrait);
   assert.notDeepEqual(previewConfiguration({ ...avatar, skinTone: 'deep' }, { width: 35, height: 35 }, 'portrait'), portrait);
 });
 

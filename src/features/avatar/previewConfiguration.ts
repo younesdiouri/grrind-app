@@ -8,7 +8,8 @@ export function previewConfiguration(avatar: UnityAvatar, size: { width: number;
   // The portrait keeps headwear; weapons and clothes only appear in the full character view.
   const { body, faceStyle, noseStyle, skinTone, eyeColor, hairStyle, hairColor } = avatar;
   const player = framing === 'portrait'
-    ? { ...serverAvatar({ version: 1, body, faceStyle, noseStyle, skinTone, eyeColor, hairStyle, hairColor }), headband: avatar.headband } : avatar;
+    ? { ...serverAvatar({ version: 1, body, faceStyle, noseStyle, skinTone, eyeColor, hairStyle, hairColor }),
+      headband: avatar.headband, moumoutivation: avatar.moumoutivation } : avatar;
   return { player, enemy: { ...player, visible: false }, inspection: true,
     view: framing === 'portrait' ? 1 : 0, azimuth: framing === 'portrait' ? 0 : 25,
     // One calibrated resolution lets the profile, podium and rows reuse the same portrait.

@@ -17,7 +17,7 @@ export function PlayerIdentity({ player, equipment = {}, onLeaguePress, motion }
 }) {
   const avatar = serverAvatar(player.avatar, equipment);
   const label = `Portrait de ${player.displayName} · ${AVATAR_FIELDS.map(field =>
-    (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}${avatar.headband ? ' · Bandeau éclair' : ''}`;
+    (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}${avatar.headband ? ' · Bandeau éclair' : avatar.moumoutivation ? ' · La Moumoutivation' : ''}`;
   const league = `Ligue ${leagueLabel[player.league.tier]}`;
   const tint = leagueArt.presets[player.league.tier].metal;
   return <SystemFrame contentStyle={styles.identity}>
