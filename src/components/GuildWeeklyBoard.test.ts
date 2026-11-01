@@ -9,6 +9,7 @@ import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar';
 
 const member: components['schemas']['GuildMember'] = {
   id: 'amine', displayName: 'Amine', role: 'MEMBER', level: 5, appearance: 'STRENGTH_V3', avatar: DEFAULT_AVATAR,
+  league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, headEquipment: null,
   registeredAt: '2026-08-01T00:00:00Z', joinedAt: '2026-09-01T00:00:00Z',
   xpIntoLevel: 100, xpToNextLevel: 300, title: null,
   attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0, vitality: 0 },

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
-import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { GuildPortrait } from '@/components/GuildPortrait';
 import { RoleBadge } from '@/components/RoleBadge';
 import { TitleBadge } from '@/components/TitleBadge';
 import { XpBar } from '@/components/XpBar';
@@ -27,7 +27,7 @@ type GuildMemberRowProps = {
 export function GuildMemberRow({ member }: GuildMemberRowProps) {
   return (
     <View style={styles.row}>
-      <PlayerAvatar name={member.displayName} />
+      <GuildPortrait member={member} />
 
       <View style={styles.info}>
         <View style={styles.headLine}>

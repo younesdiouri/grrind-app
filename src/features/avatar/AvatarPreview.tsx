@@ -4,7 +4,7 @@ import type { UnityAvatar } from '@/features/combat/unityFrame';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import type { PreviewFraming } from './previewConfiguration';
 
-export type AvatarPreviewProps = { avatar: UnityAvatar; label: string; framing?: PreviewFraming; fallbackName?: string };
+export type AvatarPreviewProps = { avatar: UnityAvatar; label: string; framing?: PreviewFraming; fallbackName?: string; enabled?: boolean };
 
 export function AvatarPreview({ label, framing, fallbackName }: AvatarPreviewProps) {
   return <View style={styles.preview} accessibilityRole="image" accessibilityLabel={label}>

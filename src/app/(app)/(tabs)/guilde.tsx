@@ -21,6 +21,7 @@ import { Field } from '@/components/Field';
 import { GuildIcon, GuildMembers, GuildTabs, type GuildTab } from '@/components/GuildMenu';
 import { GuildRisalatSummary } from '@/components/GuildRisalatSummary';
 import { GuildWeeklyBoard } from '@/components/GuildWeeklyBoard';
+import { PortraitScrollView } from '@/features/avatar/PortraitScrollView';
 import { color, guildUi, radius, space, type, typography } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
@@ -395,7 +396,7 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
       <GuildChat key={`${guild.id}:${auth.user.id}`} guild={guild} playerId={auth.user.id} onGone={onGone} headerOffset={guildHeaderHeight} />
     </View>}
     {tab === 'settings' && managing ? <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />
-      : tab !== 'chat' && <ScrollView contentContainerStyle={styles.guildContent}
+      : tab !== 'chat' && <PortraitScrollView key={tab} contentContainerStyle={styles.guildContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={color.accent} />}>
         {refreshFailure && <Text style={styles.failure}>{messageFor(refreshFailure)}</Text>}
         {tab === 'week' && <>
@@ -434,7 +435,7 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
             <DangerRow label="Quitter la guilde" onPress={confirmLeave} busy={leaving} disabled={excludingId !== null} />
           </View>
         </>}
-      </ScrollView>}
+      </PortraitScrollView>}
   </View>;
 }
 

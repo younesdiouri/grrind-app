@@ -107,6 +107,7 @@ function guildMember(
   return {
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'Sam Petit',
+    league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, headEquipment: null,
     appearance: 'STRENGTH_V3',
     avatar: DEFAULT_AVATAR,
     registeredAt: '2025-11-02T00:00:00Z',

@@ -10,6 +10,7 @@ import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar';
 
 function member(id: string, level: number, role: 'FOUNDER' | 'MEMBER' = 'MEMBER'): components['schemas']['GuildMember'] {
   return { id, displayName: id, level, role, appearance: 'STRENGTH_V3', avatar: DEFAULT_AVATAR,
+    league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, headEquipment: null,
     registeredAt: '2026-09-01T00:00:00Z', joinedAt: '2026-10-01T00:00:00Z',
     xpIntoLevel: 100, xpToNextLevel: 300, title: null,
     attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0, vitality: 0 },

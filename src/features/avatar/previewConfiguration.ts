@@ -11,6 +11,7 @@ export function previewConfiguration(avatar: UnityAvatar, size: { width: number;
     ? { ...serverAvatar({ version: 1, body, faceStyle, noseStyle, skinTone, eyeColor, hairStyle, hairColor }), headband: avatar.headband } : avatar;
   return { player, enemy: { ...player, visible: false }, inspection: true,
     view: framing === 'portrait' ? 1 : 0, azimuth: framing === 'portrait' ? 0 : 25,
-    previewWidth: Math.round(size.width * (framing === 'portrait' ? leagueArt.headCaptureScale : 2)),
-    previewHeight: Math.round(size.height * (framing === 'portrait' ? leagueArt.headCaptureScale : 2)) };
+    // One calibrated resolution lets the profile, podium and rows reuse the same portrait.
+    previewWidth: framing === 'portrait' ? leagueArt.headCaptureSize : Math.round(size.width * 2),
+    previewHeight: framing === 'portrait' ? leagueArt.headCaptureSize : Math.round(size.height * 2) };
 }

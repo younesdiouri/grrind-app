@@ -3,10 +3,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
 import { GuildIcon } from '@/components/GuildMenu';
-import { initialsOf } from '@/components/initials';
-import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { GuildPortrait } from '@/components/GuildPortrait';
 import { SystemFrame } from '@/components/SystemFrame';
-import { color, control, frame, guildUi, opacity, radius, space, type, typography } from '@/design/tokens';
+import { color, control, frame, guildUi, opacity, space, type, typography } from '@/design/tokens';
 
 type Entry = components['schemas']['GuildWeeklyLeaderboardEntry'];
 type Board = components['schemas']['GuildWeeklyLeaderboard'];
@@ -43,8 +42,8 @@ export function GuildWeeklyBoard({ board, playerId, onProfile, summary }: {
           accessibilityRole="button" accessibilityLabel={label(entry)} onPress={() => onProfile(entry.member.id)}
           style={({ pressed }) => [styles.podiumColumn, pressed && styles.pressed]}>
           <View style={styles.podiumPerson}>
-            <View style={[styles.portrait, { borderColor: tint }, first && styles.firstPortrait]}>
-              <Text style={[styles.initials, { color: tint }]}>{initialsOf(entry.member.displayName)}</Text>
+            <View style={styles.portrait}>
+              <GuildPortrait member={entry.member} size={first ? guildUi.leaderAvatarSize : guildUi.avatarSize} />
               {first && <View style={styles.trophy}><GuildIcon name="week" tint={color.accent} /></View>}
             </View>
             <Text numberOfLines={1} style={styles.name}>{entry.member.displayName}</Text>
@@ -71,7 +70,7 @@ export function GuildWeeklyBoard({ board, playerId, onProfile, summary }: {
         accessibilityRole="button" accessibilityLabel={label(entry)} onPress={() => onProfile(entry.member.id)}
         style={({ pressed }) => [styles.row, entry.member.id === playerId && styles.ownRow, pressed && styles.pressed]}>
         <Text style={styles.rowRank}>{entry.rank ?? '—'}</Text>
-        <PlayerAvatar name={entry.member.displayName} />
+        <GuildPortrait member={entry.member} />
         <View style={styles.rowPerson}>
           <Text style={styles.name} numberOfLines={1}>{entry.member.displayName}</Text>
           {entry.member.id === playerId ? <Text style={styles.you}>VOUS</Text>
@@ -93,10 +92,7 @@ const styles = StyleSheet.create({
   podium: { flexDirection: 'row', alignItems: 'flex-end', gap: space.sm, paddingTop: space.md },
   podiumColumn: { flex: 1, minWidth: 0 },
   podiumPerson: { alignItems: 'center', gap: space.xs, paddingBottom: space.md },
-  portrait: { width: guildUi.avatarSize, height: guildUi.avatarSize, borderRadius: radius.pill,
-    backgroundColor: color.surfaceRaised, borderWidth: frame.segmentThickness, alignItems: 'center', justifyContent: 'center', marginBottom: space.sm },
-  firstPortrait: { width: guildUi.leaderAvatarSize, height: guildUi.leaderAvatarSize, boxShadow: guildUi.leaderShadow },
-  initials: { fontSize: guildUi.titleSize, fontFamily: typography.display.bold },
+  portrait: { alignItems: 'center', justifyContent: 'center', marginBottom: space.sm },
   trophy: { position: 'absolute', top: -space.md, backgroundColor: color.background, paddingHorizontal: space.xs },
   name: { ...type.body, color: color.text, fontFamily: typography.display.semibold, maxWidth: '100%' },
   you: { ...type.label, color: color.accent, letterSpacing: 0 },

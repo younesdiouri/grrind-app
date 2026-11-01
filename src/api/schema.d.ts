@@ -1403,6 +1403,9 @@ export interface components {
             role: "FOUNDER" | "MEMBER";
             /** Format: date-time */
             joinedAt: string;
+            league: components["schemas"]["LeagueIdentity"];
+            /** @description Coiffe réellement portée, jamais le sac ; null si HEAD est vide. */
+            headEquipment: components["schemas"]["EquipmentReference"] | null;
         };
         /**
          * @description Classement des membres actuels par nombre de séances validées, jamais par XP.
@@ -2747,13 +2750,14 @@ export interface components {
         } | null;
         /** @description Objets réellement portés au combat, indexés par emplacement (HEAD, FEET…). Clé et version sont figées dans le snapshot des deux joueurs. Un objet dans le sac est absent ; un ancien combat rend {}. Le client ne consulte jamais l’inventaire courant pour un replay. weaponType est figé pour les nouveaux combats (null hors WEAPON) ; un ancien snapshot sans ce champ et les mains nues (WEAPON absent) utilisent FIST sans consulter le catalogue courant. Une artworkVersion nulle signifie qu’aucun calque n’est livré. Les images et compatibilités de chaque version viennent du catalogue graphique. */
         BattleEquipment: {
-            [key: string]: {
-                /** @example TEMPERED_HEADBAND */
-                key: string;
-                /** @example v1 */
-                artworkVersion: string | null;
-                weaponType?: components["schemas"]["WeaponType"] | null;
-            };
+            [key: string]: components["schemas"]["EquipmentReference"];
+        };
+        EquipmentReference: {
+            /** @example BANDEAU_ECLAIR */
+            key: string;
+            /** @example v1 */
+            artworkVersion: string | null;
+            weaponType?: components["schemas"]["WeaponType"] | null;
         };
         /**
          * @description L'adversaire : les mêmes champs qu'un `BattleFighter`, plus son identité.
