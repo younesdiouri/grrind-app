@@ -1,7 +1,7 @@
 # #328 — profil et ligues, essai avant push
 
-Version locale sur `feat/328-league-profile`. Aucun push, aucune PR ni release avant le verdict
-personnel de l’auteur sur son iPhone.
+Essai iPhone et retours validés le 1er novembre 2026. Accord de l’auteur : « ok top tu peux push
+et merge pas la peine de déployer ». Push et fusion autorisés ; aucun déploiement prévu.
 
 ## Ce qui est livré
 
@@ -51,7 +51,7 @@ personnel de l’auteur sur son iPhone.
 ## Test sur l’iPhone
 
 Le binaire `app.grrind.dev` est installé sur Dyoxel (iPhone 16 Pro). Le premier essai iPhone a
-été réalisé par l’auteur ; ses retours ont été intégrés. Un nouvel essai est attendu avant push.
+été réalisé par l’auteur ; ses retours ont été intégrés, puis il a validé la fusion.
 
 Metro 8081 est laissé actif, sans mode E2E, avec `EXPO_PUBLIC_API_URL=https://grrind-back.fly.dev`.
 Déverrouiller l’iPhone, le garder sur le même réseau que le Mac, puis ouvrir GRRIND dev sur le
@@ -72,10 +72,9 @@ L’adresse LAN peut changer ; elle est celle du Mac au moment de cet essai.
 5. Activer Réduire les animations sur l’iPhone : vérifier que tous les ornements restent
    présents, sans pulsation ni déplacement. Revenir à l’app après l’avoir mise en arrière-plan.
 
-Restent au verdict de l’auteur : rendu physique, compte réellement équipé HEAD + WEAPON,
-personnalisation complète, confort avec les réglages de texte/accessibilité et navigation
-combat/inventaire. La clôture et les mouvements sont prouvés par les tests/fixtures ; aucune
-semaine réelle n’a été forcée et aucune donnée de ligue n’a été modifiée sur Fly.
+L’accord de l’auteur sur l’essai iPhone autorise la fusion. La clôture et les mouvements sont
+prouvés par les tests/fixtures ; aucune semaine réelle n’a été forcée et aucune donnée de ligue
+n’a été modifiée sur Fly.
 
 Pour relancer Metro si nécessaire :
 
