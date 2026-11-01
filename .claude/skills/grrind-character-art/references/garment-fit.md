@@ -5,8 +5,9 @@ prêt malgré un cou apparent trop long et un col mal raccordé. Les captures de
 `artifacts/avatar-customization-archive-2026-10-23/references/quaternius-poc/neck-fit-review/`. Un flow vert et un FBX valide ne valident pas le fit.
 
 - Comparer la tenue approuvée et le nouvel item sur **le même corps, avec la même pose,
-  caméra, lumière et taille de tête**. Exporter face, trois quarts, profil et dos, puis un
-  gros plan du cou/col et des épaules. Inspecter aussi à la taille d'affichage dans l'app.
+  caméra, lumière et taille de tête**, d'abord au cadrage de l'app. Ajouter les angles et
+  gros plans qui exposent les zones modifiées ; face/profil/dos ne sont pas une campagne
+  obligatoire pour chaque variante. Les contrôles suivent `AGENTS.md`.
 - Mesurer hauteur de tête, distance menton–bord avant du col, hauteur et profondeur du col,
   et distance peau–tissu. Distinguer une coupe volontairement ouverte d'une anomalie : la
   peau doit rejoindre les clavicules et le torse, sans colonne de cou ni bord qui flotte devant.
@@ -29,11 +30,11 @@ prêt malgré un cou apparent trop long et un col mal raccordé. Les captures de
   éclairage pour distinguer pli du mesh, ombre peinte et normale incorrecte. Un pic triangulaire
   ou un coude de manche cassé impose de reprendre le fit, les poids ou la source ; une texture
   ne le répare pas. Ne pas déplacer indépendamment X/Z vers chaque relief musculaire du corps.
-- Pour une demande de coton/denim, une couleur plate ne suffit pas. Montrer la matière au
-  cadrage du jeu et dans un détail vêtement : grain mesuré à cette échelle, rugosité mate,
-  normales et filtrage cohérents, sans bruit ni gros reflets plastiques. L'auteur a rejeté
-  les épaules anguleuses et l'aspect RPG ancien du premier tee ; le col corrigé reste la
-  référence à préserver pendant cette itération.
+- Les essais coton/denim du 22 octobre précèdent la DA facettée actuelle : leur grain et
+  leurs épaules lisses ne sont pas le défaut d'un nouvel item. Suivre `docs/design/da-facettee.md`.
+  Pour une nouvelle demande explicite de matière texturée, en vérifier la lecture au cadrage
+  du jeu, avec rugosité, normales et filtrage cohérents, sans bruit ni reflets plastiques.
+  Le raccord anatomique du col reste à préserver indépendamment du traitement de matière.
 - Si le vêtement est correct en pose de liaison mais cassé une fois animé, comparer les poids
   avant de toucher encore aux formes. Le transfert depuis une peau nue peut disperser le col
   entre tête, cou et clavicules. Prévoir une pondération continue torse–bras, garder l'ourlet

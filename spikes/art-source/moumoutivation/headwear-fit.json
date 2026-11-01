@@ -1,0 +1,12 @@
+{
+  "asset_name": "Moumoutivation",
+  "display_name": "La Moumoutivation",
+  "source_front": "-Y",
+  "size_ratios": [2.2, 1.4, 1.58],
+  "below_chin_m": 0.02,
+  "rear_offset_m": 0.015,
+  "source": "Meshy 7.1 multi-image-to-3d",
+  "license": "Meshy generated asset; not Quaternius CC0",
+  "concept": "Built-in ImageGen; approved by author on 2026-11-01",
+  "inferred": ["back and depth", "inner lining", "20 mm below chin", "15 mm rear offset"]
+}

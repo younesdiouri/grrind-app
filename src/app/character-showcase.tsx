@@ -26,19 +26,20 @@ function pick<T extends string>(options: readonly T[], value: string): T {
 }
 
 export default function CharacterShowcaseScreen() {
-  const { preview } = useLocalSearchParams<{ preview?: string }>();
+  const { preview, item } = useLocalSearchParams<{ preview?: string; item?: string }>();
   if (!__DEV__) return <Redirect href="/" />;
-  return <AmbientBackdropProvider><Showcase key={preview} preview={preview} /></AmbientBackdropProvider>;
+  return <AmbientBackdropProvider><Showcase key={`${preview}:${item}`} preview={preview} item={item} /></AmbientBackdropProvider>;
 }
 
-function Showcase({ preview }: { preview?: string }) {
+function Showcase({ preview, item }: { preview?: string; item?: string }) {
+  const tryingMoumoutivation = item === 'moumoutivation';
   const [body, setBody] = useState<UnityAvatar['body']>('male');
   const [faceStyle, setFaceStyle] = useState<UnityAvatar['faceStyle']>('original');
   const [noseStyle, setNoseStyle] = useState<UnityAvatar['noseStyle']>('wide');
   const [hairStyle, setHairStyle] = useState<UnityAvatar['hairStyle']>('parted');
-  const [headband, setHeadband] = useState(true);
-  const [moumoutivation, setMoumoutivation] = useState(false);
-  const [section, setSection] = useState('Corps');
+  const [headband, setHeadband] = useState(!tryingMoumoutivation);
+  const [moumoutivation, setMoumoutivation] = useState(tryingMoumoutivation);
+  const [section, setSection] = useState(tryingMoumoutivation ? 'Tenue' : 'Corps');
   const [skinTone, setSkinTone] = useState<UnityAvatar['skinTone']>('tan');
   const [eyeColor, setEyeColor] = useState<UnityAvatar['eyeColor']>('blue');
   const [hairColor, setHairColor] = useState<UnityAvatar['hairColor']>('brown');
@@ -50,7 +51,7 @@ function Showcase({ preview }: { preview?: string }) {
   const [pose, setPose] = useState<FighterPose>('idle');
   const [animated, setAnimated] = useState(true);
   const [azimuth, setAzimuth] = useState(25);
-  const [view, setView] = useState(0);
+  const [view, setView] = useState(tryingMoumoutivation ? 1 : 0);
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -85,7 +86,8 @@ function Showcase({ preview }: { preview?: string }) {
         <Text style={styles.title}>ATELIER AVATAR</Text>
         <Text style={styles.subtitle} testID={ready && !failed ? 'quaternius-ready' : undefined}>
           {preview === 'inventory' ? 'Aperçu inventaire' : !unityCombatAvailable ? 'Ce POC nécessite le development build avec Unity.'
-            : failed ? 'Le rendu 3D n’a pas démarré.' : ready ? 'Spike local · Visage et nez' : 'Chargement…'}
+            : failed ? 'Le rendu 3D n’a pas démarré.' : ready
+              ? (moumoutivation ? 'Moumoutivation · essai local' : 'Spike local · Visage et nez') : 'Chargement…'}
         </Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Fermer le showcase" onPress={() => {
           if (router.canGoBack()) router.back(); else router.replace('/combat-demo?mob=pebble');
