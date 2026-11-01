@@ -41,7 +41,9 @@ Concept ImageGen `ref/concept-v2.png` → Meshy 7.1 → retopologie Meshy : 40 c
 (35 + 5), source GLB de 4 034 triangles conservé et tâches dans `tasks.json`.
 Les 1 038 triangles de miroir gardent leurs positions, UV et normales. La déformation est
 limitée aux parties non métalliques du raccord latéral ; les points partagés avec le verre
-sont protégés. Les nouvelles surfaces violettes et les branches réemploient l’atlas existant.
+sont protégés, y compris au bord extérieur du verre féminin proche de la coupe. Le build
+refuse tout déplacement d’un triangle de miroir. Les nouvelles surfaces violettes et les
+branches réemploient l’atlas existant.
 Aucune nouvelle génération payante pour ces retouches.
 
 Un mesh et un matériau par corps, deux maps 2k partagées. Painted Toon conserve le reflet

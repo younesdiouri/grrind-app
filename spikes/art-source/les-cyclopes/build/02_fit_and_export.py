@@ -157,6 +157,7 @@ def rebuild_temples(model, skin, head, approach, optics):
         metal = optics.sample(sum((corner[1] for corner in polygon), Vector((0, 0))) / 3)
         if metal > .65:
             assert all(corner[0].y > cut_y for corner in polygon)
+            locked.update(key(corner[0]) for corner in polygon)
             kept_lens += 1
         if metal > .1:
             locked.update(key(corner[0]) for corner in polygon if corner[0].y > cut_y + .002)
@@ -255,6 +256,7 @@ def rebuild_temples(model, skin, head, approach, optics):
     for polygon, metal in polygons:
         transformed = [(warp(point), texcoord, normal) for point, texcoord, normal in polygon]
         changed = any((a[0] - b[0]).length > 1e-8 for a, b in zip(polygon, transformed))
+        assert not changed or metal <= .65, 'The mirror lens must remain fixed while reshaping the frame'
         for i in range(1, len(transformed) - 1):
             triangle = [transformed[0], transformed[i], transformed[i + 1]]
             if changed:
