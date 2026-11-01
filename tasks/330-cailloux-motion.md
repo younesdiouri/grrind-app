@@ -45,5 +45,9 @@ Le development build Debug compile avec zéro erreur et est installé sur Dyoxel
 Le framework embarqué a le même UUID et ses 16 fichiers Data sont identiques à
 l’export Device. Metro 8081 est conservé. Expo a refusé le lancement automatique
 pendant le verrouillage du téléphone ; l’installation directe a ensuite réussi.
-Validation artistique à faire par l’auteur dans un combat
-contre Cailloux, en observant la garde, l’armé/impact/retour et les deux supporters signalés.
+Après déverrouillage, `devicectl` a lancé GRRIND dev sur le Metro 8081 existant.
+
+## Validation iPhone — 1er novembre 2026
+
+L’auteur a testé cette version sur son iPhone et valide le résultat :
+« ok top j'ai testé c'est niquel ».
