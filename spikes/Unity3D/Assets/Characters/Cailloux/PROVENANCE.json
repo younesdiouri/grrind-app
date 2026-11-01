@@ -17,5 +17,6 @@
     "hidden sole detail",
     "compact attack and counter choreography"
   ],
-  "menu_preview": "assets/images/enemies/cailloux-preview.png, Blender material render of the final idle pose; not an animated sprite"
+  "menu_preview": "assets/images/enemies/cailloux-preview.png, Blender material render of the final idle pose; not an animated sprite",
+  "motion_revision_2026_11_01": "Open low guard revealing the face, rigid torso sway, eased wind-up and recovery, two-part combo; fixed feet and no arena translation for enemy strikes. Existing rig and topology retained; no paid generation. iPhone artistic review pending (#330)."
 }
