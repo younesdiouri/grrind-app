@@ -105,17 +105,30 @@ Ne pas fusionner, publier, lancer EAS ou soumettre à l’App Store avant cet ac
 
 ### Vérifications du 1er novembre 2026
 
-- Typecheck, lint et 643 tests unitaires : verts ; contrat tiré de `grrind-back/main`.
+- Typecheck, lint et 645 tests unitaires : verts ; contrat tiré de `grrind-back/main`.
 - Client HTTP front exécuté contre le backend local réel avec un compte jetable existant :
   login et état en 200, inscription, choix HARD, trois probabilités serveur, persistance par
   un nouveau GET, désinscription et aucune clé en attente après confirmation. Aucun reset,
   migration ni modification du dépôt backend.
 - Le bundle du Metro iPhone existant (8081) confirme `https://grrind-back.fly.dev`.
-- Flow Maestro `alam-preferences` **non validé** : les deux exécutions (localhost puis
-  127.0.0.1) restent sur le témoin de connexion et expirent avant `NIVEAU`, donc avant
-  l’accès à Ālam. Cause non identifiée. Development build existant réutilisé, aucun rebuild.
-  Le dernier rapport est `artifacts/e2e/report.xml` ; pas de troisième tentative identique.
-- Essai visuel et parcours sur l’iPhone de l’auteur en attente. Aucun changement Unity/natif.
+- Flow Maestro `alam-preferences` **vert en 2 min 57 s** après le correctif de démarrage :
+  inscription, probabilités, choix Intermédiaire puis Difficile, retour au premier plan,
+  désinscription et réinscription. Le délai du long défilement de retour est adapté à 60 s.
+  Development build existant réutilisé, aucun rebuild. Rapport : `artifacts/e2e/report.xml`.
+- Essai iPhone validé par l’auteur : « j’ai checké c’est good ». Aucun changement Unity/natif.
+
+Au premier essai iPhone, le démarrage restait sur le splash bleu. Le calcul de l’échéance
+parcourait les heures sans limite en attendant une heure « 20 » : un moteur natif qui ignore
+`hourCycle` et utilise un cadran de 12 heures ne pouvait jamais satisfaire cette condition.
+Le calcul demande maintenant `hour12: false`, borne la recherche à une semaine avec la marge
+du changement d’heure et, si le format reste inexploitable, planifie une relecture horaire.
+Cela ne modifie aucune valeur de jeu.
+
+Reproduction contrôlée : l’ancien calcul expire après 1,5 s dans un processus de test isolé ;
+le scénario corrigé termine en environ 60 ms, lancement du processus compris. Deux tests
+protègent l’horloge native et son repli, en plus des cas DST. Après la correction et une
+relance du development build, l’accueil a été constaté sur l’iPhone physique via Device Hub.
+Aucun rebuild, aucune remise à zéro ni déconnexion volontaire.
 
 Préparer le build Metro avec `npm run e2e:ios:dev`. La scène autonome, sans gain, est accessible
 en développement via `grrindapp-dev://alam-demo` et `.maestro/alam-scene.yaml`.

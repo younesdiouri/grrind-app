@@ -79,6 +79,7 @@ tags:
 - scrollUntilVisible:
     element: "Me désinscrire"
     direction: UP
+    timeout: 60000
 - tapOn: "Me désinscrire"
 - extendedWaitUntil:
     visible: "INSCRIS-TOI.*"
