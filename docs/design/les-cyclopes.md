@@ -1,76 +1,80 @@
 # Les Cyclopes — pilote iPhone (#350)
 
-Accessoire de cyclisme cumulable avec HEAD : visière Meshy miroir rose/orange/or,
-monture violette et branches citron. Atelier uniquement, sans tenue sauvegardée, catalogue
-serveur ni loot. Le jugement du modèle porté revient à l’auteur sur son iPhone.
+Lunettes de cyclisme en Accessoire, cumulables avec HEAD : visière Meshy miroir rose/orange/or,
+monture violette et branches sport violet/citron. Essai atelier uniquement, sans catalogue
+serveur, loot ni tenue sauvegardée. L’auteur juge le modèle porté sur son iPhone.
 
-## Source et géométrie actuelle
+## Forme actuelle
+
+La référence de raccord est `ref/cycling-sport-stem-reference.jpg` : branche large, clairement
+reliée à la monture, droite jusqu’à l’oreille. Les anciennes tiges fines étaient trop petites,
+masquées par les cheveux à leur départ et inclinées vers le haut ; elles sont remplacées.
+Les captures `iphone-disconnected-stems-rejected.jpg` et `iphone-rising-stems-rejected.jpg`
+conservent ces défauts à éviter. La partie visible suit désormais une ligne horizontale ;
+seul le retour arrière descend, près du crâne.
+
+| Corps | Triangles livrés | Distance iris/verre | Branche visible | Retour arrière |
+| --- | --- | --- | --- | --- |
+| Homme | 2 910 | 24,7–29,6 mm | 8 × 4 mm | descente 15 mm |
+| Femme | 2 831 | 24,4–29,9 mm | 8 × 4 mm | descente 15 mm |
+
+La section représente environ 11 % de la hauteur de visière. La jonction large s’ancre sur
+le bord supérieur de la monture, avec un recouvrement réel (13/14 contacts de triangles
+homme, 24/30 femme). Le bord supérieur reste à la même hauteur de la jonction jusqu’à
+l’oreille : aucun départ oblique vers le haut. La branche visible passe à l’extérieur des
+cheveux de la crête, au lieu de disparaître puis de ressortir en morceaux. La couleur mate
+citron longe la face extérieure ; le corps et le retour sont violets.
+
+## Source et matière
 
 Concept ImageGen `ref/concept-v2.png` → Meshy 7.1 → retopologie Meshy : 40 crédits historiques
-(35 + 5), tâches et paramètres dans `tasks.json`, GLB original de 4 034 triangles conservé.
-Les dimensions sont inférées des têtes Quaternius et des références en perspective.
+(35 + 5), tâches/paramètres dans `tasks.json`, source GLB de 4 034 triangles conservé.
+La visière garde ses 1 038 triangles de miroir, leurs positions, UV et normales. Seuls les
+raccords arrière de monture sont coupés/fermés et les branches remplacées dans Blender.
+Aucune nouvelle génération payante pour ces retouches.
 
-Après les retours iPhone, les branches arrière sont remplacées par des tiges fines tracées
-sur la tempe et le pli supérieur de l’oreille. La visière conserve ses 1 038 triangles de
-miroir, leurs positions, UV et normales. La coupe arrière de la monture interpole les
-attributs aux raccords et ferme les sections ; elle ne retouche pas le verre.
-
-| Corps | Triangles livrés | Distance iris/verre | Branche | Petit retour |
-| --- | --- | --- | --- | --- |
-| Homme | 3 102 | 24,7–29,6 mm | 3,2 × 1,8 mm | descente 9 mm |
-| Femme | 3 087 | 24,4–29,9 mm | 3,2 × 1,8 mm | descente 9 mm |
-
-Un mesh, un matériau et deux maps 2k partagés. Les branches réemploient les teintes mates
-citron/violet de l’atlas Meshy ; le retour est sombre et court. Painted Toon conserve le
-reflet de studio teinté dépendant de la vue, sans réflexion de la scène ni transparence.
-Aucun nouvel appel payant pour ces retouches.
-
-## Référence de raccord et historique des retours
-
-`ref/iphone-fit-feedback.jpg` : premier retour, branches dans les oreilles et verre trop
-avancé. Le rapprochement de 16/18 mm homme/femme est conservé : davantage croisait certains
-bandeaux. Le cintrage qui remontait les branches a ensuite été rejeté par l’auteur : arche
-au-dessus des oreilles et long retour violet extérieur (`iphone-temple-arch-rejected.jpg`).
-
-La reprise suit `ref/natural-temple-reference.jpg` : branche presque droite le long de la
-tempe, petit retour discret près du pli de l’oreille. L’ancien cintrage est supprimé.
-La forme de l’appui arrière reste inférée là où la photo la masque ; les deux profils
-rapprochés documentent le résultat à juger sur téléphone :
-[homme](les-cyclopes/unity-fit-male-profile.png),
-[femme, coupe courte](les-cyclopes/unity-fit-female-profile.png).
+Un mesh et un matériau par corps, deux maps 2k partagées. Les branches réemploient les régions
+mates violet/citron de l’atlas. Painted Toon conserve le miroir teinté dépendant de la vue :
+reflet de studio stylisé, sans réflexion de scène ni transparence. Dimensions et dos masqué
+sur la photo restent inférés d’après les vrais meshes Quaternius ; les corps ne changent pas.
 
 ## Contrôles et reproduction
 
 Avec Blender headless et `--python-exit-code 1` :
 
-1. `build/02_fit_and_export.py -- --output artifacts/les-cyclopes/fitted-v4` ;
-2. `build/03_validate_fit.py -- --output artifacts/les-cyclopes/fitted-v4` ;
+1. `build/02_fit_and_export.py -- --output artifacts/les-cyclopes/fitted-v5` ;
+2. `build/03_validate_fit.py -- --output artifacts/les-cyclopes/fitted-v5` ;
 3. copier les FBX, BaseColor et MetalMask dans `Assets/Characters/LesCyclopes`, puis appeler
    `LesCyclopes.Build()` via Unity Pipeline. `QuaterniusPoc.Build()` inclut cet accessoire.
 
-Le master Blender reste local. La relecture FBX vérifie 18 points d’iris par corps à
--25°/0°/+25° derrière le verre métallique, la distance iris/verre et zéro intersection des
-branches avec les oreilles ou la peau de la tempe. Les 21 combinaisons visage/nez, neuf
-coupes et leurs bandeaux gardent le verre dégagé.
+Le master Blender reste local. Le build contrôle le recouvrement jonction/monture et la
+hauteur constante des quatre points de la partie droite. La relecture FBX mesure la distance
+iris/verre, les 54 rayons d’iris par corps et zéro traversée des oreilles/peau par les branches.
+Un contrôle dédié à la crête homme teste 36 rayons de visibilité de la jonction et du corps
+de branche, de profil et trois-quarts sur les deux côtés : aucun cheveu devant les lunettes.
+Les 21 combinaisons visage/nez, les neuf coupes et leurs bandeaux gardent le verre dégagé.
 
-Les contacts latéraux du verre sous la laine (74 homme, 79 femme) et les cheveux longs
-(71 femme) restent consignés ; aucun dans les 110 mm centraux. Rendus actuels :
+Unity refait la couverture des iris et les 27 combinaisons coupe/coiffe, l’ordre d’équipement,
+la rotation Head et le retrait indépendant. Les contacts latéraux sous laine/cheveux longs
+restent consignés dans `fit-report.json`, aucun dans les 110 mm centraux de visière.
+
+Rendus actuels à 360 × 360, proches de la taille montrée sur le téléphone :
+[crête homme/profil](les-cyclopes/unity-fit-male-profile.png),
+[crête homme/trois-quarts](les-cyclopes/unity-fit-male-threequarter.png),
+[femme/coupe courte/profil](les-cyclopes/unity-fit-female-profile.png),
 [homme/afro](les-cyclopes/unity-male-afro.png),
 [homme/laine](les-cyclopes/unity-male-moumoutivation.png),
 [femme/long/bandeau](les-cyclopes/unity-female-long-bandeau.png),
 [femme/laine](les-cyclopes/unity-female-moumoutivation.png).
-
-Unity refait les 54 rayons iris/verre par corps sur la géométrie effective et contrôle les
-27 combinaisons coupe/coiffe, ordre d’équipement, rotation Head et retrait indépendant.
-Ces mesures ne valent pas une acceptation visuelle par l’auteur.
+Le profil et le trois-quarts homme reprennent la crête, le nez large et la tenue de la capture
+de l’auteur. Les mesures et rendus ne constituent pas une acceptation visuelle de sa part.
 
 ## Essai
 
-GRRIND dev → Réglages → Atelier avatar 3D → **Tester Les Cyclopes**.
+GRRIND dev → Réglages → Atelier avatar 3D → Tester Les Cyclopes.
 Lien : `grrindapp-dev://character-showcase?item=cyclopes`.
-Les commandes Face/Profil/Trois-quarts changent seulement l’angle. Le cadrage En pied/Visage/
-Tissu est indépendant : **Visage puis Profil** conserve le gros plan, contrairement au
-comportement rejeté dans `ref/iphone-profile-framing-rejected.jpg`.
+Visage puis Profil conserve le gros plan ; Face/Profil/Trois-quarts changent uniquement
+l’angle, indépendamment du cadrage En pied/Visage/Tissu.
 
 Livraison : tranche Unity Device puis app hôte sur Dyoxel selon `docs/ai/mobile-qa.md`.
-Pas de build Simulator, Maestro ni EAS/TestFlight pour ce pilote visuel.
+Pas de build Simulator, Maestro ou EAS/TestFlight pour ce pilote visuel.

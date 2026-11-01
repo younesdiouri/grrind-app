@@ -2,6 +2,7 @@
 import argparse
 import itertools
 import json
+import math
 from pathlib import Path
 import sys
 import importlib.util
@@ -72,6 +73,27 @@ def ears(skin):
     return BVHTree.FromPolygons(points, polygons, all_triangles=True)
 
 
+def stem_visibility(glasses, hair, body):
+    paths = json.loads((ASSET / 'asset-manifest.json').read_text())['variants'][body]['temples']['sides']
+    eyewear, hairstyle = tree(glasses), tree(hair)
+    checked, hidden = 0, 0
+    for side, specification in paths.items():
+        points = [Vector(point) for point in specification['centreline_m'][:4]]
+        for a, b in zip(points, points[1:]):
+            for t in (.25, .5, .75):
+                point = a.lerp(b, t)
+                for angle in (25, 90):
+                    direction = Vector((int(side) * math.sin(math.radians(angle)), math.cos(math.radians(angle)), .02)).normalized()
+                    origin = point + direction * 2
+                    visible_glass = eyewear.ray_cast(origin, -direction, 2.1)
+                    hair_hit = hairstyle.ray_cast(origin, -direction, 2.1)
+                    assert visible_glass[0] is not None, 'Missing exported stem or frame connection'
+                    hidden += int(hair_hit[0] is not None and hair_hit[3] < visible_glass[3] - .0005)
+                    checked += 1
+    assert hidden == 0, f'{body}: hair hides the frame/stem connection in {hidden}/{checked} views'
+    return {'rays': checked, 'hair_in_front': hidden, 'angles_degrees': [25, 90]}
+
+
 def validate(output):
     report = {}
     for body, styles in STYLES.items():
@@ -121,6 +143,8 @@ def validate(output):
             result['hair'][style] = {'central_visor_intersections': len(central.overlap(hair_tree)),
                                       'all_visor_intersections': len(full.overlap(hair_tree))}
             assert result['hair'][style]['central_visor_intersections'] == 0, f'{body}/{style}: hair crosses central visor'
+            if body == 'Male' and style == 'mohawk':
+                result['hair'][style]['stem_visibility'] = stem_visibility(glasses, hair, body)
         hood = imported(CHARACTERS / 'Moumoutivation' / (body + '.fbx'))
         hood_tree = tree(hood)
         result['headwear']['moumoutivation'] = {'central_visor_intersections': len(central.overlap(hood_tree)),

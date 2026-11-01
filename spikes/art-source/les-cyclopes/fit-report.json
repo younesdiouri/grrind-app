@@ -1,6 +1,6 @@
 {
   "Male": {
-    "triangles": 3102,
+    "triangles": 2910,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
@@ -46,7 +46,15 @@
       },
       "mohawk": {
         "central_visor_intersections": 0,
-        "all_visor_intersections": 0
+        "all_visor_intersections": 0,
+        "stem_visibility": {
+          "rays": 36,
+          "hair_in_front": 0,
+          "angles_degrees": [
+            25,
+            90
+          ]
+        }
       },
       "afro": {
         "central_visor_intersections": 0,
@@ -77,7 +85,7 @@
     }
   },
   "Female": {
-    "triangles": 3087,
+    "triangles": 2831,
     "iris_coverage": {
       "-25": {
         "iris_samples": 18,
