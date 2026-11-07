@@ -713,17 +713,11 @@ export const PREVIEWS: Preview[] = [
     group: 'Composants',
     element: (
       <>
-        <Specimen label="De tête — la synchro vient d'allumer un jour">
-          <StreakMeter
-            state={{ startedOn: '2026-10-11', days: 7, weeksCompleted: 0, sportDaysInLast7: 5, nextChestRarity: 'COMMON' }}
-            fresh={1}
-            size="hero"
-          />
+        <Specimen label="Semaine en cours — palier rare">
+          <StreakMeter state={{ days: 4, checkedInToday: true, sportDaysThisWeek: 3, chestRarity: 'RARE' }} />
         </Specimen>
-        <Specimen label="En ligne — deux semaines tenues">
-          <StreakMeter
-            state={{ startedOn: '2026-10-01', days: 17, weeksCompleted: 2, sportDaysInLast7: 6, nextChestRarity: 'EPIC' }}
-          />
+        <Specimen label="Semaine sportive — palier légendaire">
+          <StreakMeter state={{ days: 17, checkedInToday: true, sportDaysThisWeek: 6, chestRarity: 'LEGENDARY' }} />
         </Specimen>
       </>
     ),
