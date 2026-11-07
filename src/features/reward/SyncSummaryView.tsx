@@ -4,12 +4,10 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import Animated, {
   cancelAnimation,
   Easing,
-  interpolate,
   useAnimatedProps,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -17,7 +15,6 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { AnimatedCoinBalance } from '@/components/AnimatedCoinBalance';
 import { ItemCard } from '@/components/ItemCard';
-import { StreakMeter, streakHeroCount } from '@/components/StreakMeter';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { TogetherDetails } from '@/components/TogetherDetails';
@@ -29,7 +26,6 @@ import {
   attributeLabel,
   color,
   curve,
-  duration,
   space,
   type,
   typography,
@@ -48,9 +44,8 @@ import type { SyncSummary } from './timeline';
  *
  * **Page 2 — le butin**, seulement s'il y en a : les objets tombés et la bourse.
  *
- * **Page 3 — la série** (#182), seulement si un jour sportif a compté : avant → après, puis le
- * coffre de la semaine s'il tombe. Sa propre page, et pas sous le butin : après un retour de
- * vacances, dix objets la poussaient hors de l'écran et le coffre se révélait sans témoin.
+ * La série n'y est plus (#360) : elle compte les ouvertures, pas les séances, et son coffre se
+ * révèle au pointage (`StreakChestPresenter`).
  *
  * Les séances écartées ne s'affichent plus : elles n'ont rien rapporté, il n'y a rien à fêter.
  *
@@ -71,9 +66,7 @@ export function SyncSummaryView({
 }) {
   const gains = batchGains(summary);
   const hasLoot = gains.loot.length > 0 || gains.coins.after > gains.coins.before;
-  const pages = (['xp', 'loot', 'streak'] as const).filter(
-    (name) => name === 'xp' || (name === 'loot' ? hasLoot : gains.streak !== null),
-  );
+  const pages = (['xp', 'loot'] as const).filter((name) => name === 'xp' || hasLoot);
   const [page, setPage] = useState<Page>('xp');
   const next = pages[pages.indexOf(page) + 1];
   const [done, setDone] = useState(false);
@@ -115,7 +108,6 @@ export function SyncSummaryView({
         <SystemFrame tier="event" style={styles.frame} contentStyle={styles.content}>
           {page === 'xp' ? <XpPage gains={gains} progress={progress} together={summary.imported.map((workout) => workout.session.together)} /> : null}
           {page === 'loot' ? <LootPage gains={gains} /> : null}
-          {page === 'streak' && gains.streak !== null ? <StreakPage streak={gains.streak} /> : null}
 
           {done && onDismiss !== undefined ? (
             <Text style={styles.exit}>
@@ -128,9 +120,9 @@ export function SyncSummaryView({
   );
 }
 
-type Page = 'xp' | 'loot' | 'streak';
+type Page = 'xp' | 'loot';
 
-const NEXT_LABEL: Record<Page, string> = { xp: 'l’XP', loot: 'le butin', streak: 'la série' };
+const NEXT_LABEL: Record<Page, string> = { xp: 'l’XP', loot: 'le butin' };
 
 type Progress = ReturnType<typeof useSharedValue<number>>;
 
@@ -244,69 +236,6 @@ function LootPage({ gains }: { gains: BatchGains }) {
   );
 }
 
-/**
- * Après les pièces : la série court de l'avant à l'après, puis le coffre se révèle. Une seule
- * valeur sur le thread UI — `[0, 1]` pour le compteur, `[1, 2]` pour le coffre.
- */
-function StreakPage({ streak }: { streak: NonNullable<BatchGains['streak']> }) {
-  const { before, after, chests } = streak;
-  const progress = useSharedValue(0);
-
-  const play = () => {
-    progress.value = withDelay(
-      duration.settle,
-      withTiming(1, { duration: duration.settle, easing: Easing.bezier(...curve.enter) }, (finished) => {
-        'worklet';
-        if (finished !== true || chests.length === 0) {
-          return;
-        }
-        progress.value = withTiming(2, {
-          duration: duration.drop,
-          easing: Easing.bezier(...curve.celebrate),
-        });
-        scheduleOnRN(Haptics.notificationAsync, Haptics.NotificationFeedbackType.Success);
-      }),
-    );
-  };
-
-  const daysProps = useAnimatedProps(() => {
-    const value = Math.round(before.days + (after.days - before.days) * Math.min(1, progress.value));
-    const text = `${value}`;
-    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
-  });
-
-  const chestStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(progress.value, [1, 1.4], [0, 1], 'clamp'),
-    transform: [{ scale: interpolate(progress.value, [1, 2], [0.6, 1], 'clamp') }],
-  }));
-
-  return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.lootContent} onLayout={play}>
-      <StreakMeter
-        state={after}
-        size="hero"
-        fresh={Math.max(0, after.sportDaysInLast7 - before.sportDaysInLast7)}
-        days={
-          <AnimatedTextInput
-            style={[styles.streakDays, streakHeroCount]}
-            editable={false}
-            animatedProps={daysProps}
-            defaultValue={`${before.days}`}
-          />
-        }
-      />
-      {chests.length > 0 ? (
-        <Animated.View style={[styles.lootContent, chestStyle]}>
-          <Text style={[styles.label, styles.climb]}>COFFRE DE LA SEMAINE</Text>
-          {chests.map((chest, position) => (
-            <ItemCard key={`${chest.key}-${position}`} item={chest} />
-          ))}
-        </Animated.View>
-      ) : null}
-    </ScrollView>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: space.sm, overflow: 'hidden' },
   frame: { flex: 1, zIndex: ambient.contentLayer },
@@ -332,6 +261,5 @@ const styles = StyleSheet.create({
   lootContent: { gap: space.md },
   purse: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   coinGain: { ...type.body, color: color.gain },
-  streakDays: { ...type.title, color: color.accent, padding: 0 },
   exit: { ...type.body, color: color.text, textAlign: 'center' },
 });

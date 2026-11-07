@@ -8,6 +8,7 @@ import { healthProvider } from '@/features/health/current';
 import { getSyncStatus, subscribeToSync, sync, type SyncStatus } from '@/features/health/sync';
 import { syncTogether } from '@/features/health/syncTogether';
 import { togetherInbox } from '@/features/health/togetherBonuses';
+import { checkIn, streakStore } from '@/features/streak/checkIn';
 
 /**
  * Les quatre déclencheurs de la synchronisation, et rien de plus.
@@ -54,10 +55,16 @@ export function useSyncTriggers(): void {
   const run = useCallback(
     (trigger: Parameters<typeof sync>[0]) => {
       if (!signedIn) {
+        streakStore.reset();
         return;
       }
 
-      void sync(trigger).then(() => syncTogether(trigger));
+      // Le pointage **après** l'import (#360) : le palier du coffre compte les séances que
+      // cette synchronisation vient de créditer.
+      void sync(trigger).then(() => {
+        void checkIn();
+        return syncTogether(trigger);
+      });
 
       // L'énergie active part **avec** les mêmes déclencheurs, pas sur un cinquième (#77). Ce
       // n'est pas une synchronisation : pas de coordinateur, pas de seuil, pas de clé

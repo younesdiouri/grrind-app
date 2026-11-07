@@ -1,46 +1,34 @@
-import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { components } from '@/api/schema';
-import { color, rarityColor, rarityLabel, space, type, typography } from '@/design/tokens';
+import { color, rarityColor, rarityLabel, space, type } from '@/design/tokens';
 
 export type StreakState = components['schemas']['StreakState'];
 
 const WEEK = 7;
+/** Les seuils de palier, lus sur la description du contrat (#346) — affichés, jamais appliqués. */
+const TIERS = new Set([3, 6]);
 
 /**
- * La série de régularité (#182) : les jours, les sept derniers jours en pastilles, le prochain
- * coffre. Tout est lu sur `StreakState` — la règle des 6/7 et des 30 minutes est serveur.
- *
- * `fresh` allume en or les pastilles que la synchro vient de gagner. `days` remplace le
- * nombre quand l'appelant l'anime : Reanimated reste hors du design system, donc des previews.
- * `hero` est la tête de l'écran de récompense, `inline` la carte de l'accueil — comme `XpBar`.
+ * La série d'assiduité (#360) : les jours d'ouverture consécutifs, puis la semaine en cours en
+ * pastilles — une par jour de sport — avec le palier du coffre qu'elle vaut si elle s'arrêtait
+ * là. Le palier vient de `chestRarity`, le client ne le déduit pas des pastilles.
  */
-export function StreakMeter({
-  state,
-  fresh = 0,
-  days,
-  size = 'inline',
-}: {
-  state: StreakState;
-  fresh?: number;
-  days?: ReactNode;
-  size?: 'inline' | 'hero';
-}) {
-  const hero = size === 'hero';
-  const lit = Math.min(WEEK, state.sportDaysInLast7);
+export function StreakMeter({ state }: { state: StreakState }) {
+  const lit = Math.min(WEEK, state.sportDaysThisWeek);
   const unit = state.days > 1 ? 'jours' : 'jour';
+  const rarity = rarityLabel[state.chestRarity];
 
   return (
     <View
       style={styles.meter}
       accessible
-      accessibilityLabel={`Série de ${state.days} ${unit}, ${lit} jours sportifs sur 7, prochain coffre ${rarityLabel[state.nextChestRarity]}`}
+      accessibilityLabel={`Série de ${state.days} ${unit}, ${lit} jours de sport cette semaine, coffre ${rarity}`}
     >
       <View style={styles.head}>
         <Text style={styles.label}>SÉRIE</Text>
         <View style={styles.days}>
-          {days ?? <Text style={[styles.count, hero && streakHeroCount]}>{state.days}</Text>}
+          <Text style={styles.count}>{state.days}</Text>
           <Text style={styles.label}>{unit.toUpperCase()}</Text>
         </View>
       </View>
@@ -48,31 +36,18 @@ export function StreakMeter({
         {Array.from({ length: WEEK }, (_, index) => (
           <View
             key={index}
-            style={[
-              styles.pip,
-              hero && styles.heroPip,
-              index < lit && styles.lit,
-              index < lit && index >= lit - fresh && styles.fresh,
-            ]}
+            style={[styles.pip, TIERS.has(index) && styles.tier, index < lit && styles.lit]}
           />
         ))}
       </View>
       <Text style={styles.label}>
-        {lit}/7 JOURS SPORTIFS · PROCHAIN COFFRE{' '}
-        <Text style={{ color: rarityColor[state.nextChestRarity] }}>
-          {rarityLabel[state.nextChestRarity].toUpperCase()}
-        </Text>
+        {lit}/7 JOURS DE SPORT · COFFRE{' '}
+        <Text style={{ color: rarityColor[state.chestRarity] }}>{rarity.toUpperCase()}</Text>
       </Text>
+      <Text style={styles.rule}>Ouvre l’app chaque jour : semaine complète, coffre le lundi.</Text>
     </View>
   );
 }
-
-/** Le compteur de tête, exporté pour la version animée de l'appelant — même jeu que `xpBarFill`. */
-export const streakHeroCount = {
-  ...type.display,
-  fontFamily: typography.display.bold,
-  fontWeight: typography.display.weight.bold,
-};
 
 const styles = StyleSheet.create({
   meter: { gap: space.sm },
@@ -80,9 +55,9 @@ const styles = StyleSheet.create({
   days: { flexDirection: 'row', alignItems: 'baseline', gap: space.xs },
   count: { ...type.title, color: color.accent, padding: 0 },
   label: { ...type.label, color: color.textMuted },
+  rule: { ...type.body, color: color.textMuted },
   pips: { flexDirection: 'row', gap: space.xs },
   pip: { flex: 1, height: space.sm, borderRadius: space.xs, backgroundColor: color.surfaceRaised },
-  heroPip: { height: space.md, borderRadius: space.sm },
+  tier: { marginLeft: space.sm },
   lit: { backgroundColor: color.accent },
-  fresh: { backgroundColor: color.celebrate },
 });

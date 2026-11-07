@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -24,6 +24,7 @@ import { AttributeCard, LevelCard, WorkoutRow } from '@/features/progression/Pla
 // Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
 // renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
 import { usePlayerHome, type PlayerHome as HomeState } from '@/features/progression/usePlayerHome';
+import { streakStore } from '@/features/streak/checkIn';
 
 /**
  * L'accueil.
@@ -161,6 +162,9 @@ function PlayerHome({
   // ne doivent pas tomber de part et d'autre de minuit parce que le rendu a pris du temps.
   const now = new Date();
   const beacon = decorativeMotion('beacon', useReducedMotion());
+  // Le pointage qui vient de partir prime sur la lecture : il est plus frais (#360).
+  const checkedIn = useSyncExternalStore(streakStore.subscribe, streakStore.getSnapshot).streak;
+  const streak = home.step === 'ready' ? checkedIn ?? home.streak : null;
 
   return (
     <>
@@ -204,9 +208,9 @@ function PlayerHome({
       {home.step === 'ready' ? (
         <LevelCard progression={home.progression} scanToken={scanToken} />
       ) : null}
-      {home.step === 'ready' && home.streak !== null ? (
+      {streak !== null ? (
         <SystemFrame contentStyle={styles.streak}>
-          <StreakMeter state={home.streak} />
+          <StreakMeter state={streak} />
         </SystemFrame>
       ) : null}
       {home.step === 'ready' ? (

@@ -51,21 +51,6 @@ describe('batchGains', () => {
     assert.deepEqual(gains.attributes, []);
   });
 
-  it('fait courir la série de la première séance à la dernière, coffres compris', () => {
-    const summary = fixture('quinze-workouts');
-    const streak = batchGains(summary).streak;
-    assert.deepEqual(streak?.before, summary.imported[0]?.streak.before);
-    assert.deepEqual(streak?.after, summary.imported.at(-1)?.streak.after);
-    assert.deepEqual(
-      streak?.chests,
-      summary.imported.flatMap((workout) => workout.streak.chests),
-    );
-  });
-
-  it('tait la série quand aucun jour sportif n’a compté', () => {
-    assert.equal(batchGains(fixture('marche-sans-xp')).streak, null);
-  });
-
   it('nomme la raison d’un lot crédité sans XP', () => {
     assert.equal(batchGains(fixture('marche-sans-xp')).noCredit, 'NO_XP_FEEDS_VITALITY');
   });
