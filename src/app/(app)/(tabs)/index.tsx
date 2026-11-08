@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useCallback, useState, useSyncExternalStore } from 'react';
 import {
   ActivityIndicator,
@@ -13,14 +14,14 @@ import { Button } from '@/components/Button';
 import { AmbientBackdrop } from '@/components/AmbientBackdrop';
 import { StreakMeter } from '@/components/StreakMeter';
 import { SystemFrame } from '@/components/SystemFrame';
-import { ScanLine, Seam, SparkRail } from '@/components/SystemMotion';
+import { ScanLine, Seam } from '@/components/SystemMotion';
 import { decorativeMotion } from '@/design/decorativeMotion';
 import { ambient, color, motion, radius, space, type } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSyncStatus } from '@/features/health/useSync';
-import { AttributeCard, LevelCard, WorkoutRow } from '@/features/progression/PlayerHomeView';
+import { AttributeCard, LevelCard } from '@/features/progression/PlayerHomeView';
 // Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
 // renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
 import { usePlayerHome, type PlayerHome as HomeState } from '@/features/progression/usePlayerHome';
@@ -158,9 +159,6 @@ function PlayerHome({
   refreshFailure: Failure | null;
   scanToken: number;
 }) {
-  // Une seule lecture de l'horloge pour toute la liste : deux séances de la même journée
-  // ne doivent pas tomber de part et d'autre de minuit parce que le rendu a pris du temps.
-  const now = new Date();
   const beacon = decorativeMotion('beacon', useReducedMotion());
   // Le pointage qui vient de partir prime sur la lecture : il est plus frais (#360).
   const checkedIn = useSyncExternalStore(streakStore.subscribe, streakStore.getSnapshot).streak;
@@ -220,7 +218,7 @@ function PlayerHome({
         />
       ) : null}
 
-      {home.step === 'ready' && home.workouts.length === 0 ? (
+      {home.step === 'ready' && !home.hasWorkouts ? (
         <View style={styles.card}>
           <Text style={styles.name}>Aucune séance</Text>
           <Text style={styles.detail}>
@@ -229,30 +227,9 @@ function PlayerHome({
         </View>
       ) : null}
 
-      {home.step === 'ready' && home.workouts.length > 0 ? (
-        <>
-          {/* L'intitulé, puis le filet qui prend la place qui reste — et un point qui le
-              parcourt. C'est la dernière chose vivante avant l'archive : dessous, plus rien ne
-              bouge, et c'est ce contraste qui fait paraître le haut de l'écran alimenté. */}
-          <View style={styles.sectionRow}>
-            <Text style={styles.section}>
-              {home.workouts.length} séance{home.workouts.length > 1 ? 's' : ''}
-              {home.hasMore ? ' (les plus récentes)' : ''}
-            </Text>
-            {beacon.effect === undefined ? (
-              <View style={styles.sectionRule} />
-            ) : (
-              <SparkRail
-                style={styles.sectionRule}
-                sparkColor={color.accent}
-                offset={motion.beacon.phase.section}
-              />
-            )}
-          </View>
-          {home.workouts.map((workout) => (
-            <WorkoutRow key={workout.id} workout={workout} now={now} />
-          ))}
-        </>
+      {/* L'archive a sa page (#362) : l'accueil dit la semaine, pas tout ce qui a précédé. */}
+      {home.step === 'ready' && home.hasWorkouts ? (
+        <Button label="Toutes les séances" variant="quiet" onPress={() => router.push('/historique')} />
       ) : null}
     </>
   );
@@ -262,15 +239,6 @@ const styles = StyleSheet.create({
   shell: { flex: 1, overflow: 'hidden' },
   contentLayer: { zIndex: ambient.contentLayer },
   screen: { padding: space.lg, paddingTop: space.sm, gap: space.md },
-  sectionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    marginTop: space.md,
-  },
-  section: { ...type.label, color: color.textMuted },
-  /** Le filet prend la largeur qui reste après l'intitulé, et rien de plus. */
-  sectionRule: { flex: 1, height: ambient.gridLine, backgroundColor: color.border },
   streak: { padding: space.md },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   card: {
