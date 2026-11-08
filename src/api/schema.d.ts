@@ -614,6 +614,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/progression/week": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** La semaine de jeu (#348) : de taille bornée, donc servie d'un bloc, sans curseur. */
+        get: operations["get_progression_week"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/titles": {
         parameters: {
             query?: never;
@@ -2563,6 +2580,42 @@ export interface components {
         XpHistoryPage: {
             transactions: components["schemas"]["XpTransaction"][];
             nextCursor: string | null;
+        };
+        /**
+         * @description La semaine de jeu (#348) — **celle des caractéristiques**, remise à zéro le dimanche
+         *     soir (Europe/Paris), pas la semaine civile du streak. Une jauge est « pleine » quand
+         *     `current` égale `previous` ; elle peut déborder, le serveur ne plafonne rien.
+         *     Tout se range par l'instant du sport : une séance de la semaine dernière importée
+         *     cette semaine compte pour la semaine dernière.
+         */
+        WeekProgress: {
+            /**
+             * Format: date-time
+             * @description Début de la semaine en cours.
+             */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description Prochaine remise à zéro.
+             */
+            resetsAt: string;
+            current: components["schemas"]["WeekTotals"];
+            /** @description La référence à battre. `null` sans semaine précédente ou sans gain : le client n'invente pas de cible. */
+            previous: components["schemas"]["WeekTotals"] | null;
+            /** @description Toutes les écritures de la semaine, `occurredAt` décroissant, sans pagination. `current` en est la somme exacte. */
+            entries: components["schemas"]["XpTransaction"][];
+        };
+        WeekTotals: {
+            xp: number;
+            /** @description Séances créditées, nettes des annulations. */
+            sessions: number;
+            /** @description Mêmes sommes que `XpTransaction.attributes`. */
+            attributes: {
+                strength: number;
+                endurance: number;
+                mobility: number;
+                dexterity: number;
+            };
         };
         /**
          * @description Un combattant tel qu'affiché. **`mitigationPercent`, `comboPercent` et
@@ -4880,6 +4933,27 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    get_progression_week: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La semaine des caractéristiques en cours, ses écritures, et les totaux de la semaine d'avant comme référence. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WeekProgress"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
     get_progression_titles: {

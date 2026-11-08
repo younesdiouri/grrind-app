@@ -37,6 +37,8 @@ import { RisalaCard } from '@/components/RisalaCard';
 import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
 import { StreakMeter } from '@/components/StreakMeter';
+import { WeekBoard } from '@/features/progression/WeekBoard';
+import type { WeekProgress } from '@/features/progression/week';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { ToggleRow } from '@/components/ToggleRow';
@@ -263,6 +265,29 @@ const guildRisalat: components['schemas']['Risalat'] = {
   risalat: [{ id: 'risala-preview', discipline: 'RUNNING', senderId: 'Sara', senderDisplayName: 'Sara',
     bonusPercent: 10, revealedAt: '2026-10-25T19:00:00Z', expiresAt: '2026-11-08T19:00:00Z' }],
   nextRevealAt: '2026-11-01T19:00:00Z', turn: null,
+};
+
+const WEEK_NOW = new Date('2026-11-08T10:00:00Z');
+const weekEntry = (
+  id: string,
+  discipline: WeekProgress['entries'][number]['discipline'],
+  amount: number,
+  attributes: WeekProgress['entries'][number]['attributes'],
+  occurredAt: string,
+  durationSeconds: number,
+): WeekProgress['entries'][number] => ({
+  id, sourceId: id, reason: 'SESSION_COMPLETED', discipline, amount, durationSeconds,
+  breakdown: [], attributes, rulesetVersion: 'preview', occurredAt,
+});
+const WEEK_FIXTURE: WeekProgress = {
+  startsAt: '2026-11-08T19:00:00Z',
+  resetsAt: '2026-11-15T19:00:00Z',
+  current: { xp: 460, sessions: 2, attributes: { strength: 180, endurance: 220, mobility: 20, dexterity: 40 } },
+  previous: { xp: 900, sessions: 4, attributes: { strength: 150, endurance: 480, mobility: 120, dexterity: 150 } },
+  entries: [
+    weekEntry('w2', 'RUNNING', 260, { strength: 0, endurance: 220, mobility: 0, dexterity: 40 }, '2026-11-08T07:30:00Z', 2_700),
+    weekEntry('w1', 'STRENGTH', 200, { strength: 180, endurance: 0, mobility: 20, dexterity: 0 }, '2026-11-07T17:00:00Z', 3_600),
+  ],
 };
 
 export const PREVIEWS: Preview[] = [
@@ -718,6 +743,21 @@ export const PREVIEWS: Preview[] = [
         </Specimen>
         <Specimen label="Semaine sportive — palier légendaire">
           <StreakMeter state={{ days: 17, checkedInToday: true, sportDaysThisWeek: 6, chestRarity: 'LEGENDARY' }} />
+        </Specimen>
+      </>
+    ),
+  },
+  {
+    slug: 'semaine',
+    name: 'Semaine de jeu',
+    group: 'Composants',
+    element: (
+      <>
+        <Specimen label="Semaine en cours — une jauge battue, trois à remplir">
+          <WeekBoard week={WEEK_FIXTURE} now={WEEK_NOW} />
+        </Specimen>
+        <Specimen label="Première semaine — pas de référence">
+          <WeekBoard week={{ ...WEEK_FIXTURE, previous: null, entries: [] }} now={WEEK_NOW} />
         </Specimen>
       </>
     ),

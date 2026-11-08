@@ -2,32 +2,22 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
-  Extrapolation,
-  interpolate,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming,
-  type SharedValue,
 } from 'react-native-reanimated';
-import { Circle } from 'react-native-svg';
 
-import { attributeLegendDot, AttributeLegend, AttributeRing } from '@/components/AttributeRing';
-import { arcPresentation, arcsOf, ringViewport, type AttributeArc, type RingGeometry } from '@/components/attributeArcs';
-import { OrbitCrown, SweepSector } from '@/components/RingDial';
 import { SessionCard } from '@/components/SessionCard';
 import { TogetherDetails } from '@/components/TogetherDetails';
 import { SystemFrame } from '@/components/SystemFrame';
-import { Beacon, Convey, FlowLayers, ScanLine, Seam, TickRail } from '@/components/SystemMotion';
+import { Convey, FlowLayers, ScanLine, Seam, TickRail } from '@/components/SystemMotion';
 import { TitleBadge } from '@/components/TitleBadge';
-import { vitalityFontSize } from '@/components/vitalityFontSize';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import { decorativeGlow } from '@/design/decorativeGlow';
-import type { DecorativeGlow } from '@/design/decorativeGlow';
 import { decorativeMotion } from '@/design/decorativeMotion';
-import { staggerOffset } from '@/design/motionPhase';
-import { attributeColor, color, curve, duration, motion, space, type, typography } from '@/design/tokens';
+import { color, curve, duration, motion, space, type, typography } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
@@ -195,159 +185,6 @@ export function LevelCard({
 }
 
 /**
- * La répartition du joueur, sous `LevelCard` : les quatre caractéristiques en anneau,
- * Vitality au centre — voir `AttributeRing` (#69).
- *
- * **Elle se remplit au montage, comme `LevelCard`, avec la même échelle de temps**
- * (`duration.breath` puis `duration.settle`, `curve.enter`) : deux animations d'accueil qui
- * ne partiraient pas ensemble se verraient. Une seule valeur partagée pilote les deux effets,
- * et les deux passent par les portes qu'`AttributeRing` prête à cet effet — `children` pour
- * les arcs, `center` pour Vitality — plutôt que par un fondu ou un cache : un cercle qui se
- * remplit, c'est un arc qui grandit depuis rien jusqu'à sa part, exactement ce que fait la
- * barre de `LevelCard` en largeur. `arcStroke` porte la géométrie du trait, partagée avec
- * l'arc statique d'`AttributeRing` ; ici, `from` reste fixe et `to` est interpolé entre `from`
- * (rien à dessiner) et sa borne réelle.
- *
- * Vitality compte jusqu'à sa valeur par `useAnimatedProps` sur un `TextInput`, comme le total
- * de `LevelCard` — posé par la porte `center`, donc **le seul** chiffre à l'écran : pas de
- * `Text` fixe en dessous à masquer, pas de cache qui dépendrait d'une couleur de fond restant
- * identique.
- *
- * La taille de police se calcule une fois, sur la valeur **finale** de Vitality — jamais sur
- * le compte en cours. `vitalityFontSize` dépend du nombre de chiffres, et le recalculer à
- * chaque image ferait sauter la police pendant que le compteur grandit, ce qui serait plus
- * laid que l'inverse : un nombre à un chiffre rendu un peu petit pour sa taille, le temps de
- * grandir jusqu'au nombre final de chiffres.
- *
- * ————— Elle devient un cadran (#159) ————————————————————————————————————————————————————
- *
- * Une couronne pointillée à l'extérieur des arcs, un secteur de balayage derrière eux, et les
- * deux tournent **en sens opposés** : c'est ce qui fait lire un mécanisme plutôt qu'une image
- * qui tourne. Aucun des deux ne touche à la géométrie des arcs — la couronne passe par le
- * débord de `ringGeometry`, exactement comme le halo, et `attributeArcs.test.ts` reste vert
- * sans modification, ce qui est la preuve que le rayon net n'a pas bougé.
- *
- * Le cadre est `standard` et porte pourtant `seam` : la règle est « pas les cadres de
- * l'historique », pas « pas les cadres `standard` ». Son déphasage propre le sépare de la
- * carte de niveau juste au-dessus — sans lui, les deux panneaux respireraient ensemble et ce
- * serait la page qui pulse.
- */
-export function AttributeCard({
-  attributes,
-  vitalityBreakdown,
-}: {
-  attributes: Progression['attributes'];
-  /**
-   * Ce qui explique la moitié « santé de fond » de Vitality (#77). Requis, pas optionnel :
-   * le contrat le rend toujours, et le rendre facultatif ici laisserait un appelant l'oublier
-   * — c'est-à-dire afficher le nombre seul, ce que le ticket interdit en toutes lettres.
-   */
-  vitalityBreakdown: VitalityBreakdown;
-}) {
-  const { vitality, ...arcs } = attributes;
-  // La même donnée que la légende affichera, éteinte : cinq zéros ne sont pas une panne,
-  // c'est le point de départ normal d'un compte neuf.
-  const empty = vitality <= 0 && Object.values(arcs).every((value) => value <= 0);
-
-  // Calculée une fois par montage, comme `arcsOf` : les bornes de chaque arc ne bougent pas
-  // pendant la course, seule la valeur partagée fait avancer `to` de `from` jusqu'à elles.
-  const staticArcs = arcsOf(arcs);
-  const progress = useSharedValue(0);
-  const reducedMotion = useReducedMotion();
-  const glow = decorativeGlow('soft', reducedMotion);
-  // Le nom d'`orbit` est donné même quand l'effet est coupé : c'est lui qui réserve le viewport,
-  // et un anneau qui rétrécirait sous « Réduire les animations » déplacerait toute la carte.
-  const orbit = decorativeMotion('orbit', reducedMotion);
-  const beacon = decorativeMotion('beacon', reducedMotion);
-  const geometry = ringViewport('hero', glow, orbit);
-  const fontSize = vitalityFontSize(vitality, geometry.innerDiameter, type.display.fontSize);
-
-
-  const play = () => {
-    progress.value = 0;
-    progress.value = withDelay(
-      duration.breath,
-      withTiming(1, { duration: duration.settle, easing: Easing.bezier(...curve.enter) }),
-    );
-  };
-
-  const vitalityProps = useAnimatedProps(() => {
-    const text = `${Math.round(progress.value * vitality)}`;
-    return { text, defaultValue: text } as Partial<React.ComponentProps<typeof TextInput>>;
-  });
-
-  return (
-    <SystemFrame
-      contentStyle={styles.attributesCard}
-      segments={orbit.effect === undefined ? undefined : <Seam offset={motion.seam.phase.ring} />}
-    >
-      <View style={styles.attributesBody} onLayout={play}>
-      <Text style={styles.overline}>CARACTÉRISTIQUES DE LA SEMAINE</Text>
-      <Text style={styles.levelFoot}>Remise à zéro dimanche à 20 h Europe/Paris, en PvE et PvP. Titres et possessions restent acquis.</Text>
-      <View style={styles.attributesRow}>
-        <AttributeRing
-          attributes={arcs}
-          vitality={vitality}
-          size="hero"
-          glow={glow}
-          orbit={orbit}
-          underlay={
-            orbit.effect === undefined ? undefined : (
-              <>
-                {/* Le secteur d'abord : il passe sous la couronne comme sous les arcs. */}
-                <SweepSector geometry={geometry} />
-                <OrbitCrown geometry={geometry} />
-              </>
-            )
-          }
-          center={
-            <AnimatedTextInput
-              style={[type.display, styles.vitalityText, { fontSize }]}
-              editable={false}
-              animatedProps={vitalityProps}
-              defaultValue="0"
-            />
-          }
-        >
-          {staticArcs.map((arc) => (
-            <GrowingArc key={arc.attribute} arc={arc} progress={progress} geometry={geometry} glow={glow} />
-          ))}
-        </AttributeRing>
-
-        {/* La légende prend la largeur qui reste, comme `barWrap` le fait pour `XpBar` dans
-            `GuildMemberRow` : son `legendLabel` est en `flex: 1`, et un enfant flexible dans un
-            parent dont la largeur dépend de son contenu se réduit à un caractère — les
-            libellés se replient alors verticalement, lettre par lettre. */}
-        <View style={styles.legendWrap}>
-          <AttributeLegend
-            attributes={arcs}
-            dot={
-              beacon.effect === undefined
-                ? undefined
-                : (attribute, index) => (
-                  <Beacon
-                    style={[attributeLegendDot, { backgroundColor: attributeColor[attribute] }]}
-                    offset={staggerOffset(index, motion.convey.stagger)}
-                  />
-                )
-            }
-          />
-        </View>
-      </View>
-
-      {empty ? (
-        <Text style={styles.levelFoot}>Rien à répartir pour l&apos;instant : ta prochaine séance colorera ce cercle.</Text>
-      ) : null}
-
-      <VitalityNote breakdown={vitalityBreakdown} />
-      </View>
-    </SystemFrame>
-  );
-}
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-/**
  * L'explication du bonus de Vitality, sous le cercle (#77).
  *
  * **Elle est ici et pas dans la légende**, et c'est une décision : la légende dit les parts
@@ -372,54 +209,6 @@ export function VitalityNote({ breakdown }: { breakdown: VitalityBreakdown }) {
       )}
       <Text style={styles.levelFoot}>{explained.detail}</Text>
     </View>
-  );
-}
-
-/**
- * Un arc qui grandit depuis rien jusqu'à sa part, `from` fixe — le pendant animé de l'`Arc`
- * statique d'`AttributeRing`, même géométrie (`arcStroke`), lue sur le thread UI à chaque
- * image plutôt que recalculée à la main : c'est la même fonction, marquée `'worklet'` pour ça.
- */
-function GrowingArc({
-  arc,
-  progress,
-  geometry,
-  glow,
-}: {
-  arc: AttributeArc;
-  progress: SharedValue<number>;
-  geometry: RingGeometry;
-  glow: DecorativeGlow;
-}) {
-  const animatedProps = useAnimatedProps(() => {
-    const to = interpolate(progress.value, [0, 1], [arc.from, arc.to], Extrapolation.CLAMP);
-    return arcPresentation(arc.from, to, geometry.radius, geometry.strokeWidth);
-  });
-
-  return (
-    <>
-      {glow.effect === undefined ? null : (
-        <AnimatedCircle
-          cx={geometry.origin}
-          cy={geometry.origin}
-          r={geometry.radius}
-          stroke={attributeColor[arc.attribute]}
-          strokeWidth={geometry.strokeWidth + glow.effect.spread}
-          strokeOpacity={glow.effect.opacity}
-          animatedProps={animatedProps}
-          fill="none"
-        />
-      )}
-      <AnimatedCircle
-        cx={geometry.origin}
-        cy={geometry.origin}
-        r={geometry.radius}
-        stroke={attributeColor[arc.attribute]}
-        strokeWidth={geometry.strokeWidth}
-        animatedProps={animatedProps}
-        fill="none"
-      />
-    </>
   );
 }
 
@@ -483,14 +272,7 @@ const styles = StyleSheet.create({
   },
   levelFoot: { ...type.label, color: color.textMuted },
   levelRemaining: { ...type.label, color: color.text },
-  attributesCard: {
-    padding: space.md,
-  },
-  attributesBody: { gap: space.sm },
-  attributesRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   vitalityNote: { gap: space.xs },
   /** Le bonus se célèbre discrètement : c'est un gain, mais il ne vient pas d'une séance. */
   vitalityBonus: { ...type.label, color: color.gain },
-  legendWrap: { flex: 1 },
-  vitalityText: { color: color.text, padding: 0, textAlign: 'center' },
 });
