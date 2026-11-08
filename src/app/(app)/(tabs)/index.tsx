@@ -21,7 +21,8 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSyncStatus } from '@/features/health/useSync';
-import { AttributeCard, LevelCard } from '@/features/progression/PlayerHomeView';
+import { LevelCard, VitalityNote } from '@/features/progression/PlayerHomeView';
+import { WeekBoard } from '@/features/progression/WeekBoard';
 // Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
 // renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
 import { usePlayerHome, type PlayerHome as HomeState } from '@/features/progression/usePlayerHome';
@@ -206,25 +207,25 @@ function PlayerHome({
       {home.step === 'ready' ? (
         <LevelCard progression={home.progression} scanToken={scanToken} />
       ) : null}
+      {/* La semaine remplace le cercle (#362) : ce qu'il reste à remplir et d'où viennent les
+          points, plutôt qu'une répartition à lire. Vitalité n'a pas de jauge — rien ne la
+          crédite — elle garde sa ligne. */}
+      {home.step === 'ready' ? (
+        <>
+          <WeekBoard week={home.week} now={new Date()} />
+          <View style={styles.vitality}>
+            <Text style={styles.detail}>
+              Vitalité <Text style={styles.vitalityValue}>{home.progression.attributes.vitality}</Text>
+            </Text>
+            <VitalityNote breakdown={home.progression.vitalityBreakdown} />
+          </View>
+        </>
+      ) : null}
+
       {streak !== null ? (
         <SystemFrame contentStyle={styles.streak}>
           <StreakMeter state={streak} />
         </SystemFrame>
-      ) : null}
-      {home.step === 'ready' ? (
-        <AttributeCard
-          attributes={home.progression.attributes}
-          vitalityBreakdown={home.progression.vitalityBreakdown}
-        />
-      ) : null}
-
-      {home.step === 'ready' && !home.hasWorkouts ? (
-        <View style={styles.card}>
-          <Text style={styles.name}>Aucune séance</Text>
-          <Text style={styles.detail}>
-            Tes séances apparaîtront ici dès la première synchronisation avec Santé.
-          </Text>
-        </View>
       ) : null}
 
       {/* L'archive a sa page (#362) : l'accueil dit la semaine, pas tout ce qui a précédé. */}
@@ -240,6 +241,8 @@ const styles = StyleSheet.create({
   contentLayer: { zIndex: ambient.contentLayer },
   screen: { padding: space.lg, paddingTop: space.sm, gap: space.md },
   streak: { padding: space.md },
+  vitality: { gap: space.xs, paddingHorizontal: space.md },
+  vitalityValue: { color: color.text },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   card: {
     backgroundColor: color.surface,

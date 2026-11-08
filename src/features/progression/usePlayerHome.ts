@@ -6,6 +6,7 @@ import { failureFrom, type Failure } from '@/features/auth/problems';
 import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
 import { publishProgression } from '@/features/widget/publish';
 import { togetherInbox } from '@/features/health/togetherBonuses';
+import type { WeekProgress } from './week';
 import { getProgressionRevision, subscribeToProgression } from './weeklyRefresh';
 
 export type Progression = components['schemas']['Progression'];
@@ -50,6 +51,8 @@ export type PlayerHome =
   | {
       step: 'ready';
       progression: Progression;
+      /** La semaine de jeu : jauges et provenance des points (#362). */
+      week: WeekProgress;
       /** A-t-il déjà une séance ? L'archive vit dans sa page (#362). */
       hasWorkouts: boolean;
       streak: StreakState | null;
@@ -92,14 +95,19 @@ export function usePlayerHome(): {
   const load = useCallback(async (): Promise<PlayerHome> => {
     // En parallèle : elles ne dépendent pas l'une de l'autre, et les enchaîner doublerait
     // l'attente pour rien.
-    const [progression, history, streak] = await Promise.all([
+    const [progression, week, history, streak] = await Promise.all([
       api.GET('/api/progression'),
+      api.GET('/api/progression/week'),
       api.GET('/api/workouts', { params: { query: { limit: 1 } } }),
       api.GET('/api/streak').catch(() => ({ data: undefined })),
     ]);
 
     if (progression.data === undefined) {
       return { step: 'failed', failure: failureFrom(progression.error) };
+    }
+
+    if (week.data === undefined) {
+      return { step: 'failed', failure: failureFrom(week.error) };
     }
 
     if (history.data === undefined) {
@@ -114,6 +122,7 @@ export function usePlayerHome(): {
     return {
       step: 'ready',
       progression: progression.data,
+      week: week.data,
       hasWorkouts: history.data.workouts.length > 0,
       streak: streak.data ?? null,
     };
