@@ -42,16 +42,16 @@ export type StreakState = components['schemas']['StreakState'];
  * **La série ne fait pas tomber l'écran** (#182) : elle se charge avec le reste, mais son
  * échec la rend `null` et la carte disparaît — un niveau sans série reste un accueil juste.
  *
- * **Pas de pagination.** `nextCursor` est lu et ignoré : la première page prouve la chaîne,
- * et un défilement infini se conçoit avec le design (#7), pas avant lui.
+ * **Pas d'archive ici** (#362) : une séance suffit à savoir s'il y en a ; la liste paginée vit
+ * dans `historique.tsx`.
  */
 export type PlayerHome =
   | { step: 'loading' }
   | {
       step: 'ready';
       progression: Progression;
-      workouts: Workout[];
-      hasMore: boolean;
+      /** A-t-il déjà une séance ? L'archive vit dans sa page (#362). */
+      hasWorkouts: boolean;
       streak: StreakState | null;
     }
   | { step: 'failed'; failure: Failure };
@@ -94,7 +94,7 @@ export function usePlayerHome(): {
     // l'attente pour rien.
     const [progression, history, streak] = await Promise.all([
       api.GET('/api/progression'),
-      api.GET('/api/workouts', { params: { query: { limit: 20 } } }),
+      api.GET('/api/workouts', { params: { query: { limit: 1 } } }),
       api.GET('/api/streak').catch(() => ({ data: undefined })),
     ]);
 
@@ -114,8 +114,7 @@ export function usePlayerHome(): {
     return {
       step: 'ready',
       progression: progression.data,
-      workouts: history.data.workouts,
-      hasMore: history.data.nextCursor !== null,
+      hasWorkouts: history.data.workouts.length > 0,
       streak: streak.data ?? null,
     };
   }, []);
