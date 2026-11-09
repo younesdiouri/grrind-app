@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
+  withRepeat,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -28,7 +30,7 @@ import {
   formatWhen,
 } from '@/features/progression/format';
 import type { Progression, Workout } from '@/features/progression/usePlayerHome';
-import { gaugeFill } from '@/features/progression/WeekBoard';
+import { gaugeFill, gaugeHaloLayer, type GaugeBar } from '@/features/progression/WeekBoard';
 import { explainVitality, type VitalityBreakdown } from '@/features/progression/vitalityBonus';
 
 /**
@@ -186,12 +188,19 @@ export function LevelCard({
 }
 
 /**
- * Le remplissage animé d'une jauge de la semaine (#362) : de zéro à sa part au montage, sur le
- * tempo de `LevelCard` — `breath` puis `settle`, `curve.enter` — pour que la barre de niveau et
- * les jauges partent ensemble. Une valeur partagée par jauge, rien par `setState`.
+ * La barre animée d'une jauge de la semaine (#362).
+ *
+ * Le remplissage part de zéro sur le tempo de `LevelCard` — `breath` puis `settle`,
+ * `curve.enter` — pour que la barre de niveau et les jauges partent ensemble. Le halo, dosé par
+ * `gaugeGlow`, respire sur le cycle de `beacon` quand la jauge est la priorité : c'est la seule
+ * qui bouge en continu, donc celle que l'œil va chercher. « Réduire les animations » éteint
+ * halo et respiration, comme partout ailleurs ; le remplissage, qui porte l'information, reste.
  */
-export function GrowingGaugeFill({ fill, tint }: { fill: number; tint: string }) {
+export function GrowingGaugeBar({ fill, tint, halo, pulse }: GaugeBar) {
   const progress = useSharedValue(0);
+  const breath = useSharedValue(1);
+  const reducedMotion = useReducedMotion();
+  const lit = halo !== null && reducedMotion === false;
 
   useEffect(() => {
     progress.value = 0;
@@ -201,9 +210,29 @@ export function GrowingGaugeFill({ fill, tint }: { fill: number; tint: string })
     );
   }, [fill, progress]);
 
-  const style = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }));
+  useEffect(() => {
+    cancelAnimation(breath);
+    breath.value = motion.beacon.to;
+    if (pulse && lit) {
+      breath.value = withRepeat(
+        withTiming(motion.beacon.from, { duration: motion.beacon.cycle / 2, easing: Easing.inOut(Easing.sin) }),
+        -1,
+        true,
+      );
+    }
+  }, [pulse, lit, breath]);
 
-  return <Animated.View style={[gaugeFill, { backgroundColor: tint }, style]} />;
+  const fillStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }));
+  const haloStyle = useAnimatedStyle(() => ({ opacity: breath.value }));
+
+  return (
+    <View>
+      {lit ? <Animated.View style={[gaugeHaloLayer, { boxShadow: halo }, haloStyle]} /> : null}
+      <XpBar>
+        <Animated.View style={[gaugeFill, { backgroundColor: tint }, fillStyle]} />
+      </XpBar>
+    </View>
+  );
 }
 
 /**

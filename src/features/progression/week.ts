@@ -30,3 +30,30 @@ export function formatCountdown(until: string, now: Date): string {
   if (hours > 0) return `${hours} h ${String(minutes % 60).padStart(2, '0')}`;
   return `${minutes} min`;
 }
+
+/**
+ * L'intensité du halo d'une jauge, entre 0 et 1 : éteint loin du but, puis de plus en plus
+ * vite à l'approche — c'est la fin de la jauge qui doit chauffer, pas son début. Une jauge
+ * chargée brille à plein.
+ */
+export function gaugeGlow(fill: number, charged: boolean): number {
+  if (charged) return 1;
+  const heat = (fill - gaugeHeat.from) / (1 - gaugeHeat.from);
+  return heat <= 0 ? 0 : Math.min(1, heat * heat);
+}
+
+/** Sous ce remplissage, une jauge ne rayonne pas encore. */
+const gaugeHeat = { from: 0.3 } as const;
+
+/**
+ * La jauge à prioriser : la plus proche de son but parmi celles qui ne sont pas chargées — le
+ * gain le plus court à aller chercher. `null` s'il n'y a pas de référence ou plus rien à remplir.
+ */
+export function priorityOf(gauges: readonly { fill: number; beaten: boolean; remaining: number | null }[]): number | null {
+  let best: number | null = null;
+  gauges.forEach((gauge, index) => {
+    if (gauge.remaining === null || gauge.beaten) return;
+    if (best === null || gauge.fill > gauges[best].fill) best = index;
+  });
+  return best;
+}
