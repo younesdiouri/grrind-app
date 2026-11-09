@@ -48,7 +48,7 @@ tags:
 - extendedWaitUntil:
     visible: "NIVEAU"
     timeout: 30000
-- assertVisible: "Aucune séance"
+- assertVisible: "Aucune séance cette semaine.*"
 - takeScreenshot: 01-empty-home
 
 - tapOn:
