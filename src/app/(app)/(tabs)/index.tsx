@@ -21,7 +21,7 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSyncStatus } from '@/features/health/useSync';
-import { LevelCard, VitalityNote } from '@/features/progression/PlayerHomeView';
+import { GrowingGaugeFill, LevelCard, VitalityNote } from '@/features/progression/PlayerHomeView';
 import { WeekBoard } from '@/features/progression/WeekBoard';
 // Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
 // renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
@@ -212,7 +212,11 @@ function PlayerHome({
           crédite — elle garde sa ligne. */}
       {home.step === 'ready' ? (
         <>
-          <WeekBoard week={home.week} now={new Date()} />
+          <WeekBoard
+            week={home.week}
+            now={new Date()}
+            renderFill={(fill, tint) => <GrowingGaugeFill fill={fill} tint={tint} />}
+          />
           <View style={styles.vitality}>
             <Text style={styles.detail}>
               Vitalité <Text style={styles.vitalityValue}>{home.progression.attributes.vitality}</Text>

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { DisciplineChip } from '@/components/DisciplineChip';
@@ -25,7 +26,20 @@ const ATTRIBUTES: Attribute[] = ['strength', 'endurance', 'mobility', 'dexterity
  * d'avant, chaque écriture et sa répartition. Le client compare deux nombres pour dessiner une
  * jauge ; il n'en calcule aucun.
  */
-export function WeekBoard({ week, now }: { week: WeekProgress; now: Date }) {
+export function WeekBoard({
+  week,
+  now,
+  renderFill = staticFill,
+}: {
+  week: WeekProgress;
+  now: Date;
+  /**
+   * Le remplissage d'une jauge, à `fill` entre 0 et 1. Statique par défaut — les previews se
+   * rendent dans Node, sans Reanimated ; l'accueil fournit le sien, animé (même porte
+   * qu'`XpBar.children`).
+   */
+  renderFill?: (fill: number, tint: string) => ReactNode;
+}) {
   const { current, previous } = week;
 
   return (
@@ -56,6 +70,7 @@ export function WeekBoard({ week, now }: { week: WeekProgress; now: Date }) {
             attribute={attribute}
             current={current.attributes[attribute]}
             previous={previous === null ? null : previous.attributes[attribute]}
+            renderFill={renderFill}
           />
         ))}
       </View>
@@ -78,10 +93,12 @@ function Gauge({
   attribute,
   current,
   previous,
+  renderFill,
 }: {
   attribute: Attribute;
   current: number;
   previous: number | null;
+  renderFill: (fill: number, tint: string) => ReactNode;
 }) {
   const gauge = gaugeOf(current, previous);
   const label = attributeLabel[attribute];
@@ -105,9 +122,7 @@ function Gauge({
         </Text>
       </View>
       {previous === null ? null : (
-        <XpBar>
-          <View style={[styles.fill, { width: `${Math.round(gauge.fill * 100)}%`, backgroundColor: tint }]} />
-        </XpBar>
+        <XpBar>{renderFill(gauge.fill, tint)}</XpBar>
       )}
       {gauge.remaining === null ? null : gauge.beaten ? (
         <Text style={styles.beaten}>
@@ -118,6 +133,10 @@ function Gauge({
       )}
     </View>
   );
+}
+
+function staticFill(fill: number, tint: string) {
+  return <View style={[gaugeFill, { width: `${Math.round(fill * 100)}%`, backgroundColor: tint }]} />;
 }
 
 const REASON: Record<WeekEntry['reason'], string | null> = {
@@ -184,7 +203,6 @@ const styles = StyleSheet.create({
   gaugeHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   gaugeLabel: { ...type.label },
   gaugeValue: { ...type.body, fontFamily: typography.display.semibold, color: color.text },
-  fill: { height: '100%', borderRadius: radius.pill },
   beaten: { ...type.label, color: color.gain },
   entries: { gap: space.md },
   entry: {
@@ -205,3 +223,6 @@ const styles = StyleSheet.create({
   },
   splitText: { ...type.label, color: color.text, letterSpacing: 0 },
 });
+
+/** Le fond d'une jauge, pour qui l'anime lui-même. Voir `renderFill`. */
+export const gaugeFill = { height: '100%', borderRadius: radius.pill } as const;
