@@ -169,11 +169,6 @@ function Gauge({
                 : `0 0 ${Math.round(heat * gaugeGlowShape.radius)}px ${gaugeGlowShape.spread}px ${halo}`,
             pulse: priority,
           })}
-      {gauge.remaining === null ? null : gauge.beaten ? (
-        <Text style={styles.charged}>CHARGÉE</Text>
-      ) : (
-        <Text style={[styles.muted, priority && { color: tint }]}>encore {gauge.remaining}</Text>
-      )}
     </View>
   );
 }
@@ -254,7 +249,6 @@ const styles = StyleSheet.create({
   gaugeHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   gaugeLabel: { ...type.label },
   gaugeValue: { ...type.body, fontFamily: typography.display.semibold, color: color.text },
-  charged: { ...type.label, color: color.gain },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   toggleSign: { ...type.body, fontFamily: typography.display.semibold, color: color.accent },
   entries: { gap: space.md },
