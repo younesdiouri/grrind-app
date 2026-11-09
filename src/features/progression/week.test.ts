@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { formatCountdown, gaugeOf } from './week.ts';
+import { formatCountdown, gaugeGlow, gaugeOf, priorityOf } from './week.ts';
 
 describe('gaugeOf', () => {
   it('ne fixe aucune cible sans semaine précédente', () => {
@@ -31,5 +31,30 @@ describe('formatCountdown', () => {
   });
   it('ne descend pas sous zéro', () => {
     assert.equal(formatCountdown('2026-11-08T09:00:00Z', now), '0 min');
+  });
+});
+
+describe('gaugeGlow', () => {
+  it('reste éteint loin du but et chauffe de plus en plus vite', () => {
+    assert.equal(gaugeGlow(0.2, false), 0);
+    const mid = gaugeGlow(0.65, false);
+    const near = gaugeGlow(0.95, false);
+    assert.ok(mid > 0 && near > mid * 2);
+  });
+  it('brille à plein une fois chargée', () => {
+    assert.equal(gaugeGlow(1, true), 1);
+  });
+});
+
+describe('priorityOf', () => {
+  it('désigne la jauge non chargée la plus proche du but', () => {
+    assert.equal(
+      priorityOf([gaugeOf(50, 37), gaugeOf(31, 46), gaugeOf(27, 55), gaugeOf(10, 46)]),
+      1,
+    );
+  });
+  it('ne désigne rien sans référence ni quand tout est chargé', () => {
+    assert.equal(priorityOf([gaugeOf(5, null)]), null);
+    assert.equal(priorityOf([gaugeOf(50, 37)]), null);
   });
 });

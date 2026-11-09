@@ -757,6 +757,20 @@ export const attributeColor: Record<Attribute, string> = {
 };
 
 /**
+ * Le halo d'une jauge de la semaine (#362), dans la teinte de sa caractéristique : il monte
+ * avec le remplissage (`gaugeGlow`) et passe à `gainHalo` une fois la jauge chargée.
+ */
+export const attributeHalo: Record<Attribute, string> = {
+  strength: 'rgba(169, 139, 255, 0.6)',
+  endurance: 'rgba(103, 216, 255, 0.6)',
+  mobility: 'rgba(194, 255, 108, 0.6)',
+  dexterity: 'rgba(255, 121, 206, 0.6)',
+};
+
+/** La géométrie du halo des jauges, à intensité pleine. */
+export const gaugeGlowShape = { radius: 14, spread: 2, chargedHalo: palette.gainHalo } as const;
+
+/**
  * Le cercle de vie (#69) : deux tailles, comme `XpBar`. Le rayon et l'épaisseur de trait sont
  * choisis ensemble — l'un ne se lit pas sans l'autre, un trait trop fin sur un grand rayon
  * paraîtrait flottant, trop épais sur un petit il mangerait le centre où Vitality se lit.

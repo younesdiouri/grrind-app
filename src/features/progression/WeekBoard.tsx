@@ -1,13 +1,15 @@
-import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { DisciplineChip } from '@/components/DisciplineChip';
 import { SystemFrame } from '@/components/SystemFrame';
 import { XpBar } from '@/components/XpBar';
 import {
   attributeColor,
+  attributeHalo,
   attributeLabel,
   color,
+  gaugeGlowShape,
   radius,
   space,
   type,
@@ -15,9 +17,22 @@ import {
   type Attribute,
 } from '@/design/tokens';
 import { formatDuration, formatWhen } from '@/features/progression/format';
-import { formatCountdown, gaugeOf, type WeekEntry, type WeekProgress } from '@/features/progression/week';
+import {
+  formatCountdown,
+  gaugeGlow,
+  gaugeOf,
+  priorityOf,
+  type WeekEntry,
+  type WeekProgress,
+} from '@/features/progression/week';
 
 const ATTRIBUTES: Attribute[] = ['strength', 'endurance', 'mobility', 'dexterity'];
+
+/**
+ * Ce qu'une jauge demande à dessiner : sa part, sa teinte (verte une fois chargée), son halo
+ * — déjà dosé par `gaugeGlow`, `null` quand il est éteint — et si elle est la priorité.
+ */
+export type GaugeBar = { fill: number; tint: string; halo: string | null; pulse: boolean };
 
 /**
  * La semaine de jeu (#362) : ce qu'il reste à remplir, puis d'où viennent les points.
@@ -29,18 +44,23 @@ const ATTRIBUTES: Attribute[] = ['strength', 'endurance', 'mobility', 'dexterity
 export function WeekBoard({
   week,
   now,
-  renderFill = staticFill,
+  renderBar = StaticGaugeBar,
 }: {
   week: WeekProgress;
   now: Date;
   /**
-   * Le remplissage d'une jauge, à `fill` entre 0 et 1. Statique par défaut — les previews se
-   * rendent dans Node, sans Reanimated ; l'accueil fournit le sien, animé (même porte
+   * La barre d'une jauge. Statique par défaut — les previews se rendent dans Node, sans
+   * Reanimated ; l'accueil fournit la sienne, qui se remplit et respire (même porte
    * qu'`XpBar.children`).
    */
-  renderFill?: (fill: number, tint: string) => ReactNode;
+  renderBar?: (bar: GaugeBar) => ReactNode;
 }) {
   const { current, previous } = week;
+  const [explained, setExplained] = useState(false);
+  const gauges = ATTRIBUTES.map((attribute) =>
+    gaugeOf(current.attributes[attribute], previous === null ? null : previous.attributes[attribute]),
+  );
+  const priority = priorityOf(gauges);
 
   return (
     <SystemFrame contentStyle={styles.board}>
@@ -64,13 +84,15 @@ export function WeekBoard({
       )}
 
       <View style={styles.gauges}>
-        {ATTRIBUTES.map((attribute) => (
+        {ATTRIBUTES.map((attribute, index) => (
           <Gauge
             key={attribute}
             attribute={attribute}
             current={current.attributes[attribute]}
             previous={previous === null ? null : previous.attributes[attribute]}
-            renderFill={renderFill}
+            gauge={gauges[index]}
+            priority={index === priority}
+            renderBar={renderBar}
           />
         ))}
       </View>
@@ -78,11 +100,21 @@ export function WeekBoard({
       {week.entries.length === 0 ? (
         <Text style={styles.muted}>Aucune séance cette semaine : synchronise Santé, la prochaine remplira ces jauges.</Text>
       ) : (
+        // Le détail se demande, il ne s'impose pas : les jauges sont le sujet de l'écran.
         <View style={styles.entries}>
-          <Text style={styles.overline}>D’OÙ VIENNENT TES POINTS</Text>
-          {week.entries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} now={now} />
-          ))}
+          <Pressable
+            onPress={() => setExplained((open) => !open)}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: explained }}
+            hitSlop={space.sm}
+            style={styles.toggle}
+          >
+            <Text style={styles.toggleSign}>{explained ? '−' : '+'}</Text>
+            <Text style={styles.overline}>D’OÙ VIENNENT TES POINTS</Text>
+          </Pressable>
+          {explained
+            ? week.entries.map((entry) => <EntryRow key={entry.id} entry={entry} now={now} />)
+            : null}
         </View>
       )}
     </SystemFrame>
@@ -93,16 +125,21 @@ function Gauge({
   attribute,
   current,
   previous,
-  renderFill,
+  gauge,
+  priority,
+  renderBar,
 }: {
   attribute: Attribute;
   current: number;
   previous: number | null;
-  renderFill: (fill: number, tint: string) => ReactNode;
+  gauge: ReturnType<typeof gaugeOf>;
+  priority: boolean;
+  renderBar: (bar: GaugeBar) => ReactNode;
 }) {
-  const gauge = gaugeOf(current, previous);
   const label = attributeLabel[attribute];
   const tint = attributeColor[attribute];
+  const heat = gaugeGlow(gauge.fill, gauge.beaten);
+  const halo = gauge.beaten ? gaugeGlowShape.chargedHalo : attributeHalo[attribute];
 
   return (
     <View
@@ -111,7 +148,7 @@ function Gauge({
       accessibilityLabel={
         previous === null
           ? `${label} ${current} cette semaine`
-          : `${label} ${current} sur ${previous} la semaine dernière${gauge.beaten ? ', battue' : ''}`
+          : `${label} ${current} sur ${previous} la semaine dernière${gauge.beaten ? ', chargée' : priority ? ', priorité' : ''}`
       }
     >
       <View style={styles.gaugeHead}>
@@ -121,22 +158,36 @@ function Gauge({
           {previous === null ? '' : <Text style={styles.muted}> / {previous}</Text>}
         </Text>
       </View>
-      {previous === null ? null : (
-        <XpBar>{renderFill(gauge.fill, tint)}</XpBar>
-      )}
+      {previous === null
+        ? null
+        : renderBar({
+            fill: gauge.fill,
+            tint: gauge.beaten ? color.gain : tint,
+            halo:
+              heat <= 0
+                ? null
+                : `0 0 ${Math.round(heat * gaugeGlowShape.radius)}px ${gaugeGlowShape.spread}px ${halo}`,
+            pulse: priority,
+          })}
       {gauge.remaining === null ? null : gauge.beaten ? (
-        <Text style={styles.beaten}>
-          BATTUE{current > (previous ?? 0) ? ` · +${current - (previous ?? 0)}` : ''}
-        </Text>
+        <Text style={styles.charged}>CHARGÉE</Text>
       ) : (
-        <Text style={styles.muted}>encore {gauge.remaining}</Text>
+        <Text style={[styles.muted, priority && { color: tint }]}>encore {gauge.remaining}</Text>
       )}
     </View>
   );
 }
 
-function staticFill(fill: number, tint: string) {
-  return <View style={[gaugeFill, { width: `${Math.round(fill * 100)}%`, backgroundColor: tint }]} />;
+/** La barre sans mouvement : celle des previews. Le halo est dessiné, la respiration non. */
+function StaticGaugeBar({ fill, tint, halo }: GaugeBar) {
+  return (
+    <View>
+      {halo === null ? null : <View style={[gaugeHaloLayer, { boxShadow: halo }]} />}
+      <XpBar>
+        <View style={[gaugeFill, { width: `${Math.round(fill * 100)}%`, backgroundColor: tint }]} />
+      </XpBar>
+    </View>
+  );
 }
 
 const REASON: Record<WeekEntry['reason'], string | null> = {
@@ -203,7 +254,9 @@ const styles = StyleSheet.create({
   gaugeHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   gaugeLabel: { ...type.label },
   gaugeValue: { ...type.body, fontFamily: typography.display.semibold, color: color.text },
-  beaten: { ...type.label, color: color.gain },
+  charged: { ...type.label, color: color.gain },
+  toggle: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  toggleSign: { ...type.body, fontFamily: typography.display.semibold, color: color.accent },
   entries: { gap: space.md },
   entry: {
     gap: space.xs,
@@ -224,5 +277,19 @@ const styles = StyleSheet.create({
   splitText: { ...type.label, color: color.text, letterSpacing: 0 },
 });
 
-/** Le fond d'une jauge, pour qui l'anime lui-même. Voir `renderFill`. */
+/** Le fond d'une jauge, pour qui l'anime lui-même. Voir `renderBar`. */
 export const gaugeFill = { height: '100%', borderRadius: radius.pill } as const;
+
+/**
+ * Le calque du halo, **sous** la piste et hors de son masque : `XpBar` coupe ce qui déborde, un
+ * halo posé sur le remplissage n'aurait jamais été vu.
+ */
+export const gaugeHaloLayer = {
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  borderRadius: radius.pill,
+  backgroundColor: color.surfaceRaised,
+} as const;
