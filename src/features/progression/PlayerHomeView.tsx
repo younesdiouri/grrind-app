@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
@@ -28,6 +28,7 @@ import {
   formatWhen,
 } from '@/features/progression/format';
 import type { Progression, Workout } from '@/features/progression/usePlayerHome';
+import { gaugeFill } from '@/features/progression/WeekBoard';
 import { explainVitality, type VitalityBreakdown } from '@/features/progression/vitalityBonus';
 
 /**
@@ -182,6 +183,27 @@ export function LevelCard({
       </View>
     </SystemFrame>
   );
+}
+
+/**
+ * Le remplissage animé d'une jauge de la semaine (#362) : de zéro à sa part au montage, sur le
+ * tempo de `LevelCard` — `breath` puis `settle`, `curve.enter` — pour que la barre de niveau et
+ * les jauges partent ensemble. Une valeur partagée par jauge, rien par `setState`.
+ */
+export function GrowingGaugeFill({ fill, tint }: { fill: number; tint: string }) {
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = 0;
+    progress.value = withDelay(
+      duration.breath,
+      withTiming(fill, { duration: duration.settle, easing: Easing.bezier(...curve.enter) }),
+    );
+  }, [fill, progress]);
+
+  const style = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }));
+
+  return <Animated.View style={[gaugeFill, { backgroundColor: tint }, style]} />;
 }
 
 /**
