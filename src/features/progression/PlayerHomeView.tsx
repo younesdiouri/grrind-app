@@ -10,7 +10,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { Polygon } from 'react-native-svg';
+import { Path } from 'react-native-svg';
 
 import { SessionCard } from '@/components/SessionCard';
 import { TogetherDetails } from '@/components/TogetherDetails';
@@ -33,7 +33,7 @@ import {
 import type { Progression, Workout } from '@/features/progression/usePlayerHome';
 import { gaugeFill, gaugeHaloLayer, type GaugeBar } from '@/features/progression/WeekBoard';
 import { explainVitality, type VitalityBreakdown } from '@/features/progression/vitalityBonus';
-import { PerformanceRadar, pointsString, type RadarPoint } from './PerformanceRadar';
+import { PerformanceRadar, radarPath, type RadarPoint } from './PerformanceRadar';
 import type { WeekProgress } from './week';
 
 /**
@@ -47,7 +47,7 @@ import type { WeekProgress } from './week';
  */
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 export function LivePerformanceRadar({ week }: { week: WeekProgress }) {
   return <PerformanceRadar week={week} renderShape={points => <RadarShape points={points} />}
@@ -64,19 +64,13 @@ function RadarReference({ points }: { points: RadarPoint[] }) {
     return () => cancelAnimation(phase);
   }, [phase, reduced]);
   const animatedProps = useAnimatedProps(() => ({ strokeDashoffset: -phase.value }));
-  return <AnimatedPolygon points={pointsString(points)} animatedProps={animatedProps} stroke={color.textMuted}
+  return <AnimatedPath d={radarPath(points)} animatedProps={animatedProps} stroke={color.textMuted}
     strokeDasharray="3 5" opacity={chart.gridOpacity} fill="none" />;
 }
 
 function RadarShape({ points }: { points: RadarPoint[] }) {
-  const progress = useSharedValue(0);
   const breath = useSharedValue(0);
   const reduced = useReducedMotion();
-  const signature = points.map(point => `${point.x},${point.y}`).join(' ');
-  useEffect(() => {
-    progress.value = 0;
-    progress.value = withDelay(duration.breath, withTiming(1, { duration: duration.drop, easing: Easing.bezier(...curve.enter) }));
-  }, [signature, progress]);
   useEffect(() => {
     cancelAnimation(breath);
     breath.value = 0;
@@ -84,14 +78,11 @@ function RadarShape({ points }: { points: RadarPoint[] }) {
     return () => cancelAnimation(breath);
   }, [reduced, breath]);
   const animatedProps = useAnimatedProps(() => ({
-    points: points.map(point => `${chart.centerX + (point.x - chart.centerX) * progress.value},${chart.centerY + (point.y - chart.centerY) * progress.value}`).join(' '),
-    fillOpacity: reduced === false ? chart.radarPulseFrom + (chart.radarPulseTo - chart.radarPulseFrom) * breath.value : chart.fillOpacity,
+    fillOpacity: reduced === false ? chart.radarPulseFrom + (chart.radarPulseTo - chart.radarPulseFrom) * breath.value : chart.radarFillOpacity,
   }));
-  const haloProps = useAnimatedProps(() => ({ opacity: chart.haloOpacity * (1 + breath.value) }));
-  return <>
-    {reduced === false ? <AnimatedPolygon points={signature} animatedProps={haloProps} fill="none" stroke={color.accent} strokeWidth={chart.haloStroke} strokeLinejoin="round" /> : null}
-    <AnimatedPolygon animatedProps={animatedProps} fill={color.accent} stroke={color.accent} strokeWidth={chart.stroke} strokeLinejoin="round" />
-  </>;
+  // `d` existe dès le rendu : Reanimated ne convertit pas les `points` de Polygon en chemin natif.
+  return <AnimatedPath d={radarPath(points)} animatedProps={animatedProps} fill={color.accent} fillOpacity={chart.radarFillOpacity}
+    stroke={color.accent} strokeWidth={chart.stroke} strokeLinejoin="round" />;
 }
 
 /**

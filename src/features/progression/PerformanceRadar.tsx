@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Circle, Line, Path, Polygon, Svg } from 'react-native-svg';
+import { Circle, G, Line, Path, Polygon, Svg } from 'react-native-svg';
 
 import { attributeColor, attributeLabel, color, space, type, typography, workoutChart as chart, type Attribute } from '@/design/tokens';
 import { WEEK_ATTRIBUTES, weekPercent, weekPercentLabel, type WeekProgress } from '@/features/progression/week';
@@ -12,6 +12,7 @@ export const radarPoints = (values: readonly number[]): RadarPoint[] => values.m
     y: chart.centerY + Math.sin(angle) * chart.radarRadius * value };
 });
 export const pointsString = (points: RadarPoint[]) => points.map(({ x, y }) => `${x},${y}`).join(' ');
+export const radarPath = (points: RadarPoint[]) => `${points.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'} ${x} ${y}`).join(' ')} Z`;
 
 /** Les deux semaines partagent une échelle ; dépasser 100 % agrandit le repère entier. */
 export function PerformanceRadar({ week, renderShape, renderReference }: {
@@ -43,7 +44,7 @@ export function PerformanceRadar({ week, renderShape, renderReference }: {
         {axes.map((point, index) => <Line key={index} x1={chart.centerX} y1={chart.centerY} x2={point.x} y2={point.y} stroke={color.border} />)}
         {week.previous === null ? null : renderReference ? renderReference(reference) : <Polygon points={pointsString(reference)}
           stroke={color.textMuted} strokeDasharray="3 5" opacity={chart.gridOpacity} fill="none" />}
-        {renderShape ? renderShape(points) : <Polygon points={pointsString(points)} fill={color.accent} fillOpacity={chart.fillOpacity} stroke={color.accent} strokeWidth={chart.stroke} />}
+        {renderShape ? renderShape(points) : <Polygon points={pointsString(points)} fill={color.accent} fillOpacity={chart.radarFillOpacity} stroke={color.accent} strokeWidth={chart.stroke} />}
         {points.map((point, index) => <Circle key={index} cx={point.x} cy={point.y} r={chart.dot} fill={attributeColor[WEEK_ATTRIBUTES[index]]} />)}
         <Circle cx={chart.centerX} cy={chart.centerY} r={chart.stroke} fill={color.textMuted} />
         {positions.map((position, index) => <RadarIcon key={index} attribute={WEEK_ATTRIBUTES[index]} {...position} />)}
@@ -60,10 +61,11 @@ const ICON_PATH: Record<Attribute, string> = {
 };
 
 function RadarIcon({ attribute, x, y }: { attribute: Attribute; x: number; y: number }) {
-  return <Svg x={x} y={y} width={chart.radarIcon} height={chart.radarIcon} viewBox="0 0 24 24">
+  // Un seul repère SVG : les racines Svg imbriquées ne se placent pas via x/y sur iOS.
+  return <G transform={`translate(${x}, ${y})`}>
     <Path d={ICON_PATH[attribute]} stroke={attributeColor[attribute]} strokeWidth={chart.stroke * 1.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
     {attribute === 'mobility' ? <Circle cx="12" cy="4" r="2" fill={attributeColor[attribute]} /> : null}
-  </Svg>;
+  </G>;
 }
 
 const styles = StyleSheet.create({

@@ -773,9 +773,9 @@ export const gaugeGlowShape = { radius: 14, spread: 2, chargedHalo: palette.gain
 /** Géométrie des graphiques workout, dans un repère SVG indépendant de l'écran. */
 export const workoutChart = {
   width: 320, radarHeight: 232, centerX: 160, centerY: 116, radarRadius: 78,
-  labelSize: 10, valueSize: 14, stroke: 1.5, dot: 3, haloStroke: 8,
-  fillOpacity: 0.16, gridOpacity: 0.65, haloOpacity: 0.1,
-  radarIcon: 24, radarIconOffset: 100, radarPulseFrom: .10, radarPulseTo: .32,
+  labelSize: 10, valueSize: 14, stroke: 1.5, dot: 3,
+  fillOpacity: 0.16, gridOpacity: 0.65,
+  radarIcon: 24, radarIconOffset: 100, radarFillOpacity: .3, radarPulseFrom: .22, radarPulseTo: .5,
   radarPulseMs: 3200, radarDashMs: 3600, radarDashStep: 8,
   chartHeight: 156, chartTop: 14, chartBottom: 130, chartLeft: 48, chartRight: 308,
   gradeSize: 72, cellSize: 10, cellGap: 4,
