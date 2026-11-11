@@ -1,10 +1,10 @@
 import { useId, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Circle, Defs, Line, LinearGradient, Path, Rect, Stop, Svg } from 'react-native-svg';
+import { Circle, Defs, Line, LinearGradient, Path, Rect, Stop, Svg, Text as SvgText } from 'react-native-svg';
 
 import { SystemFrame } from '@/components/SystemFrame';
 import { color, disciplineLabel, palette, radius, space, type, typography, workoutChart as chart } from '@/design/tokens';
-import { compactDuration, shortDate, type StatsDays, type WorkoutStats } from '@/features/progression/workoutStats';
+import { compactDuration, dateRange, shortDate, statsWindow, type StatsDays, type WorkoutStats } from '@/features/progression/workoutStats';
 
 const GRADE_COLORS = { A: color.gain, B: color.accent, C: palette.amethyst, D: palette.copper, E: color.textMuted };
 const GRADE_LABELS = { A: 'Volume en hausse', B: 'Rythme maintenu', C: 'Léger recul', D: 'Rythme allégé', E: 'Peu de volume' };
@@ -13,21 +13,48 @@ export function WorkoutStatsView({ stats, days }: { stats: WorkoutStats; days: S
   return <View style={styles.stack}>
     <EffortCard stats={stats} days={days} />
     <View style={styles.metrics}>
-      <Metric value={String(stats.current.length)} label="SÉANCES" detail={`${stats.previous.length} avant`} />
-      <Metric value={`${stats.activeDays}/${days}`} label="JOURS ACTIFS" detail={`${stats.previousActiveDays} avant`} />
+      <Metric value={String(stats.current.length)} label="SÉANCES" />
+      <Metric value={String(stats.activeDays)} label="JOURS ACTIFS" detail={`sur ${days} jours`} />
       <Metric value={stats.current.length ? compactDuration(stats.averageSeconds) : '—'} label="PAR SÉANCE" detail="durée moyenne" />
     </View>
+    <WorkoutHint stats={stats} days={days} />
     <VolumeChart key={`volume-${days}`} stats={stats} days={days} />
     <ActivityCalendar key={`calendar-${days}`} stats={stats} />
     <DisciplineBalance key={`balance-${days}`} stats={stats} />
   </View>;
 }
 
-function Metric({ value, label, detail }: { value: string; label: string; detail: string }) {
+function Metric({ value, label, detail }: { value: string; label: string; detail?: string }) {
   return <View style={styles.metric}>
     <Text style={styles.metricValue} adjustsFontSizeToFit numberOfLines={1}>{value}</Text>
-    <Text style={styles.micro}>{label}</Text><Text style={styles.caption}>{detail}</Text>
+    <Text style={styles.micro}>{label}</Text>{detail ? <Text style={styles.caption}>{detail}</Text> : null}
   </View>;
+}
+
+function WorkoutHint({ stats, days }: { stats: WorkoutStats; days: StatsDays }) {
+  if (stats.current.length === 0) return null;
+  const dominant = stats.disciplines[0];
+  const busiestDay = Math.max(...stats.daily.map(day => day.seconds));
+  let title: string;
+  let body: string;
+  if (stats.current.length >= 3 && dominant?.share >= .7) {
+    title = 'Envie de varier ?';
+    body = `${disciplineLabel[dominant.discipline]} représente ${Math.round(dominant.share * 100)} % de ton temps. Essaie une autre discipline lors d’un prochain créneau si tu souhaites diversifier ta pratique.`;
+  } else if (stats.current.length >= 3 && stats.seconds > 0 && busiestDay / stats.seconds > .5) {
+    title = 'Répartis tes créneaux';
+    body = `${Math.round(busiestDay / stats.seconds * 100)} % de ton temps d’entraînement se concentre sur une seule journée. Pour une routine plus régulière, répartis tes prochains créneaux sur plusieurs jours.`;
+  } else if (stats.previousActiveDays > stats.activeDays) {
+    title = 'Retrouve un créneau qui tient';
+    body = `${stats.activeDays} jours actifs sur ${days} jours, contre ${stats.previousActiveDays} sur les ${days} jours précédents. Repère un créneau que tu peux facilement retrouver dans ton agenda.`;
+  } else {
+    title = 'Ancre ton prochain créneau';
+    body = `${stats.current.length} séance${stats.current.length > 1 ? 's' : ''} sur ${days} jours. Reprends un horaire qui a déjà bien fonctionné pour toi et réserve-le dans ton agenda.`;
+  }
+  return <SystemFrame accent="gain" contentStyle={styles.panel}>
+    <Text style={styles.hintLabel}>TON PROCHAIN CAP</Text>
+    <Text style={styles.heroTitle}>{title}</Text>
+    <Text style={styles.note}>{body}</Text>
+  </SystemFrame>;
 }
 
 function EffortCard({ stats, days }: { stats: WorkoutStats; days: StatsDays }) {
@@ -87,17 +114,24 @@ function VolumeChart({ stats, days }: { stats: WorkoutStats; days: StatsDays }) 
   }).join(' ');
   const bucket = stats.buckets[Math.min(selected, stats.buckets.length - 1)];
   const selectedPoint = currentPoints[Math.min(selected, currentPoints.length - 1)];
+  const { start, end, previousStart } = statsWindow(days, stats.daily[stats.daily.length - 1].date);
+  const previousBucketFrom = new Date(previousStart);
+  previousBucketFrom.setDate(previousBucketFrom.getDate() + selected * (days === 7 ? 1 : 7));
+  const previousBucketTo = new Date(previousBucketFrom);
+  previousBucketTo.setDate(previousBucketTo.getDate() + (days === 7 ? 1 : 7));
   return <SystemFrame contentStyle={styles.panel}>
-    <View style={styles.sectionHead}><Text style={styles.overline}>TA TRAJECTOIRE</Text><Text style={styles.tag}>{days === 7 ? 'PAR JOUR' : 'PAR SEMAINE'}</Text></View>
+    <View style={styles.sectionHead}><Text style={styles.overline}>TEMPS D’ENTRAÎNEMENT</Text><Text style={styles.tag}>{days === 7 ? 'PAR JOUR' : '7 J / POINT'}</Text></View>
     <View style={styles.sectionHead}>
       <Text style={styles.chartValue}>{compactDuration(bucket.seconds)}</Text>
-      <Text style={styles.note}>{shortDate(bucket.from)}{days === 7 ? '' : ' · 7 jours'}</Text>
+      <Text style={styles.note}>{dateRange(bucket.from, bucket.to)}</Text>
     </View>
-    <Text style={styles.caption}>Période précédente au même rang : {compactDuration(bucket.previousSeconds)}</Text>
+    <Text style={styles.caption}>{dateRange(previousBucketFrom, previousBucketTo)} : {compactDuration(bucket.previousSeconds)}</Text>
     <View style={styles.plot}>
       <Svg width="100%" height="100%" viewBox={`0 0 ${chart.width} ${chart.chartHeight}`}>
         <Defs><LinearGradient id={gradient} x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor={color.accent} stopOpacity={chart.fillOpacity * 2} /><Stop offset="1" stopColor={color.accent} stopOpacity="0" /></LinearGradient></Defs>
         {[0, .5, 1].map(tick => <Line key={tick} x1={chart.chartLeft} x2={chart.chartRight} y1={chart.chartTop + tick * plotHeight} y2={chart.chartTop + tick * plotHeight} stroke={color.border} strokeDasharray="3 5" />)}
+        {[0, .5, 1].map(tick => <SvgText key={`scale-${tick}`} x="0" y={chart.chartTop + tick * plotHeight + space.xs}
+          fill={color.textMuted} fontSize={chart.labelSize}>{compactDuration(max * (1 - tick))}</SvgText>)}
         <Path d={line(true)} stroke={color.textMuted} strokeWidth={chart.stroke} strokeDasharray="4 5" fill="none" />
         <Path d={`${line(false)} L ${chart.chartRight} ${chart.chartBottom} L ${chart.chartLeft} ${chart.chartBottom} Z`} fill={`url(#${gradient})`} />
         <Path d={line(false)} stroke={color.accent} strokeWidth={chart.stroke * 2} strokeLinejoin="round" fill="none" />
@@ -107,24 +141,22 @@ function VolumeChart({ stats, days }: { stats: WorkoutStats; days: StatsDays }) 
       </Svg>
       <View style={styles.plotTouch}>
         {stats.buckets.map((item, index) => <Pressable key={index} style={styles.plotTarget} onPress={() => setSelected(index)}
-          accessibilityRole="button" accessibilityLabel={`${shortDate(item.from)}, ${compactDuration(item.seconds)}, période précédente ${compactDuration(item.previousSeconds)}`} accessibilityState={{ selected: index === selected }} />)}
+          accessibilityRole="button" accessibilityLabel={`${dateRange(item.from, item.to)}, ${compactDuration(item.seconds)}, période précédente ${compactDuration(item.previousSeconds)}`} accessibilityState={{ selected: index === selected }} />)}
       </View>
     </View>
     <View style={styles.sectionHead}><Text style={styles.caption}>{shortDate(stats.buckets[0].from)}</Text><Text style={styles.caption}>Toucher pour explorer</Text><Text style={styles.caption}>{shortDate(stats.daily[stats.daily.length - 1].date)}</Text></View>
-    <View style={styles.legend}><Legend tint={color.accent} label="Cette période" /><Legend tint={color.textMuted} label="Période précédente" /></View>
-    <Text style={styles.caption}>Échelle commune : 0 à {compactDuration(max)} · durée des séances</Text>
+    <View style={styles.legend}><Legend tint={color.accent} label={dateRange(start, end)} /><Legend tint={color.textMuted} label={dateRange(previousStart, start)} /></View>
   </SystemFrame>;
 }
 
 function ActivityCalendar({ stats }: { stats: WorkoutStats }) {
   const [selected, setSelected] = useState(stats.daily.length - 1);
   const day = stats.daily[Math.min(selected, stats.daily.length - 1)];
-  const max = Math.max(1, ...stats.daily.map(item => item.seconds));
   const columns = Math.min(chart.calendarColumns, stats.daily.length);
   const rows = Math.ceil(stats.daily.length / columns);
   const width = columns * chart.calendarStep;
   return <SystemFrame contentStyle={styles.panel}>
-    <View style={styles.sectionHead}><Text style={styles.overline}>LA RÉGULARITÉ COMPTE</Text><Text style={styles.tag}>{stats.activeDays} J ACTIFS</Text></View>
+    <View style={styles.sectionHead}><Text style={styles.overline}>RÉGULARITÉ</Text><Text style={styles.tag}>{stats.activeDays} J ACTIFS</Text></View>
     <Text style={styles.note}>{shortDate(day.date)} · {day.sessions ? `${day.sessions} séance${day.sessions > 1 ? 's' : ''} · ${compactDuration(day.seconds)}` : 'Aucune séance synchronisée'}</Text>
     <View style={styles.calendarRows}>
       {Array.from({ length: rows }, (_, row) => <View key={row} style={styles.calendarRow}>
@@ -134,15 +166,14 @@ function ActivityCalendar({ stats }: { stats: WorkoutStats }) {
             accessibilityLabel={`${shortDate(item.date)}, ${item.sessions} séances, ${compactDuration(item.seconds)}`} accessibilityState={{ selected: selected === index }}>
             <Svg width="100%" height={chart.minimumTouch} viewBox={`0 0 ${width / columns} ${chart.minimumTouch}`}>
               <Rect x={(chart.calendarStep - chart.calendarCell) / 2} y={(chart.minimumTouch - chart.calendarCell) / 2} width={chart.calendarCell} height={chart.calendarCell} rx={space.xs}
-                fill={item.sessions ? color.accent : color.surfaceRaised} fillOpacity={item.sessions ? .2 + .8 * item.seconds / max : 1}
-                stroke={selected === index ? color.text : 'none'} strokeWidth={chart.stroke} />
+                fill={item.sessions ? color.accent : chart.calendarIdle}
+                stroke={selected === index ? color.text : item.sessions ? color.accent : chart.calendarIdleBorder} strokeWidth={chart.stroke} />
             </Svg>
           </Pressable>;
         })}
       </View>)}
     </View>
-    <View style={styles.sectionHead}><Text style={styles.caption}>{shortDate(stats.daily[0].date)}</Text><Text style={styles.caption}>1 case = 1 jour</Text><Text style={styles.caption}>{shortDate(stats.daily[stats.daily.length - 1].date)}</Text></View>
-    <View style={styles.legend}><Legend tint={color.surfaceRaised} label="Sans séance" /><Legend tint={color.accent} label="Plus clair = plus de temps" /></View>
+    <View style={styles.sectionHead}><Text style={styles.caption}>{shortDate(stats.daily[0].date)}</Text><Text style={styles.caption}>{shortDate(stats.daily[stats.daily.length - 1].date)}</Text></View>
   </SystemFrame>;
 }
 
@@ -167,8 +198,10 @@ function DisciplineBalance({ stats }: { stats: WorkoutStats }) {
         <View style={styles.dialCenter}><Text style={styles.chartValue}>{selectedDiscipline ? `${Math.round(selectedDiscipline.share * 100)} %` : stats.disciplines.length}</Text><Text style={styles.micro}>{selectedDiscipline ? 'DU TEMPS' : 'SPORTS'}</Text></View>
       </View>
       <View style={styles.heroCopy}>
-        <Text style={styles.heroTitle}>{selectedDiscipline ? disciplineLabel[selectedDiscipline.discipline] : stats.disciplines.length > 1 ? 'Chaque sport a sa place.' : stats.disciplines.length ? 'Ta dominante du moment.' : 'Tout commence ici.'}</Text>
-        <Text style={styles.note}>{selectedDiscipline ? `${compactDuration(selectedDiscipline.seconds)} · ${selectedDiscipline.sessions} séance${selectedDiscipline.sessions > 1 ? 's' : ''}` : 'La répartition de ta pratique, sans objectif de partage imposé.'}</Text>
+        {selectedDiscipline ? <>
+          <Text style={styles.heroTitle}>{disciplineLabel[selectedDiscipline.discipline]}</Text>
+          <Text style={styles.note}>{compactDuration(selectedDiscipline.seconds)} · {selectedDiscipline.sessions} séance{selectedDiscipline.sessions > 1 ? 's' : ''}</Text>
+        </> : <Text style={styles.total}>{compactDuration(stats.seconds)}</Text>}
       </View>
     </View>
     {stats.disciplines.map((item, index) => <Pressable key={item.discipline} style={styles.sportRow} onPress={() => setSelected(selected === index ? null : index)} accessibilityRole="button" accessibilityState={{ selected: selected === index }}
@@ -208,9 +241,10 @@ const styles = StyleSheet.create({
   note: { ...type.label, letterSpacing: 0, color: color.textMuted, flexShrink: 1 },
   caption: { ...type.label, fontSize: chart.labelSize, letterSpacing: 0, color: color.textMuted },
   link: { ...type.label, color: color.accent },
+  hintLabel: { ...type.label, color: color.gain, fontFamily: typography.display.semibold },
   chartValue: { ...type.title, color: color.accent, fontFamily: typography.display.semibold },
   plot: { height: chart.chartHeight },
-  plotTouch: { position: 'absolute', inset: 0, flexDirection: 'row' },
+  plotTouch: { position: 'absolute', top: 0, bottom: 0, left: `${chart.chartLeft / chart.width * 100}%`, right: `${(chart.width - chart.chartRight) / chart.width * 100}%`, flexDirection: 'row' },
   plotTarget: { flex: 1 },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md, justifyContent: 'center' },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },

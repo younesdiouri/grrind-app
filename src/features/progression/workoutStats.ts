@@ -19,6 +19,10 @@ export function statsWindow(days: StatsDays, now: Date) {
 
 export const dayKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 export const shortDate = (date: Date) => date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+export function dateRange(from: Date, to: Date): string {
+  const lastDay = shiftDay(to, -1);
+  return dayKey(from) === dayKey(lastDay) ? shortDate(from) : `${shortDate(from)} – ${shortDate(lastDay)}`;
+}
 export const compactDuration = (seconds: number) => {
   const minutes = Math.round(seconds / 60);
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${String(minutes % 60).padStart(2, '0')}` : ''}`;
