@@ -778,6 +778,9 @@ export const workoutChart = {
   labelTop: 16, labelBottom: 244, labelLeft: 66, labelRight: 254,
   chartHeight: 156, chartTop: 14, chartBottom: 130, chartLeft: 12, chartRight: 308,
   gradeSize: 72, cellSize: 10, cellGap: 4,
+  minimumTouch: 44, calendarColumns: 14, calendarCell: 16, calendarStep: 22,
+  donutRadius: 46, donutStroke: 9, donutSize: 120, donutCenter: 60,
+  chartColors: [palette.glacier, palette.amethyst, palette.lichen, palette.blossom, palette.copper, palette.mint],
 } as const;
 
 /**
