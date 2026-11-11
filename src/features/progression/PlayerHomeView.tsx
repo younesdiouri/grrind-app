@@ -10,6 +10,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+import { Polygon } from 'react-native-svg';
 
 import { SessionCard } from '@/components/SessionCard';
 import { TogetherDetails } from '@/components/TogetherDetails';
@@ -19,7 +20,7 @@ import { TitleBadge } from '@/components/TitleBadge';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import { decorativeGlow } from '@/design/decorativeGlow';
 import { decorativeMotion } from '@/design/decorativeMotion';
-import { color, curve, duration, motion, space, type, typography } from '@/design/tokens';
+import { color, curve, duration, motion, space, type, typography, workoutChart as chart } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
@@ -32,6 +33,8 @@ import {
 import type { Progression, Workout } from '@/features/progression/usePlayerHome';
 import { gaugeFill, gaugeHaloLayer, type GaugeBar } from '@/features/progression/WeekBoard';
 import { explainVitality, type VitalityBreakdown } from '@/features/progression/vitalityBonus';
+import { PerformanceRadar, type RadarPoint } from './PerformanceRadar';
+import type { WeekProgress } from './week';
 
 /**
  * L'état du joueur et ce qui l'a produit — l'écran qui prouve que la chaîne a marché.
@@ -44,6 +47,36 @@ import { explainVitality, type VitalityBreakdown } from '@/features/progression/
  */
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
+
+export function LivePerformanceRadar({ week }: { week: WeekProgress }) {
+  return <PerformanceRadar week={week} renderShape={points => <RadarShape points={points} />} />;
+}
+
+function RadarShape({ points }: { points: RadarPoint[] }) {
+  const progress = useSharedValue(0);
+  const breath = useSharedValue(1);
+  const reduced = useReducedMotion();
+  const signature = points.map(point => `${point.x},${point.y}`).join(' ');
+  useEffect(() => {
+    progress.value = 0;
+    progress.value = withDelay(duration.breath, withTiming(1, { duration: duration.drop, easing: Easing.bezier(...curve.enter) }));
+  }, [signature, progress]);
+  useEffect(() => {
+    cancelAnimation(breath);
+    breath.value = 1;
+    if (reduced === false) breath.value = withRepeat(withTiming(motion.beacon.from, { duration: motion.beacon.cycle / 2 }), -1, true);
+    return () => cancelAnimation(breath);
+  }, [reduced, breath]);
+  const animatedProps = useAnimatedProps(() => ({
+    points: points.map(point => `${chart.centerX + (point.x - chart.centerX) * progress.value},${chart.centerY + (point.y - chart.centerY) * progress.value}`).join(' '),
+  }));
+  const haloProps = useAnimatedProps(() => ({ opacity: chart.haloOpacity * breath.value }));
+  return <>
+    {reduced === false ? <AnimatedPolygon points={signature} animatedProps={haloProps} fill="none" stroke={color.accent} strokeWidth={chart.haloStroke} strokeLinejoin="round" /> : null}
+    <AnimatedPolygon animatedProps={animatedProps} fill={color.accent} fillOpacity={chart.fillOpacity} stroke={color.accent} strokeWidth={chart.stroke} strokeLinejoin="round" />
+  </>;
+}
 
 /**
  * Le joueur, en une carte : où il en est, et ce qu'il lui reste.

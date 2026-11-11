@@ -21,7 +21,7 @@ import { useReducedMotion } from '@/design/useReducedMotion';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSyncStatus } from '@/features/health/useSync';
-import { GrowingGaugeBar, LevelCard, VitalityNote } from '@/features/progression/PlayerHomeView';
+import { GrowingGaugeBar, LevelCard, LivePerformanceRadar, VitalityNote } from '@/features/progression/PlayerHomeView';
 import { WeekBoard } from '@/features/progression/WeekBoard';
 // Le type s'appelle `PlayerHome` comme le composant d'en dessous : on l'aliase plutôt que de
 // renommer le composant, dont le nom est celui qu'on cherche en lisant l'écran.
@@ -215,6 +215,7 @@ function PlayerHome({
           <WeekBoard
             week={home.week}
             now={new Date()}
+            radar={<LivePerformanceRadar week={home.week} />}
             renderBar={(bar) => <GrowingGaugeBar {...bar} />}
           />
           <View style={styles.vitality}>
