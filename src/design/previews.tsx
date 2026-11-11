@@ -39,6 +39,7 @@ import { SessionCard } from '@/components/SessionCard';
 import { StreakMeter } from '@/components/StreakMeter';
 import { WeekBoard } from '@/features/progression/WeekBoard';
 import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
+import { WeekTrainingPlanView } from '@/features/progression/WeekTrainingPlan';
 import { summarizeWorkouts } from '@/features/progression/workoutStats';
 import type { WeekProgress } from '@/features/progression/week';
 import { SystemFrame } from '@/components/SystemFrame';
@@ -282,6 +283,7 @@ const weekEntry = (
   breakdown: [], attributes, rulesetVersion: 'preview', occurredAt,
 });
 const WEEK_FIXTURE: WeekProgress = {
+  trainingPlan: null,
   startsAt: '2026-11-08T19:00:00Z',
   resetsAt: '2026-11-15T19:00:00Z',
   current: { xp: 460, sessions: 2, attributes: { strength: 180, endurance: 220, mobility: 20, dexterity: 40 } },
@@ -308,8 +310,16 @@ export const PREVIEWS: Preview[] = [
   {
     slug: 'workout-stats', name: 'Statistiques workout', group: 'Composants',
     element: <>
-      <Specimen label="28 jours — volumes réels, quatre sports"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 28, STATS_NOW)} days={28} /></Specimen>
-      <Specimen label="7 jours — aucune séance ni référence"><WorkoutStatsView stats={summarizeWorkouts([], 7, STATS_NOW)} days={7} /></Specimen>
+      <Specimen label="Mois — volumes réels, quatre sports"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'month', STATS_NOW)} trainingPlan={<WeekTrainingPlanView plan={{
+        remaining: { strength: 0, endurance: 0, mobility: 15, dexterity: 18 }, remainingAfter: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 },
+        completesWeek: true, calculatedAt: STATS_NOW.toISOString(), expiresAt: '2026-11-11T23:00:00Z', rulesetVersion: 'preview',
+        sessions: [
+          { discipline: 'MOBILITY', durationSeconds: 1200, estimatedXp: 20, estimatedGains: { strength: 1, endurance: 3, mobility: 15, dexterity: 1 } },
+          { discipline: 'CLIMBING', durationSeconds: 1800, estimatedXp: 30, estimatedGains: { strength: 8, endurance: 2, mobility: 3, dexterity: 17 } },
+        ],
+      }} />} /></Specimen>
+      <Specimen label="Année — douze mois"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'year', STATS_NOW)} /></Specimen>
+      <Specimen label="Semaine — aucune séance ni référence"><WorkoutStatsView stats={summarizeWorkouts([], 'week', STATS_NOW)} /></Specimen>
     </>,
   },
   {

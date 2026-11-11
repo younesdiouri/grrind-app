@@ -220,7 +220,7 @@ function PlayerHome({
           />
           <View style={styles.vitality}>
             <Text style={styles.detail}>
-              Vitalité <Text style={styles.vitalityValue}>{home.progression.attributes.vitality}</Text>
+              <Text style={styles.heart}>♥</Text> Vitalité <Text style={styles.vitalityValue}>{home.progression.attributes.vitality} PV</Text>
             </Text>
             <VitalityNote breakdown={home.progression.vitalityBreakdown} />
           </View>
@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
   streak: { padding: space.md },
   vitality: { gap: space.xs, paddingHorizontal: space.md },
   vitalityValue: { color: color.text },
+  heart: { color: color.gain },
   loading: { paddingVertical: space.xl, alignItems: 'center' },
   card: {
     backgroundColor: color.surface,

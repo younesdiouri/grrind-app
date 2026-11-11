@@ -17,7 +17,9 @@ import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
 import { WorkoutRow } from '@/features/progression/PlayerHomeView';
 import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
 import { useWorkoutStats } from '@/features/progression/useWorkoutStats';
-import { summarizeWorkouts, type StatsDays } from '@/features/progression/workoutStats';
+import { summarizeWorkouts, statsPeriodLabel, type StatsPeriod } from '@/features/progression/workoutStats';
+import { WeekTrainingPlanView } from '@/features/progression/WeekTrainingPlan';
+import { useWeekTrainingPlan } from '@/features/progression/useWeekTrainingPlan';
 
 /**
  * L'archive des séances (#362), sortie de l'accueil : celui-ci dit la semaine, celle-ci tout le
@@ -30,7 +32,6 @@ export default function Historique() {
     <AmbientBackdrop />
     <View style={styles.header}>
       <Text style={styles.overline}>PERFORMANCE / WORKOUT</Text>
-      <Text style={styles.title}>Ton entraînement.</Text>
       <View style={styles.tabs} accessibilityRole="tablist">
         {(['stats', 'journal'] as const).map(tab => <Pressable key={tab} onPress={() => setMode(tab)} style={[styles.tab, mode === tab && styles.selectedTab]}
           accessibilityRole="tab" accessibilityState={{ selected: mode === tab }}>
@@ -43,21 +44,22 @@ export default function Historique() {
 }
 
 function Dashboard() {
-  const [days, setDays] = useState<StatsDays>(28);
+  const [period, setPeriod] = useState<StatsPeriod>('week');
   const reduced = useReducedMotion();
   const now = new Date();
-  const query = useWorkoutStats(days, now);
-  return <ScrollView contentContainerStyle={styles.screen} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} tintColor={color.accent} />}>
+  const query = useWorkoutStats(period, now);
+  const { plan, refreshPlan } = useWeekTrainingPlan();
+  return <ScrollView contentContainerStyle={styles.screen} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void Promise.all([query.refetch(), refreshPlan()])} tintColor={color.accent} />}>
     <View style={styles.periods} accessibilityRole="tablist">
-      {([7, 28, 84] as const).map(period => <Pressable key={period} style={[styles.period, days === period && styles.selectedPeriod]} onPress={() => setDays(period)} accessibilityRole="tab" accessibilityState={{ selected: days === period }}>
-        <Text style={[styles.tabLabel, days === period && styles.selectedLabel]}>{period} jours</Text>
+      {(['week', 'month', 'year'] as const).map(option => <Pressable key={option} style={[styles.period, period === option && styles.selectedPeriod]} onPress={() => setPeriod(option)} accessibilityRole="tab" accessibilityState={{ selected: period === option }}>
+        <Text style={[styles.tabLabel, period === option && styles.selectedLabel]}>{statsPeriodLabel[option]}</Text>
       </Pressable>)}
     </View>
     {query.isPending ? <View style={styles.loading}><ActivityIndicator color={color.accent} /><Text style={styles.muted}>Lecture de toutes tes séances…</Text></View> : null}
     {query.error ? <View style={styles.footer}><Text style={styles.muted}>{messageFor(query.error)}</Text><Button label="Réessayer" variant="quiet" onPress={() => void query.refetch()} /></View> : null}
-    {query.data ? <Animated.View key={days} entering={reduced === false ? FadeInUp.duration(duration.enter) : undefined}>
+    {query.data ? <Animated.View key={period} entering={reduced === false ? FadeInUp.duration(duration.enter) : undefined}>
       {query.data.length === 0 ? <Text style={styles.empty}>Tes premières séances dessineront ta trajectoire. Synchronise Santé depuis l’accueil pour les retrouver ici.</Text> : null}
-      <WorkoutStatsView stats={summarizeWorkouts(query.data, days, now)} days={days} />
+      <WorkoutStatsView stats={summarizeWorkouts(query.data, period, now)} trainingPlan={plan ? <WeekTrainingPlanView plan={plan} /> : null} />
     </Animated.View> : null}
   </ScrollView>;
 }
@@ -120,7 +122,6 @@ const styles = StyleSheet.create({
   shell: { flex: 1 },
   header: { paddingHorizontal: space.lg, paddingTop: space.sm, gap: space.sm },
   screen: { padding: space.lg, gap: space.md },
-  title: { ...type.title, fontFamily: typography.display.bold, color: color.text },
   overline: { ...type.label, color: color.accent },
   tabs: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: color.border },
   tab: { flex: 1, minHeight: workoutChart.minimumTouch, alignItems: 'center', justifyContent: 'center', borderBottomWidth: space.xs, borderColor: 'transparent' },

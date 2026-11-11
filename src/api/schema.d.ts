@@ -2604,6 +2604,42 @@ export interface components {
             previous: components["schemas"]["WeekTotals"] | null;
             /** @description Toutes les écritures de la semaine, `occurredAt` décroissant, sans pagination. `current` en est la somme exacte. */
             entries: components["schemas"]["XpTransaction"][];
+            /** @description Plan estimé pour les déficits hebdomadaires. Null sans entraînement crédité, référence ou déficit, ou sans séance utile avant expiration. */
+            trainingPlan: components["schemas"]["WeekTrainingPlan"] | null;
+        };
+        /**
+         * @description Une ou deux disciplines distinctes, entre 10 et 60 min par pas de 5 min,
+         *     bornées par les règles de durée publiées et le temps disponible aujourd'hui.
+         *     Choisit le plan complet le plus court parmi ces candidats, sinon la meilleure
+         *     réduction relative des déficits. Estimation solo avec bonus actifs et plafonds
+         *     du jour ; sans supposer de distance, dénivelé, FC ou bonus ensemble.
+         *     Aucun crédit n'est garanti : seules les séances réellement importées comptent.
+         */
+        WeekTrainingPlan: {
+            remaining: components["schemas"]["WeekTrainingAmounts"];
+            remainingAfter: components["schemas"]["WeekTrainingAmounts"];
+            /** @description Le plan estimé couvre les quatre déficits. */
+            completesWeek: boolean;
+            /** Format: date-time */
+            calculatedAt: string;
+            /**
+             * Format: date-time
+             * @description Minuit local ou remise à zéro de la semaine, la première borne atteinte.
+             */
+            expiresAt: string;
+            rulesetVersion: string;
+            sessions: {
+                discipline: components["schemas"]["Discipline"];
+                durationSeconds: number;
+                estimatedXp: number;
+                estimatedGains: components["schemas"]["WeekTrainingAmounts"];
+            }[];
+        };
+        WeekTrainingAmounts: {
+            strength: number;
+            endurance: number;
+            mobility: number;
+            dexterity: number;
         };
         WeekTotals: {
             xp: number;

@@ -14,18 +14,18 @@ export const radarPoints = (values: readonly number[]): RadarPoint[] => values.m
 export const pointsString = (points: RadarPoint[]) => points.map(({ x, y }) => `${x},${y}`).join(' ');
 export const radarPath = (points: RadarPoint[]) => `${points.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'} ${x} ${y}`).join(' ')} Z`;
 
-/** Les deux semaines partagent une échelle ; dépasser 100 % agrandit le repère entier. */
-export function PerformanceRadar({ week, renderShape, renderReference }: {
+/** Un repère fixe : le bord représente 100 %, même lorsque les gains le dépassent. */
+export function PerformanceRadar({ week, renderShape, renderReference, renderIcon }: {
   week: WeekProgress;
   renderShape?: (points: RadarPoint[]) => ReactNode;
   renderReference?: (points: RadarPoint[]) => ReactNode;
+  renderIcon?: (attribute: Attribute) => ReactNode;
 }) {
   const percents = WEEK_ATTRIBUTES.map(attribute => weekPercent(week.current.attributes[attribute], week.previous?.attributes[attribute] ?? null));
-  const scale = Math.max(100, ...percents.map(value => value ?? 0));
-  const points = radarPoints(percents.map(value => (value ?? 0) / scale));
+  const points = radarPoints(percents.map(value => (value ?? 0) / 100));
   const axes = radarPoints([1, 1, 1, 1]);
   const labels = WEEK_ATTRIBUTES.map(attribute => weekPercentLabel(week.current.attributes[attribute], week.previous?.attributes[attribute] ?? null));
-  const reference = radarPoints([1, 1, 1, 1].map(value => value * 100 / scale));
+  const reference = axes;
   const positions = WEEK_ATTRIBUTES.map((_, index) => {
     const angle = index * Math.PI / 2 - Math.PI / 2;
     return { x: chart.centerX + Math.cos(angle) * chart.radarIconOffset - chart.radarIcon / 2,
@@ -47,25 +47,29 @@ export function PerformanceRadar({ week, renderShape, renderReference }: {
         {renderShape ? renderShape(points) : <Polygon points={pointsString(points)} fill={color.accent} fillOpacity={chart.radarFillOpacity} stroke={color.accent} strokeWidth={chart.stroke} />}
         {points.map((point, index) => <Circle key={index} cx={point.x} cy={point.y} r={chart.dot} fill={attributeColor[WEEK_ATTRIBUTES[index]]} />)}
         <Circle cx={chart.centerX} cy={chart.centerY} r={chart.stroke} fill={color.textMuted} />
-        {positions.map((position, index) => <RadarIcon key={index} attribute={WEEK_ATTRIBUTES[index]} {...position} />)}
+        {positions.map((position, index) => <G key={index} transform={`translate(${position.x}, ${position.y})`}>
+          {renderIcon ? renderIcon(WEEK_ATTRIBUTES[index]) : <RadarIconGlyph attribute={WEEK_ATTRIBUTES[index]} />}
+        </G>)}
       </Svg>
     </View>
   );
 }
 
-const ICON_PATH: Record<Attribute, string> = {
+export const RADAR_ICON_PATH: Record<Attribute, string> = {
   strength: 'M6 5v14M3 8v8M18 5v14M21 8v8M6 12h12',
-  endurance: 'M12 21C8 18 3 14 3 9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5-5 9-9 12M5 12h4l2-4 3 7 2-3h3',
+  endurance: 'M12 21C8 18 3 14 3 9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5-5 9-9 12',
   mobility: 'M12 8v7m0-4L5 8m7 3 7-3m-7 7-6 6m6-6 6 6',
   dexterity: 'M13 2 5 14h6l-1 8 9-13h-6z',
 };
 
-function RadarIcon({ attribute, x, y }: { attribute: Attribute; x: number; y: number }) {
-  // Un seul repère SVG : les racines Svg imbriquées ne se placent pas via x/y sur iOS.
-  return <G transform={`translate(${x}, ${y})`}>
-    <Path d={ICON_PATH[attribute]} stroke={attributeColor[attribute]} strokeWidth={chart.stroke * 1.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+export const RADAR_ECG_PATH = 'M4 12h4l2-4 4 8 2-4h4';
+
+export function RadarIconGlyph({ attribute, ecg }: { attribute: Attribute; ecg?: ReactNode }) {
+  return <>
+    <Path d={RADAR_ICON_PATH[attribute]} stroke={attributeColor[attribute]} strokeWidth={chart.stroke * 1.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
     {attribute === 'mobility' ? <Circle cx="12" cy="4" r="2" fill={attributeColor[attribute]} /> : null}
-  </G>;
+    {attribute === 'endurance' ? ecg ?? <Path d={RADAR_ECG_PATH} stroke={attributeColor.endurance} strokeWidth={chart.stroke} fill="none" /> : null}
+  </>;
 }
 
 const styles = StyleSheet.create({
