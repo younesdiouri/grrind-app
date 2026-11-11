@@ -9,8 +9,9 @@ import Animated, {
   withDelay,
   withRepeat,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
-import { Path } from 'react-native-svg';
+import { G, Path } from 'react-native-svg';
 
 import { SessionCard } from '@/components/SessionCard';
 import { TogetherDetails } from '@/components/TogetherDetails';
@@ -20,7 +21,7 @@ import { TitleBadge } from '@/components/TitleBadge';
 import { XpBar, xpBarFill } from '@/components/XpBar';
 import { decorativeGlow } from '@/design/decorativeGlow';
 import { decorativeMotion } from '@/design/decorativeMotion';
-import { color, curve, duration, motion, space, type, typography, workoutChart as chart } from '@/design/tokens';
+import { attributeColor, color, curve, duration, motion, space, type, typography, workoutChart as chart, type Attribute } from '@/design/tokens';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import {
   formatCalories,
@@ -33,7 +34,7 @@ import {
 import type { Progression, Workout } from '@/features/progression/usePlayerHome';
 import { gaugeFill, gaugeHaloLayer, type GaugeBar } from '@/features/progression/WeekBoard';
 import { explainVitality, type VitalityBreakdown } from '@/features/progression/vitalityBonus';
-import { PerformanceRadar, radarPath, type RadarPoint } from './PerformanceRadar';
+import { PerformanceRadar, RadarIconGlyph, RADAR_ECG_PATH, RADAR_ICON_PATH, radarPath, type RadarPoint } from './PerformanceRadar';
 import type { WeekProgress } from './week';
 
 /**
@@ -48,10 +49,44 @@ import type { WeekProgress } from './week';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedG = Animated.createAnimatedComponent(G<{ matrix?: number[] }>);
 
 export function LivePerformanceRadar({ week }: { week: WeekProgress }) {
+  const phase = useSharedValue(0);
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    cancelAnimation(phase);
+    phase.value = 0;
+    if (reduced === false) phase.value = withRepeat(withTiming(1, { duration: chart.radarIconCycleMs, easing: Easing.linear }), -1, false);
+    return () => cancelAnimation(phase);
+  }, [phase, reduced]);
   return <PerformanceRadar week={week} renderShape={points => <RadarShape points={points} />}
-    renderReference={points => <RadarReference points={points} />} />;
+    renderReference={points => <RadarReference points={points} />}
+    renderIcon={attribute => reduced === false ? <MovingRadarIcon attribute={attribute} phase={phase} /> : <RadarIconGlyph attribute={attribute} />} />;
+}
+
+function MovingRadarIcon({ attribute, phase }: { attribute: Attribute; phase: SharedValue<number> }) {
+  const transformProps = useAnimatedProps(() => {
+    const wave = (1 - Math.cos(phase.value * Math.PI * 2)) / 2;
+    const sx = attribute === 'strength' ? 1 + chart.radarMuscleGrowth * wave : attribute === 'mobility' ? 1 - chart.radarYogaWidth * wave : 1;
+    const sy = attribute === 'mobility' ? 1 + chart.radarYogaStretch * wave : sx;
+    const anchor = attribute === 'mobility' ? 22 : 12;
+    return { matrix: [sx, 0, 0, sy, 12 * (1 - sx), anchor * (1 - sy)] };
+  });
+  const ecgProps = useAnimatedProps(() => ({ strokeDashoffset: -phase.value * chart.radarEcgPitch * 2 }));
+  const flashProps = useAnimatedProps(() => {
+    const flash = Math.pow(Math.max(0, Math.sin(phase.value * Math.PI * 4)), 8);
+    return { opacity: chart.radarBoltRest + (1 - chart.radarBoltRest) * flash, fillOpacity: flash * chart.radarBoltFill };
+  });
+  if (attribute === 'dexterity') return <AnimatedPath d={RADAR_ICON_PATH.dexterity} animatedProps={flashProps}
+    stroke={attributeColor.dexterity} strokeWidth={chart.stroke * 1.5} fill={attributeColor.dexterity} fillOpacity={0} strokeLinejoin="round" />;
+  return <AnimatedG animatedProps={transformProps}>
+    <RadarIconGlyph attribute={attribute} ecg={<>
+      <Path d={RADAR_ECG_PATH} stroke={attributeColor.endurance} strokeWidth={chart.stroke} opacity={chart.radarEcgRest} fill="none" />
+      <AnimatedPath d={RADAR_ECG_PATH} animatedProps={ecgProps} stroke={attributeColor.endurance} strokeWidth={chart.stroke}
+        strokeDasharray={`${chart.radarEcgDash} ${chart.radarEcgPitch - chart.radarEcgDash}`} fill="none" />
+    </>} />
+  </AnimatedG>;
 }
 
 function RadarReference({ points }: { points: RadarPoint[] }) {

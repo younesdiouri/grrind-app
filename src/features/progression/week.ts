@@ -7,7 +7,7 @@ export const WEEK_ATTRIBUTES = ['strength', 'endurance', 'mobility', 'dexterity'
 
 /** Un zéro de référence n'a pas de pourcentage défini. */
 export function weekPercent(current: number, previous: number | null): number | null {
-  return previous === null || previous <= 0 ? null : Math.round(Math.max(0, current) / previous * 100);
+  return previous === null || previous <= 0 ? null : Math.min(100, Math.round(Math.max(0, current) / previous * 100));
 }
 
 export function weekPercentLabel(current: number, previous: number | null): string {

@@ -777,6 +777,8 @@ export const workoutChart = {
   fillOpacity: 0.16, gridOpacity: 0.65,
   radarIcon: 24, radarIconOffset: 100, radarFillOpacity: .3, radarPulseFrom: .22, radarPulseTo: .5,
   radarPulseMs: 3200, radarDashMs: 3600, radarDashStep: 8,
+  radarIconCycleMs: 4800, radarMuscleGrowth: .14, radarYogaWidth: .1, radarYogaStretch: .16,
+  radarEcgPitch: 32, radarEcgDash: 6, radarEcgRest: .3, radarBoltRest: .45, radarBoltFill: .7,
   chartHeight: 156, chartTop: 14, chartBottom: 130, chartLeft: 48, chartRight: 308,
   gradeSize: 72, cellSize: 10, cellGap: 4,
   minimumTouch: 44, calendarColumns: 14, calendarCell: 16, calendarStep: 22,

@@ -1,26 +1,26 @@
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Circle, Defs, Line, LinearGradient, Path, Rect, Stop, Svg, Text as SvgText } from 'react-native-svg';
 
 import { SystemFrame } from '@/components/SystemFrame';
 import { color, disciplineLabel, palette, radius, space, type, typography, workoutChart as chart } from '@/design/tokens';
-import { compactDuration, dateRange, shortDate, statsWindow, type StatsDays, type WorkoutStats } from '@/features/progression/workoutStats';
+import { compactDuration, dateRange, shortDate, statsPeriodLabel, type WorkoutStats } from '@/features/progression/workoutStats';
 
 const GRADE_COLORS = { A: color.gain, B: color.accent, C: palette.amethyst, D: palette.copper, E: color.textMuted };
 const GRADE_LABELS = { A: 'Volume en hausse', B: 'Rythme maintenu', C: 'Léger recul', D: 'Rythme allégé', E: 'Peu de volume' };
 
-export function WorkoutStatsView({ stats, days }: { stats: WorkoutStats; days: StatsDays }) {
+export function WorkoutStatsView({ stats, trainingPlan }: { stats: WorkoutStats; trainingPlan?: ReactNode }) {
   return <View style={styles.stack}>
-    <EffortCard stats={stats} days={days} />
+    <EffortCard stats={stats} />
     <View style={styles.metrics}>
       <Metric value={String(stats.current.length)} label="SÉANCES" />
-      <Metric value={String(stats.activeDays)} label="JOURS ACTIFS" detail={`sur ${days} jours`} />
+      <Metric value={String(stats.activeDays)} label="JOURS ACTIFS" detail={`sur ${stats.days} jours`} />
       <Metric value={stats.current.length ? compactDuration(stats.averageSeconds) : '—'} label="PAR SÉANCE" detail="durée moyenne" />
     </View>
-    <WorkoutHint stats={stats} days={days} />
-    <VolumeChart key={`volume-${days}`} stats={stats} days={days} />
-    <ActivityCalendar key={`calendar-${days}`} stats={stats} />
-    <DisciplineBalance key={`balance-${days}`} stats={stats} />
+    {stats.current.length > 0 ? trainingPlan : null}
+    <VolumeChart key={`volume-${stats.period}`} stats={stats} />
+    {stats.period === 'year' ? <YearCalendar stats={stats} /> : <ActivityCalendar key={`calendar-${stats.period}`} stats={stats} />}
+    <DisciplineBalance key={`balance-${stats.period}`} stats={stats} />
   </View>;
 }
 
@@ -31,40 +31,14 @@ function Metric({ value, label, detail }: { value: string; label: string; detail
   </View>;
 }
 
-function WorkoutHint({ stats, days }: { stats: WorkoutStats; days: StatsDays }) {
-  if (stats.current.length === 0) return null;
-  const dominant = stats.disciplines[0];
-  const busiestDay = Math.max(...stats.daily.map(day => day.seconds));
-  let title: string;
-  let body: string;
-  if (stats.current.length >= 3 && dominant?.share >= .7) {
-    title = 'Envie de varier ?';
-    body = `${disciplineLabel[dominant.discipline]} représente ${Math.round(dominant.share * 100)} % de ton temps. Essaie une autre discipline lors d’un prochain créneau si tu souhaites diversifier ta pratique.`;
-  } else if (stats.current.length >= 3 && stats.seconds > 0 && busiestDay / stats.seconds > .5) {
-    title = 'Répartis tes créneaux';
-    body = `${Math.round(busiestDay / stats.seconds * 100)} % de ton temps d’entraînement se concentre sur une seule journée. Pour une routine plus régulière, répartis tes prochains créneaux sur plusieurs jours.`;
-  } else if (stats.previousActiveDays > stats.activeDays) {
-    title = 'Retrouve un créneau qui tient';
-    body = `${stats.activeDays} jours actifs sur ${days} jours, contre ${stats.previousActiveDays} sur les ${days} jours précédents. Repère un créneau que tu peux facilement retrouver dans ton agenda.`;
-  } else {
-    title = 'Ancre ton prochain créneau';
-    body = `${stats.current.length} séance${stats.current.length > 1 ? 's' : ''} sur ${days} jours. Reprends un horaire qui a déjà bien fonctionné pour toi et réserve-le dans ton agenda.`;
-  }
-  return <SystemFrame accent="gain" contentStyle={styles.panel}>
-    <Text style={styles.hintLabel}>TON PROCHAIN CAP</Text>
-    <Text style={styles.heroTitle}>{title}</Text>
-    <Text style={styles.note}>{body}</Text>
-  </SystemFrame>;
-}
-
-function EffortCard({ stats, days }: { stats: WorkoutStats; days: StatsDays }) {
+function EffortCard({ stats }: { stats: WorkoutStats }) {
   const [explained, setExplained] = useState(false);
   const tint = stats.grade ? GRADE_COLORS[stats.grade] : color.textMuted;
   const gradeIndex = stats.grade ? ['E', 'D', 'C', 'B', 'A'].indexOf(stats.grade) + 1 : 0;
   const circumference = 2 * Math.PI * chart.donutRadius;
   return <SystemFrame tier="hero" contentStyle={styles.panel}>
     <View style={styles.sectionHead}>
-      <Text style={styles.overline}>EFFORT SCORE</Text><Text style={styles.tag}>VOLUME · {days} J</Text>
+      <Text style={styles.overline}>EFFORT SCORE</Text><Text style={styles.tag}>VOLUME · {statsPeriodLabel[stats.period].toUpperCase()}</Text>
     </View>
     <View style={styles.heroBody}>
       <View style={styles.gradeDial}>
@@ -90,62 +64,68 @@ function EffortCard({ stats, days }: { stats: WorkoutStats; days: StatsDays }) {
       </View>)}
     </View>
     <Pressable onPress={() => setExplained(value => !value)} accessibilityRole="button" accessibilityState={{ expanded: explained }} style={styles.explainButton}>
-      <Text style={styles.caption}>Comparé aux {days} jours précédents · aujourd’hui inclus</Text>
+      <Text style={styles.caption}>Comparé au {dateRange(stats.previousStart, stats.previousEnd)}{stats.period === 'year' ? ` ${stats.previousStart.getFullYear()}` : ''}</Text>
       <Text style={styles.link}>{explained ? 'Fermer −' : 'Le calcul +'} </Text>
     </Pressable>
     {explained ? <Text style={styles.note}>Le score compare la durée totale des séances synchronisées à la période précédente : A ≥ 120 %, B ≥ 100 %, C ≥ 80 %, D ≥ 50 %, E en dessous. Sans volume précédent, aucune note. Il décrit le volume, pas l’intensité, la récupération ou la qualité de tes séances.</Text> : null}
   </SystemFrame>;
 }
 
-function VolumeChart({ stats, days }: { stats: WorkoutStats; days: StatsDays }) {
-  const [selected, setSelected] = useState(stats.buckets.length - 1);
+function VolumeChart({ stats }: { stats: WorkoutStats }) {
+  const [selected, setSelected] = useState(stats.buckets.filter(bucket => !bucket.isFuture).length - 1);
   const gradient = `volume-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  const max = Math.max(60, ...stats.buckets.flatMap(bucket => [bucket.seconds, bucket.previousSeconds]));
+  const max = Math.max(120, ...stats.buckets.map(bucket => bucket.seconds));
   const plotWidth = chart.chartRight - chart.chartLeft;
   const plotHeight = chart.chartBottom - chart.chartTop;
-  const point = (seconds: number, index: number) => ({
+  const points = stats.buckets.map((bucket, index) => ({
     x: chart.chartLeft + index / Math.max(1, stats.buckets.length - 1) * plotWidth,
-    y: chart.chartBottom - seconds / max * plotHeight,
-  });
-  const currentPoints = stats.buckets.map((bucket, index) => point(bucket.seconds, index));
-  const line = (previous: boolean) => stats.buckets.map((bucket, index) => {
-    const p = point(previous ? bucket.previousSeconds : bucket.seconds, index);
-    return `${index ? 'L' : 'M'} ${p.x} ${p.y}`;
-  }).join(' ');
-  const bucket = stats.buckets[Math.min(selected, stats.buckets.length - 1)];
-  const selectedPoint = currentPoints[Math.min(selected, currentPoints.length - 1)];
-  const { start, end, previousStart } = statsWindow(days, stats.daily[stats.daily.length - 1].date);
-  const previousBucketFrom = new Date(previousStart);
-  previousBucketFrom.setDate(previousBucketFrom.getDate() + selected * (days === 7 ? 1 : 7));
-  const previousBucketTo = new Date(previousBucketFrom);
-  previousBucketTo.setDate(previousBucketTo.getDate() + (days === 7 ? 1 : 7));
+    y: chart.chartBottom - bucket.seconds / max * plotHeight,
+  }));
+  const observed = points.filter((_, index) => !stats.buckets[index].isFuture);
+  const line = observed.map((p, index) => `${index ? 'L' : 'M'} ${p.x} ${p.y}`).join(' ');
+  const bucket = stats.buckets[selected];
+  const selectedPoint = points[selected];
   return <SystemFrame contentStyle={styles.panel}>
-    <View style={styles.sectionHead}><Text style={styles.overline}>TEMPS D’ENTRAÎNEMENT</Text><Text style={styles.tag}>{days === 7 ? 'PAR JOUR' : '7 J / POINT'}</Text></View>
+    <View style={styles.sectionHead}><Text style={styles.overline}>TEMPS D’ENTRAÎNEMENT</Text><Text style={styles.tag}>{stats.period === 'year' ? 'PAR MOIS' : 'PAR JOUR'}</Text></View>
     <View style={styles.sectionHead}>
       <Text style={styles.chartValue}>{compactDuration(bucket.seconds)}</Text>
-      <Text style={styles.note}>{dateRange(bucket.from, bucket.to)}</Text>
+      <Text style={styles.note}>{stats.period === 'year' ? bucket.from.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : shortDate(bucket.from)}</Text>
     </View>
-    <Text style={styles.caption}>{dateRange(previousBucketFrom, previousBucketTo)} : {compactDuration(bucket.previousSeconds)}</Text>
     <View style={styles.plot}>
       <Svg width="100%" height="100%" viewBox={`0 0 ${chart.width} ${chart.chartHeight}`}>
         <Defs><LinearGradient id={gradient} x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor={color.accent} stopOpacity={chart.fillOpacity * 2} /><Stop offset="1" stopColor={color.accent} stopOpacity="0" /></LinearGradient></Defs>
         {[0, .5, 1].map(tick => <Line key={tick} x1={chart.chartLeft} x2={chart.chartRight} y1={chart.chartTop + tick * plotHeight} y2={chart.chartTop + tick * plotHeight} stroke={color.border} strokeDasharray="3 5" />)}
         {[0, .5, 1].map(tick => <SvgText key={`scale-${tick}`} x="0" y={chart.chartTop + tick * plotHeight + space.xs}
           fill={color.textMuted} fontSize={chart.labelSize}>{compactDuration(max * (1 - tick))}</SvgText>)}
-        <Path d={line(true)} stroke={color.textMuted} strokeWidth={chart.stroke} strokeDasharray="4 5" fill="none" />
-        <Path d={`${line(false)} L ${chart.chartRight} ${chart.chartBottom} L ${chart.chartLeft} ${chart.chartBottom} Z`} fill={`url(#${gradient})`} />
-        <Path d={line(false)} stroke={color.accent} strokeWidth={chart.stroke * 2} strokeLinejoin="round" fill="none" />
+        <Path d={`${line} L ${observed[observed.length - 1].x} ${chart.chartBottom} L ${observed[0].x} ${chart.chartBottom} Z`} fill={`url(#${gradient})`} />
+        <Path d={line} stroke={color.accent} strokeWidth={chart.stroke * 2} strokeLinejoin="round" fill="none" />
         <Line x1={selectedPoint.x} x2={selectedPoint.x} y1={chart.chartTop} y2={chart.chartBottom} stroke={color.accent} opacity={chart.gridOpacity} strokeDasharray="2 4" />
-        {currentPoints.map((p, index) => <Circle key={index} cx={p.x} cy={p.y} r={chart.dot} fill={color.accent} />)}
+        {observed.map((p, index) => <Circle key={index} cx={p.x} cy={p.y} r={chart.dot} fill={color.accent} />)}
         <Circle cx={selectedPoint.x} cy={selectedPoint.y} r={chart.dot * 2} fill={color.surface} stroke={color.accent} strokeWidth={chart.stroke} />
+        {stats.period === 'month' ? null : stats.buckets.map((item, index) => <SvgText key={`axis-${index}`} x={points[index].x} y={chart.chartBottom + space.md + space.xs}
+          textAnchor="middle" fill={color.textMuted} fontSize={chart.labelSize}>{item.axisLabel}</SvgText>)}
       </Svg>
       <View style={styles.plotTouch}>
-        {stats.buckets.map((item, index) => <Pressable key={index} style={styles.plotTarget} onPress={() => setSelected(index)}
-          accessibilityRole="button" accessibilityLabel={`${dateRange(item.from, item.to)}, ${compactDuration(item.seconds)}, période précédente ${compactDuration(item.previousSeconds)}`} accessibilityState={{ selected: index === selected }} />)}
+        {stats.buckets.map((item, index) => <Pressable key={index} style={styles.plotTarget} onPress={() => setSelected(index)} disabled={item.isFuture}
+          accessibilityRole="button" accessibilityLabel={`${dateRange(item.from, item.to)}, ${item.isFuture ? 'à venir' : compactDuration(item.seconds)}`} accessibilityState={{ selected: index === selected, disabled: item.isFuture }} />)}
       </View>
     </View>
-    <View style={styles.sectionHead}><Text style={styles.caption}>{shortDate(stats.buckets[0].from)}</Text><Text style={styles.caption}>Toucher pour explorer</Text><Text style={styles.caption}>{shortDate(stats.daily[stats.daily.length - 1].date)}</Text></View>
-    <View style={styles.legend}><Legend tint={color.accent} label={dateRange(start, end)} /><Legend tint={color.textMuted} label={dateRange(previousStart, start)} /></View>
+    <Text style={styles.caption}>Toucher pour explorer</Text>
+  </SystemFrame>;
+}
+
+function YearCalendar({ stats }: { stats: WorkoutStats }) {
+  const [selected, setSelected] = useState(stats.buckets.filter(bucket => !bucket.isFuture).length - 1);
+  const month = stats.buckets[selected];
+  return <SystemFrame contentStyle={styles.panel}>
+    <View style={styles.sectionHead}><Text style={styles.overline}>RÉGULARITÉ</Text><Text style={styles.tag}>JOURS ACTIFS / MOIS</Text></View>
+    <Text style={styles.note}>{month.from.toLocaleDateString('fr-FR', { month: 'long' })} · {month.activeDays} jours actifs · {compactDuration(month.seconds)}</Text>
+    <View style={styles.months}>
+      {stats.buckets.map((item, index) => <Pressable key={index} style={[styles.month, selected === index && styles.monthSelected]} onPress={() => setSelected(index)} disabled={item.isFuture}
+        accessibilityRole="button" accessibilityLabel={`${item.axisLabel}, ${item.isFuture ? 'à venir' : `${item.activeDays} jours actifs`}`} accessibilityState={{ selected: selected === index, disabled: item.isFuture }}>
+        <Text style={styles.micro}>{item.axisLabel}</Text><Text style={[styles.monthValue, item.activeDays > 0 && styles.monthActive]}>{item.isFuture ? '—' : item.activeDays}</Text>
+      </Pressable>)}
+    </View>
   </SystemFrame>;
 }
 
@@ -241,7 +221,6 @@ const styles = StyleSheet.create({
   note: { ...type.label, letterSpacing: 0, color: color.textMuted, flexShrink: 1 },
   caption: { ...type.label, fontSize: chart.labelSize, letterSpacing: 0, color: color.textMuted },
   link: { ...type.label, color: color.accent },
-  hintLabel: { ...type.label, color: color.gain, fontFamily: typography.display.semibold },
   chartValue: { ...type.title, color: color.accent, fontFamily: typography.display.semibold },
   plot: { height: chart.chartHeight },
   plotTouch: { position: 'absolute', top: 0, bottom: 0, left: `${chart.chartLeft / chart.width * 100}%`, right: `${(chart.width - chart.chartRight) / chart.width * 100}%`, flexDirection: 'row' },
@@ -249,6 +228,11 @@ const styles = StyleSheet.create({
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md, justifyContent: 'center' },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   legendDot: { width: space.sm, height: space.sm, borderRadius: space.xs },
+  months: { flexDirection: 'row', flexWrap: 'wrap' },
+  month: { width: '25%', minHeight: chart.minimumTouch, padding: space.sm, alignItems: 'center', gap: space.xs, borderWidth: StyleSheet.hairlineWidth, borderColor: color.border },
+  monthSelected: { borderColor: color.accent },
+  monthValue: { ...type.body, color: color.textMuted, fontFamily: typography.display.semibold },
+  monthActive: { color: color.accent },
   calendarRows: { gap: 0 },
   calendarRow: { flexDirection: 'row' },
   calendarTarget: { flex: 1, minHeight: chart.minimumTouch },
