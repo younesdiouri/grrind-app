@@ -53,13 +53,11 @@ function Dashboard() {
         <Text style={[styles.tabLabel, days === period && styles.selectedLabel]}>{period} jours</Text>
       </Pressable>)}
     </View>
-    <Text style={styles.subtitle}>Du rythme. Du recul. Ta progression.</Text>
     {query.isPending ? <View style={styles.loading}><ActivityIndicator color={color.accent} /><Text style={styles.muted}>Lecture de toutes tes séances…</Text></View> : null}
     {query.error ? <View style={styles.footer}><Text style={styles.muted}>{messageFor(query.error)}</Text><Button label="Réessayer" variant="quiet" onPress={() => void query.refetch()} /></View> : null}
     {query.data ? <Animated.View key={days} entering={reduced === false ? FadeInUp.duration(duration.enter) : undefined}>
       {query.data.length === 0 ? <Text style={styles.empty}>Tes premières séances dessineront ta trajectoire. Synchronise Santé depuis l’accueil pour les retrouver ici.</Text> : null}
       <WorkoutStatsView stats={summarizeWorkouts(query.data, days, now)} days={days} />
-      <Text style={styles.footnote}>Basé sur les séances synchronisées. Les jours sans séance ne décrivent pas ta récupération. Les volumes incluent aujourd’hui ; cette journée est encore en cours.</Text>
     </Animated.View> : null}
   </ScrollView>;
 }
@@ -124,7 +122,6 @@ const styles = StyleSheet.create({
   screen: { padding: space.lg, gap: space.md },
   title: { ...type.title, fontFamily: typography.display.bold, color: color.text },
   overline: { ...type.label, color: color.accent },
-  subtitle: { ...type.body, color: color.textMuted },
   tabs: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: color.border },
   tab: { flex: 1, minHeight: workoutChart.minimumTouch, alignItems: 'center', justifyContent: 'center', borderBottomWidth: space.xs, borderColor: 'transparent' },
   selectedTab: { borderColor: color.accent },
@@ -137,5 +134,4 @@ const styles = StyleSheet.create({
   footer: { gap: space.sm },
   muted: { ...type.body, color: color.textMuted, textAlign: 'center' },
   empty: { ...type.body, color: color.textMuted, marginBottom: space.md },
-  footnote: { ...type.label, color: color.textMuted, letterSpacing: 0, padding: space.md },
 });

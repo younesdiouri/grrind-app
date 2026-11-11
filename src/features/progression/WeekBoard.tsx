@@ -85,9 +85,7 @@ export function WeekBoard({
 
       {previous === null ? (
         <Text style={styles.muted}>Première semaine : elle deviendra ta référence à battre.</Text>
-      ) : (
-        <Text style={styles.muted}>100 % = ta semaine dernière. Chaque jauge garde sa propre référence.</Text>
-      )}
+      ) : null}
 
       <View style={styles.gauges}>
         {ATTRIBUTES.map((attribute, index) => (

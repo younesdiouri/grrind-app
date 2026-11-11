@@ -772,15 +772,17 @@ export const gaugeGlowShape = { radius: 14, spread: 2, chargedHalo: palette.gain
 
 /** Géométrie des graphiques workout, dans un repère SVG indépendant de l'écran. */
 export const workoutChart = {
-  width: 320, radarHeight: 268, centerX: 160, centerY: 134, radarRadius: 78,
+  width: 320, radarHeight: 232, centerX: 160, centerY: 116, radarRadius: 78,
   labelSize: 10, valueSize: 14, stroke: 1.5, dot: 3, haloStroke: 8,
   fillOpacity: 0.16, gridOpacity: 0.65, haloOpacity: 0.1,
-  labelTop: 16, labelBottom: 244, labelLeft: 66, labelRight: 254,
-  chartHeight: 156, chartTop: 14, chartBottom: 130, chartLeft: 12, chartRight: 308,
+  radarIcon: 24, radarIconOffset: 100, radarPulseFrom: .10, radarPulseTo: .32,
+  radarPulseMs: 3200, radarDashMs: 3600, radarDashStep: 8,
+  chartHeight: 156, chartTop: 14, chartBottom: 130, chartLeft: 48, chartRight: 308,
   gradeSize: 72, cellSize: 10, cellGap: 4,
   minimumTouch: 44, calendarColumns: 14, calendarCell: 16, calendarStep: 22,
   donutRadius: 46, donutStroke: 9, donutSize: 120, donutCenter: 60,
   chartColors: [palette.glacier, palette.amethyst, palette.lichen, palette.blossom, palette.copper, palette.mint],
+  calendarIdle: palette.night, calendarIdleBorder: palette.fog,
 } as const;
 
 /**
