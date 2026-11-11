@@ -310,7 +310,7 @@ export const PREVIEWS: Preview[] = [
   {
     slug: 'workout-stats', name: 'Statistiques workout', group: 'Composants',
     element: <>
-      <Specimen label="Mois — volumes réels, quatre sports"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'month', STATS_NOW)} trainingPlan={<WeekTrainingPlanView plan={{
+      <Specimen label="Semaine — total et plan, sans point sur le jour de repos"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'week', STATS_NOW)} trainingPlan={<WeekTrainingPlanView plan={{
         remaining: { strength: 0, endurance: 0, mobility: 15, dexterity: 18 }, remainingAfter: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 },
         completesWeek: true, calculatedAt: STATS_NOW.toISOString(), expiresAt: '2026-11-11T23:00:00Z', rulesetVersion: 'preview',
         sessions: [
@@ -318,6 +318,7 @@ export const PREVIEWS: Preview[] = [
           { discipline: 'CLIMBING', durationSeconds: 1800, estimatedXp: 30, estimatedGains: { strength: 8, endurance: 2, mobility: 3, dexterity: 17 } },
         ],
       }} />} /></Specimen>
+      <Specimen label="Mois — régularité et temps total"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'month', STATS_NOW)} /></Specimen>
       <Specimen label="Année — douze mois"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'year', STATS_NOW)} /></Specimen>
       <Specimen label="Semaine — aucune séance ni référence"><WorkoutStatsView stats={summarizeWorkouts([], 'week', STATS_NOW)} /></Specimen>
     </>,

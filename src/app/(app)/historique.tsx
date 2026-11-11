@@ -48,8 +48,8 @@ function Dashboard() {
   const reduced = useReducedMotion();
   const now = new Date();
   const query = useWorkoutStats(period, now);
-  const { plan, refreshPlan } = useWeekTrainingPlan();
-  return <ScrollView contentContainerStyle={styles.screen} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void Promise.all([query.refetch(), refreshPlan()])} tintColor={color.accent} />}>
+  const { plan, refreshPlan } = useWeekTrainingPlan(period === 'week');
+  return <ScrollView contentContainerStyle={styles.screen} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void Promise.all([query.refetch(), ...(period === 'week' ? [refreshPlan()] : [])])} tintColor={color.accent} />}>
     <View style={styles.periods} accessibilityRole="tablist">
       {(['week', 'month', 'year'] as const).map(option => <Pressable key={option} style={[styles.period, period === option && styles.selectedPeriod]} onPress={() => setPeriod(option)} accessibilityRole="tab" accessibilityState={{ selected: period === option }}>
         <Text style={[styles.tabLabel, period === option && styles.selectedLabel]}>{statsPeriodLabel[option]}</Text>
