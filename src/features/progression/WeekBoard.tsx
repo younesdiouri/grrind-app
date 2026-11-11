@@ -17,11 +17,13 @@ import {
   type Attribute,
 } from '@/design/tokens';
 import { formatDuration, formatWhen } from '@/features/progression/format';
+import { PerformanceRadar } from '@/features/progression/PerformanceRadar';
 import {
   formatCountdown,
   gaugeGlow,
   gaugeOf,
   priorityOf,
+  weekPercentLabel,
   type WeekEntry,
   type WeekProgress,
 } from '@/features/progression/week';
@@ -45,6 +47,7 @@ export function WeekBoard({
   week,
   now,
   renderBar = StaticGaugeBar,
+  radar,
 }: {
   week: WeekProgress;
   now: Date;
@@ -54,6 +57,7 @@ export function WeekBoard({
    * qu'`XpBar.children`).
    */
   renderBar?: (bar: GaugeBar) => ReactNode;
+  radar?: ReactNode;
 }) {
   const { current, previous } = week;
   const [explained, setExplained] = useState(false);
@@ -77,10 +81,12 @@ export function WeekBoard({
         </View>
       </View>
 
+      {radar ?? <PerformanceRadar week={week} />}
+
       {previous === null ? (
         <Text style={styles.muted}>Première semaine : elle deviendra ta référence à battre.</Text>
       ) : (
-        <Text style={styles.muted}>Remplis chaque jauge pour battre ta semaine dernière.</Text>
+        <Text style={styles.muted}>100 % = ta semaine dernière. Chaque jauge garde sa propre référence.</Text>
       )}
 
       <View style={styles.gauges}>
@@ -147,15 +153,14 @@ function Gauge({
       accessible
       accessibilityLabel={
         previous === null
-          ? `${label} ${current} cette semaine`
-          : `${label} ${current} sur ${previous} la semaine dernière${gauge.beaten ? ', chargée' : priority ? ', priorité' : ''}`
+          ? `${label}, pas encore de semaine de référence`
+          : `${label} ${weekPercentLabel(current, previous)} de la semaine dernière${gauge.beaten ? ', chargée' : priority ? ', priorité' : ''}`
       }
     >
       <View style={styles.gaugeHead}>
         <Text style={[styles.gaugeLabel, { color: tint }]}>{label.toUpperCase()}</Text>
         <Text style={styles.gaugeValue}>
-          {current}
-          {previous === null ? '' : <Text style={styles.muted}> / {previous}</Text>}
+          {weekPercentLabel(current, previous)}
         </Text>
       </View>
       {previous === null

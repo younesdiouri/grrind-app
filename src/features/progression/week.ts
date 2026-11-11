@@ -3,6 +3,18 @@ import type { components } from '@/api/schema';
 export type WeekProgress = components['schemas']['WeekProgress'];
 export type WeekEntry = components['schemas']['XpTransaction'];
 
+export const WEEK_ATTRIBUTES = ['strength', 'endurance', 'mobility', 'dexterity'] as const;
+
+/** Un zéro de référence n'a pas de pourcentage défini. */
+export function weekPercent(current: number, previous: number | null): number | null {
+  return previous === null || previous <= 0 ? null : Math.round(Math.max(0, current) / previous * 100);
+}
+
+export function weekPercentLabel(current: number, previous: number | null): string {
+  const percent = weekPercent(current, previous);
+  return percent === null ? (previous === 0 && current > 0 ? 'Nouveau' : '—') : `${percent} %`;
+}
+
 /**
  * Une jauge de la semaine (#362) : le gain contre celui de la semaine d'avant, la seule cible
  * qui existe. Sans référence servie, pas de cible inventée : `remaining` et `fill` restent

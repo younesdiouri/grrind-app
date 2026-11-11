@@ -770,6 +770,16 @@ export const attributeHalo: Record<Attribute, string> = {
 /** La géométrie du halo des jauges, à intensité pleine. */
 export const gaugeGlowShape = { radius: 14, spread: 2, chargedHalo: palette.gainHalo } as const;
 
+/** Géométrie des graphiques workout, dans un repère SVG indépendant de l'écran. */
+export const workoutChart = {
+  width: 320, radarHeight: 268, centerX: 160, centerY: 134, radarRadius: 78,
+  labelSize: 10, valueSize: 14, stroke: 1.5, dot: 3, haloStroke: 8,
+  fillOpacity: 0.16, gridOpacity: 0.65, haloOpacity: 0.1,
+  labelTop: 16, labelBottom: 244, labelLeft: 66, labelRight: 254,
+  chartHeight: 156, chartTop: 14, chartBottom: 130, chartLeft: 12, chartRight: 308,
+  gradeSize: 72, cellSize: 10, cellGap: 4,
+} as const;
+
 /**
  * Le cercle de vie (#69) : deux tailles, comme `XpBar`. Le rayon et l'épaisseur de trait sont
  * choisis ensemble — l'un ne se lit pas sans l'autre, un trait trop fin sur un grand rayon
