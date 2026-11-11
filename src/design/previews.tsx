@@ -38,6 +38,8 @@ import { RoleBadge } from '@/components/RoleBadge';
 import { SessionCard } from '@/components/SessionCard';
 import { StreakMeter } from '@/components/StreakMeter';
 import { WeekBoard } from '@/features/progression/WeekBoard';
+import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
+import { summarizeWorkouts } from '@/features/progression/workoutStats';
 import type { WeekProgress } from '@/features/progression/week';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
@@ -290,7 +292,26 @@ const WEEK_FIXTURE: WeekProgress = {
   ],
 };
 
+const STATS_NOW = new Date('2026-11-11T12:00:00Z');
+const STATS_WORKOUTS: components['schemas']['Workout'][] = Array.from({ length: 30 }, (_, index) => {
+  const start = new Date(STATS_NOW);
+  start.setDate(start.getDate() - index * 2);
+  const durationSeconds = [3600, 2400, 1800, 4200, 2700][index % 5];
+  return { id: `stats-${index}`, discipline: (['STRENGTH', 'RUNNING', 'MOBILITY', 'CYCLING'] as const)[index % 4],
+    source: 'APPLE_HEALTH', trust: 'PROVIDER_VERIFIED', startedAt: start.toISOString(),
+    endedAt: new Date(start.getTime() + durationSeconds * 1000).toISOString(), durationSeconds,
+    distanceMeters: null, calories: null, elevationGainMeters: null, averageHeartRate: null,
+    externalId: null, together: { status: 'UNAVAILABLE', playerCount: 1, multiplier: 1, soloXp: 0, bonusXp: 0, totalXp: 0, rulesetVersion: null } };
+});
+
 export const PREVIEWS: Preview[] = [
+  {
+    slug: 'workout-stats', name: 'Statistiques workout', group: 'Composants',
+    element: <>
+      <Specimen label="28 jours — volumes réels, quatre sports"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 28, STATS_NOW)} days={28} /></Specimen>
+      <Specimen label="7 jours — aucune séance ni référence"><WorkoutStatsView stats={summarizeWorkouts([], 7, STATS_NOW)} days={7} /></Specimen>
+    </>,
+  },
   {
     slug: 'profil-joueur', name: 'Profil public du joueur', group: 'Composants',
     element: <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,

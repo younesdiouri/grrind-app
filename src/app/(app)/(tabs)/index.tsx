@@ -234,8 +234,8 @@ function PlayerHome({
       ) : null}
 
       {/* L'archive a sa page (#362) : l'accueil dit la semaine, pas tout ce qui a précédé. */}
-      {home.step === 'ready' && home.hasWorkouts ? (
-        <Button label="Toutes les séances" variant="quiet" onPress={() => router.push('/historique')} />
+      {home.step === 'ready' ? (
+        <Button label="Plus de stats" variant="quiet" onPress={() => router.push('/historique')} />
       ) : null}
     </>
   );
