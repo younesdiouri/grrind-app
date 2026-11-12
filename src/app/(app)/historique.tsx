@@ -17,7 +17,7 @@ import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
 import { WorkoutRow } from '@/features/progression/PlayerHomeView';
 import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
 import { useWorkoutStats } from '@/features/progression/useWorkoutStats';
-import { summarizeWorkouts, statsPeriodLabel, type StatsPeriod } from '@/features/progression/workoutStats';
+import { statsPeriodLabel, type StatsPeriod } from '@/features/progression/workoutStats';
 import { WeekTrainingPlanView } from '@/features/progression/WeekTrainingPlan';
 import { useWeekTrainingPlan } from '@/features/progression/useWeekTrainingPlan';
 
@@ -46,8 +46,7 @@ export default function Historique() {
 function Dashboard() {
   const [period, setPeriod] = useState<StatsPeriod>('week');
   const reduced = useReducedMotion();
-  const now = new Date();
-  const query = useWorkoutStats(period, now);
+  const query = useWorkoutStats(period);
   const { plan, refreshPlan } = useWeekTrainingPlan(period === 'week');
   return <ScrollView contentContainerStyle={styles.screen} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void Promise.all([query.refetch(), ...(period === 'week' ? [refreshPlan()] : [])])} tintColor={color.accent} />}>
     <View style={styles.periods} accessibilityRole="tablist">
@@ -55,11 +54,11 @@ function Dashboard() {
         <Text style={[styles.tabLabel, period === option && styles.selectedLabel]}>{statsPeriodLabel[option]}</Text>
       </Pressable>)}
     </View>
-    {query.isPending ? <View style={styles.loading}><ActivityIndicator color={color.accent} /><Text style={styles.muted}>Lecture de toutes tes séances…</Text></View> : null}
+    {query.isPending ? <View style={styles.loading}><ActivityIndicator color={color.accent} /><Text style={styles.muted}>Lecture de tes statistiques…</Text></View> : null}
     {query.error ? <View style={styles.footer}><Text style={styles.muted}>{messageFor(query.error)}</Text><Button label="Réessayer" variant="quiet" onPress={() => void query.refetch()} /></View> : null}
     {query.data ? <Animated.View key={period} entering={reduced === false ? FadeInUp.duration(duration.enter) : undefined}>
-      {query.data.length === 0 ? <Text style={styles.empty}>Tes premières séances dessineront ta trajectoire. Synchronise Santé depuis l’accueil pour les retrouver ici.</Text> : null}
-      <WorkoutStatsView stats={summarizeWorkouts(query.data, period, now)} trainingPlan={plan ? <WeekTrainingPlanView plan={plan} /> : null} />
+      {query.data.current.sessions === 0 ? <Text style={styles.empty}>Aucune séance sur cette période. Synchronise Santé depuis l’accueil pour retrouver tes séances ici.</Text> : null}
+      <WorkoutStatsView stats={query.data} trainingPlan={plan ? <WeekTrainingPlanView plan={plan} /> : null} />
     </Animated.View> : null}
   </ScrollView>;
 }

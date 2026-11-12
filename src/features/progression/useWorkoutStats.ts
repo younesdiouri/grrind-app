@@ -1,35 +1,33 @@
-import { useQuery } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
+import { useIsFocused } from 'expo-router';
 import { useSyncExternalStore } from 'react';
 
 import { api } from '@/api/client';
 import { queryOrFailure } from '@/api/queryOrFailure';
-import type { components } from '@/api/schema';
+import type { UserProfile } from '@/features/auth/session';
 import type { Failure } from '@/features/auth/problems';
 import { useAuth } from '@/features/auth/useAuth';
 import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
-import { statsWindow, type StatsPeriod } from './workoutStats';
+import type { StatsPeriod, WorkoutStats } from './workoutStats';
 
-/** Une fenêtre complète : aucun total n'est publié tant qu'il reste un curseur. */
-export function useWorkoutStats(period: StatsPeriod, now: Date) {
-  const auth = useAuth();
-  const revision = useSyncExternalStore(subscribeToSync, getSettledRevision);
-  const { previousStart, observedEnd } = statsWindow(period, now);
-  const from = previousStart.toISOString();
-  const to = observedEnd.toISOString();
-  return useQuery<components['schemas']['Workout'][], Failure>({
-    queryKey: ['workout-stats', auth.status === 'signedIn' ? auth.user.id : null, from, to, revision],
-    enabled: auth.status === 'signedIn',
-    queryFn: async ({ signal }) => {
-      const workouts: components['schemas']['Workout'][] = [];
-      let cursor: string | undefined;
-      do {
-        const page = await queryOrFailure(() => api.GET('/api/workouts', {
-          params: { query: { from, to, limit: 50, cursor } }, signal,
-        }));
-        workouts.push(...page.workouts);
-        cursor = page.nextCursor ?? undefined;
-      } while (cursor !== undefined);
-      return workouts;
-    },
+export function workoutStatsOptions(user: Pick<UserProfile, 'id' | 'timezone'> | null, period: StatsPeriod, revision: number) {
+  return queryOptions<WorkoutStats, Failure>({
+    queryKey: ['workout-stats', user?.id, period, user?.timezone, revision],
+    enabled: user !== null,
+    queryFn: ({ signal }) => queryOrFailure(() => api.GET('/api/workouts/stats', {
+      params: { query: { period } }, signal,
+    })),
+    // La borne serveur suit le jour du profil, y compris aux changements DST.
+    refetchInterval: query => query.state.data && !query.state.error
+      ? Math.max(1000, Date.parse(query.state.data.observedEnd) - Date.now()) : false,
+    refetchIntervalInBackground: false,
   });
+}
+
+export function useWorkoutStats(period: StatsPeriod) {
+  const auth = useAuth();
+  const focused = useIsFocused();
+  const revision = useSyncExternalStore(subscribeToSync, getSettledRevision);
+  const user = auth.status === 'signedIn' ? auth.user : null;
+  return useQuery({ ...workoutStatsOptions(user, period, revision), enabled: focused && user !== null });
 }

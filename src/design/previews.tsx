@@ -40,7 +40,7 @@ import { StreakMeter } from '@/components/StreakMeter';
 import { WeekBoard } from '@/features/progression/WeekBoard';
 import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
 import { WeekTrainingPlanView } from '@/features/progression/WeekTrainingPlan';
-import { summarizeWorkouts } from '@/features/progression/workoutStats';
+import { EMPTY_STATS, MONTH_STATS, SINGLE_SPORT_STATS, WEEK_STATS, YEAR_STATS } from '@/features/progression/workoutStatsFixtures';
 import type { WeekProgress } from '@/features/progression/week';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
@@ -294,34 +294,22 @@ const WEEK_FIXTURE: WeekProgress = {
   ],
 };
 
-const STATS_NOW = new Date('2026-11-11T12:00:00Z');
-const STATS_WORKOUTS: components['schemas']['Workout'][] = Array.from({ length: 30 }, (_, index) => {
-  const start = new Date(STATS_NOW);
-  start.setDate(start.getDate() - index * 2);
-  const durationSeconds = [3600, 2400, 1800, 4200, 2700][index % 5];
-  return { id: `stats-${index}`, discipline: (['STRENGTH', 'RUNNING', 'MOBILITY', 'CYCLING'] as const)[index % 4],
-    source: 'APPLE_HEALTH', trust: 'PROVIDER_VERIFIED', startedAt: start.toISOString(),
-    endedAt: new Date(start.getTime() + durationSeconds * 1000).toISOString(), durationSeconds,
-    distanceMeters: null, calories: null, elevationGainMeters: null, averageHeartRate: null,
-    externalId: null, together: { status: 'UNAVAILABLE', playerCount: 1, multiplier: 1, soloXp: 0, bonusXp: 0, totalXp: 0, rulesetVersion: null } };
-});
-
 export const PREVIEWS: Preview[] = [
   {
     slug: 'workout-stats', name: 'Statistiques workout', group: 'Composants',
     element: <>
-      <Specimen label="Semaine — total et plan, sans point sur le jour de repos"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'week', STATS_NOW)} trainingPlan={<WeekTrainingPlanView plan={{
+      <Specimen label="Semaine — total et plan, sans point sur le jour de repos"><WorkoutStatsView stats={WEEK_STATS} trainingPlan={<WeekTrainingPlanView plan={{
         remaining: { strength: 0, endurance: 0, mobility: 15, dexterity: 18 }, remainingAfter: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 },
-        completesWeek: true, calculatedAt: STATS_NOW.toISOString(), expiresAt: '2026-11-11T23:00:00Z', rulesetVersion: 'preview',
+        completesWeek: true, calculatedAt: '2026-11-11T12:00:00Z', expiresAt: '2026-11-11T23:00:00Z', rulesetVersion: 'preview',
         sessions: [
           { discipline: 'MOBILITY', durationSeconds: 1200, estimatedXp: 20, estimatedGains: { strength: 1, endurance: 3, mobility: 15, dexterity: 1 } },
           { discipline: 'CLIMBING', durationSeconds: 1800, estimatedXp: 30, estimatedGains: { strength: 8, endurance: 2, mobility: 3, dexterity: 17 } },
         ],
       }} />} /></Specimen>
-      <Specimen label="Mois — régularité et temps total"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'month', STATS_NOW)} /></Specimen>
-      <Specimen label="Année — douze mois"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'year', STATS_NOW)} /></Specimen>
-      <Specimen label="Semaine — un seul sport"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS.filter(workout => workout.discipline === 'STRENGTH'), 'week', STATS_NOW)} /></Specimen>
-      <Specimen label="Semaine — aucune séance ni référence"><WorkoutStatsView stats={summarizeWorkouts([], 'week', STATS_NOW)} /></Specimen>
+      <Specimen label="Mois — régularité et temps total"><WorkoutStatsView stats={MONTH_STATS} /></Specimen>
+      <Specimen label="Année — douze mois"><WorkoutStatsView stats={YEAR_STATS} /></Specimen>
+      <Specimen label="Semaine — un seul sport"><WorkoutStatsView stats={SINGLE_SPORT_STATS} /></Specimen>
+      <Specimen label="Semaine — aucune séance ni référence"><WorkoutStatsView stats={EMPTY_STATS} /></Specimen>
     </>,
   },
   {
