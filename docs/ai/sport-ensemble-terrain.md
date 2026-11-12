@@ -11,8 +11,10 @@ des preuves. Les DTO/enums sont générés depuis OpenAPI ; aucun calcul de grou
 ## Ce que le pilote permet
 
 Sur le development build iPhone : Réglages → Santé → « Sport ensemble · pilote terrain ».
-L’écran et l’icône de localisation du HUD sont réservés au JS de développement. La configuration native
-de localisation est elle aussi réservée à `APP_VARIANT=development`. Aucun build EAS.
+L’écran et l’icône de localisation du HUD sont réservés au JS de développement. Le mode natif de
+localisation en arrière-plan reste réservé à `APP_VARIANT=development`. Le texte de finalité de
+localisation est commun aux deux variantes, car le module natif embarque Core Location (#383).
+Aucun build EAS.
 
 1. **Routes d’abord.** Demander explicitement la lecture des workouts et itinéraires Santé.
    Les 50 séances les plus récentes des 30 derniers jours donnent la source, le modèle déclaré
