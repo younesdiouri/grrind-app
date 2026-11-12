@@ -903,6 +903,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workouts/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_training_workout_stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1803,6 +1819,106 @@ export interface components {
         WorkoutPage: {
             workouts: components["schemas"]["Workout"][];
             nextCursor: string | null;
+        };
+        /**
+         * @description Volume civil dans le fuseau IANA du profil, relu à chaque requête.
+         *     Semaine lundi-dimanche, mois et année calendaires, indépendants d'Alam.
+         *     Toutes les bornes de fin sont exclues. `observedEnd` termine le jour courant,
+         *     même si l'heure serveur est plus tôt. La comparaison commence au début de la
+         *     période précédente et couvre `days` jours civils, plafonnés à sa fin ; ni durée
+         *     fixe de 24 h, ni alignement des dates entre années bissextiles.
+         *     Toute séance stockée compte une fois par UUID, avec sa durée mesurée entière
+         *     attribuée à `startedAt`, y compris hors fenêtre de crédit XP. Aucun plafond XP,
+         *     ledger, bonus ensemble, ligue ou note médicale n'entre dans ce volume.
+         *     Référence : workoutStats.ts de l'app ; le fuseau du profil remplace celui du
+         *     téléphone et les disciplines ex aequo sont départagées par leur clé.
+         *     Correction des effets de bord JS quand minuit est supprimé par le DST :
+         *     compter les dates civiles et réancrer chaque borne au début du jour valide,
+         *     plutôt que propager 01 h aux jours suivants.
+         */
+        WorkoutStats: {
+            /**
+             * @description Semaine courante par défaut si le paramètre period est absent.
+             * @enum {string}
+             */
+            period: "week" | "month" | "year";
+            /** @example Europe/Paris */
+            timezone: string;
+            /**
+             * Format: date-time
+             * @description Début inclus de la période courante, avec décalage local.
+             */
+            start: string;
+            /**
+             * Format: date-time
+             * @description Fin exclue de la période civile complète.
+             */
+            end: string;
+            /**
+             * Format: date-time
+             * @description Minuit local suivant le jour courant ; fin exclue des faits observés.
+             */
+            observedEnd: string;
+            /** Format: date-time */
+            previousStart: string;
+            /**
+             * Format: date-time
+             * @description Fin exclue de la comparaison, au plus le début de la période courante.
+             */
+            previousEnd: string;
+            /** @description Jours civils observés, aujourd'hui inclus. */
+            days: number;
+            current: components["schemas"]["WorkoutStatsTotals"];
+            previous: components["schemas"]["WorkoutStatsTotals"];
+            /** @description Math.round((current.seconds / previous.seconds - 1) * 100), demis vers +∞. Null si previous.seconds = 0. */
+            change: number | null;
+            /**
+             * @description Ratio brut current/previous : A ≥ 1.2, B ≥ 1, C ≥ 0.8, D ≥ 0.5, E en dessous. Null sans volume précédent. Mesure du volume uniquement.
+             * @enum {string|null}
+             */
+            grade: "A" | "B" | "C" | "D" | "E" | null;
+            /** @description Un jour par date observée, dans l'ordre, zéros inclus. Pour le calendrier ; aucun jour futur. */
+            daily: {
+                /**
+                 * Format: date-time
+                 * @description Début du jour dans le fuseau du profil, avec décalage.
+                 */
+                date: string;
+                seconds: number;
+                sessions: number;
+            }[];
+            /** @description Période complète en ordre croissant : 7 jours, 28–31 jours ou 12 mois. Zéros et points futurs explicites ; seules les séances avant observedEnd contribuent, même dans le mois courant d'une année. Les libellés restent formatés par le client. */
+            buckets: {
+                /** Format: date-time */
+                from: string;
+                /**
+                 * Format: date-time
+                 * @description Fin exclue du point.
+                 */
+                to: string;
+                seconds: number;
+                sessions: number;
+                activeDays: number;
+                /** @description Vrai si from ≥ observedEnd. Un mois partiellement observé vaut faux. */
+                isFuture: boolean;
+            }[];
+            /** @description Disciplines présentes dans la fenêtre courante, durée décroissante puis clé croissante à égalité. Vide sans séance. */
+            disciplines: {
+                discipline: components["schemas"]["Discipline"];
+                seconds: number;
+                sessions: number;
+                /** @description Part du volume courant, entre 0 et 1 ; zéro si le volume total vaut zéro. */
+                share: number;
+            }[];
+        };
+        WorkoutStatsTotals: {
+            /** @description Somme de durationSeconds mesurées, sans écrêtage XP. */
+            seconds: number;
+            sessions: number;
+            /** @description Dates locales distinctes portant au moins une séance, toutes disciplines confondues. */
+            activeDays: number;
+            /** @description seconds / sessions, sans arrondi ; zéro sans séance. */
+            averageSeconds: number;
         };
         /**
          * @description De quoi demander la bonne fenêtre à HealthKit ou Health Connect.
@@ -3483,6 +3599,11 @@ export interface components {
             endedAt: string | null;
             /** @default [] */
             points: components["schemas"]["LocationPointRequest"][];
+        };
+        /** @enum {string} */
+        StatsPeriod: "week" | "month" | "year";
+        WorkoutStatsQuery: {
+            period?: components["schemas"]["StatsPeriod"];
         };
     };
     responses: {
@@ -5548,6 +5669,30 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    get_training_workout_stats: {
+        parameters: {
+            query?: {
+                period?: components["schemas"]["StatsPeriod"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statistiques de volume du joueur courant dans son fuseau de profil. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkoutStats"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            422: components["responses"]["UnprocessableEntity"];
         };
     };
 }

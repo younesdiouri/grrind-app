@@ -4,7 +4,7 @@ import { Circle, Defs, Line, LinearGradient, Path, Rect, Stop, Svg, Text as SvgT
 
 import { SystemFrame } from '@/components/SystemFrame';
 import { color, disciplineLabel, palette, radius, space, type, typography, workoutChart as chart } from '@/design/tokens';
-import { compactDuration, dateRange, shortDate, statsPeriodLabel, type WorkoutStats } from '@/features/progression/workoutStats';
+import { compactDuration, dateRange, shortDate, statsAxisLabel, statsDate, statsPeriodLabel, type WorkoutStats } from '@/features/progression/workoutStats';
 
 const GRADE_COLORS = { A: color.gain, B: color.accent, C: palette.amethyst, D: palette.copper, E: color.textMuted };
 const GRADE_LABELS = { A: 'Volume en hausse', B: 'Rythme maintenu', C: 'Léger recul', D: 'Rythme allégé', E: 'Peu de volume' };
@@ -13,13 +13,13 @@ export function WorkoutStatsView({ stats, trainingPlan }: { stats: WorkoutStats;
   return <View style={styles.stack}>
     <EffortCard stats={stats} />
     <View style={styles.metrics}>
-      <Metric value={String(stats.current.length)} label="SÉANCES" />
-      <Metric value={String(stats.activeDays)} label="JOURS ACTIFS" detail={`sur ${stats.days} jours`} />
-      <Metric value={stats.current.length ? compactDuration(stats.averageSeconds) : '—'} label="PAR SÉANCE" detail="durée moyenne" />
+      <Metric value={String(stats.current.sessions)} label="SÉANCES" />
+      <Metric value={String(stats.current.activeDays)} label="JOURS ACTIFS" detail={`sur ${stats.days} jours`} />
+      <Metric value={stats.current.sessions ? compactDuration(stats.current.averageSeconds) : '—'} label="PAR SÉANCE" detail="durée moyenne" />
     </View>
-    {stats.period === 'week' && stats.current.length > 0 ? trainingPlan : null}
-    {stats.current.length > 0 ? <VolumeChart key={`volume-${stats.period}`} stats={stats} /> : null}
-    {stats.period === 'month' ? <ActivityCalendar key={`calendar-${stats.period}`} stats={stats} /> : null}
+    {stats.period === 'week' && stats.current.sessions > 0 ? trainingPlan : null}
+    {stats.current.sessions > 0 ? <VolumeChart key={`volume-${stats.period}`} stats={stats} /> : null}
+    {stats.period === 'month' && stats.daily.length > 0 ? <ActivityCalendar key={`calendar-${stats.period}`} stats={stats} /> : null}
     <DisciplineBalance key={`balance-${stats.period}`} stats={stats} />
   </View>;
 }
@@ -52,7 +52,7 @@ function EffortCard({ stats }: { stats: WorkoutStats }) {
       </View>
       <View style={styles.heroCopy}>
         <Text style={styles.heroTitle}>{stats.grade ? GRADE_LABELS[stats.grade] : 'Ta référence se construit'}</Text>
-        <Text style={styles.total}>{compactDuration(stats.seconds)}</Text>
+        <Text style={styles.total}>{compactDuration(stats.current.seconds)}</Text>
         <Text style={[styles.delta, { color: stats.change !== null && stats.change >= 0 ? color.gain : color.textMuted }]}>
           {stats.change === null ? 'Pas de volume sur la période précédente' : `${stats.change > 0 ? '+' : ''}${stats.change} % de temps d’entraînement`}
         </Text>
@@ -64,7 +64,7 @@ function EffortCard({ stats }: { stats: WorkoutStats }) {
       </View>)}
     </View>
     <Pressable onPress={() => setExplained(value => !value)} accessibilityRole="button" accessibilityState={{ expanded: explained }} style={styles.explainButton}>
-      <Text style={styles.caption}>Comparé au {dateRange(stats.previousStart, stats.previousEnd)}{stats.period === 'year' ? ` ${stats.previousStart.getFullYear()}` : ''}</Text>
+      <Text style={styles.caption}>Comparé au {dateRange(stats.previousStart, stats.previousEnd, stats.timezone)}{stats.period === 'year' ? ` ${statsDate(stats.previousStart, stats.timezone, { year: 'numeric' })}` : ''}</Text>
       <Text style={styles.link}>{explained ? 'Fermer −' : 'Le calcul +'} </Text>
     </Pressable>
     {explained ? <Text style={styles.note}>Le score compare la durée totale des séances synchronisées à la période précédente : A ≥ 120 %, B ≥ 100 %, C ≥ 80 %, D ≥ 50 %, E en dessous. Sans volume précédent, aucune note. Il décrit le volume, pas l’intensité, la récupération ou la qualité de tes séances.</Text> : null}
@@ -89,9 +89,9 @@ function VolumeChart({ stats }: { stats: WorkoutStats }) {
   return <SystemFrame contentStyle={styles.panel}>
     <Text style={styles.overline}>TEMPS D’ENTRAÎNEMENT</Text>
     <View style={styles.sectionHead}>
-      <Text style={styles.chartValue} accessibilityLabel={`Temps total : ${compactDuration(stats.seconds)}`}>{compactDuration(stats.seconds)}</Text>
+      <Text style={styles.chartValue} accessibilityLabel={`Temps total : ${compactDuration(stats.current.seconds)}`}>{compactDuration(stats.current.seconds)}</Text>
       {bucket ? <View style={styles.chartDetail}>
-        <Text style={styles.caption}>{stats.period === 'year' ? bucket.from.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : shortDate(bucket.from)}</Text>
+        <Text style={styles.caption}>{stats.period === 'year' ? statsDate(bucket.from, stats.timezone, { month: 'long', year: 'numeric' }) : shortDate(bucket.from, stats.timezone)}</Text>
         <Text style={styles.sportValue}>{compactDuration(bucket.seconds)}</Text>
       </View> : null}
     </View>
@@ -101,17 +101,17 @@ function VolumeChart({ stats }: { stats: WorkoutStats }) {
         {[0, .5, 1].map(tick => <Line key={tick} x1={chart.chartLeft} x2={chart.chartRight} y1={chart.chartTop + tick * plotHeight} y2={chart.chartTop + tick * plotHeight} stroke={color.border} strokeDasharray="3 5" />)}
         {[0, .5, 1].map(tick => <SvgText key={`scale-${tick}`} x="0" y={chart.chartTop + tick * plotHeight + space.xs}
           fill={color.textMuted} fontSize={chart.labelSize}>{compactDuration(max * (1 - tick))}</SvgText>)}
-        <Path d={`${line} L ${observed[observed.length - 1].x} ${chart.chartBottom} L ${observed[0].x} ${chart.chartBottom} Z`} fill={`url(#${gradient})`} />
+        {observed.length > 0 ? <Path d={`${line} L ${observed[observed.length - 1].x} ${chart.chartBottom} L ${observed[0].x} ${chart.chartBottom} Z`} fill={`url(#${gradient})`} /> : null}
         <Path d={line} stroke={color.accent} strokeWidth={chart.stroke * 2} strokeLinejoin="round" fill="none" />
         {selectedPoint ? <Line x1={selectedPoint.x} x2={selectedPoint.x} y1={chart.chartTop} y2={chart.chartBottom} stroke={color.accent} opacity={chart.gridOpacity} strokeDasharray="2 4" /> : null}
         {observed.map((p, index) => <Circle key={index} cx={p.x} cy={p.y} r={chart.dot} fill={color.accent} />)}
         {selectedPoint ? <Circle cx={selectedPoint.x} cy={selectedPoint.y} r={chart.dot * 2} fill={color.surface} stroke={color.accent} strokeWidth={chart.stroke} /> : null}
         {stats.period === 'month' ? null : stats.buckets.map((item, index) => <SvgText key={`axis-${index}`} x={points[index].x} y={chart.chartBottom + space.md + space.xs}
-          textAnchor="middle" fill={color.textMuted} fontSize={chart.labelSize}>{item.axisLabel}</SvgText>)}
+          textAnchor="middle" fill={color.textMuted} fontSize={chart.labelSize}>{statsAxisLabel(item.from, stats.period, stats.timezone)}</SvgText>)}
       </Svg>
       <View style={styles.plotTouch}>
         {stats.buckets.map((item, index) => item.sessions > 0 && !item.isFuture ? <Pressable key={index} style={styles.plotTarget} onPress={() => setSelected(index)}
-          accessibilityRole="button" accessibilityLabel={`${dateRange(item.from, item.to)}, ${compactDuration(item.seconds)}`} accessibilityState={{ selected: index === selected }} /> : <View key={index} style={styles.plotTarget} />)}
+          accessibilityRole="button" accessibilityLabel={`${dateRange(item.from, item.to, stats.timezone)}, ${compactDuration(item.seconds)}`} accessibilityState={{ selected: index === selected }} /> : <View key={index} style={styles.plotTarget} />)}
       </View>
     </View>
     <Text style={styles.caption}>Toucher pour explorer</Text>
@@ -125,14 +125,14 @@ function ActivityCalendar({ stats }: { stats: WorkoutStats }) {
   const rows = Math.ceil(stats.daily.length / columns);
   const width = columns * chart.calendarStep;
   return <SystemFrame contentStyle={styles.panel}>
-    <View style={styles.sectionHead}><Text style={styles.overline}>RÉGULARITÉ</Text><Text style={styles.tag}>{stats.activeDays} J ACTIFS</Text></View>
-    <Text style={styles.note}>{shortDate(day.date)} · {day.sessions ? `${day.sessions} séance${day.sessions > 1 ? 's' : ''} · ${compactDuration(day.seconds)}` : 'Aucune séance synchronisée'}</Text>
+    <View style={styles.sectionHead}><Text style={styles.overline}>RÉGULARITÉ</Text><Text style={styles.tag}>{stats.current.activeDays} J ACTIFS</Text></View>
+    <Text style={styles.note}>{shortDate(day.date, stats.timezone)} · {day.sessions ? `${day.sessions} séance${day.sessions > 1 ? 's' : ''} · ${compactDuration(day.seconds)}` : 'Aucune séance synchronisée'}</Text>
     <View style={styles.calendarRows}>
       {Array.from({ length: rows }, (_, row) => <View key={row} style={styles.calendarRow}>
         {stats.daily.slice(row * columns, (row + 1) * columns).map((item, column) => {
           const index = row * columns + column;
           return <Pressable key={index} style={styles.calendarTarget} onPress={() => setSelected(index)} accessibilityRole="button"
-            accessibilityLabel={`${shortDate(item.date)}, ${item.sessions} séances, ${compactDuration(item.seconds)}`} accessibilityState={{ selected: selected === index }}>
+            accessibilityLabel={`${shortDate(item.date, stats.timezone)}, ${item.sessions} séances, ${compactDuration(item.seconds)}`} accessibilityState={{ selected: selected === index }}>
             <Svg width="100%" height={chart.minimumTouch} viewBox={`0 0 ${width / columns} ${chart.minimumTouch}`}>
               <Rect x={(chart.calendarStep - chart.calendarCell) / 2} y={(chart.minimumTouch - chart.calendarCell) / 2} width={chart.calendarCell} height={chart.calendarCell} rx={space.xs}
                 fill={item.sessions ? color.accent : chart.calendarIdle}
@@ -142,7 +142,7 @@ function ActivityCalendar({ stats }: { stats: WorkoutStats }) {
         })}
       </View>)}
     </View>
-    <View style={styles.sectionHead}><Text style={styles.caption}>{shortDate(stats.daily[0].date)}</Text><Text style={styles.caption}>{shortDate(stats.daily[stats.daily.length - 1].date)}</Text></View>
+    <View style={styles.sectionHead}><Text style={styles.caption}>{shortDate(stats.daily[0].date, stats.timezone)}</Text><Text style={styles.caption}>{shortDate(stats.daily[stats.daily.length - 1].date, stats.timezone)}</Text></View>
   </SystemFrame>;
 }
 
