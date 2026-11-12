@@ -320,6 +320,7 @@ export const PREVIEWS: Preview[] = [
       }} />} /></Specimen>
       <Specimen label="Mois — régularité et temps total"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'month', STATS_NOW)} /></Specimen>
       <Specimen label="Année — douze mois"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS, 'year', STATS_NOW)} /></Specimen>
+      <Specimen label="Semaine — un seul sport"><WorkoutStatsView stats={summarizeWorkouts(STATS_WORKOUTS.filter(workout => workout.discipline === 'STRENGTH'), 'week', STATS_NOW)} /></Specimen>
       <Specimen label="Semaine — aucune séance ni référence"><WorkoutStatsView stats={summarizeWorkouts([], 'week', STATS_NOW)} /></Specimen>
     </>,
   },

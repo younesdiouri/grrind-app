@@ -166,12 +166,10 @@ function DisciplineBalance({ stats }: { stats: WorkoutStats }) {
         </Svg>
         <View style={styles.dialCenter}><Text style={styles.chartValue}>{selectedDiscipline ? `${Math.round(selectedDiscipline.share * 100)} %` : stats.disciplines.length}</Text><Text style={styles.micro}>{selectedDiscipline ? 'DU TEMPS' : 'SPORTS'}</Text></View>
       </View>
-      <View style={styles.heroCopy}>
-        {selectedDiscipline ? <>
-          <Text style={styles.heroTitle}>{disciplineLabel[selectedDiscipline.discipline]}</Text>
-          <Text style={styles.note}>{compactDuration(selectedDiscipline.seconds)} · {selectedDiscipline.sessions} séance{selectedDiscipline.sessions > 1 ? 's' : ''}</Text>
-        </> : <Text style={styles.total}>{compactDuration(stats.seconds)}</Text>}
-      </View>
+      {selectedDiscipline ? <View style={styles.heroCopy}>
+        <Text style={styles.heroTitle}>{disciplineLabel[selectedDiscipline.discipline]}</Text>
+        <Text style={styles.note}>{compactDuration(selectedDiscipline.seconds)} · {selectedDiscipline.sessions} séance{selectedDiscipline.sessions > 1 ? 's' : ''}</Text>
+      </View> : null}
     </View>
     {stats.disciplines.map((item, index) => <Pressable key={item.discipline} style={styles.sportRow} onPress={() => setSelected(selected === index ? null : index)} accessibilityRole="button" accessibilityState={{ selected: selected === index }}
       accessibilityLabel={`${disciplineLabel[item.discipline]}, ${Math.round(item.share * 100)} pour cent du temps, ${compactDuration(item.seconds)}, ${item.sessions} séances`}>
@@ -221,7 +219,7 @@ const styles = StyleSheet.create({
   calendarRows: { gap: 0 },
   calendarRow: { flexDirection: 'row' },
   calendarTarget: { flex: 1, minHeight: chart.minimumTouch },
-  balanceHead: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  balanceHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.md },
   sportRow: { paddingVertical: space.sm, gap: space.xs, minHeight: chart.minimumTouch },
   sportValue: { ...type.body, color: color.text, fontFamily: typography.display.semibold },
   sportTrack: { height: space.xs, borderRadius: radius.pill, backgroundColor: color.surfaceRaised },
