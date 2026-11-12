@@ -138,6 +138,12 @@ export default function ReglagesScreen() {
         ) : null}
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Guide des sports</Text>
+        <Text style={styles.body}>Cherche un sport et découvre ses gains de référence.</Text>
+        <Button label="Voir les sports" onPress={() => router.push('/sports')} variant="quiet" />
+      </View>
+
       <Authorizations permission={permission} onAsked={refresh} />
 
       <Synchronisation />
