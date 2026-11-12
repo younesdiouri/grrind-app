@@ -1,15 +1,15 @@
 import { useHeaderHeight } from 'expo-router/react-navigation';
 import { randomUUID } from 'expo-crypto';
 import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { color, control, guildChat, radius, space, type } from '@/design/tokens';
 import { messageFor, violationsByField } from '@/features/auth/problems';
-import { readChatImage } from '@/features/community/chatImage';
 import { pickChatPhoto, removeChatPhoto } from '@/features/community/chatPhoto';
-import { chatAuthorLabel, type ChatError, type ChatMessage } from '@/features/community/chatState';
+import { chatAuthorLabel, type ChatError } from '@/features/community/chatState';
+import { GuildChatPhoto } from '@/features/community/GuildChatPhoto';
 import type { GuildDetail } from '@/features/community/guildScreenState';
 import { useGuildChat } from '@/features/community/useGuildChat';
 
@@ -59,7 +59,7 @@ export function GuildChat({ guild, playerId, onGone, headerOffset = 0 }: {
         renderItem={({ item }) => <View style={[styles.bubble, item.authorId === playerId && styles.ownBubble]}>
           <Text style={styles.author}>{chatAuthorLabel(item.authorId, playerId, guild.members)}</Text>
           {item.text ? <Text selectable style={styles.message}>{item.text}</Text> : null}
-          {item.imageUrl ? <PrivatePhoto key={item.id} guildId={guild.id} message={item} signal={signal} onError={controller.acceptError} /> : null}
+          {item.imageUrl ? <GuildChatPhoto key={item.id} guildId={guild.id} message={item} signal={signal} onError={controller.acceptError} /> : null}
           <Text style={styles.date}>{new Date(item.createdAt).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</Text>
         </View>}
       />
@@ -100,26 +100,6 @@ function chatErrorMessage(error: ChatError): string {
   return messageFor(error.failure);
 }
 
-function PrivatePhoto({ guildId, message, signal, onError }: {
-  guildId: string; message: ChatMessage; signal: AbortSignal; onError: (error: ChatError) => void;
-}) {
-  const [uri, setUri] = useState<string | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    let mounted = true;
-    void readChatImage(guildId, message.id, signal).then((result) => {
-      if (!mounted || signal.aborted) return;
-      if (result.ok) setUri(result.data);
-      else { setFailed(true); onError(result.error); }
-    });
-    return () => { mounted = false; };
-  }, [guildId, message.id, signal, attempt, onError]);
-  if (failed) return <Button label="Recharger la photo" variant="quiet" onPress={() => { setFailed(false); setAttempt(attempt + 1); }} />;
-  if (!uri) return <View style={styles.photo}><ActivityIndicator color={color.accent} /></View>;
-  return <Image source={{ uri }} cachePolicy="none" contentFit="contain" style={styles.photo} accessibilityLabel="Photo partagée dans la guilde" />;
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   flex: { flex: 1 },
@@ -142,5 +122,4 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: space.sm },
   attachment: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   preview: { width: guildChat.previewHeight, height: guildChat.previewHeight },
-  photo: { width: guildChat.photoHeight, height: guildChat.photoHeight, maxWidth: '100%', alignItems: 'center', justifyContent: 'center' },
 });
