@@ -69,6 +69,23 @@ Les flows partagés sont réutilisés, pas tous exécutés à chaque ticket. Ne 
 pendant Maestro : même un commentaire dans un module de mock peut le réévaluer et réinitialiser
 son état par Fast Refresh. Terminer les changements avant de lancer la vérification.
 
+Pour l’isolation entre comptes, `session-cache.yaml` joue un seul parcours A → B sous latence
+puis panne → retour A, avec arrêt/relance signé dehors pour vérifier le Keychain. Il utilise
+exactement les deux comptes préparés par la QA back, sans créer de compte ni réinitialiser la
+base. Le fichier privé contient `A`/`B` (email, password, id, guildName, expectedItemKeys,
+expectedItemNames), `baseUrl` et `toxiproxyControlUrl`, tous deux en loopback. A possède un
+objet distinct et B un sac vide ; les deux emails contiennent `-empty-`.
+
+```sh
+SESSION_CACHE_QA_CREDENTIALS=/chemin/prive/qa-accounts.json node scripts/session-cache-qa-flow.mjs
+```
+
+Metro 8082 doit déjà viser le `baseUrl` du fichier. Le proxy standard Toxiproxy `grrind367`
+appartient à la stack QA isolée ; le flow ne change que sa latence et son activation via
+l’API standard, et le rétablit en fin de flow, même en cas d’échec. Aucun mode avion iOS ni
+changement réseau global : la latence TCP touche toute l’API QA, sans retarder sélectivement
+une réponse A ou un refresh. Ces courses précises restent couvertes par les tests HTTP.
+
 Le smoke utilise un compte `empty`. `health-sync` en utilise deux car il vérifie réellement les
 deux scénarios : l’adresse contenant `-empty-` n’a aucune activité ; l’autre présente quatre
 séances, dont trois importables et une hors fenêtre. Les dates sont relatives à l’exécution.

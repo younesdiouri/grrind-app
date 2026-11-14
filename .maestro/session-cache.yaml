@@ -1,0 +1,160 @@
+appId: app.grrind.dev
+tags:
+  - ios
+  - session
+onFlowStart:
+  - runScript:
+      file: session-cache-network.js
+      env:
+        NETWORK_MODE: normal
+onFlowComplete:
+  - runScript:
+      file: session-cache-network.js
+      env:
+        NETWORK_MODE: normal
+---
+# Un seul parcours A → B sous réseau lent/panne → retour A. Les comptes sont ceux
+# de la stack QA isolée #367 ; aucun compte ni donnée n'est créé dans ce flow.
+- launchApp:
+    stopApp: false
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
+      - tapOn: "Close"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${CACHE_A_EMAIL}
+      PASSWORD: ${CACHE_A_PASSWORD}
+- extendedWaitUntil:
+    visible: "NIVEAU"
+    timeout: 30000
+- tapOn:
+    id: hud-bag
+- extendedWaitUntil:
+    visible:
+      id: inventory-item-${CACHE_A_ITEM_KEY}
+    timeout: 30000
+- tapOn:
+    id: tab-guilde
+- extendedWaitUntil:
+    visible: ${CACHE_A_GUILD}
+    timeout: 30000
+
+# La latence concerne l'API entière, pas Metro. Après le login, attendre le HUD
+# statique : attendre NIVEAU laisserait déjà finir la lecture d'inventaire B.
+- runScript:
+    file: session-cache-network.js
+    env:
+      NETWORK_MODE: slow
+- tapOn:
+    id: tab-reglages
+- tapOn: "Se déconnecter"
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${CACHE_B_EMAIL}
+      PASSWORD: ${CACHE_B_PASSWORD}
+- extendedWaitUntil:
+    visible:
+      id: hud-bag
+    timeout: 30000
+- tapOn:
+    id: hud-bag
+- assertNotVisible:
+    id: character-tab-bag
+- assertNotVisible:
+    id: inventory-item-${CACHE_A_ITEM_KEY}
+- runScript:
+    file: session-cache-network.js
+    env:
+      NETWORK_MODE: offline
+- extendedWaitUntil:
+    visible: "Sac indisponible"
+    timeout: 30000
+- assertNotVisible: ".*${CACHE_A_ITEM_NAME}.*"
+- assertNotVisible: "Ton sac est vide"
+- tapOn:
+    id: tab-guilde
+- extendedWaitUntil:
+    visible: "La guilde est indisponible"
+    timeout: 30000
+- assertNotVisible: ${CACHE_A_GUILD}
+- assertNotVisible: ${CACHE_B_GUILD}
+- takeScreenshot: cache-b-network-failure
+
+# Rétablissement : les vraies données B remplacent l'erreur, sans données A.
+- runScript:
+    file: session-cache-network.js
+    env:
+      NETWORK_MODE: normal
+- tapOn: "Réessayer"
+- extendedWaitUntil:
+    visible: ${CACHE_B_GUILD}
+    timeout: 30000
+- assertNotVisible: ${CACHE_A_GUILD}
+- tapOn:
+    id: hud-bag
+- extendedWaitUntil:
+    visible: "Ton sac est vide"
+    timeout: 30000
+- assertNotVisible: ".*${CACHE_A_ITEM_NAME}.*"
+
+# #407 : sortir puis tuer/relancer le process hors réseau ne reprend pas le JWT
+# du compte quitté. Aucun reset Keychain entre les deux connexions.
+- tapOn:
+    id: tab-reglages
+- tapOn: "Se déconnecter"
+- extendedWaitUntil:
+    visible: "Se connecter"
+    timeout: 15000
+- runScript:
+    file: session-cache-network.js
+    env:
+      NETWORK_MODE: offline
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "Se connecter"
+    timeout: 30000
+- assertNotVisible:
+    id: hud-bag
+
+- runScript:
+    file: session-cache-network.js
+    env:
+      NETWORK_MODE: normal
+- runFlow:
+    file: login.yaml
+    env:
+      EMAIL: ${CACHE_A_EMAIL}
+      PASSWORD: ${CACHE_A_PASSWORD}
+- extendedWaitUntil:
+    visible:
+      id: hud-bag
+    timeout: 30000
+- tapOn:
+    id: hud-bag
+- extendedWaitUntil:
+    visible:
+      id: inventory-item-${CACHE_A_ITEM_KEY}
+    timeout: 30000
+- assertNotVisible: "Ton sac est vide"
+- tapOn:
+    id: tab-guilde
+- extendedWaitUntil:
+    visible: ${CACHE_A_GUILD}
+    timeout: 30000
+- assertNotVisible: ${CACHE_B_GUILD}
+- takeScreenshot: cache-return-a

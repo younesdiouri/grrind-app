@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -100,4 +101,37 @@ test('Expo fingerprint ignores JS tooling but detects Swift and native configura
   config.expo.ios.appleTeamId = 'QA12345678';
   write();
   assert.notEqual(hash(), native);
+});
+
+test('session cache QA reuses two private accounts without exposing credentials in arguments', (t) => {
+  const root = mkdtempSync(resolve(tmpdir(), 'grrind-cache-qa-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(resolve(root, 'bin'));
+  const calls = resolve(root, 'calls.json');
+  writeFileSync(resolve(root, 'bin/rtk'), `#!${process.execPath}
+require('node:fs').writeFileSync(process.env.QA_CALLS, JSON.stringify({
+  args: process.argv.slice(2), offline: process.env.E2E_OFFLINE, api: process.env.E2E_API_URL,
+  a: process.env.CACHE_A_EMAIL, b: process.env.CACHE_B_EMAIL,
+}));
+`, { mode: 0o755 });
+  const file = resolve(root, 'accounts.json');
+  const account = (id, items) => ({ id, email: `qa-empty-${id}@example.test`, password: 'private-password',
+    guildName: `QA ${id}`, expectedItemKeys: items, expectedItemNames: items });
+  const fixture = { A: account('A', ['item-A']), B: account('B', []),
+    baseUrl: 'http://127.0.0.1:18367', toxiproxyControlUrl: 'http://127.0.0.1:18474' };
+  writeFileSync(file, JSON.stringify(fixture), { mode: 0o600 });
+  const run = () => spawnSync(process.execPath, [resolve('scripts/session-cache-qa-flow.mjs')], {
+    encoding: 'utf8', env: { ...process.env, SESSION_CACHE_QA_CREDENTIALS: file,
+      PATH: `${root}/bin:${process.env.PATH}`, QA_CALLS: calls },
+  });
+  const result = run();
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(calls, 'utf8')), {
+    args: ['proxy', 'npm', 'run', 'e2e:ios:flow', '--', '.maestro/session-cache.yaml'],
+    offline: '1', api: fixture.baseUrl, a: fixture.A.email, b: fixture.B.email,
+  });
+  assert.doesNotMatch(result.stdout + result.stderr, /private-password|qa-empty-/);
+  fixture.baseUrl = 'https://api.grrind.app';
+  writeFileSync(file, JSON.stringify(fixture));
+  assert.notEqual(run().status, 0);
 });
