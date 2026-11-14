@@ -41,7 +41,8 @@ import { WeekBoard } from '@/features/progression/WeekBoard';
 import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
 import { SportsGuideView } from '@/features/progression/SportsGuideView';
 import { SPORTS_CATALOG } from '@/features/progression/sportsFixtures';
-import { WeekTrainingPlanView } from '@/features/progression/WeekTrainingPlan';
+import { WeekTrainingAdvice, WeekTrainingPlansView } from '@/features/progression/WeekTrainingPlan';
+import { TRAINING_NOW, TRAINING_PLAN, TRAINING_WEEK } from '@/features/progression/weekTrainingFixtures';
 import { EMPTY_STATS, MONTH_STATS, SINGLE_SPORT_STATS, WEEK_STATS, YEAR_STATS } from '@/features/progression/workoutStatsFixtures';
 import type { WeekProgress } from '@/features/progression/week';
 import { SystemFrame } from '@/components/SystemFrame';
@@ -299,6 +300,19 @@ const WEEK_FIXTURE: WeekProgress = {
 
 export const PREVIEWS: Preview[] = [
   {
+    slug: 'conseils-sportifs', name: 'Conseils sportifs', group: 'Composants',
+    element: <>
+      <Specimen label="Conseil court — accueil et statistiques"><WeekTrainingAdvice onOpen={() => {}} /></Specimen>
+      <Specimen label="Trois alternatives — une seule option à choisir"><WeekTrainingPlansView week={TRAINING_WEEK} now={TRAINING_NOW} loading={false} onRetry={() => {}} onGuide={() => {}} onBack={() => {}} /></Specimen>
+      <Specimen label="Petit écran — choix unique et nom de discipline long"><View style={{ width: 320 - space.lg * 2 }}><WeekTrainingPlansView week={{ ...TRAINING_WEEK, trainingPlans: [TRAINING_WEEK.trainingPlans[1]] }} now={TRAINING_NOW} loading={false} onRetry={() => {}} onGuide={() => {}} onBack={() => {}} /></View></Specimen>
+      <Specimen label="Aucune alternative"><WeekTrainingPlansView week={{ ...TRAINING_WEEK, trainingPlans: [] }} now={TRAINING_NOW} loading={false} onRetry={() => {}} onGuide={() => {}} onBack={() => {}} /></Specimen>
+      <Specimen label="Semaine remplie"><WeekTrainingPlansView week={{ ...TRAINING_WEEK, trainingPlans: [], current: TRAINING_WEEK.previous! }} now={TRAINING_NOW} loading={false} onRetry={() => {}} onGuide={() => {}} onBack={() => {}} /></Specimen>
+      <Specimen label="Chargement"><WeekTrainingPlansView now={TRAINING_NOW} loading onRetry={() => {}} onGuide={() => {}} onBack={() => {}} /></Specimen>
+      <Specimen label="Erreur et retry"><WeekTrainingPlansView now={TRAINING_NOW} loading={false} failure={{ kind: 'offline' }} onRetry={() => {}} onGuide={() => {}} onBack={() => {}} /></Specimen>
+      <Specimen label="Estimations expirées"><WeekTrainingPlansView week={TRAINING_WEEK} now={new Date(TRAINING_PLAN.expiresAt)} loading={false} onRetry={() => {}} onGuide={() => {}} onBack={() => {}} /></Specimen>
+    </>,
+  },
+  {
     slug: 'sports-guide', name: 'Guide des sports', group: 'Composants',
     element: <>
       <Specimen label="Catalogue — gains de référence et marche sans XP">
@@ -324,14 +338,7 @@ export const PREVIEWS: Preview[] = [
   {
     slug: 'workout-stats', name: 'Statistiques workout', group: 'Composants',
     element: <>
-      <Specimen label="Semaine — total et plan, sans point sur le jour de repos"><WorkoutStatsView stats={WEEK_STATS} trainingPlan={<WeekTrainingPlanView plan={{
-        remaining: { strength: 0, endurance: 0, mobility: 15, dexterity: 18 }, remainingAfter: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 },
-        completesWeek: true, calculatedAt: '2026-11-11T12:00:00Z', expiresAt: '2026-11-11T23:00:00Z', rulesetVersion: 'preview',
-        sessions: [
-          { discipline: 'MOBILITY', durationSeconds: 1200, estimatedXp: 20, estimatedGains: { strength: 1, endurance: 3, mobility: 15, dexterity: 1 } },
-          { discipline: 'CLIMBING', durationSeconds: 1800, estimatedXp: 30, estimatedGains: { strength: 8, endurance: 2, mobility: 3, dexterity: 17 } },
-        ],
-      }} />} /></Specimen>
+      <Specimen label="Semaine — conseil court, sans point sur le jour de repos"><WorkoutStatsView stats={WEEK_STATS} trainingPlan={<WeekTrainingAdvice onOpen={() => {}} />} /></Specimen>
       <Specimen label="Mois — régularité et temps total"><WorkoutStatsView stats={MONTH_STATS} /></Specimen>
       <Specimen label="Année — douze mois"><WorkoutStatsView stats={YEAR_STATS} /></Specimen>
       <Specimen label="Semaine — un seul sport"><WorkoutStatsView stats={SINGLE_SPORT_STATS} /></Specimen>
@@ -801,7 +808,7 @@ export const PREVIEWS: Preview[] = [
     element: (
       <>
         <Specimen label="Semaine en cours — une jauge battue, trois à remplir">
-          <WeekBoard week={WEEK_FIXTURE} now={WEEK_NOW} />
+          <WeekBoard week={WEEK_FIXTURE} now={WEEK_NOW} onViewSports={() => {}} />
         </Specimen>
         <Specimen label="Première semaine — pas de référence">
           <WeekBoard week={{ ...WEEK_FIXTURE, previous: null, entries: [] }} now={WEEK_NOW} />

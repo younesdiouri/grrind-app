@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useState, useSyncExternalStore } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -18,8 +18,7 @@ import { WorkoutRow } from '@/features/progression/PlayerHomeView';
 import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
 import { useWorkoutStats } from '@/features/progression/useWorkoutStats';
 import { statsPeriodLabel, type StatsPeriod } from '@/features/progression/workoutStats';
-import { WeekTrainingPlanView } from '@/features/progression/WeekTrainingPlan';
-import { useWeekTrainingPlan } from '@/features/progression/useWeekTrainingPlan';
+import { WeekTrainingAdvice } from '@/features/progression/WeekTrainingPlan';
 
 /**
  * L'archive des séances (#362), sortie de l'accueil : celui-ci dit la semaine, celle-ci tout le
@@ -47,8 +46,7 @@ function Dashboard() {
   const [period, setPeriod] = useState<StatsPeriod>('week');
   const reduced = useReducedMotion();
   const query = useWorkoutStats(period);
-  const { plan, refreshPlan } = useWeekTrainingPlan(period === 'week');
-  return <ScrollView contentContainerStyle={styles.screen} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void Promise.all([query.refetch(), ...(period === 'week' ? [refreshPlan()] : [])])} tintColor={color.accent} />}>
+  return <ScrollView contentContainerStyle={styles.screen} refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} tintColor={color.accent} />}>
     <View style={styles.periods} accessibilityRole="tablist">
       {(['week', 'month', 'year'] as const).map(option => <Pressable key={option} style={[styles.period, period === option && styles.selectedPeriod]} onPress={() => setPeriod(option)} accessibilityRole="tab" accessibilityState={{ selected: period === option }}>
         <Text style={[styles.tabLabel, period === option && styles.selectedLabel]}>{statsPeriodLabel[option]}</Text>
@@ -58,7 +56,7 @@ function Dashboard() {
     {query.error ? <View style={styles.footer}><Text style={styles.muted}>{messageFor(query.error)}</Text><Button label="Réessayer" variant="quiet" onPress={() => void query.refetch()} /></View> : null}
     {query.data ? <Animated.View key={period} entering={reduced === false ? FadeInUp.duration(duration.enter) : undefined}>
       {query.data.current.sessions === 0 ? <Text style={styles.empty}>Aucune séance sur cette période. Synchronise Santé depuis l’accueil pour retrouver tes séances ici.</Text> : null}
-      <WorkoutStatsView stats={query.data} trainingPlan={plan ? <WeekTrainingPlanView plan={plan} /> : null} />
+      <WorkoutStatsView stats={query.data} trainingPlan={<WeekTrainingAdvice onOpen={() => router.push('/conseils-sportifs')} />} />
     </Animated.View> : null}
   </ScrollView>;
 }

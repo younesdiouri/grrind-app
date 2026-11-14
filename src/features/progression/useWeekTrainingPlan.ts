@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
+import { useIsFocused } from 'expo-router';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { api } from '@/api/client';
@@ -9,26 +10,39 @@ import { useAuth } from '@/features/auth/useAuth';
 import { getSettledRevision, subscribeToSync } from '@/features/health/sync';
 import { getProgressionRevision, subscribeToProgression } from '@/features/progression/weeklyRefresh';
 
-export function useWeekTrainingPlan(enabled: boolean) {
-  const [now, setNow] = useState(() => Date.now());
+export function weekTrainingPlanOptions(userId: string | null, revision: number, weekRevision: number) {
+  return queryOptions<components['schemas']['WeekProgress'], Failure>({
+    queryKey: ['week-training-plan', userId, revision, weekRevision],
+    enabled: userId !== null,
+    queryFn: ({ signal }) => queryOrFailure(() => api.GET('/api/progression/week', { signal })),
+  });
+}
+
+export function useWeekTrainingPlan() {
+  const [, tick] = useState(0);
   const auth = useAuth();
+  const focused = useIsFocused();
   const revision = useSyncExternalStore(subscribeToSync, getSettledRevision);
   const weekRevision = useSyncExternalStore(subscribeToProgression, getProgressionRevision);
-  const query = useQuery<components['schemas']['WeekProgress'], Failure>({
-    queryKey: ['week-training-plan', auth.status === 'signedIn' ? auth.user.id : null, revision, weekRevision],
-    enabled: enabled && auth.status === 'signedIn',
-    queryFn: () => queryOrFailure(() => api.GET('/api/progression/week')),
-  });
-  const plan = query.data?.trainingPlan;
+  const userId = auth.status === 'signedIn' ? auth.user.id : null;
+  const active = focused && userId !== null;
+  const query = useQuery({ ...weekTrainingPlanOptions(userId, revision, weekRevision), enabled: active });
+  const expiresAt = query.data?.trainingPlans[0]?.expiresAt;
   const refetch = query.refetch;
   useEffect(() => {
-    if (!enabled || !plan) return;
-    const delay = Date.parse(plan.expiresAt) - Date.now();
-    const timer = setTimeout(() => {
-      setNow(Date.now());
-      if (delay > 0) void refetch();
-    }, Math.max(0, delay));
-    return () => clearTimeout(timer);
-  }, [enabled, plan, refetch]);
-  return { plan: plan && Date.parse(plan.expiresAt) > now ? plan : null, refreshPlan: refetch };
+    if (!active || !expiresAt) return;
+    return watchTrainingPlanExpiry(expiresAt, () => {
+      tick(value => value + 1);
+      void refetch();
+    });
+  }, [active, expiresAt, refetch]);
+  return { ...query, now: new Date() };
+}
+
+export function watchTrainingPlanExpiry(expiresAt: string, refresh: () => void) {
+  const delay = Date.parse(expiresAt) - Date.now();
+  // Un cache déjà expiré est relu à l'ouverture ; ne pas boucler sur une réponse périmée.
+  if (delay <= 0) return;
+  const timer = setTimeout(refresh, delay);
+  return () => clearTimeout(timer);
 }
