@@ -3,6 +3,7 @@ import { it } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { WorkoutStatsView } from './WorkoutStatsView.tsx';
+import { WeekTrainingAdvice } from './WeekTrainingPlan.tsx';
 import { EMPTY_STATS, MONTH_STATS, WEEK_STATS, YEAR_STATS } from './workoutStatsFixtures.ts';
 
 it('affiche les totaux, moyenne, note, évolution et parts serveur sans les déduire des séries', () => {
@@ -37,4 +38,12 @@ it('affiche la réponse vide avec une référence et une moyenne absentes', () =
   assert.ok(html.includes('>—<'));
   assert.ok(html.includes('>0 min<'));
   assert.ok(!html.includes('TEMPS D’ENTRAÎNEMENT'));
+});
+
+it('garde l’accès aux sports en semaine sans séance et le réserve à la période semaine', () => {
+  const trainingPlan = createElement(WeekTrainingAdvice, { onOpen() {} });
+  const empty = renderToStaticMarkup(createElement(WorkoutStatsView, { stats: EMPTY_STATS, trainingPlan }));
+  assert.ok(empty.includes('Voir les sports'));
+  const month = renderToStaticMarkup(createElement(WorkoutStatsView, { stats: MONTH_STATS, trainingPlan }));
+  assert.ok(!month.includes('Voir les sports'));
 });

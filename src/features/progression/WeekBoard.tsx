@@ -18,6 +18,7 @@ import {
 } from '@/design/tokens';
 import { formatDuration, formatWhen } from '@/features/progression/format';
 import { PerformanceRadar } from '@/features/progression/PerformanceRadar';
+import { WeekTrainingAdvice } from '@/features/progression/WeekTrainingPlan';
 import {
   formatCountdown,
   gaugeGlow,
@@ -48,6 +49,7 @@ export function WeekBoard({
   now,
   renderBar = StaticGaugeBar,
   radar,
+  onViewSports,
 }: {
   week: WeekProgress;
   now: Date;
@@ -58,6 +60,7 @@ export function WeekBoard({
    */
   renderBar?: (bar: GaugeBar) => ReactNode;
   radar?: ReactNode;
+  onViewSports?: () => void;
 }) {
   const { current, previous } = week;
   const [explained, setExplained] = useState(false);
@@ -100,6 +103,8 @@ export function WeekBoard({
           />
         ))}
       </View>
+
+      {onViewSports ? <WeekTrainingAdvice onOpen={onViewSports} /> : null}
 
       {week.entries.length === 0 ? (
         <Text style={styles.muted}>Aucune séance cette semaine : synchronise Santé, la prochaine remplira ces jauges.</Text>

@@ -17,7 +17,7 @@ export function WorkoutStatsView({ stats, trainingPlan }: { stats: WorkoutStats;
       <Metric value={String(stats.current.activeDays)} label="JOURS ACTIFS" detail={`sur ${stats.days} jours`} />
       <Metric value={stats.current.sessions ? compactDuration(stats.current.averageSeconds) : '—'} label="PAR SÉANCE" detail="durée moyenne" />
     </View>
-    {stats.period === 'week' && stats.current.sessions > 0 ? trainingPlan : null}
+    {stats.period === 'week' ? trainingPlan : null}
     {stats.current.sessions > 0 ? <VolumeChart key={`volume-${stats.period}`} stats={stats} /> : null}
     {stats.period === 'month' && stats.daily.length > 0 ? <ActivityCalendar key={`calendar-${stats.period}`} stats={stats} /> : null}
     <DisciplineBalance key={`balance-${stats.period}`} stats={stats} />

@@ -215,6 +215,7 @@ function PlayerHome({
           <WeekBoard
             week={home.week}
             now={new Date()}
+            onViewSports={() => router.push('/conseils-sportifs')}
             radar={<LivePerformanceRadar week={home.week} />}
             renderBar={(bar) => <GrowingGaugeBar {...bar} />}
           />
