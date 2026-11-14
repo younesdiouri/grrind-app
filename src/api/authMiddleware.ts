@@ -31,6 +31,8 @@ const PUBLIC_PATHS: ReadonlySet<string> = new Set<keyof paths>([
 ]);
 
 export type AuthMiddlewareDeps = {
+  /** Stable pendant les rotations, différente après une sortie ou une nouvelle connexion. */
+  getSessionGeneration?: () => number;
   /**
    * Le jeton d'accès courant, ou `null`. Relu **à chaque requête** : il change sous les pieds
    * du middleware dès qu'un rafraîchissement aboutit.
@@ -72,7 +74,7 @@ export function createAuthMiddleware(deps: AuthMiddlewareDeps): Middleware {
    * tenté : c'est cette deuxième information qui distingue « ma session est morte » de
    * « j'étais en vol pendant que quelqu'un d'autre renouvelait ».
    */
-  const inFlight = new Map<string, { replay: Request; token: string | null }>();
+  const inFlight = new Map<string, { replay: Request; token: string | null; generation: number | undefined }>();
 
   return {
     onRequest({ request, schemaPath, id }) {
@@ -85,7 +87,7 @@ export function createAuthMiddleware(deps: AuthMiddlewareDeps): Middleware {
       // Le corps d'une `Request` est un flux à usage unique, et `fetch` le consomme. Un 401
       // se rejoue : la copie se prend donc **avant** l'envoi. Elle se prend aussi **avant**
       // de poser l'en-tête, pour que le rejeu ne traîne pas le jeton déjà refusé.
-      inFlight.set(id, { replay: request.clone(), token });
+      inFlight.set(id, { replay: request.clone(), token, generation: deps.getSessionGeneration?.() });
 
       if (token !== null) {
         request.headers.set('Authorization', `Bearer ${token}`);
@@ -102,8 +104,10 @@ export function createAuthMiddleware(deps: AuthMiddlewareDeps): Middleware {
         return undefined;
       }
 
-      const token = await deps.refresh(attempt.token, await refusalBody(response));
-      if (token === null) {
+      const problem = await refusalBody(response);
+      if (attempt.generation !== deps.getSessionGeneration?.()) return undefined;
+      const token = await deps.refresh(attempt.token, problem);
+      if (token === null || attempt.generation !== deps.getSessionGeneration?.()) {
         // Session morte. Le 401 remonte intact : c'est au provider d'auth d'avoir déjà
         // basculé l'app sur l'écran de connexion, pas au middleware de naviguer.
         return undefined;

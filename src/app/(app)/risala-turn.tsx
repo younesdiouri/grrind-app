@@ -6,12 +6,14 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 're
 import type { components } from '@/api/schema';
 import { Button } from '@/components/Button';
 import { color, disciplineLabel, space, type } from '@/design/tokens';
+import { isCurrentOwner } from '@/features/auth/session';
+import { useSessionOwner } from '@/features/auth/useAuth';
 import { messageFor, type Failure } from '@/features/auth/problems';
 import { formatTurnDeadline } from '@/features/community/format';
 import { chooseRisalaTurn } from '@/features/community/risalaTurnActions';
 import { turnRefusalFrom } from '@/features/community/turnRefusal';
-import { MY_GUILD_QUERY_KEY } from '@/features/community/useMyGuild';
-import { RISALAT_QUERY_KEY, useRisalat, type Risalat } from '@/features/community/useRisalat';
+import { myGuildQueryKey } from '@/features/community/useMyGuild';
+import { risalatQueryKey, useRisalat, type Risalat } from '@/features/community/useRisalat';
 
 type Discipline = components['schemas']['Discipline'];
 
@@ -36,6 +38,7 @@ type Discipline = components['schemas']['Discipline'];
  */
 export default function RisalaTurnScreen() {
   const risalat = useRisalat();
+  const owner = useSessionOwner();
   const queryClient = useQueryClient();
   // La discipline en cours d'envoi, pas un simple booléen : elle sert à la fois à désarmer
   // tous les boutons (double envoi impossible) et à montrer le témoin sur celui qu'on vient
@@ -47,23 +50,26 @@ export default function RisalaTurnScreen() {
   // l'onglet (`guilde.tsx`) — les deux caches où elle survivrait à l'écran s'effacent
   // ensemble — puis on recule, pour ne pas laisser un écran mort derrière soi.
   const forgetGuildAndGoBack = () => {
-    queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
-    queryClient.removeQueries({ queryKey: RISALAT_QUERY_KEY });
+    if (!isCurrentOwner(owner)) return;
+    queryClient.setQueryData(myGuildQueryKey(owner.id), null);
+    queryClient.removeQueries({ queryKey: risalatQueryKey(owner.id) });
     router.back();
   };
 
   const submit = async (discipline: Discipline) => {
+    if (!isCurrentOwner(owner)) return;
     setSubmitting(discipline);
     setFailure(null);
 
     const outcome = await chooseRisalaTurn(discipline);
+    if (!isCurrentOwner(owner)) return;
 
     if (outcome.ok) {
       // La réponse est le bloc complet — « rien à recharger », dit le contrat — elle
       // remplace donc directement le cache de `useRisalat`, sans second `GET` qui gagnerait
       // la course contre l'écran qu'il est censé mettre à jour. Le geste se termine là où il
       // a commencé : de retour sur le bloc, avec la Risāla à venir déjà visible.
-      queryClient.setQueryData<Risalat>(RISALAT_QUERY_KEY, outcome.risalat);
+      queryClient.setQueryData<Risalat>(risalatQueryKey(owner.id), outcome.risalat);
       router.back();
       return;
     }

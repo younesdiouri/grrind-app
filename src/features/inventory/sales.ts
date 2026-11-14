@@ -2,6 +2,7 @@ import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 
 import { api } from '@/api/client';
+import { getSessionOwner, isCurrentOwner } from '@/features/auth/session';
 import { createSaleAction, type PendingSale } from './saleRunner.ts';
 
 const OPTIONS: SecureStore.SecureStoreOptions = {
@@ -18,6 +19,10 @@ export function salesFor(userId: string) {
 
   const recordKey = `grrind.sale.${userId}`;
   const action = createSaleAction({
+    capture: () => {
+      const owner = getSessionOwner();
+      return () => isCurrentOwner(owner) && owner.id === userId;
+    },
     store: {
       read: async () => {
         const raw = await SecureStore.getItemAsync(recordKey, OPTIONS);

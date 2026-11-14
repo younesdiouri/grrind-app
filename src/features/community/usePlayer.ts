@@ -1,19 +1,21 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { queryOptions, useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { api } from '@/api/client';
 import { queryOrFailure } from '@/api/queryOrFailure';
+import { queryForOwner } from '@/api/privateQueries';
+import { useAuth } from '@/features/auth/useAuth';
 import type { components } from '@/api/schema';
 import type { Failure } from '@/features/auth/problems';
 
 /** Le détail public enrichi, chargé seulement à l'ouverture du profil. */
 export type Player = components['schemas']['PlayerDetail'];
 
-export function playerQueryKey(id: string) {
-  return ['players', id] as const;
+export function playerQueryKey(userId: string | null, id: string) {
+  return ['players', userId, id] as const;
 }
 
-async function fetchPlayer(id: string): Promise<Player> {
-  return queryOrFailure(() => api.GET('/api/players/{id}', { params: { path: { id } } }));
+async function fetchPlayer(userId: string | null, id: string, signal: AbortSignal): Promise<Player> {
+  return queryForOwner(userId, () => queryOrFailure(() => api.GET('/api/players/{id}', { params: { path: { id } }, signal })));
 }
 
 /**
@@ -22,8 +24,15 @@ async function fetchPlayer(id: string): Promise<Player> {
  * cherche pas à distinguer, il affiche le même refus dans les deux cas.
  */
 export function usePlayer(id: string): UseQueryResult<Player, Failure> {
-  return useQuery({
-    queryKey: playerQueryKey(id),
-    queryFn: () => fetchPlayer(id),
+  const auth = useAuth();
+  const userId = auth.status === 'signedIn' ? auth.user.id : null;
+  return useQuery(playerOptions(userId, id));
+}
+
+export function playerOptions(userId: string | null, id: string) {
+  return queryOptions<Player, Failure>({
+    queryKey: playerQueryKey(userId, id),
+    queryFn: ({ signal }) => fetchPlayer(userId, id, signal),
+    enabled: userId !== null,
   });
 }

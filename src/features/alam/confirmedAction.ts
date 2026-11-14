@@ -8,15 +8,18 @@ export function createConfirmedAction<T, Input = string>(keys: ActionKeys,
   post: (input: Input, key: string) => Promise<{ data?: T; error?: unknown }>,
   definitive: (failure: Failure) => boolean = () => false,
   identify: (input: Input) => string = String,
+  capture: () => (() => boolean) = () => () => true,
 ) {
   const pending = new Map<string, Promise<Confirmed<T>>>();
   return (input: Input): Promise<Confirmed<T>> => {
     const intention = identify(input);
     const existing = pending.get(intention);
     if (existing) return existing;
+    const current = capture();
     const promise = (async (): Promise<Confirmed<T>> => {
       try {
         const key = await keys.keyFor(intention);
+        if (!current()) return { kind: 'refused', failure: OFFLINE };
         const reply = await post(input, key);
         if (reply.data !== undefined) {
           await keys.forget(intention);

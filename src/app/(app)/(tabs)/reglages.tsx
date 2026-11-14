@@ -9,8 +9,8 @@ import { DangerRow } from '@/components/DangerRow';
 import { ToggleRow } from '@/components/ToggleRow';
 import { color, notificationCategoryLabel, radius, space, type } from '@/design/tokens';
 import { messageFor, type Failure } from '@/features/auth/problems';
-import { signOut } from '@/features/auth/session';
-import { useAuth } from '@/features/auth/useAuth';
+import { isCurrentOwner, signOut } from '@/features/auth/session';
+import { useSessionOwner, useAuth } from '@/features/auth/useAuth';
 import { avatarProfileKey, useAvatarProfile } from '@/features/avatar/useAvatarProfile';
 import {
   updateNotificationPreference,
@@ -97,6 +97,7 @@ export default function ReglagesScreen() {
   const { permission, refresh } = useNotificationPermission();
   const { access } = useHealthAccess();
   const auth = useAuth();
+  const owner = useSessionOwner();
   const profile = useAvatarProfile();
   const queryClient = useQueryClient();
   const state = profile.isPending ? { step: 'loading' as const }
@@ -162,7 +163,7 @@ export default function ReglagesScreen() {
         </View>
       ) : null}
 
-      {state.step === 'ready' ? <Preferences profile={state.profile} onProfile={(profile) => queryClient.setQueryData(avatarProfileKey(profile.id), profile)} /> : null}
+      {state.step === 'ready' ? <Preferences profile={state.profile} onProfile={(profile) => { if (isCurrentOwner(owner)) queryClient.setQueryData(avatarProfileKey(owner.id), profile); }} /> : null}
 
     </ScrollView>
   );

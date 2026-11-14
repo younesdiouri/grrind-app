@@ -18,11 +18,12 @@ const { watchProgressionRefresh } = await import('./useProgressionRefresh.ts');
 it('invalide les lectures serveur à la frontière et au réveil sans effacer les possessions', () => {
   mock.timers.enable({ apis: ['Date', 'setTimeout'], now: Date.parse('2026-11-01T18:59:59Z') });
   const client = new QueryClient();
-  const keys = [['inventory'], ['players', 'one'], ['alam', 'current'], ['guilds', 'mine']];
+  const keys = [['inventory', 'A'], ['players', 'A', 'one'], ['alam', 'A', 'current'], ['guilds', 'A', 'mine']];
   for (const key of keys) client.setQueryData(key, { serverValue: 42 });
   client.setQueryData(['other'], 12);
+  client.setQueryData(['inventory', 'B'], { coins: 99 });
   const initialRevision = getProgressionRevision();
-  const stop = watchProgressionRefresh(client);
+  const stop = watchProgressionRefresh(client, 'A');
   try {
     mock.timers.tick(1000);
     assert.equal(getProgressionRevision(), initialRevision + 1);
@@ -32,6 +33,7 @@ it('invalide les lectures serveur à la frontière et au réveil sans effacer le
       client.setQueryData(key, { serverValue: 0 });
     }
     assert.equal(client.getQueryState(['other'])?.isInvalidated, false);
+    assert.equal(client.getQueryState(['inventory', 'B'])?.isInvalidated, false);
     state = 'background'; onState(state);
     mock.timers.tick(7 * 24 * 3600000);
     assert.equal(getProgressionRevision(), initialRevision + 1);

@@ -9,15 +9,17 @@ import { SystemFrame } from '@/components/SystemFrame';
 import { color } from '@/design/tokens';
 import { alamStyles as s } from '@/features/alam/styles';
 import { messageFor, type Failure } from '@/features/auth/problems';
-import { useAuth } from '@/features/auth/useAuth';
-import { CRAFTING_KEY, craftEquipment, useCraftingRecipes } from '@/features/crafting/api';
-import { INVENTORY_QUERY_KEY } from '@/features/inventory/useInventory';
+import { getSessionOwner, isCurrentOwner } from '@/features/auth/session';
+import { useSessionOwner, useAuth } from '@/features/auth/useAuth';
+import { craftingQueryKey, craftEquipment, useCraftingRecipes } from '@/features/crafting/api';
+import { inventoryQueryKey } from '@/features/inventory/useInventory';
 import { pendingActionIntentions } from '@/features/shop/actionKeyStore';
 import { craftingWasRefused } from '@/features/crafting/refusal';
 
 export default function Atelier() {
   const recipes = useCraftingRecipes();
   const auth = useAuth();
+  const owner = useSessionOwner();
   const client = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
@@ -26,25 +28,28 @@ export default function Atelier() {
   const [ready, setReady] = useState(false);
   const playerId = auth.status === 'signedIn' ? auth.user.id : null;
   const restorePending = useCallback(() => {
-    if (!playerId) return;
+    const restoringOwner = getSessionOwner();
+    if (!isCurrentOwner(restoringOwner) || restoringOwner.id !== playerId) return;
     void pendingActionIntentions(`craft:${playerId}:`).then((intentions) => {
+      if (!isCurrentOwner(restoringOwner)) return;
       setPending(intentions.map((intention) => intention.split(':').slice(2).join(':'))); setReady(true);
     }).catch(() => setFailure({ kind: 'offline' }));
   }, [playerId]);
   useEffect(restorePending, [restorePending]);
   const fabricate = async (key: string) => {
-    if (auth.status !== 'signedIn' || busy) return;
+    if (!isCurrentOwner(owner) || auth.status !== 'signedIn' || busy) return;
     setBusy(key); setFailure(null); setReceipt(null);
     setPending((values) => [...new Set([...values, key])]);
     const outcome = await craftEquipment(auth.user.id, key);
+    if (!isCurrentOwner(owner)) return;
     setBusy(null);
     if (outcome.kind === 'refused') {
       setFailure(outcome.failure);
       if (craftingWasRefused(outcome.failure)) setPending((values) => values.filter((value) => value !== key));
     }
     else { setReceipt(outcome.data); setPending((values) => values.filter((value) => value !== key)); }
-    void client.invalidateQueries({ queryKey: CRAFTING_KEY });
-    void client.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+    void client.invalidateQueries({ queryKey: craftingQueryKey(owner.id) });
+    void client.invalidateQueries({ queryKey: inventoryQueryKey(owner.id) });
   };
   return <ScrollView contentContainerStyle={s.screen}>
     <Stack.Screen options={{ title: 'Atelier' }} />

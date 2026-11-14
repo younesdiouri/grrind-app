@@ -1,22 +1,27 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { queryOptions, useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { api } from '@/api/client';
 import { queryOrFailure } from '@/api/queryOrFailure';
+import { queryForOwner } from '@/api/privateQueries';
+import { useAuth } from '@/features/auth/useAuth';
+import { myGuildQueryKey } from './useMyGuild.ts';
 import type { components } from '@/api/schema';
 import type { Failure } from '@/features/auth/problems';
 
 export type Risalat = components['schemas']['Risalat'];
 
 /**
- * La clé unique de la requête, sans paramètre, comme la route — même choix que
- * `MY_GUILD_QUERY_KEY`. Elle rejoint l'invalidation qui suit une fondation, un ralliement et
+ * Le bloc suit le compte, comme `myGuildQueryKey`. Il rejoint l'invalidation après un ralliement et
  * un départ (`guilde.tsx`) : rejoindre une guilde doit faire apparaître ses Risālāt sans
  * qu'on quitte l'onglet.
  */
-export const RISALAT_QUERY_KEY = ['guilds', 'mine', 'risalat'] as const;
+export const risalatQueryKey = (userId: string | null) => [...myGuildQueryKey(userId), 'risalat'] as const;
 
-async function fetchRisalat(): Promise<Risalat> {
-  return queryOrFailure(() => api.GET('/api/guilds/mine/risalat'));
+export function risalatOptions(userId: string | null) {
+  return queryOptions<Risalat, Failure>({
+    queryKey: risalatQueryKey(userId), enabled: userId !== null,
+    queryFn: ({ signal }) => queryForOwner(userId, () => queryOrFailure(() => api.GET('/api/guilds/mine/risalat', { signal }))),
+  });
 }
 
 /**
@@ -29,8 +34,6 @@ async function fetchRisalat(): Promise<Risalat> {
  * suffit à ce que l'appel ne parte tout simplement pas pour un joueur qui n'en a pas.
  */
 export function useRisalat(): UseQueryResult<Risalat, Failure> {
-  return useQuery({
-    queryKey: RISALAT_QUERY_KEY,
-    queryFn: fetchRisalat,
-  });
+  const auth = useAuth();
+  return useQuery(risalatOptions(auth.status === 'signedIn' ? auth.user.id : null));
 }

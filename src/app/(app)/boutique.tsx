@@ -9,12 +9,15 @@ import { ShopCatalog, ShopItemDetails, ShopPurchaseReceipt, type ShopCategory } 
 import { SystemFrame } from '@/components/SystemFrame';
 import { useReducedMotion } from '@/design/useReducedMotion';
 import { color, control, frame, inventoryArt, opacity, space, type, typography } from '@/design/tokens';
+import { isCurrentOwner } from '@/features/auth/session';
+import { useSessionOwner } from '@/features/auth/useAuth';
 import { messageFor, OFFLINE, type Failure } from '@/features/auth/problems';
-import { INVENTORY_QUERY_KEY } from '@/features/inventory/useInventory';
+import { inventoryQueryKey } from '@/features/inventory/useInventory';
 import { purchaseItem, type PurchaseOutcome } from '@/features/shop/actions';
-import { SHOP_QUERY_KEY, useShop } from '@/features/shop/useShop';
+import { shopQueryKey, useShop } from '@/features/shop/useShop';
 
 export default function ShopScreen() {
+  const owner = useSessionOwner();
   const shop = useShop();
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
@@ -39,7 +42,7 @@ export default function ShopScreen() {
   };
 
   const buy = async (itemKey: string) => {
-    if (purchaseInFlight.current) return;
+    if (!isCurrentOwner(owner) || purchaseInFlight.current) return;
     purchaseInFlight.current = true;
     setPending(itemKey);
     setActionKey(itemKey);
@@ -48,6 +51,7 @@ export default function ShopScreen() {
 
     try {
       const outcome = await purchaseItem(itemKey);
+      if (!isCurrentOwner(owner)) return;
       if (outcome.kind === 'refused') {
         setRefusal(outcome.failure);
         return;
@@ -55,8 +59,8 @@ export default function ShopScreen() {
 
       setPurchase(outcome);
       // Ownership, disponibilité et solde restent arbitrés par les réponses serveur.
-      void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: shopQueryKey(owner.id) });
+      void queryClient.invalidateQueries({ queryKey: inventoryQueryKey(owner.id) });
     } catch {
       setRefusal(OFFLINE);
     } finally {

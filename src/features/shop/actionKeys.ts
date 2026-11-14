@@ -8,7 +8,7 @@ export type ActionKeysDeps = {
 };
 
 export type ActionKeys = {
-  keyFor: (intention: string) => Promise<string>;
+  keyFor: (intention: string, legacyIntention?: string) => Promise<string>;
   forget: (intention: string) => Promise<void>;
 };
 
@@ -29,7 +29,7 @@ export function createActionKeys(deps: ActionKeysDeps): ActionKeys {
   }
 
   return {
-    keyFor: (intention) =>
+    keyFor: (intention, legacyIntention) =>
       serialize(async () => {
         const record = await deps.read();
         const held = record[intention];
@@ -37,8 +37,12 @@ export function createActionKeys(deps: ActionKeysDeps): ActionKeys {
           return held;
         }
 
-        const key = deps.mint();
-        await deps.write({ ...record, [intention]: key });
+        const legacy = legacyIntention === undefined ? undefined : record[legacyIntention];
+        // Une ancienne intention sans owner reste rejouable une fois par compte, sans
+        // attribuer arbitrairement son achat au premier compte connecté après mise à jour.
+        const inherited = legacy !== undefined && record[`adopted:${intention}`] !== legacy;
+        const key = inherited ? legacy : deps.mint();
+        await deps.write({ ...record, ...(inherited ? { [`adopted:${intention}`]: legacy } : {}), [intention]: key });
         return key;
       }),
     forget: (intention) =>

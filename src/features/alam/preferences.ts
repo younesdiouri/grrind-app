@@ -30,13 +30,14 @@ export function preferenceMessage(failure: Failure): string {
 }
 
 /** Le corps fait partie de l’intention ; la difficulté reste attachée à son édition. */
-export function createAlamPreferences(keys: ActionKeys, client: Pick<Client<paths>, 'PUT'>) {
+export function createAlamPreferences(keys: ActionKeys, client: Pick<Client<paths>, 'PUT'>,
+  capture?: () => (() => boolean)) {
   return {
     register: createConfirmedAction(keys, (input: Registration, key) => client.PUT('/api/guild/alam/registration', {
       params: { header: { 'Idempotency-Key': key } }, body: { registered: input.registered },
-    }), preferenceIsDefinitive, (input) => `alam-registration:${input.playerId}:${input.guildId}:${input.membershipJoinedAt}:${input.registered}`),
+    }), preferenceIsDefinitive, (input) => `alam-registration:${input.playerId}:${input.guildId}:${input.membershipJoinedAt}:${input.registered}`, capture),
     choose: createConfirmedAction(keys, (input: Difficulty, key) => client.PUT('/api/guild/alam/difficulty', {
       params: { header: { 'Idempotency-Key': key } }, body: { difficulty: input.difficulty },
-    }), preferenceIsDefinitive, (input) => `alam-difficulty:${input.playerId}:${input.guildId}:${input.membershipJoinedAt}:${input.runId}:${input.difficulty}`),
+    }), preferenceIsDefinitive, (input) => `alam-difficulty:${input.playerId}:${input.guildId}:${input.membershipJoinedAt}:${input.runId}:${input.difficulty}`, capture),
   };
 }

@@ -92,6 +92,25 @@ export function getState(): AuthState {
   return state;
 }
 
+export type SessionOwner = { id: string; generation: number };
+
+export function getSessionGeneration(): number { return generation; }
+
+/** La génération distingue deux connexions du même compte, sans changer lors d'un refresh. */
+export function getSessionOwner(): SessionOwner | null {
+  return state.status === 'signedIn' ? { id: state.user.id, generation } : null;
+}
+
+export function isCurrentOwner(owner: SessionOwner | null): owner is SessionOwner {
+  return owner !== null && state.status === 'signedIn'
+    && state.user.id === owner.id && generation === owner.generation;
+}
+
+export function captureSessionGuard(): () => boolean {
+  const owner = getSessionOwner();
+  return () => isCurrentOwner(owner);
+}
+
 export { getAccessToken };
 
 /**
