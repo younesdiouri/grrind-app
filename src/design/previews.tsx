@@ -39,6 +39,8 @@ import { SessionCard } from '@/components/SessionCard';
 import { StreakMeter } from '@/components/StreakMeter';
 import { WeekBoard } from '@/features/progression/WeekBoard';
 import { WorkoutStatsView } from '@/features/progression/WorkoutStatsView';
+import { SportsGuideView } from '@/features/progression/SportsGuideView';
+import { SPORTS_CATALOG } from '@/features/progression/sportsFixtures';
 import { WeekTrainingPlanView } from '@/features/progression/WeekTrainingPlan';
 import { EMPTY_STATS, MONTH_STATS, SINGLE_SPORT_STATS, WEEK_STATS, YEAR_STATS } from '@/features/progression/workoutStatsFixtures';
 import type { WeekProgress } from '@/features/progression/week';
@@ -284,6 +286,7 @@ const weekEntry = (
 });
 const WEEK_FIXTURE: WeekProgress = {
   trainingPlan: null,
+  trainingPlans: [],
   startsAt: '2026-11-08T19:00:00Z',
   resetsAt: '2026-11-15T19:00:00Z',
   current: { xp: 460, sessions: 2, attributes: { strength: 180, endurance: 220, mobility: 20, dexterity: 40 } },
@@ -295,6 +298,29 @@ const WEEK_FIXTURE: WeekProgress = {
 };
 
 export const PREVIEWS: Preview[] = [
+  {
+    slug: 'sports-guide', name: 'Guide des sports', group: 'Composants',
+    element: <>
+      <Specimen label="Catalogue — gains de référence et marche sans XP">
+        <SportsGuideView catalog={SPORTS_CATALOG} search="" onSearch={() => {}} loading={false} onRetry={() => {}} />
+      </Specimen>
+      <Specimen label="Recherche — tennis retrouve les sports de raquette">
+        <SportsGuideView catalog={SPORTS_CATALOG} search="tennis" onSearch={() => {}} loading={false} onRetry={() => {}} />
+      </Specimen>
+      <Specimen label="Recherche sans résultat">
+        <SportsGuideView catalog={SPORTS_CATALOG} search="boxe" onSearch={() => {}} loading={false} onRetry={() => {}} />
+      </Specimen>
+      <Specimen label="Catalogue vide">
+        <SportsGuideView catalog={{ ...SPORTS_CATALOG, disciplines: [] }} search="" onSearch={() => {}} loading={false} onRetry={() => {}} />
+      </Specimen>
+      <Specimen label="Chargement">
+        <SportsGuideView search="" onSearch={() => {}} loading onRetry={() => {}} />
+      </Specimen>
+      <Specimen label="Erreur et nouvelle tentative">
+        <SportsGuideView search="" onSearch={() => {}} loading={false} failure={{ kind: 'offline' }} onRetry={() => {}} />
+      </Specimen>
+    </>,
+  },
   {
     slug: 'workout-stats', name: 'Statistiques workout', group: 'Composants',
     element: <>

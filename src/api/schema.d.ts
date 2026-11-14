@@ -631,6 +631,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_progression_sport_catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/titles": {
         parameters: {
             query?: never;
@@ -1821,6 +1837,97 @@ export interface components {
             nextCursor: string | null;
         };
         /**
+         * @description Petit catalogue complet du snapshot publié, dans l'ordre publié des disciplines.
+         *     Filtrer localement sur name et aliases. Une entrée représente une discipline ;
+         *     tennis est un alias de RACKET_SPORTS, pas un barème supplémentaire.
+         *     Seuls les mappings actifs vers une discipline active sont présents. Une activité
+         *     absente du mapping de son fournisseur est non prise en charge à l'import
+         *     (UNSUPPORTED_ACTIVITY), pas un sport reconnu sans XP. Les sports de combat
+         *     restent hors catalogue tant que grrind-back#251 n'est pas traité.
+         *
+         *     Revalider à chaque ouverture du guide avec If-None-Match. Cache privé sans
+         *     période de fraîcheur : chaque requête relit le pointeur publié. L'ETag porte
+         *     tout le JSON traduit ; il change aussi pour un nouveau libellé, même quand
+         *     rulesetVersion reste identique. Vary: Accept-Language.
+         */
+        SportCatalog: {
+            /** @description Version de gameplay, commune au calcul et au snapshot ; exclut les traductions. */
+            rulesetVersion: string;
+            /** @description Révision publiée, y compris les changements de présentation. */
+            revision: number;
+            /**
+             * @description Barème de référence pour 30 minutes de durée déjà retenue : journée
+             *     sans XP préalable, sans distance, dénivelé, fréquence cardiaque,
+             *     modificateurs personnels ni bonus de groupe. Le plafond quotidien publié
+             *     s'applique. Pas une estimation personnalisée ni un gain garanti :
+             *     l'import arbitre aussi durée, ancienneté et chevauchements ; métriques,
+             *     bonus et charge du jour peuvent changer le crédit réel.
+             */
+            reference: {
+                /**
+                 * @description Secondes de durée retenue, aucune équivalence en pas.
+                 * @example 1800
+                 */
+                durationSeconds: number;
+                /**
+                 * @description Les points de caractéristiques répartissent cette XP.
+                 * @enum {string}
+                 */
+                unit: "XP";
+            };
+            disciplines: components["schemas"]["SportCatalogEntry"][];
+        };
+        SportCatalogEntry: {
+            discipline: components["schemas"]["Discipline"];
+            /** @description Libellé publié dans la langue négociée par Accept-Language, repli anglais puis français. */
+            name: string;
+            /**
+             * @description Clés de sports et types fournisseurs actifs, uniques et triés, pour la recherche locale. Pas de synonymes ni de traductions inventés.
+             * @example [
+             *       "EXERCISE_TYPE_TENNIS",
+             *       "tennis"
+             *     ]
+             */
+            aliases: string[];
+            /** @description Prise en charge exacte par fournisseur : un alias présent chez Apple ne promet rien chez Health Connect. */
+            providerMappings: {
+                /** @enum {string} */
+                source: "APPLE_HEALTH" | "HEALTH_CONNECT";
+                /** @example tennis */
+                activityType: string;
+                /**
+                 * @description Identité normalisée publiée, si renseignée ; sinon le type fournisseur reste recherchable.
+                 * @example tennis
+                 */
+                sport: string | null;
+            }[];
+            /**
+             * @description Une discipline reconnue peut ne pas créditer d'XP (WALKING aujourd'hui).
+             *     La marche quotidienne et les pas n'ont pas de gain XP par minute ou par
+             *     pas ; l'énergie active quotidienne peut bonifier la Vitality, dérivée
+             *     du profil. Aucune conversion ni promesse de Vitality dans ce catalogue.
+             */
+            creditsXp: boolean;
+            /** @description Répartition publiée en pourcents, somme 100 ; null pour une discipline sans XP. */
+            attributePercentages: {
+                strength: number;
+                endurance: number;
+                mobility: number;
+                dexterity: number;
+            } | null;
+            /** @description XP de reference avec plafond publié, zéro si creditsXp=false. */
+            baseXp: number;
+            /** @description Points de référence calculés par le moteur, arrondi au plus fort reste ; somme égale à baseXp. Null si sans XP. */
+            baseAttributeGains: {
+                strength: number;
+                endurance: number;
+                mobility: number;
+                dexterity: number;
+            } | null;
+            /** @description Plafond quotidien de la discipline, pas une quantité garantie ; null si sans XP. */
+            dailyCapXp: number | null;
+        };
+        /**
          * @description Volume civil dans le fuseau IANA du profil, relu à chaque requête.
          *     Semaine lundi-dimanche, mois et année calendaires, indépendants d'Alam.
          *     Toutes les bornes de fin sont exclues. `observedEnd` termine le jour courant,
@@ -2720,8 +2827,20 @@ export interface components {
             previous: components["schemas"]["WeekTotals"] | null;
             /** @description Toutes les écritures de la semaine, `occurredAt` décroissant, sans pagination. `current` en est la somme exacte. */
             entries: components["schemas"]["XpTransaction"][];
-            /** @description Plan estimé pour les déficits hebdomadaires. Null sans entraînement crédité, référence ou déficit, ou sans séance utile avant expiration. */
+            /** @description Plan principal : identique à trainingPlans[0], conservé pour les clients existants. Null quand trainingPlans est vide. */
             trainingPlan: components["schemas"]["WeekTrainingPlan"] | null;
+            /**
+             * @description Choix alternatifs, principal en premier, à envisager séparément et non à cumuler.
+             *     Un seul meilleur plan par ensemble de sports ; chacun des choix retenus apporte
+             *     au moins une discipline absente des choix précédents. Une séance qui ne réduit
+             *     aucun déficit supplémentaire est écartée. Les plans complets passent avant les
+             *     partiels, puis même classement que le principal : durée minimale si complet,
+             *     réduction relative maximale des déficits puis durée minimale sinon.
+             *     Vide sans entraînement crédité, référence, déficit ou séance utile avant expiration
+             *     (dont aucun sport éligible). Aucun choix artificiel pour atteindre trois plans.
+             *     Même calculatedAt, expiresAt et rulesetVersion pour tous les choix.
+             */
+            trainingPlans: components["schemas"]["WeekTrainingPlan"][];
         };
         /**
          * @description Une ou deux disciplines distinctes, entre 10 et 60 min par pas de 5 min,
@@ -5109,6 +5228,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["WeekProgress"];
                 };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    get_progression_sport_catalog: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag du dernier catalogue dans cette langue. */
+                "If-None-Match"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Catalogue actif et barème de référence, filtrable localement. Revalider à chaque ouverture du guide. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SportCatalog"];
+                };
+            };
+            /** @description Catalogue inchangé pour cet ETag et cette langue. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             401: components["responses"]["Unauthorized"];
         };
