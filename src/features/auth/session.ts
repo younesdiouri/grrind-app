@@ -63,6 +63,15 @@ export type AuthOutcome = { ok: true } | { ok: false; failure: Failure };
 
 let state: AuthState = { status: 'restoring' };
 const listeners = new Set<() => void>();
+let generation = 0;
+let localChanges: Promise<unknown> = Promise.resolve();
+
+// Une paire et son effacement restent indivisibles face aux autres écritures Keychain.
+function serializeLocal<T>(work: () => Promise<T>): Promise<T> {
+  const run = localChanges.then(work, work);
+  localChanges = run.catch(() => undefined);
+  return run;
+}
 
 function publish(next: AuthState): void {
   state = next;
@@ -101,11 +110,24 @@ export { getAccessToken };
  * vaut mieux qu'une déconnexion immédiate et certaine. On trace, pour que ce risque ne soit
  * plus invisible.
  */
-async function adopt(session: AuthSession): Promise<void> {
+function adopt(session: AuthSession, current: number): Promise<boolean> {
+  return serializeLocal(async () => {
+    if (current !== generation) return false;
+    await persist(session, current);
+    if (current !== generation) return false;
+
+    setAccessToken(session.tokens.accessToken);
+    noteSessionAdopted();
+    publish({ status: 'signedIn', user: session.user });
+    return current === generation;
+  });
+}
+
+async function persist(session: AuthSession, current: number): Promise<void> {
   try {
     await writeRefreshToken(session.tokens.refreshToken);
   } catch {
-    noteSessionLost(keychainUnavailableReason('write'));
+    if (current === generation) noteSessionLost(keychainUnavailableReason('write'));
   }
 
   try {
@@ -123,30 +145,37 @@ async function adopt(session: AuthSession): Promise<void> {
     // emplacement dans le journal : celle-là laisse le disque porter un refresh token déjà
     // consommé, la vraie façon de perdre une session.
   }
-
-  setAccessToken(session.tokens.accessToken);
-  // Persisté, pas seulement en mémoire : `missingTokenReason` en a besoin dès le tout premier
-  // `performRefresh()` d'un futur process, avant que `state` ci-dessous n'ait pu valoir
-  // `'signedIn'` de nouveau. Voir le docblock de `journal.ts`.
-  noteSessionAdopted();
-  publish({ status: 'signedIn', user: session.user });
 }
 
-/** Oublie tout, localement. Le serveur a déjà tranché ou n'a plus rien à révoquer. */
-async function forget(): Promise<void> {
+/** Invalide immédiatement la session et réserve son effacement avant le prochain login. */
+function forget(readForLogout = false): Promise<string | null> {
+  generation += 1;
   setAccessToken(null);
+  noteSessionForgotten();
+  publish({ status: 'signedOut' });
+
+  // Réservé avant tout await : un nouveau login écrira après cet effacement, jamais avant.
+  return serializeLocal(async () => {
+    let refreshToken: string | null = null;
+    if (readForLogout) {
+      try {
+        refreshToken = await readRefreshToken();
+      } catch {
+        // Une lecture refusée empêche la révocation distante, pas l'oubli local.
+      }
+    }
+    await clearLocal();
+    return refreshToken;
+  });
+}
+
+async function clearLocal(): Promise<void> {
   try {
     await clearRefreshToken();
   } catch {
-    // Le trousseau peut refuser d'effacer pour la même raison qu'il peut refuser de lire ou
-    // d'écrire (#142). Le jeton laissé sur le disque est de toute façon déjà mort à cet instant
-    // — inconnu, expiré, consommé, ou jamais écrit : les quatre appelants de `forget()` ont
-    // chacun leur propre raison de conclure que la session est finie. Pas de nouvelle trace ici
-    // : elle écraserait celle, plus utile, que l'appelant vient de poser juste avant — voir
-    // `noteSessionLost` (`diagnostics/journal.ts`). `forget()` doit surtout ne pas rejeter : un
-    // `catch` muet vaut mieux qu'un `restore()` qui ne termine jamais.
+    // Un refus d'effacement ne doit ni retenir la session en mémoire, ni empêcher l'essai
+    // sur l'autre item (#142). La révocation distante reste indépendante du Keychain.
   }
-
   try {
     await clearStoredSession();
   } catch {
@@ -156,12 +185,23 @@ async function forget(): Promise<void> {
     // effacé ou révoqué — elle tiendrait quelques minutes avant de retomber sur l'écran de
     // connexion, ce qui est pire que d'y retomber tout de suite.
   }
+}
 
-  // Inconditionnel, que cet appel ait été précédé d'un `noteSessionLost()` ou non : sans ce
-  // reset, la prochaine ouverture retracerait un abandon fantôme sur un trousseau vide qui est
-  // pourtant le résultat attendu de ce `forget()`-ci. Voir le docblock de `journal.ts`.
-  noteSessionForgotten();
-  publish({ status: 'signedOut' });
+async function revoke(refreshToken: string): Promise<void> {
+  try {
+    await publicApi.POST('/api/auth/logout', { body: { refreshToken } });
+  } catch {
+    // Le serveur révoquera à l'expiration. On part quand même.
+  }
+}
+
+async function adoptLogin(session: AuthSession, current: number): Promise<AuthOutcome> {
+  if (current === generation) {
+    const next = ++generation;
+    if (await adopt(session, next)) return { ok: true };
+  }
+  await revoke(session.tokens.refreshToken);
+  return { ok: false, failure: OFFLINE };
 }
 
 /**
@@ -176,18 +216,21 @@ async function forget(): Promise<void> {
  * démarrage ne se relâche jamais. Voir `keychainUnavailableReason` (`sessionLostReason.ts`).
  */
 async function performRefresh(): Promise<string | null> {
+  const current = generation;
   let refreshToken: string | null;
   try {
-    refreshToken = await readRefreshToken();
+    refreshToken = await serializeLocal(readRefreshToken);
   } catch {
     // Un trousseau illisible n'est pas un trousseau vide : c'est la même incertitude que la
     // panne réseau juste en dessous, et elle doit rendre la même valeur — « on ne sait pas »,
     // jamais « il n'y a pas de session ». Surtout ne pas appeler `forget()` : effacer le
     // refresh token ici transformerait une panne peut-être temporaire en déconnexion certaine,
     // alors que le jeton est peut-être encore intact sur le disque.
-    noteSessionLost(keychainUnavailableReason('read'));
+    if (current === generation) noteSessionLost(keychainUnavailableReason('read'));
     return null;
   }
+
+  if (current !== generation) return null;
 
   if (refreshToken === null) {
     // Le piège du #143 : `restore()` passe ici à **chaque** démarrage, y compris quand
@@ -211,9 +254,14 @@ async function performRefresh(): Promise<string | null> {
     });
 
     if (data !== undefined) {
-      await adopt(data);
-      return data.tokens.accessToken;
+      if (await adopt(data, current) && current === generation) return data.tokens.accessToken;
+      // Ne jamais annuler la rotation : son successeur ferme la famille même si l'ancien
+      // secret a déjà été consommé. Une nouvelle connexion garde la propriété des clés.
+      await revoke(data.tokens.refreshToken);
+      return null;
     }
+
+    if (current !== generation) return null;
 
     if (response.status === 401 || response.status === 422) {
       // Jeton inconnu, expiré, ou déjà consommé. Dans le dernier cas la famille vient d'être
@@ -254,6 +302,9 @@ const coordinator: RefreshCoordinator = createRefreshCoordinator({
  * le contrat.
  */
 export async function refresh(staleToken: string | null, problem: unknown): Promise<string | null> {
+  if (state.status === 'signedOut') return null;
+  const current = getAccessToken();
+  if (staleToken !== null && current !== null && staleToken !== current) return current;
   const parsed = asProblem(problem);
   if (meansSessionOver(parsed)) {
     // `authenticatedRoute`, pas `refreshEndpoint` : ici c'est le **JWT** qui est jugé
@@ -279,10 +330,10 @@ export async function refresh(staleToken: string | null, problem: unknown): Prom
  *
  * Rend `true` quand la session a été reprise — l'appelant n'a alors plus rien à faire.
  */
-async function resumeStoredSession(): Promise<boolean> {
+async function resumeStoredSession(current: number): Promise<boolean> {
   let stored: StoredSession | null;
   try {
-    stored = await readStoredSession();
+    stored = await serializeLocal(readStoredSession);
   } catch {
     // Un trousseau qui refuse de rendre le jeton d'accès **retombe sur la rotation**, jamais
     // sur une déconnexion : un magasin illisible n'est pas un magasin vide (#142), et cette
@@ -292,6 +343,8 @@ async function resumeStoredSession(): Promise<boolean> {
     // refresh token, et y poser la trace qui a du sens.
     return false;
   }
+
+  if (current !== generation) return true;
 
   if (!isUsable(stored, new Date())) {
     return false;
@@ -316,7 +369,8 @@ async function resumeStoredSession(): Promise<boolean> {
  * que le serveur refuse fait tourner la paire au premier appel, exactement comme avant.
  */
 export async function restore(): Promise<void> {
-  if (await resumeStoredSession()) {
+  const current = generation;
+  if (state.status === 'signedOut' || await resumeStoredSession(current) || current !== generation) {
     return;
   }
 
@@ -333,12 +387,13 @@ export async function restore(): Promise<void> {
   // `adopt` et `forget` ont déjà tranché dans les cas nets. Reste la panne serveur, où on ne
   // sait rien : on montre la connexion sans effacer le trousseau, la prochaine ouverture
   // retentera.
-  if (state.status === 'restoring') {
+  if (current === generation && state.status === 'restoring') {
     publish({ status: 'signedOut' });
   }
 }
 
 export async function signIn(email: string, password: string): Promise<AuthOutcome> {
+  const current = generation;
   try {
     const { data, error } = await publicApi.POST('/api/auth/login', {
       body: { email, password },
@@ -348,8 +403,7 @@ export async function signIn(email: string, password: string): Promise<AuthOutco
       return { ok: false, failure: failureFrom(error) };
     }
 
-    await adopt(data);
-    return { ok: true };
+    return await adoptLogin(data, current);
   } catch {
     return { ok: false, failure: OFFLINE };
   }
@@ -358,6 +412,7 @@ export async function signIn(email: string, password: string): Promise<AuthOutco
 export type { RegisterInput } from '@/features/auth/registrationRequest';
 
 export async function register(input: RegisterInput): Promise<AuthOutcome> {
+  const current = generation;
   try {
     const { data, error } = await publicApi.POST('/api/auth/register', {
       body: registrationRequest(input),
@@ -367,8 +422,7 @@ export async function register(input: RegisterInput): Promise<AuthOutcome> {
       return { ok: false, failure: failureFrom(error) };
     }
 
-    await adopt(data);
-    return { ok: true };
+    return await adoptLogin(data, current);
   } catch {
     return { ok: false, failure: OFFLINE };
   }
@@ -392,18 +446,9 @@ export async function register(input: RegisterInput): Promise<AuthOutcome> {
  * module n'a rien de plus à envoyer — voir `notifications/registration.ts`.
  */
 export async function signOut(): Promise<void> {
-  const refreshToken = await readRefreshToken();
-
-  if (refreshToken !== null) {
-    try {
-      await publicApi.POST('/api/auth/logout', { body: { refreshToken } });
-    } catch {
-      // Le serveur révoquera à l'expiration. On part quand même.
-    }
-  }
-
   // La seule des quatre voulue : elle doit se distinguer des trois autres, sinon le journal
   // dit qu'une session est partie sans jamais dire si c'était voulu.
   noteSessionLost(signedOutReason());
-  await forget();
+  const refreshToken = await forget(true);
+  if (refreshToken !== null) await revoke(refreshToken);
 }
