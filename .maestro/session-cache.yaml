@@ -66,23 +66,27 @@ onFlowComplete:
     env:
       EMAIL: ${MAESTRO_CACHE_B_EMAIL}
       PASSWORD: ${MAESTRO_CACHE_B_PASSWORD}
+# Précondition iOS observée de ce scénario contrôlé : la feuille de mot de passe
+# arrive après le HUD visuel et peut le masquer avant le premier poll Maestro.
+# Attendre la feuille, puis vérifier le HUD accessible et que B attend encore.
 - extendedWaitUntil:
-    visible:
-      id: hud-bag
+    visible: "Plus tard"
     timeout: 45000
-# Avec le login retardé, la feuille iOS arrive après le contrôle de login.yaml.
-- runFlow:
-    when:
-      visible: "Plus tard"
-    commands:
-      - tapOn: "Plus tard"
+- tapOn: "Plus tard"
+- extendedWaitUntil:
+    notVisible: "Plus tard"
+    timeout: 5000
+- assertVisible:
+    id: hud-bag
+- assertVisible: "Boutique, solde indisponible"
+- assertNotVisible: "NIVEAU"
+- assertNotVisible: "Progression indisponible"
 - assertNotVisible:
     id: inventory-item-${MAESTRO_CACHE_A_ITEM_KEY}
 - runScript:
     file: session-cache-network.js
     env:
       NETWORK_MODE: offline
-# La transition post-login est encore en cours pendant la lecture B.
 # Ouvrir le sac depuis l'accueil après l'échec réseau, sur une UI stabilisée.
 - extendedWaitUntil:
     visible: "Progression indisponible"

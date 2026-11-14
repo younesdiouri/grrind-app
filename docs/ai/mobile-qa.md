@@ -81,6 +81,13 @@ Le fichier privé contient `A`/`B` (email, password, id, guildName, expectedItem
 expectedItemNames), `baseUrl` et `toxiproxyControlUrl`, tous deux en loopback. A possède un
 objet distinct et B un sac vide ; les deux emails contiennent `-empty-`.
 
+Précondition iOS de ce scénario contrôlé : après le login B retardé, la feuille système de
+mot de passe apparaît après le HUD visuel et peut le masquer avant sa détection par Maestro.
+Le flow attend donc explicitement « Plus tard » au plus 45 s (connexion retardée incluse),
+la ferme sans enregistrer, exige sa disparition puis vérifie le HUD et l'attente des données B
+avant de couper le réseau. Une feuille absente ou un inventaire déjà reçu fait échouer ce
+scénario ; aucune boucle de clics ne contourne cette précondition.
+
 ```sh
 SESSION_CACHE_QA_CREDENTIALS=/chemin/prive/qa-accounts.json node scripts/session-cache-qa-flow.mjs
 ```
