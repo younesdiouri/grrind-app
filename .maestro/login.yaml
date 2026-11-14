@@ -17,15 +17,24 @@ appId: app.grrind.dev
     when:
       visible: "Ouvrir dans.*"
     commands:
-      - tapOn: "Ouvrir"
+      # La préparation et le flow peuvent avoir chacun ouvert le lien Metro : iOS présente
+      # alors plusieurs confirmations consécutives après une première installation.
+      - repeat:
+          times: 3
+          while:
+            visible: "Ouvrir dans.*"
+          commands:
+            - tapOn: "Ouvrir"
 - extendedWaitUntil:
     visible: "Se connecter"
     timeout: 30000
 - tapOn:
     id: "login-email"
+- eraseText
 - inputText: ${EMAIL}
 - tapOn:
     id: "login-password"
+- eraseText
 - inputText: ${PASSWORD}
 - tapOn: "Se connecter"
 

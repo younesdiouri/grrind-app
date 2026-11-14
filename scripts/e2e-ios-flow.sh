@@ -13,7 +13,7 @@ METRO_SETTINGS_FILE="${DEV_STATE_DIR}/metro-settings"
 METRO_HOST_FILE="${DEV_STATE_DIR}/metro-host"
 FLOW_PATH="${1:-.maestro/ios-smoke.yaml}"
 STARTED_AT="$(date +%s)"
-EXPECTED_SETTINGS="port=${METRO_PORT};api=${E2E_API_URL_VALUE}"
+EXPECTED_SETTINGS="port=${METRO_PORT};api=${E2E_API_URL_VALUE};dotenv=0"
 trap 'node scripts/e2e-ios-clean.mjs >&2 || true' EXIT
 node scripts/e2e-ios-clean.mjs
 

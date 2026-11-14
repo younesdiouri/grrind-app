@@ -23,6 +23,9 @@ Les deux appareils ne partagent ni session ni Keychain. `npm run ios` et `npm ru
 calculent la même empreinte : passer de l’un à l’autre ne régénère pas `ios/`, seul un changement
 natif le fait.
 `npm start` charge le JS de développement sans reconstruire le natif.
+Le Metro E2E utilise `EXPO_NO_DOTENV=1` et exclut les fichiers `.env` de son graphe client :
+SDK57 les fusionne sinon dans `expo/virtual/env`, ce qui peut remplacer l’API QA par celle de
+`.env.local` malgré la variable passée au lancement. Le Metro du téléphone garde sa configuration.
 Les liens du harnais passent `disableFab=1` au dev-client Expo : sa roue d’outils flottante
 interceptait les touchers du HUD. Le menu de développement reste accessible par ses gestes habituels.
 

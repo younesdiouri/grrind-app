@@ -29,7 +29,7 @@ metro_is_ready() {
 }
 
 ensure_metro() {
-  expected_settings="port=${METRO_PORT};api=${E2E_API_URL_VALUE}"
+  expected_settings="port=${METRO_PORT};api=${E2E_API_URL_VALUE};dotenv=0"
 
   if metro_is_ready; then
     if [ ! -f "$METRO_SETTINGS_FILE" ] ||
@@ -49,6 +49,7 @@ ensure_metro() {
   env \
     APP_VARIANT=development \
     EXPO_PUBLIC_E2E=1 \
+    EXPO_NO_DOTENV=1 \
     EXPO_PUBLIC_API_URL="$E2E_API_URL_VALUE" \
     npx expo start --dev-client --lan --port "$METRO_PORT" \
     >"$METRO_LOG_FILE" 2>&1 &

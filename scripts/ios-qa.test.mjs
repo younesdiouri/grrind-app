@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -158,4 +159,25 @@ e2e_run_flow .maestro/session-cache.yaml
 `], { cwd: root, encoding: 'utf8', env: { ...process.env, PATH: `${root}/bin:${process.env.PATH}` } });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(readFileSync(resolve(root, 'artifacts/e2e/dev/native-fingerprint'), 'utf8'), 'built-fingerprint');
+});
+
+test('Metro without dotenv excludes local API overrides from the SDK57 client graph only when requested', () => {
+  const require = createRequire(import.meta.url);
+  const configPath = resolve('metro.config.js');
+  const previous = process.env.EXPO_NO_DOTENV;
+  const excludesLocalEnv = () => {
+    delete require.cache[configPath];
+    const config = require(configPath);
+    return [config.resolver.blockList].flat().some(pattern => pattern?.test(resolve('.env.local')));
+  };
+  try {
+    delete process.env.EXPO_NO_DOTENV;
+    assert.equal(excludesLocalEnv(), false);
+    process.env.EXPO_NO_DOTENV = '1';
+    assert.equal(excludesLocalEnv(), true);
+  } finally {
+    if (previous === undefined) delete process.env.EXPO_NO_DOTENV;
+    else process.env.EXPO_NO_DOTENV = previous;
+    delete require.cache[configPath];
+  }
 });
