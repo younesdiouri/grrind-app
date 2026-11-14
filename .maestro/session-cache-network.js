@@ -1,6 +1,6 @@
 // API standard Toxiproxy, uniquement le proxy de la stack QA locale.
 // https://github.com/Shopify/toxiproxy#http-api
-const endpoint = CACHE_PROXY_CONTROL + '/proxies/grrind367';
+const endpoint = MAESTRO_CACHE_PROXY_CONTROL + '/proxies/grrind367';
 const headers = { 'Content-Type': 'application/json' };
 function checked(response, allowMissing) {
   if (!response.ok && !(allowMissing && response.status === 404)) {
@@ -19,4 +19,4 @@ if (NETWORK_MODE === 'offline') {
     }) }));
   }
 }
-/* global CACHE_PROXY_CONTROL, NETWORK_MODE, http */
+/* global MAESTRO_CACHE_PROXY_CONTROL, NETWORK_MODE, http */

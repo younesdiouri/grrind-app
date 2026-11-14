@@ -142,6 +142,8 @@ Placer les nouveaux diagnostics dans le dossier horodaté du run ; éviter les d
 par ticket à côté de l’historique, qui échappent à sa rétention.
 Le nettoyage ne touche pas `artifacts/e2e/dev/` (empreinte, PID/configuration Metro), les fixtures,
 les autres dossiers de travail, les caches Xcode ou les journaux Maestro d’autres projets.
+Maestro reçoit un dossier de sortie daté propre au flow, jamais cette racine partagée : il
+peut remplacer son dossier de sortie sans retirer l’empreinte du binaire et la configuration Metro.
 Les anciens rapports GRRIND dans `~/.maestro/tests` peuvent être retirés une fois identifiés ;
 aucun nettoyage automatique global de ce dossier partagé.
 

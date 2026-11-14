@@ -111,7 +111,7 @@ test('session cache QA reuses two private accounts without exposing credentials 
   writeFileSync(resolve(root, 'bin/rtk'), `#!${process.execPath}
 require('node:fs').writeFileSync(process.env.QA_CALLS, JSON.stringify({
   args: process.argv.slice(2), offline: process.env.E2E_OFFLINE, api: process.env.E2E_API_URL,
-  a: process.env.CACHE_A_EMAIL, b: process.env.CACHE_B_EMAIL,
+  a: process.env.MAESTRO_CACHE_A_EMAIL, b: process.env.MAESTRO_CACHE_B_EMAIL,
 }));
 `, { mode: 0o755 });
   const file = resolve(root, 'accounts.json');
@@ -134,4 +134,28 @@ require('node:fs').writeFileSync(process.env.QA_CALLS, JSON.stringify({
   fixture.baseUrl = 'https://api.grrind.app';
   writeFileSync(file, JSON.stringify(fixture));
   assert.notEqual(run().status, 0);
+});
+
+test('Maestro report output cannot erase the installed dev build and Metro metadata', (t) => {
+  const root = mkdtempSync(resolve(tmpdir(), 'grrind-maestro-output-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(resolve(root, 'bin')); mkdirSync(resolve(root, 'artifacts/e2e/dev'), { recursive: true });
+  writeFileSync(resolve(root, 'artifacts/e2e/dev/native-fingerprint'), 'built-fingerprint');
+  writeFileSync(resolve(root, 'bin/maestro'), `#!${process.execPath}
+const fs = require('node:fs'); const path = require('node:path');
+const args = process.argv.slice(2);
+const directory = args[args.indexOf('--test-output-dir') + 1];
+if (!path.resolve(directory).startsWith(path.join(process.cwd(), 'artifacts/e2e'))) process.exit(2);
+fs.rmSync(directory, { recursive: true, force: true });
+fs.mkdirSync(directory, { recursive: true });
+`, { mode: 0o755 });
+  const result = spawnSync('/bin/sh', ['-c', `
+. '${resolve('scripts/e2e-ios-common.sh')}'
+E2E_SIMULATOR_UDID=qa
+E2E_EMPTY_EMAIL=''
+E2E_MULTIPLE_EMAIL=''
+e2e_run_flow .maestro/session-cache.yaml
+`], { cwd: root, encoding: 'utf8', env: { ...process.env, PATH: `${root}/bin:${process.env.PATH}` } });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readFileSync(resolve(root, 'artifacts/e2e/dev/native-fingerprint'), 'utf8'), 'built-fingerprint');
 });

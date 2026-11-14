@@ -35,8 +35,8 @@ onFlowComplete:
 - runFlow:
     file: login.yaml
     env:
-      EMAIL: ${CACHE_A_EMAIL}
-      PASSWORD: ${CACHE_A_PASSWORD}
+      EMAIL: ${MAESTRO_CACHE_A_EMAIL}
+      PASSWORD: ${MAESTRO_CACHE_A_PASSWORD}
 - extendedWaitUntil:
     visible: "NIVEAU"
     timeout: 30000
@@ -44,12 +44,12 @@ onFlowComplete:
     id: hud-bag
 - extendedWaitUntil:
     visible:
-      id: inventory-item-${CACHE_A_ITEM_KEY}
+      id: inventory-item-${MAESTRO_CACHE_A_ITEM_KEY}
     timeout: 30000
 - tapOn:
     id: tab-guilde
 - extendedWaitUntil:
-    visible: ${CACHE_A_GUILD}
+    visible: ${MAESTRO_CACHE_A_GUILD}
     timeout: 30000
 
 # La latence concerne l'API entière, pas Metro. Après le login, attendre le HUD
@@ -64,8 +64,8 @@ onFlowComplete:
 - runFlow:
     file: login.yaml
     env:
-      EMAIL: ${CACHE_B_EMAIL}
-      PASSWORD: ${CACHE_B_PASSWORD}
+      EMAIL: ${MAESTRO_CACHE_B_EMAIL}
+      PASSWORD: ${MAESTRO_CACHE_B_PASSWORD}
 - extendedWaitUntil:
     visible:
       id: hud-bag
@@ -75,7 +75,7 @@ onFlowComplete:
 - assertNotVisible:
     id: character-tab-bag
 - assertNotVisible:
-    id: inventory-item-${CACHE_A_ITEM_KEY}
+    id: inventory-item-${MAESTRO_CACHE_A_ITEM_KEY}
 - runScript:
     file: session-cache-network.js
     env:
@@ -83,15 +83,15 @@ onFlowComplete:
 - extendedWaitUntil:
     visible: "Sac indisponible"
     timeout: 30000
-- assertNotVisible: ".*${CACHE_A_ITEM_NAME}.*"
+- assertNotVisible: ".*${MAESTRO_CACHE_A_ITEM_NAME}.*"
 - assertNotVisible: "Ton sac est vide"
 - tapOn:
     id: tab-guilde
 - extendedWaitUntil:
     visible: "La guilde est indisponible"
     timeout: 30000
-- assertNotVisible: ${CACHE_A_GUILD}
-- assertNotVisible: ${CACHE_B_GUILD}
+- assertNotVisible: ${MAESTRO_CACHE_A_GUILD}
+- assertNotVisible: ${MAESTRO_CACHE_B_GUILD}
 - takeScreenshot: cache-b-network-failure
 
 # Rétablissement : les vraies données B remplacent l'erreur, sans données A.
@@ -101,15 +101,15 @@ onFlowComplete:
       NETWORK_MODE: normal
 - tapOn: "Réessayer"
 - extendedWaitUntil:
-    visible: ${CACHE_B_GUILD}
+    visible: ${MAESTRO_CACHE_B_GUILD}
     timeout: 30000
-- assertNotVisible: ${CACHE_A_GUILD}
+- assertNotVisible: ${MAESTRO_CACHE_A_GUILD}
 - tapOn:
     id: hud-bag
 - extendedWaitUntil:
     visible: "Ton sac est vide"
     timeout: 30000
-- assertNotVisible: ".*${CACHE_A_ITEM_NAME}.*"
+- assertNotVisible: ".*${MAESTRO_CACHE_A_ITEM_NAME}.*"
 
 # #407 : sortir puis tuer/relancer le process hors réseau ne reprend pas le JWT
 # du compte quitté. Aucun reset Keychain entre les deux connexions.
@@ -138,8 +138,8 @@ onFlowComplete:
 - runFlow:
     file: login.yaml
     env:
-      EMAIL: ${CACHE_A_EMAIL}
-      PASSWORD: ${CACHE_A_PASSWORD}
+      EMAIL: ${MAESTRO_CACHE_A_EMAIL}
+      PASSWORD: ${MAESTRO_CACHE_A_PASSWORD}
 - extendedWaitUntil:
     visible:
       id: hud-bag
@@ -148,13 +148,13 @@ onFlowComplete:
     id: hud-bag
 - extendedWaitUntil:
     visible:
-      id: inventory-item-${CACHE_A_ITEM_KEY}
+      id: inventory-item-${MAESTRO_CACHE_A_ITEM_KEY}
     timeout: 30000
 - assertNotVisible: "Ton sac est vide"
 - tapOn:
     id: tab-guilde
 - extendedWaitUntil:
-    visible: ${CACHE_A_GUILD}
+    visible: ${MAESTRO_CACHE_A_GUILD}
     timeout: 30000
-- assertNotVisible: ${CACHE_B_GUILD}
+- assertNotVisible: ${MAESTRO_CACHE_B_GUILD}
 - takeScreenshot: cache-return-a

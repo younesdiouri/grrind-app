@@ -118,10 +118,12 @@ e2e_run_flow() {
   flow_path="$1"
   shift
 
-  mkdir -p artifacts/e2e
+  # Maestro peut remplacer son dossier de sortie : jamais la racine qui porte dev/.
+  run_dir="artifacts/e2e/$(date +%Y-%m-%d_%H%M%S)"
+  mkdir -p "$run_dir"
   maestro --device "$E2E_SIMULATOR_UDID" test \
-    --test-output-dir artifacts/e2e \
-    --debug-output artifacts/e2e \
+    --test-output-dir "$run_dir" \
+    --debug-output "$run_dir" \
     --format JUNIT \
     --output artifacts/e2e/report.xml \
     -e EMPTY_EMAIL="$E2E_EMPTY_EMAIL" \
