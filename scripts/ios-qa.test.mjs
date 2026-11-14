@@ -111,7 +111,8 @@ test('session cache QA reuses two private accounts without exposing credentials 
   const calls = resolve(root, 'calls.json');
   writeFileSync(resolve(root, 'bin/rtk'), `#!${process.execPath}
 require('node:fs').writeFileSync(process.env.QA_CALLS, JSON.stringify({
-  args: process.argv.slice(2), offline: process.env.E2E_OFFLINE, api: process.env.E2E_API_URL,
+  args: process.argv.slice(2), offline: process.env.E2E_OFFLINE,
+  existing: process.env.E2E_EXISTING_ACCOUNTS, api: process.env.E2E_API_URL,
   a: process.env.MAESTRO_CACHE_A_EMAIL, b: process.env.MAESTRO_CACHE_B_EMAIL,
 }));
 `, { mode: 0o755 });
@@ -129,7 +130,7 @@ require('node:fs').writeFileSync(process.env.QA_CALLS, JSON.stringify({
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(readFileSync(calls, 'utf8')), {
     args: ['proxy', 'npm', 'run', 'e2e:ios:flow', '--', '.maestro/session-cache.yaml'],
-    offline: '1', api: fixture.baseUrl, a: fixture.A.email, b: fixture.B.email,
+    offline: '0', existing: '1', api: fixture.baseUrl, a: fixture.A.email, b: fixture.B.email,
   });
   assert.doesNotMatch(result.stdout + result.stderr, /private-password|qa-empty-/);
   fixture.baseUrl = 'https://api.grrind.app';

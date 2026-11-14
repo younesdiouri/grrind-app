@@ -11,7 +11,7 @@ appId: app.grrind.dev
 # l'alerte arrive parfois après le contrôle qui suit `launchApp` : elle masque alors le formulaire.
 # On attend donc l'un ou l'autre, puis on la referme si c'est elle.
 - extendedWaitUntil:
-    visible: "Ouvrir dans.*|Se connecter"
+    visible: "Ouvrir dans.*|Plus tard|Se connecter"
     timeout: 30000
 - runFlow:
     when:
@@ -25,6 +25,11 @@ appId: app.grrind.dev
             visible: "Ouvrir dans.*"
           commands:
             - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Plus tard"
+    commands:
+      - tapOn: "Plus tard"
 - extendedWaitUntil:
     visible: "Se connecter"
     timeout: 30000

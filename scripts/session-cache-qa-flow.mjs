@@ -12,7 +12,7 @@ if (![baseUrl, toxiproxyControlUrl].every(value => new URL(value).hostname === '
 }
 const result = spawnSync('rtk', ['proxy', 'npm', 'run', 'e2e:ios:flow', '--', '.maestro/session-cache.yaml'], {
   stdio: 'inherit', env: {
-    ...process.env, E2E_OFFLINE: '1', E2E_API_URL: baseUrl,
+    ...process.env, E2E_OFFLINE: '0', E2E_EXISTING_ACCOUNTS: '1', E2E_API_URL: baseUrl,
     MAESTRO_CACHE_PROXY_CONTROL: toxiproxyControlUrl,
     MAESTRO_CACHE_A_EMAIL: A.email, MAESTRO_CACHE_A_PASSWORD: A.password, MAESTRO_CACHE_A_GUILD: A.guildName,
     MAESTRO_CACHE_A_ITEM_KEY: A.expectedItemKeys[0], MAESTRO_CACHE_A_ITEM_NAME: A.expectedItemNames[0],

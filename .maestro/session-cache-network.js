@@ -15,7 +15,7 @@ if (NETWORK_MODE === 'offline') {
   if (NETWORK_MODE === 'slow') {
     checked(http.post(endpoint + '/toxics', { headers: headers, body: JSON.stringify({
       name: 'cache_408_latency', type: 'latency', stream: 'downstream', toxicity: 1,
-      attributes: { latency: 8000, jitter: 0 },
+      attributes: { latency: 30000, jitter: 0 },
     }) }));
   }
 }

@@ -75,7 +75,9 @@ son état par Fast Refresh. Terminer les changements avant de lancer la vérific
 Pour l’isolation entre comptes, `session-cache.yaml` joue un seul parcours A → B sous latence
 puis panne → retour A, avec arrêt/relance signé dehors pour vérifier le Keychain. Il utilise
 exactement les deux comptes préparés par la QA back, sans créer de compte ni réinitialiser la
-base. Le fichier privé contient `A`/`B` (email, password, id, guildName, expectedItemKeys,
+base. `E2E_EXISTING_ACCOUNTS=1` garde le contrôle de disponibilité du back et le reset initial du
+seul Simulator dédié, puis ne joue aucune inscription ; aucun reset n'intervient entre A et B.
+Le fichier privé contient `A`/`B` (email, password, id, guildName, expectedItemKeys,
 expectedItemNames), `baseUrl` et `toxiproxyControlUrl`, tous deux en loopback. A possède un
 objet distinct et B un sac vide ; les deux emails contiennent `-empty-`.
 

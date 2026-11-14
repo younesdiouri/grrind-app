@@ -69,17 +69,27 @@ onFlowComplete:
 - extendedWaitUntil:
     visible:
       id: hud-bag
-    timeout: 30000
-- tapOn:
-    id: hud-bag
-- assertNotVisible:
-    id: character-tab-bag
+    timeout: 45000
+# Avec le login retardé, la feuille iOS arrive après le contrôle de login.yaml.
+- runFlow:
+    when:
+      visible: "Plus tard"
+    commands:
+      - tapOn: "Plus tard"
 - assertNotVisible:
     id: inventory-item-${MAESTRO_CACHE_A_ITEM_KEY}
 - runScript:
     file: session-cache-network.js
     env:
       NETWORK_MODE: offline
+# La transition post-login est encore en cours pendant la lecture B.
+# Ouvrir le sac depuis l'accueil après l'échec réseau, sur une UI stabilisée.
+- extendedWaitUntil:
+    visible: "Progression indisponible"
+    timeout: 30000
+- assertVisible: "Boutique, solde indisponible"
+- tapOn:
+    id: hud-bag
 - extendedWaitUntil:
     visible: "Sac indisponible"
     timeout: 30000
