@@ -20,23 +20,14 @@ export function PlayerIdentity({ player, equipment = {}, onLeaguePress, onGuildP
   const label = `Portrait de ${player.displayName} · ${AVATAR_FIELDS.map(field =>
     (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}${avatar.headband ? ' · Bandeau éclair' : avatar.moumoutivation ? ' · La Moumoutivation' : ''}${avatar.cyclopes ? ' · Les Cyclopes' : ''} · ${league}`;
   const tint = leagueArt.presets[player.league.tier].metal;
-  return <SystemFrame contentStyle={[styles.identity, !!radar && styles.withRadar]}>
-    <View style={styles.overview}>
-      <View style={styles.rank}>
-        <View style={styles.stage}>
-          <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-            <LeagueBackdrop tier={player.league.tier} />{motion}
-          </View>
-          <View style={styles.portrait}>
-            <AvatarPreview avatar={avatar} framing="portrait" fallbackName={player.displayName} label={label} />
-          </View>
-        </View>
-        {onLeaguePress && <Pressable onPress={onLeaguePress} accessibilityRole="button" accessibilityLabel={`${league} · Ma semaine`}
-          style={({ pressed }) => [styles.leagueButton, pressed && styles.pressed]}>
-          <Text style={[styles.league, { color: tint }]}>Ma semaine ›</Text>
-        </Pressable>}
+  return <SystemFrame contentStyle={styles.identity}>
+    <View style={styles.stage}>
+      <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <LeagueBackdrop tier={player.league.tier} />{motion}
       </View>
-      {radar && <View style={styles.radar}>{radar}</View>}
+      <View style={styles.portrait}>
+        <AvatarPreview avatar={avatar} framing="portrait" fallbackName={player.displayName} label={label} />
+      </View>
     </View>
     <Text style={styles.name} accessibilityRole="header">{player.displayName}</Text>
     {player.title !== null && <View style={styles.title}><TitleBadge name={player.title.name} /></View>}
@@ -46,16 +37,18 @@ export function PlayerIdentity({ player, equipment = {}, onLeaguePress, onGuildP
     </Pressable> : player.guild === null ? <Text style={styles.level}>Sans guilde</Text> : null}
     <View style={styles.status}>
       <Text style={styles.level}>Niveau {player.level}</Text>
+      {onLeaguePress && <Pressable onPress={onLeaguePress} accessibilityRole="button" accessibilityLabel={`${league} · Ma semaine`}
+        style={({ pressed }) => [styles.leagueButton, pressed && styles.pressed]}>
+        <Text style={[styles.league, { color: tint }]}>Ma semaine ›</Text>
+      </Pressable>}
     </View>
+    {radar && <View style={styles.radar}>{radar}</View>}
   </SystemFrame>;
 }
 
 const styles = StyleSheet.create({
   identity: { minHeight: leagueArt.cardMinHeight, alignItems: 'center', paddingHorizontal: space.sm, paddingBottom: space.md, gap: space.xs },
-  withRadar: { minHeight: 0, paddingTop: space.md },
-  overview: { flexDirection: 'row', alignItems: 'center', width: '100%', gap: space.sm },
-  rank: { flex: 1, minWidth: 0, alignItems: 'center' },
-  radar: { flex: 1, minWidth: 0 },
+  radar: { width: '100%', paddingTop: space.md },
   stage: { width: '100%', maxWidth: leagueArt.stageWidth, aspectRatio: leagueArt.stageWidth / leagueArt.stageHeight },
   portrait: { position: 'absolute', top: leagueArt.portraitTop, left: leagueArt.portraitLeft,
     width: leagueArt.portraitWidth, aspectRatio: 1, borderRadius: radius.sm, overflow: 'hidden', backgroundColor: color.background },

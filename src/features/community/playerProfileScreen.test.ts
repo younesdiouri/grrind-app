@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { components } from '@/api/schema';
 import type { Failure } from '@/features/auth/problems';
 import { DEFAULT_AVATAR } from '@/features/combat/serverAvatar.ts';
+import { PerformanceRadar } from '@/features/progression/PerformanceRadar.tsx';
 
 let data: unknown;
 let pending = false;
@@ -13,7 +14,7 @@ mock.module('expo-router', { namedExports: {
   Stack: { Screen: () => null }, useLocalSearchParams: () => ({ id: 'target' }), useIsFocused: () => true,
   router: { navigate() {}, push() {} },
 } });
-// Le vrai écran et ses composants ; seules leurs entrées de lecture et actions externes sont simulées.
+// Le vrai écran et son radar statique ; lectures, actions et animation native sont simulées.
 mock.module(new URL('./usePlayer.ts', import.meta.url), { namedExports: { usePlayer: () => ({
   data, isPending: pending, isError: error !== undefined, error, refetch() {},
 }) } });
@@ -23,6 +24,7 @@ mock.module(new URL('../auth/useAuth.ts', import.meta.url), { namedExports: {
 mock.module(new URL('../league/useLeague.ts', import.meta.url), { namedExports: { useLeague: () => ({}) } });
 mock.module(new URL('../league/LeagueSheet.tsx', import.meta.url), { namedExports: { LeagueSheet: () => null } });
 mock.module(new URL('../combat/fight.ts', import.meta.url), { namedExports: { challenge() {} } });
+mock.module(new URL('../progression/PlayerHomeView.tsx', import.meta.url), { namedExports: { LivePerformanceRadar: PerformanceRadar } });
 const { default: JoueurScreen } = await import('../../app/(app)/joueur/[id].tsx');
 
 const totals = { xp: 0, sessions: 0, attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 } };

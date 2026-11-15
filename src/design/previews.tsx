@@ -353,7 +353,7 @@ export const PREVIEWS: Preview[] = [
         <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
           league: LEAGUE_FIXTURE.league, guild: { id: 'guild', name: 'Les Lève-Tôt' } }}
           equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null }, WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
-          onGuildPress={() => {}} radar={<PerformanceRadar week={WEEK_FIXTURE} compact />}
+          onGuildPress={() => {}} radar={<PerformanceRadar week={WEEK_FIXTURE} showHeading={false} />}
           action={<Button label="Défier" onPress={() => {}} />} />
       </Specimen>
       <Specimen label="Petit écran 320 px · noms longs · Ma semaine · référence vide">
@@ -364,14 +364,14 @@ export const PREVIEWS: Preview[] = [
             avatar: { ...DEFAULT_AVATAR, body: 'female', hairStyle: 'long' }, league: { ...LEAGUE_FIXTURE.league, tier: 'DIAMOND' },
             guild: { id: 'long-guild', name: 'Les sportifs au-delà des montagnes' } }} equipment={{}}
             onGuildPress={() => {}} onLeaguePress={() => {}}
-            radar={<PerformanceRadar week={{ ...WEEK_FIXTURE, previous: null }} compact />} />
+            radar={<PerformanceRadar week={{ ...WEEK_FIXTURE, previous: null }} showHeading={false} />} />
         </View>
       </Specimen>
       <Specimen label="Sans guilde · aucune séance ni référence">
         <PlayerProfile player={{ displayName: 'Sam', title: null, level: 1, avatar: DEFAULT_AVATAR,
           league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, guild: null }} equipment={{}}
           radar={<PerformanceRadar week={{ current: { xp: 0, sessions: 0,
-            attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 } }, previous: null }} compact />} />
+            attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 } }, previous: null }} showHeading={false} />} />
       </Specimen>
     </>,
   },

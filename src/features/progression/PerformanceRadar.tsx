@@ -15,9 +15,9 @@ export const pointsString = (points: RadarPoint[]) => points.map(({ x, y }) => `
 export const radarPath = (points: RadarPoint[]) => `${points.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'} ${x} ${y}`).join(' ')} Z`;
 
 /** Un repère fixe : le bord représente 100 %, même lorsque les gains le dépassent. */
-export function PerformanceRadar({ week, renderShape, renderReference, renderIcon, compact = false }: {
+export function PerformanceRadar({ week, renderShape, renderReference, renderIcon, showHeading = true }: {
   week: Pick<WeekProgress, 'current' | 'previous'>;
-  compact?: boolean;
+  showHeading?: boolean;
   renderShape?: (points: RadarPoint[]) => ReactNode;
   renderReference?: (points: RadarPoint[]) => ReactNode;
   renderIcon?: (attribute: Attribute) => ReactNode;
@@ -36,12 +36,11 @@ export function PerformanceRadar({ week, renderShape, renderReference, renderIco
 
   return (
     <View style={styles.radar} accessible accessibilityLabel={`Radar de performance. ${WEEK_ATTRIBUTES.map((attribute, index) => `${attributeLabel[attribute]} ${labels[index]}`).join(', ')}. ${hasReference ? '100 pour cent correspond à la semaine dernière.' : 'Référence indisponible.'}`}>
-      <View style={styles.heading}>
-        <Text style={styles.title}>{compact ? 'PERFORMANCE' : 'RADAR DE PERFORMANCE'}</Text>
+      {showHeading && <View style={styles.heading}>
+        <Text style={styles.title}>RADAR DE PERFORMANCE</Text>
         <View style={styles.signal} />
-      </View>
-      <Svg width="100%" viewBox={`${compact ? (chart.width - chart.radarCompactWidth) / 2 : 0} 0 ${compact ? chart.radarCompactWidth : chart.width} ${chart.radarHeight}`}
-        style={[styles.svg, compact && styles.compactSvg]}>
+      </View>}
+      <Svg width="100%" viewBox={`0 0 ${chart.width} ${chart.radarHeight}`} style={styles.svg}>
         {[0.25, 0.5, 0.75, 1].map(step => <Polygon key={step} points={pointsString(radarPoints([step, step, step, step]))}
           stroke={color.border} strokeWidth={chart.stroke} fill="none" />)}
         {axes.map((point, index) => <Line key={index} x1={chart.centerX} y1={chart.centerY} x2={point.x} y2={point.y} stroke={color.border} />)}
@@ -54,7 +53,7 @@ export function PerformanceRadar({ week, renderShape, renderReference, renderIco
           {renderIcon ? renderIcon(WEEK_ATTRIBUTES[index]) : <RadarIconGlyph attribute={WEEK_ATTRIBUTES[index]} />}
         </G>)}
       </Svg>
-      {compact && !hasReference && <Text style={styles.note}>Référence indisponible</Text>}
+      {!showHeading && !hasReference && <Text style={styles.note}>Référence indisponible</Text>}
     </View>
   );
 }
@@ -79,9 +78,8 @@ export function RadarIconGlyph({ attribute, ecg }: { attribute: Attribute; ecg?:
 const styles = StyleSheet.create({
   radar: { gap: space.xs },
   heading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { ...type.label, color: color.text, fontFamily: typography.display.semibold, flexShrink: 1 },
+  title: { ...type.label, color: color.text, fontFamily: typography.display.semibold },
   signal: { width: space.xs, height: space.xs, borderRadius: space.xs, backgroundColor: color.accent },
   svg: { aspectRatio: chart.width / chart.radarHeight },
-  compactSvg: { aspectRatio: chart.radarCompactWidth / chart.radarHeight },
   note: { ...type.label, color: color.textMuted, letterSpacing: 0, textAlign: 'center' },
 });
