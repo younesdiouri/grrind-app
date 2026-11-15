@@ -3,11 +3,13 @@ import { describe, it } from 'node:test';
 
 import type { Failure, ProblemDetails } from '@/features/auth/problems';
 import { guildScreenStateFrom, type Guild, type GuildDetail } from './guildScreenState.ts';
+import { DEFAULT_GUILD_EMBLEM } from './guildEmblem.ts';
 
 function guild(overrides: Partial<Guild> = {}): Guild {
   return {
     id: '00000000-0000-0000-0000-000000000001',
     name: 'Les Increvables',
+    emblem: DEFAULT_GUILD_EMBLEM,
     createdAt: '2026-01-01T00:00:00Z',
     memberCount: 1,
     capacity: 30,

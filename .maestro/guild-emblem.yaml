@@ -1,0 +1,119 @@
+appId: app.grrind.dev
+tags:
+  - ios
+  - guild
+---
+# Un compte QA jetable : sauvegarde réelle puis relecture après arrêt du processus.
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+    commands:
+      - tapOn: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+- runFlow:
+    when:
+      visible: "Ouvrir dans.*"
+    commands:
+      - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+      - extendedWaitUntil:
+          visible: "Close"
+          timeout: 5000
+      - tapOn: "Close"
+- extendedWaitUntil:
+    visible: "Se connecter|.*Toucher pour .*|NIVEAU"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Se connecter"
+    commands:
+      - runFlow:
+          file: login.yaml
+          env:
+            EMAIL: ${EMPTY_EMAIL}
+- repeat:
+    times: 6
+    while:
+      visible: ".*Toucher pour .*"
+    commands:
+      - tapOn: ".*Toucher pour .*"
+- extendedWaitUntil:
+    visible:
+      id: "tab-guilde"
+    timeout: 30000
+- tapOn:
+    id: "tab-guilde"
+- tapOn: "Fonder une guilde"
+- tapOn:
+    id: "guild-name"
+- inputText: "QA Embleme Guilde"
+- tapOn: "Fonder"
+- runFlow:
+    when:
+      visible: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+    commands:
+      - tapOn: "Refuser|Ne pas autoriser|Don’t Allow|Don't Allow"
+- extendedWaitUntil:
+    visible: "Emblème · Musculation · Cyan sur Nuit"
+    timeout: 30000
+- tapOn:
+    id: "guild-tab-settings"
+- tapOn: "Gérer la guilde"
+- tapOn:
+    id: "guild-emblem-YOGA"
+- scrollUntilVisible:
+    element:
+      text: "Fond · Cuivre"
+    direction: DOWN
+- tapOn: "Fond · Cuivre"
+- scrollUntilVisible:
+    element:
+      text: "Enregistrer"
+    direction: DOWN
+- tapOn: "Enregistrer"
+- extendedWaitUntil:
+    visible: "Emblème · Yoga · Nuit sur Cuivre"
+    timeout: 15000
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible:
+      id: "tab-guilde"
+    timeout: 30000
+- tapOn:
+    id: "tab-guilde"
+- extendedWaitUntil:
+    visible: "Emblème · Yoga · Nuit sur Cuivre|.*Toucher pour .*"
+    timeout: 30000
+# La synchronisation au redémarrage peut présenter un bilan avant de rendre la guilde.
+- repeat:
+    times: 6
+    while:
+      visible: ".*Toucher pour .*"
+    commands:
+      - tapOn: ".*Toucher pour .*"
+- extendedWaitUntil:
+    visible: "Emblème · Yoga · Nuit sur Cuivre"
+    timeout: 30000
+- tapOn:
+    id: "guild-tab-settings"
+- tapOn: "Quitter la guilde"
+- tapOn: "Quitter"
+- extendedWaitUntil:
+    visible: "Fonder une guilde"
+    timeout: 15000
+- tapOn:
+    id: "tab-reglages"
+- scrollUntilVisible:
+    element:
+      text: "Se déconnecter"
+    direction: DOWN
+- tapOn: "Se déconnecter"
+- extendedWaitUntil:
+    visible: "Se connecter"
+    timeout: 15000

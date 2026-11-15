@@ -17,6 +17,10 @@ import { DisciplineChip } from '@/components/DisciplineChip';
 import { Field } from '@/components/Field';
 import { GuildMemberRow } from '@/components/GuildMemberRow';
 import { GuildMembers, GuildTabs } from '@/components/GuildMenu';
+import { GuildEmblem } from '@/components/GuildEmblem';
+import { GuildEmblemPicker } from '@/components/GuildEmblemPicker';
+import { GuildIdentity } from '@/components/GuildIdentity';
+import { DEFAULT_GUILD_EMBLEM, emblemSymbols, type Emblem } from '@/features/community/guildEmblem';
 import { GuildRisalatSummary } from '@/components/GuildRisalatSummary';
 import { GuildWeeklyBoard } from '@/components/GuildWeeklyBoard';
 import { HpBar } from '@/components/HpBar';
@@ -351,7 +355,8 @@ export const PREVIEWS: Preview[] = [
     element: <>
       <Specimen label="Profil de coéquipier · guilde ouvrable">
         <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
-          league: LEAGUE_FIXTURE.league, guild: { id: 'guild', name: 'Les Lève-Tôt' } }}
+          league: LEAGUE_FIXTURE.league, guild: { id: 'guild', name: 'Les Lève-Tôt',
+            emblem: { symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' } } }}
           equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null }, WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
           onGuildPress={() => {}} radar={<PerformanceRadar week={WEEK_FIXTURE} showHeading={false} />}
           action={<Button label="Défier" onPress={() => {}} />} />
@@ -362,7 +367,8 @@ export const PREVIEWS: Preview[] = [
             title: { id: 'long', name: 'Celle qui ne renonce jamais, même au sommet', hint: '', unlocked: true,
               unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' } },
             avatar: { ...DEFAULT_AVATAR, body: 'female', hairStyle: 'long' }, league: { ...LEAGUE_FIXTURE.league, tier: 'DIAMOND' },
-            guild: { id: 'long-guild', name: 'Les sportifs au-delà des montagnes' } }} equipment={{}}
+            guild: { id: 'long-guild', name: 'Les sportifs au-delà des montagnes',
+              emblem: { symbol: 'YOGA', backgroundColor: 'AMETHYST', symbolColor: 'AMETHYST' } } }} equipment={{}}
             onGuildPress={() => {}} onLeaguePress={() => {}}
             radar={<PerformanceRadar week={{ ...WEEK_FIXTURE, previous: null }} showHeading={false} />} />
         </View>
@@ -399,6 +405,35 @@ export const PREVIEWS: Preview[] = [
         league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, isParticipating: false, score: 0, rank: null, participantCount: 0,
         projectedMovement: 'MAINTAINED', lastResult: null }} now={Date.parse(LEAGUE_FIXTURE.weekStartsAt)} /></Specimen>
       <Specimen label="Échéance passée, attendre le worker"><LeagueWeek state={LEAGUE_FIXTURE} now={Date.parse(LEAGUE_FIXTURE.weekEndsAt)} /></Specimen>
+    </>,
+  },
+  {
+    slug: 'embleme-guilde', name: 'Emblème de guilde', group: 'Composants',
+    element: <>
+      <Specimen label="En-tête · 320 pt · ancien emblème absent et nom long">
+        <View style={{ width: 288 }}><GuildIdentity name="Les Increvables de la Fontaine du Levant" memberCount={30} /></View>
+      </Specimen>
+      <Specimen label="Symboles · dimensions en jeu">
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.md }}>
+          {(Object.keys(emblemSymbols) as Emblem['symbol'][]).map(symbol => <GuildEmblem key={symbol} emblem={{ ...DEFAULT_GUILD_EMBLEM, symbol }} />)}
+          <GuildEmblem emblem={{ symbol: 'YOGA', backgroundColor: 'COPPER', symbolColor: 'NIGHT' }} />
+        </View>
+      </Specimen>
+      <Specimen label="Faible contraste et couleurs identiques · 44 pt">
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.md }}>
+          <GuildEmblem emblem={{ symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' }} />
+          <GuildEmblem emblem={{ symbol: 'DUMBBELL', backgroundColor: 'MINT', symbolColor: 'MINT' }} />
+          <GuildEmblem emblem={{ symbol: 'YOGA', backgroundColor: 'NIGHT', symbolColor: 'NIGHT' }} />
+          <GuildEmblem emblem={{ symbol: 'BOLT', backgroundColor: 'CHALK', symbolColor: 'CHALK' }} />
+        </View>
+      </Specimen>
+      <Specimen label="Édition meneur · largeur iPhone compact">
+        <View style={{ width: 288 }}><GuildEmblemPicker emblem={{ symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' }} name="Les Increvables" memberCount={12} onChange={() => {}} /></View>
+      </Specimen>
+      <Specimen label="Sauvegarde en cours · choix désactivés">
+        <GuildEmblemPicker emblem={{ symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'NIGHT' }} name="Les Increvables" memberCount={12} disabled onChange={() => {}} />
+        <Button label="Enregistrer" onPress={() => {}} busy />
+      </Specimen>
     </>,
   },
   {

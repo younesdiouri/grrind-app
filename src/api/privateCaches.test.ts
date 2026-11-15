@@ -6,6 +6,7 @@ import { afterEach, beforeEach, mock, test } from 'node:test';
 import { QueryObserver } from '@tanstack/react-query';
 import type { QueryObserverOptions } from '@tanstack/react-query';
 import type { Failure } from '@/features/auth/problems';
+import type { components } from '@/api/schema';
 import type { Inventory } from '@/features/inventory/inventory';
 import type { SyncSummary } from '@/features/reward/timeline';
 
@@ -40,6 +41,11 @@ let refreshHold: ReturnType<typeof Promise.withResolvers<void>> | null = null;
 let refreshStarted = Promise.withResolvers<void>();
 let refreshRequest: Request | null = null;
 let started = Promise.withResolvers<void>();
+let guildProblem: 'forbidden' | 'guild-not-found' | null = null;
+const savedGuild: components['schemas']['Guild'] = {
+  id: 'guild-A', name: 'Nom normalisé serveur', memberCount: 2, capacity: 30, role: 'FOUNDER', createdAt: '2026-11-15T10:00:00Z',
+  emblem: { symbol: 'YOGA', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' },
+};
 const requests: Request[] = [];
 mock.method(globalThis, 'fetch', async (input: Request) => {
   const path = new URL(input.url).pathname;
@@ -58,6 +64,12 @@ mock.method(globalThis, 'fetch', async (input: Request) => {
   started.resolve();
   await waiting?.promise;
   if (offline) throw new TypeError('offline');
+  if (input.method === 'PATCH' && path === '/api/guilds/guild-A') {
+    if (guildProblem) return Response.json({ type: `https://grrind.app/problems/${guildProblem}`, title: 'Refus', detail: 'Refus',
+      status: guildProblem === 'forbidden' ? 403 : 404 }, { status: guildProblem === 'forbidden' ? 403 : 404 });
+    return Response.json(savedGuild);
+  }
+  if (input.method === 'GET' && path === '/api/guilds/guild-A') return Response.json({ ...savedGuild, members: [] });
   if (status !== 200 && owner !== 'A-new') return Response.json({ type: 'https://grrind.app/problems/access-token-expired', status }, { status });
   const data = { owner, coins: owner === 'A' ? 10 : 20 };
   return Response.json(path === '/api/guilds/mine' ? { guild: data } : data);
@@ -66,15 +78,15 @@ mock.method(globalThis, 'fetch', async (input: Request) => {
 const { signIn, signOut, getSessionOwner, getState } = await import('../features/auth/session.ts');
 const { queryClient: client } = await import('./queryClient.ts');
 const { inventoryOptions } = await import('../features/inventory/useInventory.ts');
-const { myGuildOptions } = await import('../features/community/useMyGuild.ts');
+const { myGuildOptions, myGuildQueryKey } = await import('../features/community/useMyGuild.ts');
 const { risalatOptions } = await import('../features/community/useRisalat.ts');
 const { guildWeeklyOptions } = await import('../features/community/useGuildWeekly.ts');
-const { playerOptions } = await import('../features/community/usePlayer.ts');
+const { playerOptions, playerQueryKey } = await import('../features/community/usePlayer.ts');
 const { shopOptions } = await import('../features/shop/useShop.ts');
 const { craftingOptions, craftEquipment } = await import('../features/crafting/api.ts');
 const { equipItem } = await import('../features/inventory/equipmentActions.ts');
 const { inventoryQueryKey, mutateInventory, updateInventoryForOwner, refreshInventoryAfterReward } = await import('../features/inventory/inventoryCache.ts');
-const { syncGuild } = await import('../features/community/guildCache.ts');
+const { syncGuild, saveGuild } = await import('../features/community/guildCache.ts');
 const { purchaseItem, openChest } = await import('../features/shop/actions.ts');
 const { salesFor } = await import('../features/inventory/sales.ts');
 
@@ -84,6 +96,7 @@ beforeEach(async () => {
   offline = false; status = 200; hold = null; started = Promise.withResolvers<void>(); requests.length = 0;
   storageHold = null; storageStarted = Promise.withResolvers<void>(); items.clear();
   refreshHold = null; refreshStarted = Promise.withResolvers<void>(); refreshRequest = null;
+  guildProblem = null;
   assert.deepEqual(await signIn('A', 'password'), { ok: true });
 });
 afterEach(async () => { hold?.resolve(); storageHold?.resolve(); refreshHold?.resolve(); await signOut(); client.clear(); });
@@ -177,6 +190,64 @@ test('le rafraîchissement manuel tardif de guilde ne recrée pas A et ne retire
   assert.deepEqual(client.getQueryData(b.queryKey), fresh);
   assert.equal(client.getQueryData(myGuildOptions('A').queryKey), undefined);
   assert.equal(gone, false);
+});
+
+test('la sauvegarde transmet Menthe/Rose sans ajustement, conserve les membres et relit la même paire serveur', async () => {
+  const members: components['schemas']['GuildMember'][] = [];
+  client.setQueryData(myGuildQueryKey('A'), { ...savedGuild, name: 'Ancien nom', members });
+  client.setQueryData(playerQueryKey('A', 'target'), { marker: 'Profil de la cible à relire' });
+  client.setQueryData(playerQueryKey('B', 'target'), { marker: 'Autre connexion' });
+  const changes = { name: 'Saisie', emblem: savedGuild.emblem };
+  const outcome = await saveGuild('guild-A', changes, client, getSessionOwner(), () => assert.fail('Guilde présente'));
+  assert.equal(outcome?.ok, true);
+  assert.deepEqual(await requests[0].json(), { name: 'Saisie', emblem: { symbol: 'YOGA', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' } });
+  assert.deepEqual(client.getQueryData(myGuildOptions('A').queryKey), { ...savedGuild, members });
+  assert.equal(client.getQueryState(playerQueryKey('A', 'target'))?.isInvalidated, true);
+  assert.deepEqual(client.getQueryData(playerQueryKey('A', 'target')), { marker: 'Profil de la cible à relire' });
+  assert.equal(client.getQueryState(playerQueryKey('B', 'target'))?.isInvalidated, false);
+  client.removeQueries({ queryKey: myGuildQueryKey('A') });
+  assert.equal(await syncGuild('guild-A', client, getSessionOwner(), () => assert.fail('Guilde présente')), null);
+  assert.deepEqual(client.getQueryData<components['schemas']['GuildDetail']>(myGuildQueryKey('A'))?.emblem,
+    { symbol: 'YOGA', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' });
+});
+
+test('une coupure ne change pas le cache et le retry renvoie les mêmes choix', async () => {
+  const previous = { ...savedGuild, name: 'Avant', members: [] };
+  client.setQueryData(myGuildOptions('A').queryKey, previous);
+  const changes = { emblem: savedGuild.emblem };
+  offline = true;
+  assert.deepEqual(await saveGuild('guild-A', changes, client, getSessionOwner(), () => {}), { ok: false, failure: { kind: 'offline' } });
+  assert.deepEqual(client.getQueryData(myGuildOptions('A').queryKey), previous);
+  offline = false;
+  assert.equal((await saveGuild('guild-A', changes, client, getSessionOwner(), () => {}))?.ok, true);
+  assert.deepEqual(await requests[0].json(), await requests[1].json());
+});
+
+test('la perte de gestion invalide le rôle en cache ; la perte de guilde ferme le périmètre', async () => {
+  client.setQueryData(myGuildQueryKey('A'), { ...savedGuild, members: [] });
+  guildProblem = 'forbidden';
+  assert.equal((await saveGuild('guild-A', { emblem: savedGuild.emblem }, client, getSessionOwner(), () => assert.fail()))?.ok, false);
+  assert.equal(client.getQueryState(myGuildOptions('A').queryKey)?.isInvalidated, true);
+  guildProblem = 'guild-not-found';
+  let gone = false;
+  assert.equal(await saveGuild('guild-A', { emblem: savedGuild.emblem }, client, getSessionOwner(), () => { gone = true; }), null);
+  assert.equal(gone, true);
+});
+
+test('une sauvegarde tardive ne recrée pas la guilde de l’ancienne connexion', async () => {
+  hold = Promise.withResolvers<void>(); const waiting = hold;
+  const owner = getSessionOwner();
+  const pending = saveGuild('guild-A', { emblem: savedGuild.emblem }, client, owner, () => assert.fail());
+  await started.promise;
+  await signOut(); await signIn('B', 'password'); hold = null;
+  client.setQueryData(myGuildQueryKey('B'), { ...savedGuild, id: 'guild-B', members: [] });
+  waiting.resolve();
+  assert.equal(await pending, null);
+  assert.equal(client.getQueryData(myGuildOptions('A').queryKey), undefined);
+  assert.equal(client.getQueryData<components['schemas']['GuildDetail']>(myGuildOptions('B').queryKey)?.id, 'guild-B');
+  const count = requests.length;
+  assert.equal(await saveGuild('guild-A', { emblem: savedGuild.emblem }, client, owner, () => assert.fail()), null);
+  assert.equal(requests.length, count);
 });
 
 test('un 401 tardif de mutation A ne rejoue jamais le geste avec le JWT de B', async () => {
