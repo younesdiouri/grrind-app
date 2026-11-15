@@ -1,5 +1,5 @@
 import { api } from '@/api/client';
-import type { components } from '@/api/schema';
+import type { components, paths } from '@/api/schema';
 import { failureFrom, OFFLINE, type Failure } from '@/features/auth/problems';
 import type { GuildDetail } from '@/features/community/useMyGuild';
 
@@ -122,19 +122,18 @@ export async function excludeMember(guildId: string, playerId: string): Promise<
   }
 }
 
-export type RenameGuildOutcome = { ok: true; guild: Guild } | { ok: false; failure: Failure };
+export type GuildChanges = paths['/api/guilds/{id}']['patch']['requestBody']['content']['application/json'];
 
 /**
  * `PATCH /api/guilds/{id}` — fondateur seul, rend une `Guild`, **pas** un `GuildDetail` : ce
- * module ne fait que porter la réponse telle quelle, c'est à l'écran de la fusionner dans le
- * détail déjà en cache plutôt que de l'y écraser (voir le commentaire de `guilde.tsx` — écraser
- * effacerait `members`).
+ * module porte la réponse ; `saveGuild` la fusionne dans le détail déjà en cache pour garder
+ * les membres et protéger la connexion qui a lancé la sauvegarde.
  */
-export async function renameGuild(guildId: string, name: string): Promise<RenameGuildOutcome> {
+export async function updateGuild(guildId: string, body: GuildChanges): Promise<GuildActionOutcome> {
   try {
     const { data, error } = await api.PATCH('/api/guilds/{id}', {
       params: { path: { id: guildId } },
-      body: { name },
+      body,
     });
 
     if (data === undefined) {

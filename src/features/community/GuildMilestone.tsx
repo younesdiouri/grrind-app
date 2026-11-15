@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { color, radius, space, type } from '@/design/tokens';
+import { GuildEmblem } from '@/components/GuildEmblem';
 import type { Guild } from '@/features/community/guildActions';
 
 /**
@@ -19,6 +20,7 @@ import type { Guild } from '@/features/community/guildActions';
 export function GuildMilestone({ guild }: { guild: Guild }) {
   return (
     <View style={styles.card}>
+      <GuildEmblem emblem={guild.emblem} />
       <Text style={styles.name}>{guild.name}</Text>
       <Text style={styles.detail}>
         {guild.memberCount} / {guild.capacity} membres

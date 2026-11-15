@@ -18,14 +18,17 @@ import { Button } from '@/components/Button';
 import { CapacityGauge } from '@/components/CapacityGauge';
 import { DangerRow } from '@/components/DangerRow';
 import { Field } from '@/components/Field';
-import { GuildIcon, GuildMembers, GuildTabs, type GuildTab } from '@/components/GuildMenu';
+import { GuildMembers, GuildTabs, type GuildTab } from '@/components/GuildMenu';
+import { GuildIdentity } from '@/components/GuildIdentity';
+import { GuildEmblemPicker } from '@/components/GuildEmblemPicker';
 import { GuildRisalatSummary } from '@/components/GuildRisalatSummary';
 import { GuildWeeklyBoard } from '@/components/GuildWeeklyBoard';
 import { PortraitScrollView } from '@/features/avatar/PortraitScrollView';
-import { color, guildUi, radius, space, type, typography } from '@/design/tokens';
+import { color, radius, space, type } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
 import { isCurrentOwner } from '@/features/auth/session';
-import { syncGuild } from '@/features/community/guildCache';
+import { saveGuild, syncGuild } from '@/features/community/guildCache';
+import { DEFAULT_GUILD_EMBLEM, sameEmblem } from '@/features/community/guildEmblem';
 import { useSessionOwner, useAuth } from '@/features/auth/useAuth';
 import { GuildChat } from '@/features/community/GuildChat';
 import { formatCalendarDate } from '@/features/community/format';
@@ -36,7 +39,6 @@ import {
   foundGuild,
   joinGuild,
   leaveGuild,
-  renameGuild,
   type Guild,
 } from '@/features/community/guildActions';
 import { isGuildGone } from '@/features/community/guildRefresh';
@@ -362,13 +364,7 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
 
   return <View style={styles.flex}>
     <View onLayout={({ nativeEvent }) => setGuildHeaderHeight(nativeEvent.layout.height)}>
-    <View style={styles.identity}>
-      <View style={styles.crest}><GuildIcon name="members" size={guildUi.rankSize} /></View>
-      <View style={styles.identityText}>
-        <Text style={styles.guildName} accessibilityRole="header">{guild.name}</Text>
-        <Text style={styles.body}>{guild.memberCount} membre{guild.memberCount === 1 ? '' : 's'}</Text>
-      </View>
-    </View>
+    <GuildIdentity name={guild.name} memberCount={guild.memberCount} emblem={guild.emblem} />
     <GuildTabs selected={tab} onSelect={selectTab} myTurn={risalat.data?.turn?.mine && risalat.data.turn.discipline === null} />
     </View>
     {/* Garder le chat monté préserve son brouillon et sa photo entre les sous-onglets. */}
@@ -376,7 +372,7 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
       accessibilityElementsHidden={tab !== 'chat'} importantForAccessibility={tab === 'chat' ? 'auto' : 'no-hide-descendants'}>
       <GuildChat key={`${guild.id}:${auth.user.id}`} guild={guild} playerId={auth.user.id} onGone={onGone} headerOffset={guildHeaderHeight} />
     </View>}
-    {tab === 'settings' && managing ? <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />
+    {tab === 'settings' && managing && guild.role === 'FOUNDER' ? <ManageGuild guild={guild} onClose={() => setManaging(false)} onDissolved={onGone} />
       : tab !== 'chat' && <PortraitScrollView key={tab} contentContainerStyle={styles.guildContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={color.accent} />}>
         {refreshFailure && <Text style={styles.failure}>{messageFor(refreshFailure)}</Text>}
@@ -438,38 +434,35 @@ function ManageGuild({
   const owner = useSessionOwner();
 
   const [name, setName] = useState(guild.name);
-  const [renaming, setRenaming] = useState(false);
-  const [renameFailure, setRenameFailure] = useState<Failure | null>(null);
+  const [emblem, setEmblem] = useState(guild.emblem ?? DEFAULT_GUILD_EMBLEM);
+  const [saving, setSaving] = useState(false);
+  const [saveFailure, setSaveFailure] = useState<Failure | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const [dissolving, setDissolving] = useState(false);
   const [dissolveFailure, setDissolveFailure] = useState<Failure | null>(null);
 
-  const violations = renameFailure === null ? {} : violationsByField(renameFailure);
+  const violations = saveFailure === null ? {} : violationsByField(saveFailure);
   const trimmedName = name.trim();
+  const busy = saving || dissolving;
 
-  const submitRename = async () => {
-    setRenaming(true);
-    setRenameFailure(null);
+  const submit = async () => {
+    setSaving(true);
+    setSaveFailure(null);
 
     if (!isCurrentOwner(owner)) return;
-    const outcome = await renameGuild(guild.id, trimmedName);
+    const outcome = await saveGuild(guild.id, { name: trimmedName, emblem }, queryClient, owner, onDissolved);
     if (!isCurrentOwner(owner)) return;
+    if (outcome === null) return;
 
     if (outcome.ok) {
-      // `PATCH /api/guilds/{id}` rend une `Guild`, **pas** un `GuildDetail` : écrire cette
-      // réponse telle quelle dans le cache effacerait `members`. On fusionne donc le nom
-      // dans le détail déjà en cache, sans toucher au reste (#45, piège relevé par l'archi).
-      queryClient.setQueryData<GuildDetail | null>(myGuildQueryKey(owner.id), (previous) =>
-        previous === null || previous === undefined
-          ? (previous ?? null)
-          : { ...previous, name: outcome.guild.name },
-      );
       onClose();
       return;
     }
 
-    setRenameFailure(outcome.failure);
-    setRenaming(false);
+    setSaveFailure(outcome.failure);
+    setAccessDenied(outcome.failure.kind === 'problem' && outcome.failure.problem.type === 'https://grrind.app/problems/forbidden');
+    setSaving(false);
   };
 
   const performDissolve = async () => {
@@ -515,20 +508,22 @@ function ManageGuild({
           maxLength={GUILD_NAME_MAX_LENGTH}
           autoCapitalize="words"
           returnKeyType="done"
-          editable={!renaming}
+          editable={!busy && !accessDenied}
           error={violations.name}
         />
         <Text style={styles.counter}>
           {name.length} / {GUILD_NAME_MAX_LENGTH}
         </Text>
-        {renameFailure === null ? null : (
-          <Text style={styles.failure}>{messageFor(renameFailure)}</Text>
+        <GuildEmblemPicker emblem={emblem} name={trimmedName || guild.name} memberCount={guild.memberCount}
+          onChange={setEmblem} disabled={busy || accessDenied} />
+        {saveFailure === null ? null : (
+          <Text style={styles.failure} accessibilityRole="alert">{messageFor(saveFailure)}</Text>
         )}
         <Button
-          label="Renommer"
-          onPress={() => void submitRename()}
-          busy={renaming}
-          disabled={trimmedName.length === 0 || trimmedName === guild.name}
+          label={saveFailure && !accessDenied ? 'Réessayer' : 'Enregistrer'}
+          onPress={() => void submit()}
+          busy={saving}
+          disabled={dissolving || accessDenied || trimmedName.length === 0 || (trimmedName === guild.name && sameEmblem(emblem, guild.emblem ?? DEFAULT_GUILD_EMBLEM))}
         />
 
         {dissolveFailure === null ? null : (
@@ -538,10 +533,10 @@ function ManageGuild({
           label="Dissoudre la guilde"
           onPress={confirmDissolve}
           busy={dissolving}
-          disabled={renaming}
+          disabled={saving || accessDenied}
         />
 
-        <Button label="Retour" onPress={onClose} variant="quiet" disabled={renaming || dissolving} />
+        <Button label="Retour" onPress={onClose} variant="quiet" disabled={busy} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -747,11 +742,6 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   hidden: { display: 'none' },
-  identity: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md },
-  identityText: { flex: 1, gap: space.xs },
-  crest: { width: guildUi.crestSize, height: guildUi.crestSize, backgroundColor: guildUi.heroLight,
-    alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm },
-  guildName: { fontFamily: typography.display.bold, fontSize: guildUi.titleSize, color: color.text },
   guildContent: { padding: space.md, gap: space.lg },
   sectionHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space.sm },
   risalatError: { gap: space.sm, marginBottom: space.md },

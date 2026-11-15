@@ -1335,6 +1335,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
+            emblem: components["schemas"]["GuildEmblem"];
             /** Format: date-time */
             createdAt: string;
             /** @example 12 */
@@ -1354,6 +1355,47 @@ export interface components {
              * @enum {string}
              */
             role: "FOUNDER" | "MEMBER";
+        };
+        /**
+         * @description Palette GRRIND : NIGHT #050816, CHALK #EAF6FF, CYAN #35E4FF,
+         *     MINT #75FFB2, AMETHYST #A98BFF, GLACIER #67D8FF,
+         *     BLOSSOM #FF79CE, COPPER #FFB454. Aucune couleur libre.
+         * @enum {string}
+         */
+        GuildEmblemColor: "NIGHT" | "CHALK" | "CYAN" | "MINT" | "AMETHYST" | "GLACIER" | "BLOSSOM" | "COPPER";
+        /**
+         * @description Composition complète sans upload ni couches. Exactement une des deux
+         *     couleurs doit être NIGHT, l'autre une des sept couleurs claires ;
+         *     l'inversion est autorisée. Les autres paires sont refusées (422).
+         *     C'est l'ensemble des paires de cette palette dont le contraste atteint 3:1.
+         *     Défaut, y compris pour les guildes existantes : DUMBBELL / NIGHT / CYAN.
+         */
+        GuildEmblem: {
+            /**
+             * @example DUMBBELL
+             * @enum {string}
+             */
+            symbol: "DUMBBELL" | "HEART" | "YOGA" | "BOLT";
+            /** @example NIGHT */
+            backgroundColor: components["schemas"]["GuildEmblemColor"];
+            /** @example CYAN */
+            symbolColor: components["schemas"]["GuildEmblemColor"];
+        };
+        /**
+         * @description Modification par le fondateur courant uniquement. Appartenance et rôle
+         *     sont relus sous le verrou de guilde, y compris après une succession.
+         *     Au moins un champ non null est requis ; champs absents ou null = conservés.
+         *     L'emblème fourni remplace les trois choix, aucun remplacement partiel.
+         *     401 sans authentification, 403 pour un membre non fondateur,
+         *     404 pour un tiers ou une guilde inconnue, 422 pour les valeurs invalides.
+         */
+        GuildUpdate: {
+            name?: string | null;
+            emblem?: components["schemas"]["GuildEmblem"] | null;
+        } | {
+            name: string;
+        } | {
+            emblem: components["schemas"]["GuildEmblem"];
         };
         /**
          * @description Le laissez-passer d'une guilde. Il **remplace l'annuaire au lieu de le
@@ -3519,9 +3561,11 @@ export interface components {
             /** @default  */
             name: string;
         };
-        RenameGuildRequest: {
-            /** @default  */
-            name: string;
+        UpdateGuildRequest: {
+            /** @default null */
+            name: string | null;
+            /** @default null */
+            emblem: components["schemas"]["GuildEmblem"] | null;
         };
         JoinGuildRequest: {
             /** @default  */
@@ -4467,11 +4511,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GuildName"];
+                "application/json": components["schemas"]["GuildUpdate"];
             };
         };
         responses: {
-            /** @description La guilde renommée. */
+            /** @description Le nom et/ou l’emblème modifiés par le fondateur courant, autorisation et appartenance relues sous verrou. Les champs absents ou null sont conservés. */
             200: {
                 headers: {
                     [name: string]: unknown;
