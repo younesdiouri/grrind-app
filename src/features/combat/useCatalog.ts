@@ -8,7 +8,7 @@ import {
   subscribeToEquipment,
 } from '@/features/inventory/equipmentRevision';
 import { catalogFor, type CatalogEntry } from './catalog.ts';
-import { getProgressionRevision, subscribeToProgression } from '../progression/weeklyRefresh';
+import { getProgressionRevision, subscribeToProgression } from '../progression/weeklyRefresh.ts';
 
 /**
  * Le catalogue des adversaires, et le niveau qui décide de ce qui est accessible.
@@ -46,11 +46,12 @@ export type Catalog =
 
 export function useCatalog(): { catalog: Catalog; reload: () => void } {
   const [catalog, setCatalog] = useState<Catalog>({ step: 'loading' });
+  const [attempt, setAttempt] = useState(0);
 
-  const load = useCallback(async (): Promise<Catalog> => {
+  const load = useCallback(async (signal: AbortSignal): Promise<Catalog> => {
     const [enemies, progression] = await Promise.all([
-      api.GET('/api/enemies'),
-      api.GET('/api/progression'),
+      api.GET('/api/enemies', { signal }),
+      api.GET('/api/progression', { signal }),
     ]);
 
     if (enemies.data === undefined) {
@@ -71,8 +72,8 @@ export function useCatalog(): { catalog: Catalog; reload: () => void } {
 
   const reload = useCallback(() => {
     setCatalog({ step: 'loading' });
-    void load().then(setCatalog);
-  }, [load]);
+    setAttempt(value => value + 1);
+  }, []);
 
   /**
    * Combien de fois l'équipement a changé dans cette session (#30).
@@ -90,17 +91,21 @@ export function useCatalog(): { catalog: Catalog; reload: () => void } {
 
   useEffect(() => {
     let alive = true;
+    const controller = new AbortController();
 
-    void load().then((next) => {
+    void load(controller.signal).then((next) => {
       if (alive) {
         setCatalog(next);
       }
+    }, (error: unknown) => {
+      if (alive) setCatalog({ step: 'failed', failure: failureFrom(error) });
     });
 
     return () => {
       alive = false;
+      controller.abort();
     };
-  }, [load, equipped, progression]);
+  }, [load, equipped, progression, attempt]);
 
   return { catalog, reload };
 }
