@@ -10,15 +10,15 @@ import { serverAvatar, type AvatarEquipment } from '@/features/combat/serverAvat
 import { AVATAR_FIELDS, AVATAR_LABELS } from '@/features/avatar/avatar';
 import { leagueLabel } from '@/features/league/league';
 
-export type IdentityPlayer = Pick<components['schemas']['PlayerDetail'], 'displayName' | 'title' | 'level' | 'avatar' | 'league'>;
+export type IdentityPlayer = Pick<components['schemas']['PlayerDetail'], 'displayName' | 'title' | 'level' | 'avatar' | 'league' | 'guild'>;
 
-export function PlayerIdentity({ player, equipment = {}, onLeaguePress, motion }: {
-  player: IdentityPlayer; equipment?: AvatarEquipment; onLeaguePress?(): void; motion?: ReactNode;
+export function PlayerIdentity({ player, equipment = {}, onLeaguePress, onGuildPress, motion, radar }: {
+  player: IdentityPlayer; equipment?: AvatarEquipment; onLeaguePress?(): void; onGuildPress?(): void; motion?: ReactNode; radar?: ReactNode;
 }) {
   const avatar = serverAvatar(player.avatar, equipment);
-  const label = `Portrait de ${player.displayName} · ${AVATAR_FIELDS.map(field =>
-    (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}${avatar.headband ? ' · Bandeau éclair' : avatar.moumoutivation ? ' · La Moumoutivation' : ''}${avatar.cyclopes ? ' · Les Cyclopes' : ''}`;
   const league = `Ligue ${leagueLabel[player.league.tier]}`;
+  const label = `Portrait de ${player.displayName} · ${AVATAR_FIELDS.map(field =>
+    (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}${avatar.headband ? ' · Bandeau éclair' : avatar.moumoutivation ? ' · La Moumoutivation' : ''}${avatar.cyclopes ? ' · Les Cyclopes' : ''} · ${league}`;
   const tint = leagueArt.presets[player.league.tier].metal;
   return <SystemFrame contentStyle={styles.identity}>
     <View style={styles.stage}>
@@ -31,18 +31,24 @@ export function PlayerIdentity({ player, equipment = {}, onLeaguePress, motion }
     </View>
     <Text style={styles.name} accessibilityRole="header">{player.displayName}</Text>
     {player.title !== null && <View style={styles.title}><TitleBadge name={player.title.name} /></View>}
+    {player.guild ? <Pressable onPress={onGuildPress} accessibilityRole="link" accessibilityLabel={`Ouvrir la guilde ${player.guild.name}`}
+      style={({ pressed }) => [styles.guildButton, pressed && styles.pressed]}>
+      <Text style={styles.guild}>{player.guild.name} ›</Text>
+    </Pressable> : player.guild === null ? <Text style={styles.level}>Sans guilde</Text> : null}
     <View style={styles.status}>
-      {onLeaguePress ? <Pressable onPress={onLeaguePress} accessibilityRole="button" accessibilityLabel={`${league} · Ma semaine`}
-        style={({ pressed }) => [styles.leagueButton, pressed && styles.pressed]}>
-        <Text style={[styles.league, { color: tint }]}>{league} <Text style={styles.link}>· Ma semaine ›</Text></Text>
-      </Pressable> : <Text style={[styles.league, { color: tint }]}>{league}</Text>}
       <Text style={styles.level}>Niveau {player.level}</Text>
+      {onLeaguePress && <Pressable onPress={onLeaguePress} accessibilityRole="button" accessibilityLabel={`${league} · Ma semaine`}
+        style={({ pressed }) => [styles.leagueButton, pressed && styles.pressed]}>
+        <Text style={[styles.league, { color: tint }]}>Ma semaine ›</Text>
+      </Pressable>}
     </View>
+    {radar && <View style={styles.radar}>{radar}</View>}
   </SystemFrame>;
 }
 
 const styles = StyleSheet.create({
   identity: { minHeight: leagueArt.cardMinHeight, alignItems: 'center', paddingHorizontal: space.sm, paddingBottom: space.md, gap: space.xs },
+  radar: { width: '100%', paddingTop: space.md },
   stage: { width: '100%', maxWidth: leagueArt.stageWidth, aspectRatio: leagueArt.stageWidth / leagueArt.stageHeight },
   portrait: { position: 'absolute', top: leagueArt.portraitTop, left: leagueArt.portraitLeft,
     width: leagueArt.portraitWidth, aspectRatio: 1, borderRadius: radius.sm, overflow: 'hidden', backgroundColor: color.background },
@@ -51,7 +57,8 @@ const styles = StyleSheet.create({
   status: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: space.sm },
   league: { ...type.label, letterSpacing: 0, textAlign: 'center' },
   leagueButton: { minHeight: control.minHeight, justifyContent: 'center', paddingHorizontal: space.sm },
-  link: { color: color.textMuted },
+  guildButton: { width: '100%', minHeight: control.minHeight, justifyContent: 'center', paddingHorizontal: space.sm },
+  guild: { ...type.label, letterSpacing: 0, color: color.accent, textAlign: 'center' },
   level: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   pressed: { opacity: opacity.pressed },
 });

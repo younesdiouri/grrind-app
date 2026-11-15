@@ -15,13 +15,15 @@ export const pointsString = (points: RadarPoint[]) => points.map(({ x, y }) => `
 export const radarPath = (points: RadarPoint[]) => `${points.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'} ${x} ${y}`).join(' ')} Z`;
 
 /** Un repère fixe : le bord représente 100 %, même lorsque les gains le dépassent. */
-export function PerformanceRadar({ week, renderShape, renderReference, renderIcon }: {
-  week: WeekProgress;
+export function PerformanceRadar({ week, renderShape, renderReference, renderIcon, showHeading = true }: {
+  week: Pick<WeekProgress, 'current' | 'previous'>;
+  showHeading?: boolean;
   renderShape?: (points: RadarPoint[]) => ReactNode;
   renderReference?: (points: RadarPoint[]) => ReactNode;
   renderIcon?: (attribute: Attribute) => ReactNode;
 }) {
   const percents = WEEK_ATTRIBUTES.map(attribute => weekPercent(week.current.attributes[attribute], week.previous?.attributes[attribute] ?? null));
+  const hasReference = percents.some(value => value !== null);
   const points = radarPoints(percents.map(value => (value ?? 0) / 100));
   const axes = radarPoints([1, 1, 1, 1]);
   const labels = WEEK_ATTRIBUTES.map(attribute => weekPercentLabel(week.current.attributes[attribute], week.previous?.attributes[attribute] ?? null));
@@ -33,16 +35,16 @@ export function PerformanceRadar({ week, renderShape, renderReference, renderIco
   });
 
   return (
-    <View style={styles.radar} accessible accessibilityLabel={`Radar de performance. ${WEEK_ATTRIBUTES.map((attribute, index) => `${attributeLabel[attribute]} ${labels[index]}`).join(', ')}. 100 pour cent correspond à la semaine dernière.`}>
-      <View style={styles.heading}>
+    <View style={styles.radar} accessible accessibilityLabel={`Radar de performance. ${WEEK_ATTRIBUTES.map((attribute, index) => `${attributeLabel[attribute]} ${labels[index]}`).join(', ')}. ${hasReference ? '100 pour cent correspond à la semaine dernière.' : 'Référence indisponible.'}`}>
+      {showHeading && <View style={styles.heading}>
         <Text style={styles.title}>RADAR DE PERFORMANCE</Text>
         <View style={styles.signal} />
-      </View>
+      </View>}
       <Svg width="100%" viewBox={`0 0 ${chart.width} ${chart.radarHeight}`} style={styles.svg}>
         {[0.25, 0.5, 0.75, 1].map(step => <Polygon key={step} points={pointsString(radarPoints([step, step, step, step]))}
           stroke={color.border} strokeWidth={chart.stroke} fill="none" />)}
         {axes.map((point, index) => <Line key={index} x1={chart.centerX} y1={chart.centerY} x2={point.x} y2={point.y} stroke={color.border} />)}
-        {week.previous === null ? null : renderReference ? renderReference(reference) : <Polygon points={pointsString(reference)}
+        {!hasReference ? null : renderReference ? renderReference(reference) : <Polygon points={pointsString(reference)}
           stroke={color.textMuted} strokeDasharray="3 5" opacity={chart.gridOpacity} fill="none" />}
         {renderShape ? renderShape(points) : <Polygon points={pointsString(points)} fill={color.accent} fillOpacity={chart.radarFillOpacity} stroke={color.accent} strokeWidth={chart.stroke} />}
         {points.map((point, index) => <Circle key={index} cx={point.x} cy={point.y} r={chart.dot} fill={attributeColor[WEEK_ATTRIBUTES[index]]} />)}
@@ -51,6 +53,7 @@ export function PerformanceRadar({ week, renderShape, renderReference, renderIco
           {renderIcon ? renderIcon(WEEK_ATTRIBUTES[index]) : <RadarIconGlyph attribute={WEEK_ATTRIBUTES[index]} />}
         </G>)}
       </Svg>
+      {!showHeading && !hasReference && <Text style={styles.note}>Référence indisponible</Text>}
     </View>
   );
 }
@@ -78,4 +81,5 @@ const styles = StyleSheet.create({
   title: { ...type.label, color: color.text, fontFamily: typography.display.semibold },
   signal: { width: space.xs, height: space.xs, borderRadius: space.xs, backgroundColor: color.accent },
   svg: { aspectRatio: chart.width / chart.radarHeight },
+  note: { ...type.label, color: color.textMuted, letterSpacing: 0, textAlign: 'center' },
 });

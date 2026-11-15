@@ -51,7 +51,9 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedG = Animated.createAnimatedComponent(G<{ matrix?: number[] }>);
 
-export function LivePerformanceRadar({ week }: { week: WeekProgress }) {
+export function LivePerformanceRadar({ week, showHeading }: {
+  week: Pick<WeekProgress, 'current' | 'previous'>; showHeading?: boolean;
+}) {
   const phase = useSharedValue(0);
   const reduced = useReducedMotion();
   useEffect(() => {
@@ -60,7 +62,7 @@ export function LivePerformanceRadar({ week }: { week: WeekProgress }) {
     if (reduced === false) phase.value = withRepeat(withTiming(1, { duration: chart.radarIconCycleMs, easing: Easing.linear }), -1, false);
     return () => cancelAnimation(phase);
   }, [phase, reduced]);
-  return <PerformanceRadar week={week} renderShape={points => <RadarShape points={points} />}
+  return <PerformanceRadar week={week} showHeading={showHeading} renderShape={points => <RadarShape points={points} />}
     renderReference={points => <RadarReference points={points} />}
     renderIcon={attribute => reduced === false ? <MovingRadarIcon attribute={attribute} phase={phase} /> : <RadarIconGlyph attribute={attribute} />} />;
 }

@@ -12,7 +12,7 @@ test('l’identité garde la ligue indépendante du niveau et un repli propre au
     for (const level of [1, 80]) {
       const markup = renderToStaticMarkup(createElement(PlayerIdentity, { player: {
         displayName: 'Alexandra au très long pseudonyme', title: null, level,
-        avatar: { ...DEFAULT_AVATAR, body }, league: { tier: 'SILVER', tierOrder: 1, lootLuckPercent: 5 },
+        avatar: { ...DEFAULT_AVATAR, body }, league: { tier: 'SILVER', tierOrder: 1, lootLuckPercent: 5 }, guild: null,
       } }));
       assert.match(markup, /Ligue Argent/);
       assert.match(markup, new RegExp(`Niveau ${level}`));
@@ -27,7 +27,7 @@ test('le titre se lit intégralement et seule l’identité personnelle ouvre Ma
   const markup = renderToStaticMarkup(createElement(PlayerIdentity, { onLeaguePress() {}, player: {
     displayName: 'Nora', title: { id: 'long', name: 'Celle qui court au-delà de toutes les montagnes', hint: '',
       unlocked: true, unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' } },
-    level: 12, avatar: DEFAULT_AVATAR, league: LEAGUE_FIXTURE.league,
+    level: 12, avatar: DEFAULT_AVATAR, league: LEAGUE_FIXTURE.league, guild: null,
   } }));
   assert.match(markup, /Celle qui court au-delà de toutes les montagnes/);
   assert.match(markup, /aria-label="Ligue Or · Ma semaine"/);
