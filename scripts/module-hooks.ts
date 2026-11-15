@@ -169,7 +169,8 @@ export const load: LoadHook = async (url, context, next) => {
     return { format: 'module', source, shortCircuit: true };
   }
 
-  if (!url.endsWith('.tsx')) {
+  // `node:test` ajoute une query aux modules simulés, y compris aux frontières natives TSX.
+  if (!new URL(url).pathname.endsWith('.tsx')) {
     return next(url, context);
   }
 

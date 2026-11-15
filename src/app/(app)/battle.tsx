@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '@/api/client';
+import { Button } from '@/components/Button';
 import { color, space, type } from '@/design/tokens';
 import { failureFrom, messageFor, type Failure } from '@/features/auth/problems';
 import { BattleView } from '@/features/combat/BattleView';
@@ -84,6 +85,11 @@ function DemoDuel() {
 function RealBattle({ id }: { id: string }) {
   const [battle, setBattle] = useState<Battle | null>(() => takeHandOver(id));
   const [failure, setFailure] = useState<Failure | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => {
+    setFailure(null);
+    setAttempt(value => value + 1);
+  };
 
   useEffect(() => {
     if (battle !== null) {
@@ -91,8 +97,9 @@ function RealBattle({ id }: { id: string }) {
     }
 
     let alive = true;
+    const controller = new AbortController();
 
-    void api.GET('/api/battles/{id}', { params: { path: { id } } }).then((reply) => {
+    void api.GET('/api/battles/{id}', { params: { path: { id } }, signal: controller.signal }).then((reply) => {
       if (!alive) {
         return;
       }
@@ -103,24 +110,27 @@ function RealBattle({ id }: { id: string }) {
       }
 
       setBattle(reply.data);
+    }, (error: unknown) => {
+      if (alive) setFailure(failureFrom(error));
     });
 
     return () => {
       alive = false;
+      controller.abort();
     };
-    // `battle` n'est pas une dépendance : l'effet ne doit partir qu'une fois, et le poser
-    // relancerait un appel à chaque fois que le combat arrive.
+    // `battle` n'est pas une dépendance : seules l'entrée et une nouvelle tentative relisent.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, attempt]);
 
   if (failure !== null) {
-    return <Empty>{messageFor(failure)}</Empty>;
+    return <Empty onRetry={retry}>{messageFor(failure)}</Empty>;
   }
 
   if (battle === null) {
     return (
       <View style={styles.empty}>
         <ActivityIndicator color={color.accent} />
+        <Button label="Fermer" variant="quiet" onPress={leave} />
       </View>
     );
   }
@@ -128,10 +138,12 @@ function RealBattle({ id }: { id: string }) {
   return <BattleView battle={battle} onDismiss={leave} />;
 }
 
-function Empty({ children }: { children: string }) {
+function Empty({ children, onRetry }: { children: string; onRetry?: () => void }) {
   return (
     <View style={styles.empty}>
       <Text style={styles.body}>{children}</Text>
+      {onRetry && <Button label="Réessayer" onPress={onRetry} />}
+      <Button label="Fermer" variant="quiet" onPress={leave} />
     </View>
   );
 }
@@ -142,6 +154,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.lg,
+    gap: space.md,
     backgroundColor: color.background,
   },
   body: { ...type.body, color: color.textMuted, textAlign: 'center' },
