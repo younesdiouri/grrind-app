@@ -88,6 +88,16 @@ tags:
 - tapOn:
     id: "tab-guilde"
 - extendedWaitUntil:
+    visible: "Emblème · Yoga · Nuit sur Cuivre|.*Toucher pour .*"
+    timeout: 30000
+# La synchronisation au redémarrage peut présenter un bilan avant de rendre la guilde.
+- repeat:
+    times: 6
+    while:
+      visible: ".*Toucher pour .*"
+    commands:
+      - tapOn: ".*Toucher pour .*"
+- extendedWaitUntil:
     visible: "Emblème · Yoga · Nuit sur Cuivre"
     timeout: 30000
 - tapOn:
