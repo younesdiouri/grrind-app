@@ -80,7 +80,8 @@ const { inventoryOptions } = await import('../features/inventory/useInventory.ts
 const { myGuildOptions, myGuildQueryKey } = await import('../features/community/useMyGuild.ts');
 const { risalatOptions } = await import('../features/community/useRisalat.ts');
 const { guildWeeklyOptions } = await import('../features/community/useGuildWeekly.ts');
-const { playerOptions } = await import('../features/community/usePlayer.ts');
+const { playerOptions, playerQueryKey } = await import('../features/community/usePlayer.ts');
+const { emblemWithColor } = await import('../features/community/guildEmblem.ts');
 const { shopOptions } = await import('../features/shop/useShop.ts');
 const { craftingOptions, craftEquipment } = await import('../features/crafting/api.ts');
 const { equipItem } = await import('../features/inventory/equipmentActions.ts');
@@ -194,11 +195,16 @@ test('le rafraîchissement manuel tardif de guilde ne recrée pas A et ne retire
 test('la sauvegarde conserve les membres et adopte le nom et l’emblème reçus du serveur', async () => {
   const members: components['schemas']['GuildMember'][] = [];
   client.setQueryData(myGuildQueryKey('A'), { ...savedGuild, name: 'Ancien nom', members });
-  const changes = { name: 'Saisie', emblem: { ...savedGuild.emblem, symbol: 'BOLT' as const } };
+  client.setQueryData(playerQueryKey('A', 'target'), { marker: 'Profil de la cible à relire' });
+  client.setQueryData(playerQueryKey('B', 'target'), { marker: 'Autre connexion' });
+  const changes = { name: 'Saisie', emblem: { ...emblemWithColor(savedGuild.emblem, 'symbolColor', 'BLOSSOM'), symbol: 'BOLT' as const } };
   const outcome = await saveGuild('guild-A', changes, client, getSessionOwner(), () => assert.fail('Guilde présente'));
   assert.equal(outcome?.ok, true);
-  assert.deepEqual(await requests[0].json(), changes);
+  assert.deepEqual(await requests[0].json(), { name: 'Saisie', emblem: { symbol: 'BOLT', backgroundColor: 'NIGHT', symbolColor: 'BLOSSOM' } });
   assert.deepEqual(client.getQueryData(myGuildOptions('A').queryKey), { ...savedGuild, members });
+  assert.equal(client.getQueryState(playerQueryKey('A', 'target'))?.isInvalidated, true);
+  assert.deepEqual(client.getQueryData(playerQueryKey('A', 'target')), { marker: 'Profil de la cible à relire' });
+  assert.equal(client.getQueryState(playerQueryKey('B', 'target'))?.isInvalidated, false);
 });
 
 test('une coupure ne change pas le cache et le retry renvoie les mêmes choix', async () => {

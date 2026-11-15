@@ -2475,6 +2475,7 @@ export interface components {
             id: string;
             /** @example Les Lève-Tôt */
             name: string;
+            emblem: components["schemas"]["GuildEmblem"];
         };
         /**
          * @description Radar du joueur ciblé, identique aux agrégats de son GET /api/progression/week.

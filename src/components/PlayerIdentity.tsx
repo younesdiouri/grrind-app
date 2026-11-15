@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { components } from '@/api/schema';
 import { LeagueBackdrop } from '@/components/LeagueBackdrop';
+import { GuildEmblem } from '@/components/GuildEmblem';
 import { SystemFrame } from '@/components/SystemFrame';
 import { TitleBadge } from '@/components/TitleBadge';
 import { color, control, leagueArt, opacity, radius, space, type, typography } from '@/design/tokens';
@@ -33,7 +34,8 @@ export function PlayerIdentity({ player, equipment = {}, onLeaguePress, onGuildP
     {player.title !== null && <View style={styles.title}><TitleBadge name={player.title.name} /></View>}
     {player.guild ? <Pressable onPress={onGuildPress} accessibilityRole="link" accessibilityLabel={`Ouvrir la guilde ${player.guild.name}`}
       style={({ pressed }) => [styles.guildButton, pressed && styles.pressed]}>
-      <Text style={styles.guild}>{player.guild.name} ›</Text>
+      <GuildEmblem emblem={player.guild.emblem} />
+      <Text style={styles.guild}>{player.guild.name}</Text>
     </Pressable> : player.guild === null ? <Text style={styles.level}>Sans guilde</Text> : null}
     <View style={styles.status}>
       <Text style={styles.level}>Niveau {player.level}</Text>
@@ -57,8 +59,9 @@ const styles = StyleSheet.create({
   status: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: space.sm },
   league: { ...type.label, letterSpacing: 0, textAlign: 'center' },
   leagueButton: { minHeight: control.minHeight, justifyContent: 'center', paddingHorizontal: space.sm },
-  guildButton: { width: '100%', minHeight: control.minHeight, justifyContent: 'center', paddingHorizontal: space.sm },
-  guild: { ...type.label, letterSpacing: 0, color: color.accent, textAlign: 'center' },
+  guildButton: { width: '100%', minHeight: control.minHeight, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: space.sm, paddingHorizontal: space.sm },
+  guild: { ...type.label, letterSpacing: 0, color: color.accent, textAlign: 'left', flexShrink: 1 },
   level: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   pressed: { opacity: opacity.pressed },
 });

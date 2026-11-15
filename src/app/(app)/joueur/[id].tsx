@@ -34,7 +34,7 @@ export default function JoueurScreen() {
         <View style={styles.centered}>
           <ActivityIndicator color={color.accent} />
         </View>
-      ) : player.isError || !player.data.week || player.data.guild === undefined ? (
+      ) : player.isError || !player.data.week || player.data.guild === undefined || (player.data.guild !== null && !player.data.guild.emblem) ? (
         <ScrollView contentContainerStyle={styles.screen}>
           <Text style={styles.title}>{player.isError ? 'Ce joueur est introuvable' : 'Profil indisponible'}</Text>
           <Text style={styles.body}>{player.isError ? messageFor(player.error) : 'Ce profil ne peut pas encore être affiché. Réessaie dans un instant.'}</Text>

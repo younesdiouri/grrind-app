@@ -355,7 +355,8 @@ export const PREVIEWS: Preview[] = [
     element: <>
       <Specimen label="Profil de coéquipier · guilde ouvrable">
         <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
-          league: LEAGUE_FIXTURE.league, guild: { id: 'guild', name: 'Les Lève-Tôt' } }}
+          league: LEAGUE_FIXTURE.league, guild: { id: 'guild', name: 'Les Lève-Tôt',
+            emblem: { symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'NIGHT' } } }}
           equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null }, WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
           onGuildPress={() => {}} radar={<PerformanceRadar week={WEEK_FIXTURE} showHeading={false} />}
           action={<Button label="Défier" onPress={() => {}} />} />
@@ -366,7 +367,8 @@ export const PREVIEWS: Preview[] = [
             title: { id: 'long', name: 'Celle qui ne renonce jamais, même au sommet', hint: '', unlocked: true,
               unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' } },
             avatar: { ...DEFAULT_AVATAR, body: 'female', hairStyle: 'long' }, league: { ...LEAGUE_FIXTURE.league, tier: 'DIAMOND' },
-            guild: { id: 'long-guild', name: 'Les sportifs au-delà des montagnes' } }} equipment={{}}
+            guild: { id: 'long-guild', name: 'Les sportifs au-delà des montagnes',
+              emblem: { symbol: 'YOGA', backgroundColor: 'NIGHT', symbolColor: 'AMETHYST' } } }} equipment={{}}
             onGuildPress={() => {}} onLeaguePress={() => {}}
             radar={<PerformanceRadar week={{ ...WEEK_FIXTURE, previous: null }} showHeading={false} />} />
         </View>

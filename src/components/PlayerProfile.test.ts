@@ -21,6 +21,7 @@ test('le profil public garde identité, défi et avatar seul, sans inventaire ni
   assert.ok(!markup.includes('>Ligue Bronze<'), 'La ligue reste accessible sans libellé redondant');
   assert.ok(markup.includes('Sans guilde'), 'Un joueur sans guilde reste explicite');
   assert.ok(!markup.includes('role="link"'), 'Aucun lien de guilde sans adhésion');
+  assert.doesNotMatch(markup, /Emblème/);
   assert.equal([...markup.matchAll(/Niveau 80/g)].length, 1);
   assert.match(markup, /Défier/);
   assert.equal([...markup.matchAll(/role="button"/g)].length, 1);
@@ -29,12 +30,14 @@ test('le profil public garde identité, défi et avatar seul, sans inventaire ni
 });
 
 test('le nom de guilde long garde son nom accessible complet et déclenche son ouverture', () => {
-  const guild = { id: 'guild', name: 'Les sportifs qui continuent au-delà des montagnes' };
+  const guild = { id: 'guild', name: 'Les sportifs qui continuent au-delà des montagnes',
+    emblem: { symbol: 'HEART' as const, backgroundColor: 'COPPER' as const, symbolColor: 'NIGHT' as const } };
   let opened = 0;
   const props = { player: { ...player, guild }, onGuildPress: () => { opened += 1; } };
   const markup = renderToStaticMarkup(createElement(PlayerProfile, { ...props, equipment: {} }));
   assert.ok(markup.includes(`aria-label="Ouvrir la guilde ${guild.name}"`), 'Le nom accessible est complet');
   assert.ok(markup.includes('role="link"'), 'La guilde est un lien');
+  assert.match(markup, /Emblème · Cardio · Nuit sur Cuivre/);
   const identity = PlayerIdentity(props);
   const link = Children.toArray(identity.props.children).find(child =>
     isValidElement<{ accessibilityRole?: string }>(child) && child.props.accessibilityRole === 'link');

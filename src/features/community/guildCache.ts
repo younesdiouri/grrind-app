@@ -14,6 +14,8 @@ export async function saveGuild(guildId: string, changes: GuildChanges, client: 
   if (outcome.ok) {
     client.setQueryData<GuildDetail | null>(myGuildQueryKey(owner.id), previous =>
       previous?.id === guildId ? { ...previous, ...outcome.guild } : previous);
+    // Chaque profil relit l’identité de sa propre guilde depuis le serveur.
+    void client.invalidateQueries({ queryKey: ['players', owner.id] });
   } else if (isGuildGone(outcome.failure)) {
     onGone();
     return null;

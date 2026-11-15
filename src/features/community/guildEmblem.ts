@@ -24,11 +24,12 @@ export const emblemColors: Record<EmblemColor, { label: string; value: string }>
   COPPER: { label: 'Cuivre', value: palette.copper },
 };
 
-/** Le contrat impose un ton nuit et un ton clair ; changer le fond conserve une paire lisible. */
-export function emblemWithBackground(emblem: Emblem, backgroundColor: EmblemColor): Emblem {
-  return { ...emblem, backgroundColor,
-    symbolColor: backgroundColor === 'NIGHT'
-      ? emblem.symbolColor === 'NIGHT' ? emblem.backgroundColor : emblem.symbolColor
+/** La couleur choisie s’applique ; l’autre s’ajuste ou s’inverse pour conserver le contraste du contrat. */
+export function emblemWithColor(emblem: Emblem, field: 'backgroundColor' | 'symbolColor', value: EmblemColor): Emblem {
+  const other = field === 'backgroundColor' ? 'symbolColor' : 'backgroundColor';
+  return { ...emblem, [field]: value,
+    [other]: value === 'NIGHT'
+      ? emblem[other] === 'NIGHT' ? emblem[field] : emblem[other]
       : 'NIGHT' };
 }
 
