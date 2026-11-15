@@ -26,7 +26,7 @@ function Showcase({ params }: { params: { tier?: string; body?: string; long?: s
     title: long ? { id: 'long', name: 'Celle qui ne renonce jamais, même au sommet', hint: '', unlocked: true,
       unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' as const } } : null,
     avatar: female ? { ...DEFAULT_AVATAR, body: 'female' as const, hairStyle: 'long' as const, noseStyle: 'button' as const } : DEFAULT_AVATAR,
-    league: { ...LEAGUE_FIXTURE.league, tier } };
+    league: { ...LEAGUE_FIXTURE.league, tier }, guild: null };
   return <ScrollView contentContainerStyle={styles.screen}>
     <Stack.Screen options={{ title: 'Aperçu des ligues' }} />
     <PlayerProfile player={player} equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null },

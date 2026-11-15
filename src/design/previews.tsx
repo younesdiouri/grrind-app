@@ -348,25 +348,46 @@ export const PREVIEWS: Preview[] = [
   },
   {
     slug: 'profil-joueur', name: 'Profil public du joueur', group: 'Composants',
-    element: <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
-      league: LEAGUE_FIXTURE.league }} equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null },
-      WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
-      radar={<PerformanceRadar week={WEEK_FIXTURE} compact />}
-      action={<Button label="Défier" onPress={() => {}} />} />,
+    element: <>
+      <Specimen label="Profil de coéquipier · guilde ouvrable">
+        <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
+          league: LEAGUE_FIXTURE.league, guild: { id: 'guild', name: 'Les Lève-Tôt' } }}
+          equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null }, WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
+          onGuildPress={() => {}} radar={<PerformanceRadar week={WEEK_FIXTURE} compact />}
+          action={<Button label="Défier" onPress={() => {}} />} />
+      </Specimen>
+      <Specimen label="Petit écran 320 px · noms longs · Ma semaine · référence vide">
+        <View style={{ width: 320 - space.lg * 2 }}>
+          <PlayerProfile player={{ displayName: 'Alexandra au-delà des montagnes', level: 80,
+            title: { id: 'long', name: 'Celle qui ne renonce jamais, même au sommet', hint: '', unlocked: true,
+              unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' } },
+            avatar: { ...DEFAULT_AVATAR, body: 'female', hairStyle: 'long' }, league: { ...LEAGUE_FIXTURE.league, tier: 'DIAMOND' },
+            guild: { id: 'long-guild', name: 'Les sportifs au-delà des montagnes' } }} equipment={{}}
+            onGuildPress={() => {}} onLeaguePress={() => {}}
+            radar={<PerformanceRadar week={{ ...WEEK_FIXTURE, previous: null }} compact />} />
+        </View>
+      </Specimen>
+      <Specimen label="Sans guilde · aucune séance ni référence">
+        <PlayerProfile player={{ displayName: 'Sam', title: null, level: 1, avatar: DEFAULT_AVATAR,
+          league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, guild: null }} equipment={{}}
+          radar={<PerformanceRadar week={{ current: { xp: 0, sessions: 0,
+            attributes: { strength: 0, endurance: 0, mobility: 0, dexterity: 0 } }, previous: null }} compact />} />
+      </Specimen>
+    </>,
   },
   {
     slug: 'identite-ligues', name: 'Identité et régalia de ligue', group: 'Composants',
     element: <>
       <View style={styles.leagueComparison}>{(Object.keys(leagueLabel) as LeagueTier[]).map(tier => <View key={tier} style={styles.leagueCard}><Specimen label={leagueLabel[tier]}>
         <PlayerIdentity player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
-          league: { ...LEAGUE_FIXTURE.league, tier } }} />
+          league: { ...LEAGUE_FIXTURE.league, tier }, guild: null }} />
       </Specimen></View>)}</View>
       <Specimen label="Niveau 80 Bronze, titre et pseudo longs, corps féminin">
         <PlayerIdentity onLeaguePress={() => {}} player={{ displayName: 'Alexandra au-delà des montagnes',
           title: { id: 'long', name: 'Celle qui ne renonce jamais, même au sommet', hint: '', unlocked: true,
             unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' } },
           level: 80, avatar: { ...DEFAULT_AVATAR, body: 'female', hairStyle: 'long' },
-          league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 } }} />
+          league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, guild: null }} />
       </Specimen>
     </>,
   },

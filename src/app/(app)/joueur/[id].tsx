@@ -12,6 +12,7 @@ import { usePlayer } from '@/features/community/usePlayer';
 import { LeagueMotion } from '@/features/league/LeagueMotion';
 import { LeagueSheet } from '@/features/league/LeagueSheet';
 import { useLeague } from '@/features/league/useLeague';
+import { PerformanceRadar } from '@/features/progression/PerformanceRadar';
 
 /** Identité de ligue et personnage équipé, protégés par le voter serveur. */
 export default function JoueurScreen() {
@@ -43,6 +44,8 @@ export default function JoueurScreen() {
         <ScrollView contentContainerStyle={styles.screen}>
           <PlayerProfile player={{ ...player.data, league: own && league.data ? league.data.league : player.data.league }}
             equipment={player.data.inventory.equipment} action={<Challenge id={id} name={player.data.displayName} />}
+            radar={player.data.week && <PerformanceRadar week={player.data.week} compact />}
+            onGuildPress={() => router.navigate('/guilde')}
             onLeaguePress={own ? () => { setWeekOpen(true); void league.refetch(); } : undefined}
             motion={<LeagueMotion tier={own && league.data ? league.data.league.tier : player.data.league.tier} />} />
         </ScrollView>

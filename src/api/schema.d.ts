@@ -2424,6 +2424,41 @@ export interface components {
             league: components["schemas"]["LeagueIdentity"];
             inventory: components["schemas"]["PublicInventory"];
             statistics: components["schemas"]["PlayerStatistics"];
+            week: components["schemas"]["PlayerWeekProgress"];
+            /** @description Guilde de la cible, ou null sans adhésion. Pour tous les profils autorisés (soi ou même guilde), c'est celle du lecteur : ouvrir l'écran existant alimenté par GET /api/guilds/mine. Aucun droit public supplémentaire. */
+            guild: components["schemas"]["PlayerGuildIdentity"] | null;
+        };
+        PlayerGuildIdentity: {
+            /** Format: uuid */
+            id: string;
+            /** @example Les Lève-Tôt */
+            name: string;
+        };
+        /**
+         * @description Radar du joueur ciblé, identique aux agrégats de son GET /api/progression/week.
+         *     Le provider officiel utilise le calendrier Alam du ruleset publié : actuellement
+         *     [dimanche 20 h, dimanche 20 h[ en Europe/Paris, avec changement d'heure civil.
+         *     Ni le fuseau de la cible ni celui du lecteur ne décalent cette semaine commune.
+         *     Bornes UTC explicites ; référence sur la fenêtre précédente du même calendrier.
+         *     Les totaux suivent occurredAt (instant du sport), annulations et suppléments compris.
+         *     Seulement des agrégats : aucune écriture, séance, discipline ou plan privé.
+         *     La Vitality du bloc Player conserve son calcul UTC existant (dette #184),
+         *     distinct de ces quatre caractéristiques hebdomadaires.
+         */
+        PlayerWeekProgress: {
+            /**
+             * Format: date-time
+             * @description Début inclus de la semaine de jeu courante, en UTC.
+             */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description Fin exclue et prochaine remise à zéro, en UTC.
+             */
+            resetsAt: string;
+            current: components["schemas"]["WeekTotals"];
+            /** @description Totaux de la semaine précédente, ou null si son XP nette est nulle ou négative. Aucune cible inventée. */
+            previous: components["schemas"]["WeekTotals"] | null;
         };
         /**
          * @description `GET /api/inventory`, et ce que `PUT`/`DELETE /api/inventory/equipment/{slot}`
@@ -4683,7 +4718,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Le profil public détaillé : identité et cercles de la liste des membres, inventaire public et statistiques résolues. */
+            /** @description Le profil autorisé : identité, cercles, inventaire public, statistiques résolues, agrégats radar et identité de guilde. Lien guilde vers l’écran existant (GET /api/guilds/mine). */
             200: {
                 headers: {
                     [name: string]: unknown;

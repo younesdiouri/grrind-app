@@ -16,7 +16,7 @@ export const radarPath = (points: RadarPoint[]) => `${points.map(({ x, y }, inde
 
 /** Un repère fixe : le bord représente 100 %, même lorsque les gains le dépassent. */
 export function PerformanceRadar({ week, renderShape, renderReference, renderIcon, compact = false }: {
-  week: WeekProgress;
+  week: Pick<WeekProgress, 'current' | 'previous'>;
   compact?: boolean;
   renderShape?: (points: RadarPoint[]) => ReactNode;
   renderReference?: (points: RadarPoint[]) => ReactNode;
