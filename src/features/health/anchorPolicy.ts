@@ -33,6 +33,7 @@ import type { SyncResult } from '@/features/health/sync';
 export function shouldCommitAnchor(result: SyncResult): boolean {
   switch (result.kind) {
     case 'summary':
+      return result.remaining !== true;
     case 'nothingToSend':
       return true;
 

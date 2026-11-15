@@ -97,7 +97,9 @@ async function handleWakeup(anchor: string): Promise<void> {
   // reste en file et se jouera à l'ouverture — cette notification ne le consomme pas, elle
   // signale seulement qu'il y a quelque chose à venir voir.
   if (outcome.result.kind === 'summary') {
-    await announce(outcome.result.summary, owner);
+    for (const summary of outcome.result.summaries ?? [outcome.result.summary]) {
+      await announce(summary, owner);
+    }
   }
   if (!isCurrentOwner(owner)) return;
 
@@ -109,7 +111,8 @@ async function handleWakeup(anchor: string): Promise<void> {
    * chiffres affichés, et lui faire payer une requête de plus n'apporterait rien.
    */
   const widgetIsStale =
-    outcome.result.kind === 'summary' && hasAwardedXp(outcome.result.summary.totals);
+    outcome.result.kind === 'summary' &&
+    (outcome.result.summaries ?? [outcome.result.summary]).some((summary) => hasAwardedXp(summary.totals));
 
   if (shouldCommitAnchor(outcome.result)) {
     try {

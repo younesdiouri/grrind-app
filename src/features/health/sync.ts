@@ -3,6 +3,7 @@ import { getSessionOwner, isCurrentOwner, subscribe as subscribeToSession, type 
 import { failureFrom, type Failure } from '@/features/auth/problems';
 import { noteRunStarted, noteSettled } from '@/features/diagnostics/journal';
 import { healthProvider } from '@/features/health/current';
+import { importBatches, MAX_IMPORT_BATCH } from '@/features/health/importBatches';
 import { forgetImport, prepareImport, readImport } from '@/features/health/keyStore';
 import { sendUntilAnswered, type Reply } from '@/features/health/replay';
 import { retryDelaysFor, runBudgetMsFor } from '@/features/health/retryPolicy';
@@ -141,7 +142,7 @@ export function subscribeToSync(listener: () => void): () => void {
 /** Ce qu'une synchronisation a produit. */
 export type SyncResult =
   /** Le serveur a répondu. `replayed` dit qu'il a ressorti une réponse au lieu de la produire. */
-  | { kind: 'summary'; summary: SyncSummary; replayed: boolean }
+  | { kind: 'summary'; summary: SyncSummary; replayed: boolean; summaries?: SyncSummary[]; remaining?: boolean }
   /**
    * Le fournisseur n'a rien rendu. **Ce n'est pas une erreur, et ce n'est pas non plus un
    * refus** : HealthKit ne dit jamais si l'utilisateur a refusé la lecture, donc « aucune
@@ -159,9 +160,6 @@ export type SyncResult =
    * que de le confondre avec une panne réseau — voir `outcomeDetail()` (`reglages.tsx`).
    */
   | { kind: 'budgetExceeded' };
-
-/** Le maximum que le contrat accepte dans un lot. */
-const MAX_BATCH = 200;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -243,56 +241,64 @@ async function perform(trigger: SyncTrigger, owner: SessionOwner): Promise<SyncR
       if (exceeded(deadline)) return { kind: 'budgetExceeded' };
       if (found.length === 0) return { kind: 'nothingToSend' };
 
-      // Le découpage au-delà de 200 reste celui d'avant (#411 le traite séparément).
-      intent = prepareImport(owner, { workouts: found.slice(-MAX_BATCH) });
+      intent = prepareImport(owner, importBatches(found).map((workouts) => ({ workouts })));
     }
-    if (exceeded(deadline)) return { kind: 'budgetExceeded' };
-    const { key, body } = intent;
+    const summaries: SyncSummary[] = [];
+    let result: Extract<SyncResult, { kind: 'summary' }>;
+    do {
+      if (exceeded(deadline)) return { kind: 'budgetExceeded' };
+      // Le groupe reste entier ; sa politique attend le cadrage explicite de #411.
+      if (intent.body.workouts.length > MAX_IMPORT_BATCH) throw new Error('Groupe de chevauchements supérieur à 200');
+      const { key, body } = intent;
 
-    // 4. L'envoi, rejoué tant qu'on ignore ce que le serveur a fait, et couru contre le même
-    //    budget que le `GET` — le rejeu post-refresh d'un 401 sur ce `POST` a la même faiblesse
-    //    que celui du `GET` (voir `withinBudget()`), donc le même traitement : un abandon est
-    //    une panne de transport comme une autre pour `sendUntilAnswered`, donc une issue
-    //    **inconnue**, donc pas de commit d'ancre — voir `anchorPolicy.ts`. La même différence
-    //    se relira simplement au prochain réveil.
-    const answer = await withinBudget(
-      sendUntilAnswered<SyncSummary>(
-        () => {
-          requireOwner(owner);
-          return api.POST('/api/workouts/import', {
-            params: { header: { 'Idempotency-Key': key } },
-            body,
-            signal: deadline.signal,
-            fetch: fetchForOwner,
-          }) as unknown as Promise<Reply<SyncSummary>>;
-        },
-        { delays: retryDelaysFor(trigger), sleep: async (ms) => {
-          requireOwner(owner);
-          await sleep(ms);
-          requireOwner(owner);
-        } },
-      ),
-      deadline.signal,
-    );
-    requireOwner(owner);
+      // 4. L'envoi, rejoué tant qu'on ignore ce que le serveur a fait, et couru contre le même
+      //    budget que le `GET` — le rejeu post-refresh d'un 401 sur ce `POST` a la même faiblesse
+      //    que celui du `GET` (voir `withinBudget()`), donc le même traitement : un abandon est
+      //    une panne de transport comme une autre pour `sendUntilAnswered`, donc une issue
+      //    **inconnue**, donc pas de commit d'ancre — voir `anchorPolicy.ts`. La même différence
+      //    se relira simplement au prochain réveil.
+      const answer = await withinBudget(
+        sendUntilAnswered<SyncSummary>(
+          () => {
+            requireOwner(owner);
+            return api.POST('/api/workouts/import', {
+              params: { header: { 'Idempotency-Key': key } },
+              body,
+              signal: deadline.signal,
+              fetch: fetchForOwner,
+            }) as unknown as Promise<Reply<SyncSummary>>;
+          },
+          { delays: retryDelaysFor(trigger), sleep: async (ms) => {
+            requireOwner(owner);
+            await sleep(ms);
+            requireOwner(owner);
+          } },
+        ),
+        deadline.signal,
+      );
+      requireOwner(owner);
 
-    if (!answer.ok) {
-      // La clé **reste** en place : aucun verdict n'est tombé, ou il en est tombé un que la
-      // prochaine tentative doit pouvoir rejouer à l'identique. L'effacer ici rouvrirait
-      // exactement la fenêtre que ce mécanisme ferme.
-      return { kind: 'failed', failure: failureFrom(answer.refusal) };
-    }
+      if (!answer.ok) {
+        // La clé **reste** en place : aucun verdict n'est tombé, ou il en est tombé un que la
+        // prochaine tentative doit pouvoir rejouer à l'identique. L'effacer ici rouvrirait
+        // exactement la fenêtre que ce mécanisme ferme.
+        return { kind: 'failed', failure: failureFrom(answer.refusal) };
+      }
 
-    // Le reçu et sa clé sont durables ensemble AVANT de libérer l'intention. Même vide,
-    // le dernier reçu reste identifié ; un rejeu après ACK ne rouvre pas son animation.
-    enqueuePending(answer.data, owner, trigger === 'manual', key);
-    try {
-      forgetImport(owner, intent);
-    } catch {
-      // Le reçu est sauvé : un nettoyage refusé sera repris sans ajouter de second bilan.
-    }
-
-    return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
+      // Le reçu et sa clé sont durables ensemble AVANT de libérer l'intention. Même vide,
+      // le dernier reçu reste identifié ; un rejeu après ACK ne rouvre pas son animation.
+      enqueuePending(answer.data, owner, trigger === 'manual', key);
+      summaries.push(answer.data);
+      result = { kind: 'summary', summary: answer.data, replayed: answer.replayed, summaries };
+      try {
+        forgetImport(owner, intent);
+      } catch {
+        // Ne jamais envoyer le suivant tant que cette avance n'est pas durable.
+        return { ...result, remaining: true };
+      }
+      intent = readImport(owner);
+    } while (intent !== null);
+    return result;
   } catch (error) {
     // `withinBudget()` (`runBudget.ts`) jette `BudgetExceeded` quand c'est le budget qui a
     // tranché, jamais sur une vraie panne de transport survenue pendant qu'il tenait encore —
@@ -355,7 +361,8 @@ export async function sync(trigger: SyncTrigger): Promise<HealthSyncOutcome> {
     const result = outcome.result;
     noteSettled({
       outcome: result.kind,
-      imported: result.kind === 'summary' ? result.summary.imported.length : null,
+      imported: result.kind === 'summary'
+        ? (result.summaries ?? [result.summary]).reduce((count, summary) => count + summary.imported.length, 0) : null,
       failure: result.kind === 'failed' ? result.failure : null,
     });
   }

@@ -6,6 +6,7 @@ import { beforeEach, mock, test } from 'node:test';
 
 import type { SyncSummary } from './timeline.ts';
 import type { WorkoutData } from '../health/provider.ts';
+import { shouldCommitAnchor } from '../health/anchorPolicy.ts';
 
 const first = JSON.parse(readFileSync('fixtures/sync-summary/un-workout.json', 'utf8')) as SyncSummary;
 const second = JSON.parse(readFileSync('fixtures/sync-summary/trois-workouts.json', 'utf8')) as SyncSummary;
@@ -25,10 +26,25 @@ let refuseIntent = false;
 let interruptReplacement = false;
 let available = true;
 let responseForA = first;
+let responseSequence: SyncSummary[] = [];
+let loseReplyAt = 0;
+let firstPlan = '';
+let interruptImportAdvance = false;
+let interruptAdvanceAt = 0;
+let observeReceiptAt = 0;
+let cursor: string | null = null;
 let found = workouts();
 function workouts(): WorkoutData[] {
   return [{ source: 'APPLE_HEALTH', externalId: 'health-workout', activityType: 'running',
     startedAt: '2026-11-15T08:00:00+01:00', endedAt: '2026-11-15T09:00:00+01:00' }];
+}
+function backlog(count: number): WorkoutData[] {
+  const start = Date.parse('2026-10-20T00:00:00Z');
+  return Array.from({ length: count }, (_, index) => ({
+    ...workouts()[0], externalId: `backlog-${index}`,
+    startedAt: new Date(start + index * 5_400_000).toISOString(),
+    endedAt: new Date(start + index * 5_400_000 + 2_700_000).toISOString(),
+  }));
 }
 const imports: { owner: string | null; key: string | null; body: string }[] = [];
 const committed = new Map<string, { body: string; summary: SyncSummary }>();
@@ -65,6 +81,9 @@ mock.module('expo-file-system', { namedExports: {
       disk.delete(this.path);
     }
     move(destination: { path: string }) {
+      if (interruptImportAdvance && this.path.includes('pending-import-') && this.path.endsWith('.next')) {
+        throw new Error('arrêt pendant l’avance du plan');
+      }
       if (interruptReplacement && this.path.includes('pending-reward-') && this.path.endsWith('.next')) {
         throw new Error('arrêt pendant le remplacement');
       }
@@ -103,19 +122,27 @@ mock.method(globalThis, 'fetch', async (request: Request) => {
     const owner = request.headers.get('Authorization')?.replace('Bearer jwt-', '') ?? null;
     requests.push({ path, owner });
     if (httpHold?.path === path && httpHold.owner === owner) await waitAt(httpHold.pause);
-    if (path === '/api/workouts/sync-state') return Response.json({ lastImportedAt: null, importWindowDays: 30 });
+    if (path === '/api/workouts/sync-state') return Response.json({ lastImportedAt: cursor, importWindowDays: 30 });
     assert.equal(path, '/api/workouts/import');
     const key = request.headers.get('Idempotency-Key');
     const body = await request.text();
-    const intent = JSON.parse(disk.get(`documents/pending-import-${encodeURIComponent(owner!)}.json`)!);
+    const planPath = `documents/pending-import-${encodeURIComponent(owner!)}.json`;
+    const raw = disk.get(planPath) ?? disk.get(`${planPath}.previous`)!;
+    const intent = JSON.parse(raw);
     assert.equal(intent.key, key, 'la clé doit être durable avant le transport');
     assert.equal(JSON.stringify(intent.body), body, 'le corps exact doit être durable avant le transport');
     imports.push({ owner, key, body });
+    if (imports.length === 1) firstPlan = raw;
+    if (imports.length === interruptAdvanceAt) interruptImportAdvance = true;
+    if (imports.length === observeReceiptAt) refuseReceipt = true;
     const held = committed.get(`${owner}/${key}`);
     if (held) assert.equal(body, held.body, 'la même clé exige le corps exact');
-    const summary = held?.summary ?? (owner?.startsWith('A-') ? responseForA : second);
+    const summary = held?.summary ?? (owner?.startsWith('A-') ? responseSequence.shift() ?? responseForA : second);
     committed.set(`${owner}/${key}`, { body, summary });
-    if (loseReply) throw new Error('réponse perdue après COMMIT');
+    const ends = (JSON.parse(body).workouts as WorkoutData[]).map((w) => w.endedAt);
+    cursor = [cursor, ...ends].filter((end): end is string => end !== null)
+      .sort((a, b) => Date.parse(a) - Date.parse(b)).at(-1)!;
+    if (loseReply || imports.length === loseReplyAt) throw new Error('réponse perdue après COMMIT');
     return Response.json(summary, { headers: { 'Idempotent-Replay': held ? 'true' : 'false' } });
   }
   assert.equal(path, '/api/auth/login');
@@ -153,8 +180,207 @@ beforeEach(async () => {
   httpHold = null; healthHold = null;
   loseReply = false; refuseReceipt = false; refuseCleanup = false; available = true;
   refuseIntent = false; interruptReplacement = false; responseForA = first;
+  responseSequence = []; loseReplyAt = 0; firstPlan = ''; interruptImportAdvance = false; cursor = null;
+  interruptAdvanceAt = 0; observeReceiptAt = 0;
   found = workouts(); imports.length = 0; committed.clear();
   caseNumber += 1;
+});
+
+for (const count of [0, 200, 201]) {
+  test(`collection ${count} : toutes les séances passent en lots de 200 maximum`, async () => {
+    const owner = await login('A');
+    found = backlog(count);
+    const original = structuredClone(found);
+    const outcome = await (await bootSync()).health.sync('background');
+    assert.equal(outcome.status === 'done' && outcome.result.kind, count === 0 ? 'nothingToSend' : 'summary');
+    const bodies = imports.map(({ body }) => JSON.parse(body).workouts as WorkoutData[]);
+    assert.deepEqual(bodies.map((batch) => batch.length), count === 0 ? [] : count === 200 ? [200] : [200, 1]);
+    assert.deepEqual(bodies.flat(), original);
+    assert.equal(new Set(imports.map(({ key }) => key)).size, imports.length);
+    if (count > 0) {
+      const plan = JSON.parse(firstPlan);
+      const intents = [plan, ...plan.remaining ?? []];
+      assert.deepEqual(intents.flatMap((intent) => intent.body.workouts), original, 'la collection entière précède le premier POST');
+      assert.deepEqual(imports.map(({ key }) => key), intents.map((intent) => intent.key));
+    }
+    assert.equal(disk.has(`documents/pending-import-${encodeURIComponent(owner.id)}.json`), false);
+  });
+}
+
+test('199 + deux séances qui se chevauchent : le serveur reçoit les deux rivales ensemble', async () => {
+  await login('A');
+  const pair: WorkoutData[] = [
+    { ...workouts()[0], externalId: 'pauvre', startedAt: '2026-11-15T08:00:00+01:00', endedAt: '2026-11-15T09:00:00+01:00' },
+    { ...workouts()[0], externalId: 'riche', startedAt: '2026-11-15T08:01:00+01:00', endedAt: '2026-11-15T09:01:00+01:00', averageHeartRate: 140 },
+  ];
+  found = [...backlog(199), ...pair];
+  await (await bootSync()).health.sync('background');
+  assert.deepEqual(imports.map(({ body }) => JSON.parse(body).workouts.length), [199, 2]);
+  assert.deepEqual(JSON.parse(imports[1].body).workouts, pair, 'aucun gagnant choisi côté client');
+});
+
+test('startedAt/endedAt inversés : groupe connecté et dates brutes conservés', async () => {
+  await login('A');
+  const group: WorkoutData[] = [
+    { ...workouts()[0], externalId: 'longue', startedAt: '2026-11-15T08:00:00+01:00', endedAt: '2026-11-15T12:00:00+01:00' },
+    { ...workouts()[0], externalId: 'courte-1', startedAt: '2026-11-15T08:00:00Z', endedAt: '2026-11-15T09:00:00Z' },
+    { ...workouts()[0], externalId: 'courte-2', startedAt: '2026-11-15T10:00:00+01:00', endedAt: '2026-11-15T11:00:00+01:00' },
+  ];
+  found = [...group.toReversed(), ...backlog(198).toReversed()];
+  await (await bootSync()).health.sync('background');
+  assert.deepEqual(imports.map(({ body }) => JSON.parse(body).workouts.length), [198, 3]);
+  assert.deepEqual(JSON.parse(imports[1].body).workouts, group);
+});
+
+test('coupure au lot 2 puis redémarrage et nouvelle séance : reprend le plan avant le curseur', async () => {
+  const owner = await login('A');
+  found = backlog(401);
+  const original = structuredClone(found);
+  responseSequence = [first, second, first];
+  loseReplyAt = 2;
+  const initial = await bootSync();
+  const interrupted = await initial.health.sync('background');
+  assert.equal(interrupted.status === 'done' && interrupted.result.kind, 'failed');
+  assert.equal(imports.length, 2);
+  const savedPlan = JSON.parse(firstPlan);
+  const planned = [savedPlan, ...savedPlan.remaining];
+  found = [{ ...workouts()[0], externalId: 'nouvelle-après-coupure' }];
+  available = false;
+  const before = requests.length;
+  const restarted = await bootSync();
+  await restarted.health.sync('launch');
+  assert.deepEqual(requests.slice(before).map(({ path }) => path), ['/api/workouts/import', '/api/workouts/import']);
+  assert.deepEqual(imports[2], imports[1], 'rejeu exact du lot incertain');
+  assert.deepEqual([imports[0], imports[2], imports[3]].map(({ key, body }) => ({ key, body: JSON.parse(body) })),
+    planned.map(({ key, body }) => ({ key, body })));
+  assert.deepEqual([imports[0], imports[2], imports[3]].flatMap(({ body }) => JSON.parse(body).workouts), original);
+  const queue = await boot();
+  for (const summary of [first, second, first]) {
+    assert.deepEqual(queue.getPending(owner), summary);
+    assert.equal(queue.markPlayed(queue.getPending(owner)!, owner), true);
+  }
+  assert.equal(queue.getPending(owner), null);
+  available = true;
+  await restarted.health.sync('manual');
+  assert.deepEqual(JSON.parse(imports.at(-1)!.body).workouts, found);
+});
+
+test('avance du plan interrompue après reçu et ACK : reprend sans doubler le bilan ni perdre la suite', async () => {
+  const owner = await login('A');
+  found = backlog(201);
+  interruptAdvanceAt = 1;
+  responseSequence = [first, second];
+  const initial = await bootSync();
+  const stopped = await initial.health.sync('background');
+  assert.equal(stopped.status === 'done' && stopped.result.kind, 'summary');
+  if (stopped.status === 'done') assert.equal(shouldCommitAnchor(stopped.result), false);
+  assert.equal(imports.length, 1, 'aucun lot suivant avant avance durable');
+  assert.equal(initial.pending.markPlayed(initial.pending.getPending(owner)!, owner), true);
+  interruptImportAdvance = false;
+  available = false;
+  const restarted = await bootSync();
+  await restarted.health.sync('launch');
+  assert.deepEqual(imports[1], imports[0]);
+  assert.deepEqual(JSON.parse(imports[2].body).workouts, found.slice(200));
+  assert.deepEqual(restarted.pending.getPending(owner), second, 'le lot déjà acquitté ne revient pas');
+  assert.equal(restarted.pending.markPlayed(restarted.pending.getPending(owner)!, owner), true);
+  assert.equal((await boot()).getPending(owner), null);
+});
+
+test('reçu du lot 2 refusé : ne libère pas sa clé et reprend tous les bilans séparés', async () => {
+  const owner = await login('A');
+  found = backlog(401);
+  responseSequence = [first, second, first];
+  observeReceiptAt = 2;
+  const initial = await bootSync();
+  const stopped = await initial.health.sync('background');
+  assert.equal(stopped.status === 'done' && stopped.result.kind, 'failed');
+  assert.equal(imports.length, 2);
+  refuseReceipt = false;
+  available = false;
+  const restarted = await bootSync();
+  await restarted.health.sync('launch');
+  assert.deepEqual(imports[2], imports[1]);
+  for (const summary of [first, second, first]) {
+    assert.deepEqual(restarted.pending.getPending(owner), summary);
+    assert.equal(restarted.pending.markPlayed(restarted.pending.getPending(owner)!, owner), true);
+  }
+  assert.equal((await boot()).getPending(owner), null);
+});
+
+test('plan multi-lots A incertain, import B puis retour A : aucune reprise sous le mauvais compte', async () => {
+  await login('A');
+  found = backlog(201);
+  const original = structuredClone(found);
+  loseReplyAt = 1;
+  await (await bootSync()).health.sync('background');
+  await session.signOut();
+  const ownerB = await login('B');
+  found = [{ ...workouts()[0], externalId: 'séance-B' }];
+  const underB = await bootSync();
+  await underB.health.sync('background');
+  assert.deepEqual(underB.pending.getPending(ownerB), second);
+  assert.deepEqual(JSON.parse(imports[1].body).workouts, found);
+  await session.signOut();
+  const ownerA = await login('A');
+  available = false;
+  const returned = await bootSync();
+  await returned.health.sync('launch');
+  assert.deepEqual(imports[2], imports[0]);
+  assert.deepEqual([imports[2], imports[3]].flatMap(({ body }) => JSON.parse(body).workouts), original);
+  assert.deepEqual(returned.pending.getPending(ownerA), first);
+  assert.equal(returned.pending.getPending(ownerB), null);
+});
+
+test('intention 410 déjà présente : reprend le corps et la clé sans reconstruire un plan', async () => {
+  const owner = await login('A');
+  const legacy = { key: 'clé-durable-410', body: { workouts: workouts() } };
+  disk.set(`documents/pending-import-${encodeURIComponent(owner.id)}.json`, JSON.stringify(legacy));
+  found = backlog(201);
+  available = false;
+  await (await bootSync()).health.sync('launch');
+  assert.equal(imports.length, 1);
+  assert.equal(imports[0].key, legacy.key);
+  assert.deepEqual(JSON.parse(imports[0].body), legacy.body);
+  assert.deepEqual(requests.map(({ path }) => path), ['/api/workouts/import']);
+});
+
+test('suite du plan illisible : aucun POST du premier lot ni remplacement de la collection', async () => {
+  const owner = await login('A');
+  const raw = JSON.stringify({ key: 'premier', body: { workouts: backlog(200) }, remaining: [{ key: 'second', body: {} }] });
+  const path = `documents/pending-import-${encodeURIComponent(owner.id)}.json`;
+  disk.set(path, raw);
+  const stopped = await (await bootSync()).health.sync('background');
+  assert.equal(stopped.status === 'done' && stopped.result.kind, 'failed');
+  assert.equal(requests.length, 0);
+  assert.equal(disk.get(path), raw);
+});
+
+test('fin de lot sans crédit : conserve le bilan précédent et rend les deux réponses brutes', async () => {
+  const owner = await login('A');
+  found = backlog(201);
+  const empty: SyncSummary = { ...second, imported: [], skipped: [], totals: null };
+  responseSequence = [first, empty];
+  const initial = await bootSync();
+  const outcome = await initial.health.sync('background');
+  assert.equal(outcome.status === 'done' && outcome.result.kind, 'summary');
+  if (outcome.status === 'done' && outcome.result.kind === 'summary') {
+    assert.deepEqual(outcome.result.summaries, [first, empty]);
+    assert.equal(shouldCommitAnchor(outcome.result), true);
+  }
+  assert.deepEqual(initial.pending.getPending(owner), first);
+  assert.equal(initial.pending.markPlayed(initial.pending.getPending(owner)!, owner), true);
+  assert.equal((await boot()).getPending(owner), null);
+});
+
+test('groupe dépassant 200 : conserve les candidats entiers sans envoyer de corps hors contrat', async () => {
+  const owner = await login('A');
+  found = Array.from({ length: 201 }, (_, index) => ({ ...workouts()[0], externalId: `rival-${index}` }));
+  await (await bootSync()).health.sync('background');
+  assert.equal(imports.length, 0);
+  const path = `documents/pending-import-${encodeURIComponent(owner.id)}.json`;
+  const held = JSON.parse(disk.get(path)!);
+  assert.deepEqual(held.body.workouts, found, 'aucun arbitrage ni abandon local');
 });
 
 for (const healthAvailable of [true, false]) {
