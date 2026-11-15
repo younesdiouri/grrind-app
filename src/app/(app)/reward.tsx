@@ -53,11 +53,10 @@ function leave(): void {
  * de quelqu'un.
  */
 function leavePlayed(summary: Parameters<typeof refreshInventoryAfterReward>[1], owner: SessionOwner | null): void {
-  if (!isCurrentOwner(owner)) return;
+  if (!isCurrentOwner(owner) || !markPlayed(summary, owner)) return;
   // Le solde du résumé est déjà le verdict serveur : l'écrire avant de revenir évite une
   // image d'accueil périmée, puis l'invalidation relit aussi les éventuels objets tombés.
   void refreshInventoryAfterReward(queryClient, summary, owner);
-  markPlayed();
   leave();
 }
 export default function RewardScreen() {
@@ -78,7 +77,7 @@ export default function RewardScreen() {
 
   // Le magasin des progressions non jouées, et non le résultat de la dernière
   // synchronisation : c'est lui qui survit à la mort de l'app, donc lui qui fait foi.
-  const summary = getPending();
+  const summary = getPending(owner);
 
   if (summary === null) {
     return (
@@ -88,7 +87,7 @@ export default function RewardScreen() {
     );
   }
 
-  return <SyncSummaryView summary={summary} onDismiss={() => leavePlayed(summary, owner)} />;
+  return <SyncSummaryView key={`${owner?.id}:${owner?.generation}`} summary={summary} onDismiss={() => leavePlayed(summary, owner)} />;
 }
 
 const styles = StyleSheet.create({

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
+import { getSessionOwner, isCurrentOwner } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
 import { enableBackgroundWakeup, startBackgroundWakeup } from '@/features/health/backgroundWakeup';
 import { sendDailyActivity } from '@/features/health/dailyActivity';
@@ -61,7 +62,10 @@ export function useSyncTriggers(): void {
 
       // Le pointage **après** l'import (#360) : le palier du coffre compte les séances que
       // cette synchronisation vient de créditer.
-      void sync(trigger).then(() => {
+      const sessionOwner = getSessionOwner();
+      if (!isCurrentOwner(sessionOwner) || sessionOwner.id !== owner) return;
+      void sync(trigger).then((outcome) => {
+        if (outcome.status === 'superseded' || !isCurrentOwner(sessionOwner)) return;
         void checkIn();
         return syncTogether(trigger);
       });
@@ -76,7 +80,7 @@ export function useSyncTriggers(): void {
       // de suite. Meilleur effort, silencieux — voir `dailyActivity.ts`.
       void sendDailyActivity();
     },
-    [signedIn],
+    [signedIn, owner],
   );
 
   // 1. L'ouverture. `signedIn` en dépendance fait aussi office de déclencheur après une
@@ -145,7 +149,9 @@ export function useSyncStatus(): { status: SyncStatus; refresh: () => Promise<vo
    */
   const refresh = useCallback(async (): Promise<void> => {
     if (signedIn) {
+      const owner = getSessionOwner();
       await sync('manual');
+      if (!isCurrentOwner(owner)) return;
       await syncTogether('manual');
     }
   }, [signedIn]);

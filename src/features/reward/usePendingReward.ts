@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
+import { isCurrentOwner, type SessionOwner } from '@/features/auth/session';
+import { useSessionOwner } from '@/features/auth/useAuth';
 import { hasInteracted, mayOpenReward } from '@/features/reward/launchGate';
 import { getPending, subscribeToPending, wasSolicited } from '@/features/reward/pending';
 
@@ -43,14 +45,16 @@ import { getPending, subscribeToPending, wasSolicited } from '@/features/reward/
  * ouvert renaviguerait sur lui-même pour rien.
  */
 export function usePendingReward(): void {
+  const owner = useSessionOwner();
   const pending = useSyncExternalStore(subscribeToPending, getPending);
 
   // Le résumé déjà envoyé à l'écran. Une `ref` et non un état : le changer ne doit rien
   // rendre, il ne sert qu'à ne pas naviguer deux fois vers la même chose.
-  const shown = useRef<unknown>(null);
+  const shown = useRef<{ summary: unknown; owner: SessionOwner } | null>(null);
 
   const tryShow = useCallback(() => {
-    if (pending === null || shown.current === pending) {
+    if (!isCurrentOwner(owner) || pending === null
+      || (shown.current?.summary === pending && shown.current.owner.generation === owner.generation)) {
       return;
     }
 
@@ -72,9 +76,9 @@ export function usePendingReward(): void {
       return;
     }
 
-    shown.current = pending;
+    shown.current = { summary: pending, owner };
     router.push('/reward');
-  }, [pending]);
+  }, [pending, owner]);
 
   useEffect(() => {
     tryShow();

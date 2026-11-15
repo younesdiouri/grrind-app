@@ -1,4 +1,5 @@
 import { api } from '@/api/client';
+import { getSessionOwner, isCurrentOwner, subscribe as subscribeToSession, type SessionOwner } from '@/features/auth/session';
 import { failureFrom, type Failure } from '@/features/auth/problems';
 import { fingerprintOf } from '@/features/health/batchKey';
 import { noteRunStarted, noteSettled } from '@/features/diagnostics/journal';
@@ -88,7 +89,9 @@ export type SyncStatus =
   | { phase: 'syncing' }
   | { phase: 'settled'; result: SyncResult };
 
-let status: SyncStatus = { phase: 'idle' };
+const IDLE: SyncStatus = { phase: 'idle' };
+let status: SyncStatus = IDLE;
+let statusOwner: SessionOwner | null = null;
 const listeners = new Set<() => void>();
 
 /**
@@ -104,8 +107,10 @@ const listeners = new Set<() => void>();
  */
 let settledRevision = 0;
 
-function publish(next: SyncStatus): void {
+function publish(next: SyncStatus, owner: SessionOwner): void {
+  if (!isCurrentOwner(owner)) return;
   status = next;
+  statusOwner = owner;
 
   if (next.phase === 'settled') {
     settledRevision += 1;
@@ -117,7 +122,7 @@ function publish(next: SyncStatus): void {
 }
 
 export function getSyncStatus(): SyncStatus {
-  return status;
+  return isCurrentOwner(statusOwner) ? status : IDLE;
 }
 
 export function getSettledRevision(): number {
@@ -126,8 +131,10 @@ export function getSettledRevision(): number {
 
 export function subscribeToSync(listener: () => void): () => void {
   listeners.add(listener);
+  const unsubscribeSession = subscribeToSession(listener);
   return () => {
     listeners.delete(listener);
+    unsubscribeSession();
   };
 }
 
@@ -192,11 +199,15 @@ function exceeded(deadline: { signal: AbortSignal | undefined }): boolean {
   return deadline.signal?.aborted === true;
 }
 
-async function perform(trigger: SyncTrigger): Promise<SyncResult> {
+function requireOwner(owner: SessionOwner): void {
+  if (!isCurrentOwner(owner)) throw new Error('Synchronisation d’une session quittée');
+}
+
+async function perform(trigger: SyncTrigger, owner: SessionOwner): Promise<SyncResult> {
   // C'est ici et pas dans `sync()` que la synchronisation commence vraiment : un appel refusé
   // par le seuil, ou qui en rejoint une déjà partie, n'entre jamais dans cette fonction. Le
   // dire ailleurs ferait clignoter l'écran entre « en cours » et « rien à faire ».
-  publish({ phase: 'syncing' });
+  publish({ phase: 'syncing' }, owner);
 
   // Et sur le disque (#140) : une course tuée par le chien de garde natif avant tout verdict
   // n'appellera jamais `noteSettled()` plus bas. Sans cette ligne, rien ne distinguerait ça
@@ -206,11 +217,17 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
   // Le budget de toute la course : le `GET` ci-dessous, le refresh qu'un 401 peut y déclencher,
   // et le `POST` plus bas. Jamais le refresh lui-même — voir le docblock en tête de fichier.
   const deadline = runDeadline(trigger);
+  // Dernière garde au transport : les middlewares HTTP peuvent eux-mêmes rendre la main.
+  const fetchForOwner = (request: Request): Promise<Response> => {
+    requireOwner(owner);
+    return fetch(request);
+  };
 
   try {
     if (!(await healthProvider.isAvailable())) {
       return { kind: 'unavailable' };
     }
+    requireOwner(owner);
 
     // 1. Depuis quand. Le cache local évite un aller-retour, mais il n'est pas la vérité : ce
     //    n'est pas une optimisation qu'on peut se permettre au prix d'un curseur faux.
@@ -219,9 +236,10 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
     // (`runBudget.ts`) et le docblock en tête de fichier — un point de contrôle posé après
     // cet `await` ne s'exécuterait jamais si le budget expire pendant l'attente elle-même.
     const state = await withinBudget(
-      api.GET('/api/workouts/sync-state', { signal: deadline.signal }),
+      api.GET('/api/workouts/sync-state', { signal: deadline.signal, fetch: fetchForOwner }),
       deadline.signal,
     );
+    requireOwner(owner);
 
     if (state.data === undefined) {
       return { kind: 'failed', failure: failureFrom(state.error) };
@@ -231,6 +249,7 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
     //    contrôle avant, seulement après.
     const since = windowStart(state.data, new Date());
     const found = await healthProvider.workoutsSince(since);
+    requireOwner(owner);
 
     if (exceeded(deadline)) {
       return { kind: 'budgetExceeded' };
@@ -248,6 +267,7 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
     // 3. La clé, appariée au lot. Même lot qu'à la tentative d'avant → même clé → le serveur
     //    ressort la réponse d'origine plutôt qu'une synchronisation vide.
     const key = await batchKeys.keyFor(fingerprintOf(workouts.map((w) => w.externalId)));
+    requireOwner(owner);
 
     if (exceeded(deadline)) {
       return { kind: 'budgetExceeded' };
@@ -261,16 +281,24 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
     //    se relira simplement au prochain réveil.
     const answer = await withinBudget(
       sendUntilAnswered<SyncSummary>(
-        () =>
-          api.POST('/api/workouts/import', {
+        () => {
+          requireOwner(owner);
+          return api.POST('/api/workouts/import', {
             params: { header: { 'Idempotency-Key': key } },
             body: { workouts },
             signal: deadline.signal,
-          }) as unknown as Promise<Reply<SyncSummary>>,
-        { delays: retryDelaysFor(trigger), sleep },
+            fetch: fetchForOwner,
+          }) as unknown as Promise<Reply<SyncSummary>>;
+        },
+        { delays: retryDelaysFor(trigger), sleep: async (ms) => {
+          requireOwner(owner);
+          await sleep(ms);
+          requireOwner(owner);
+        } },
       ),
       deadline.signal,
     );
+    requireOwner(owner);
 
     if (!answer.ok) {
       // La clé **reste** en place : aucun verdict n'est tombé, ou il en est tombé un que la
@@ -282,6 +310,7 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
     // Le lot a son verdict : la clé n'a plus rien à protéger, et la garder ferait rejouer une
     // clé périmée sur un lot différent — un 409 `idempotency-key-reused` gratuit.
     await batchKeys.forget();
+    requireOwner(owner);
 
     // Une progression qui n'a rien crédité n'est pas un moment : `imported` vide veut dire que
     // tout était déjà compté ou écarté, et ouvrir un plein écran là-dessus serait une fausse
@@ -295,7 +324,7 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
       // `manual` est le seul déclencheur qui vienne d'un **geste** : le bouton de
       // synchronisation, le tirer-pour-rafraîchir. Une progression qu'on vient de demander n'a
       // pas à attendre le prochain lancement à froid — voir `wasSolicited` (#97).
-      enqueuePending(answer.data, trigger === 'manual');
+      enqueuePending(answer.data, owner, trigger === 'manual');
     }
 
     return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
@@ -315,11 +344,13 @@ async function perform(trigger: SyncTrigger): Promise<SyncResult> {
   }
 }
 
-const coordinator = createSyncCoordinator<SyncResult>({
-  perform,
-  now: () => Date.now(),
-  minimumIntervalMs: 30_000,
-});
+// B ne rejoint jamais la promesse de A, même si son transport est encore en vol.
+let coordinated: {
+  owner: SessionOwner;
+  coordinator: ReturnType<typeof createSyncCoordinator<SyncResult>>;
+} | null = null;
+
+type HealthSyncOutcome = SyncOutcome<SyncResult> | { status: 'superseded' };
 
 /**
  * Synchronise, ou rejoint celle qui tourne déjà.
@@ -328,19 +359,29 @@ const coordinator = createSyncCoordinator<SyncResult>({
  * automatique n'a personne pour attraper une exception, et une synchronisation ratée ne doit
  * pas être un incident — c'est un état de l'app, pas une panne.
  */
-export async function sync(trigger: SyncTrigger): Promise<SyncOutcome<SyncResult>> {
+export async function sync(trigger: SyncTrigger): Promise<HealthSyncOutcome> {
+  const owner = getSessionOwner();
+  if (owner === null) return { status: 'superseded' };
+  if (coordinated?.owner.id !== owner.id || coordinated.owner.generation !== owner.generation) {
+    coordinated = { owner, coordinator: createSyncCoordinator<SyncResult>({
+      perform: (next) => perform(next, owner),
+      now: () => Date.now(),
+      minimumIntervalMs: 30_000,
+    }) };
+  }
   let outcome: SyncOutcome<SyncResult>;
   try {
-    outcome = await coordinator.sync(trigger);
+    outcome = await coordinated.coordinator.sync(trigger);
   } catch (error) {
     outcome = { status: 'done', result: { kind: 'failed', failure: failureFrom(error) } };
   }
+  if (!isCurrentOwner(owner)) return { status: 'superseded' };
 
   // `throttled` n'est **pas** un résultat : rien n'est parti, et l'écran doit rester exactement
   // sur ce qu'il montrait. L'annoncer serait expliquer une mécanique interne à quelqu'un qui a
   // juste rouvert son app.
   if (outcome.status !== 'throttled') {
-    publish({ phase: 'settled', result: outcome.result });
+    publish({ phase: 'settled', result: outcome.result }, owner);
 
     // Et sur le disque (#82). `SyncStatus` reste l'état courant, le journal n'en est que la
     // mémoire — celle qui survit à la fermeture de l'app, et sans laquelle « est-ce que

@@ -1,5 +1,6 @@
 import { File, Paths } from 'expo-file-system';
 
+import { getSessionOwner, isCurrentOwner, subscribe as subscribeToSession, type SessionOwner } from '@/features/auth/session';
 import {
   dequeuePending,
   enqueuePending as enqueue,
@@ -51,17 +52,20 @@ import type { SyncSummary } from '@/features/reward/timeline';
  * Le réseau ne sert qu'à en découvrir de nouvelles.
  */
 
-const FILE_NAME = 'pending-reward.json';
-
-function file(): File {
+/**
+ * Un fichier par compte, conservé à la déconnexion ; la génération reste en mémoire.
+ * `pending-reward.json` (résumé seul OU tableau sans owner) reste intact, en quarantaine :
+ * aucun champ de ces formats ne prouve le propriétaire. Ne jamais l'attribuer au prochain
+ * compte connecté. Sa récupération attend une preuve d'appartenance ; aucun gain n'est recalculé.
+ */
+function file(ownerId: string): File {
   // `Paths.document` et non `Paths.cache` : le système vide le cache quand l'appareil manque
   // d'espace, et perdre l'animation d'un joueur pour récupérer onze kilo-octets serait un
   // mauvais marché.
-  return new File(Paths.document, FILE_NAME);
+  return new File(Paths.document, `pending-reward-${encodeURIComponent(ownerId)}.json`);
 }
 
-let queue: SyncSummary[] = [];
-let loaded = false;
+const queues = new Map<string, SyncSummary[]>();
 const listeners = new Set<() => void>();
 
 function notify(): void {
@@ -74,9 +78,9 @@ function notify(): void {
  * Écrit la file entière sur le disque. Une file vide efface le fichier plutôt que d'y laisser
  * un tableau vide : rien à relire ne doit pas dépendre d'un parseur.
  */
-function persist(): void {
+function persist(ownerId: string, queue: SyncSummary[]): void {
   try {
-    const handle = file();
+    const handle = file(ownerId);
 
     if (queue.length === 0) {
       if (handle.exists) {
@@ -100,16 +104,18 @@ function persist(): void {
  * Idempotent : les appels suivants rendent le cache mémoire. C'est ce qui autorise à
  * l'appeler depuis un rendu.
  */
-function loadQueue(): SyncSummary[] {
-  if (loaded) {
-    return queue;
+function loadQueue(ownerId: string): SyncSummary[] {
+  const cached = queues.get(ownerId);
+  if (cached !== undefined) {
+    return cached;
   }
 
-  loaded = true;
+  let queue: SyncSummary[] = [];
 
   try {
-    const handle = file();
+    const handle = file(ownerId);
     if (!handle.exists) {
+      queues.set(ownerId, queue);
       return queue;
     }
 
@@ -124,7 +130,7 @@ function loadQueue(): SyncSummary[] {
   } catch {
     queue = [];
     try {
-      const handle = file();
+      const handle = file(ownerId);
       if (handle.exists) {
         handle.delete();
       }
@@ -133,19 +139,23 @@ function loadQueue(): SyncSummary[] {
     }
   }
 
+  queues.set(ownerId, queue);
   return queue;
 }
 
 /** La progression en tête de file — celle qui doit se jouer maintenant, ou rien. */
-export function getPending(): SyncSummary | null {
-  const current = loadQueue();
+export function getPending(owner: SessionOwner | null = getSessionOwner()): SyncSummary | null {
+  if (!isCurrentOwner(owner)) return null;
+  const current = loadQueue(owner.id);
   return current.length > 0 ? current[0] : null;
 }
 
 export function subscribeToPending(listener: () => void): () => void {
   listeners.add(listener);
+  const unsubscribeSession = subscribeToSession(listener);
   return () => {
     listeners.delete(listener);
+    unsubscribeSession();
   };
 }
 
@@ -163,15 +173,15 @@ export function subscribeToPending(listener: () => void): () => void {
  *
  * ————— En mémoire, et jamais sur le disque ————————————————————————————————————————————
  *
- * Un `WeakSet` et pas un champ persisté, et c'est la bonne durée de vie : « sollicité »
+ * Une `WeakMap` et pas un champ persisté, et c'est la bonne durée de vie : « sollicité »
  * qualifie un geste **de cette session**. Rejoué au lancement suivant, il serait faux — le
  * joueur qui rouvre son app n'a rien demandé, et de toute façon `hasInteracted()` est faux sur
  * un processus neuf, donc la progression s'y joue déjà sans passe-droit.
  *
- * `WeakSet` plutôt que `Set` : la file se vide (`markPlayed`), et rien ici ne doit retenir un
- * résumé de quinze séances en mémoire après qu'il a été joué.
+ * La génération empêche de réutiliser le geste après reconnexion. Les clés faibles ne
+ * retiennent pas un résumé de quinze séances en mémoire après qu'il a été joué.
  */
-const solicited = new WeakSet<SyncSummary>();
+const solicited = new WeakMap<SyncSummary, SessionOwner>();
 
 /**
  * Ajoute une progression en fin de file. **Aucune fusion** : voir `pendingQueue.ts`.
@@ -183,15 +193,16 @@ const solicited = new WeakSet<SyncSummary>();
  * `asked` dit que le joueur a **demandé** cette progression — le seul déclencheur explicite
  * est `manual` (`syncCoordinator.ts`). Voir `wasSolicited`.
  */
-export function enqueuePending(summary: SyncSummary, asked = false): void {
-  queue = enqueue(loadQueue(), summary);
-  loaded = true;
+export function enqueuePending(summary: SyncSummary, owner: SessionOwner, asked = false): void {
+  if (!isCurrentOwner(owner)) return;
+  const queue = enqueue(loadQueue(owner.id), summary);
+  queues.set(owner.id, queue);
 
   if (asked) {
-    solicited.add(summary);
+    solicited.set(summary, owner);
   }
 
-  persist();
+  persist(owner.id, queue);
   notify();
 }
 
@@ -202,7 +213,7 @@ export function enqueuePending(summary: SyncSummary, asked = false): void {
  * lancement n'a pas été sollicité, il attendait.
  */
 export function wasSolicited(summary: SyncSummary): boolean {
-  return solicited.has(summary);
+  return isCurrentOwner(solicited.get(summary) ?? null);
 }
 
 /**
@@ -212,13 +223,14 @@ export function wasSolicited(summary: SyncSummary): boolean {
  * Pas à l'ouverture de l'écran : une app tuée pendant l'animation n'a rien montré, et le
  * joueur doit la retrouver au lancement suivant.
  */
-export function markPlayed(): void {
-  const current = loadQueue();
-  if (current.length === 0) {
-    return;
-  }
+export function markPlayed(summary: SyncSummary, owner: SessionOwner | null): boolean {
+  if (!isCurrentOwner(owner)) return false;
+  const current = loadQueue(owner.id);
+  if (current[0] !== summary) return false;
 
-  queue = dequeuePending(current);
-  persist();
+  const queue = dequeuePending(current);
+  queues.set(owner.id, queue);
+  persist(owner.id, queue);
   notify();
+  return true;
 }

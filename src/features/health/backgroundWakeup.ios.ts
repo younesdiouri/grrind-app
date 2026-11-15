@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 
 import GrrindHealth from '@/../modules/grrind-health/src/GrrindHealthModule';
 
+import { getSessionOwner, isCurrentOwner, type SessionOwner } from '@/features/auth/session';
 import { shouldCommitAnchor } from '@/features/health/anchorPolicy';
 import { creditedNotice } from '@/features/health/creditedNotice';
 import { isE2eBuild } from '@/features/health/e2e';
@@ -82,12 +83,13 @@ async function handleWakeup(anchor: string): Promise<void> {
   // réveil du tout accuse l'inscription.
   noteWake();
 
+  const owner = getSessionOwner();
   const outcome = await sync('background');
 
   // `throttled` : une autre synchronisation vient de répondre, à moins de trente secondes.
   // Rien n'est parti pour ce réveil précis, donc rien n'est tranché sur *cette* différence —
   // le prochain réveil la retrouvera, et elle se sera peut-être déjà réglée d'elle-même.
-  if (outcome.status === 'throttled') {
+  if (outcome.status === 'throttled' || outcome.status === 'superseded' || !isCurrentOwner(owner)) {
     return;
   }
 
@@ -95,8 +97,9 @@ async function handleWakeup(anchor: string): Promise<void> {
   // reste en file et se jouera à l'ouverture — cette notification ne le consomme pas, elle
   // signale seulement qu'il y a quelque chose à venir voir.
   if (outcome.result.kind === 'summary') {
-    await announce(outcome.result.summary);
+    await announce(outcome.result.summary, owner);
   }
+  if (!isCurrentOwner(owner)) return;
 
   /**
    * Le widget se rafraîchit-il (#174) ?
@@ -134,11 +137,12 @@ async function handleWakeup(anchor: string): Promise<void> {
    * aboutir. `refreshWidget` ne jette pas.
    */
   if (widgetIsStale) {
+    if (!isCurrentOwner(owner)) return;
     await refreshWidget();
   }
 
   // L'ancre et le widget passent d'abord. L'envoi est indépendant et rejouable si iOS nous coupe.
-  void syncTogether('background');
+  if (isCurrentOwner(owner)) void syncTogether('background');
 }
 
 /**
@@ -151,7 +155,7 @@ async function handleWakeup(anchor: string): Promise<void> {
  * Le texte, lui, se décide dans `creditedNotice.ts`, où il se prouve sur les fixtures : une
  * notification fausse demanderait une vraie séance et un vrai réveil pour se reproduire.
  */
-async function announce(summary: Parameters<typeof creditedNotice>[0]): Promise<void> {
+async function announce(summary: Parameters<typeof creditedNotice>[0], owner: SessionOwner): Promise<void> {
   const notice = creditedNotice(summary);
 
   if (notice === null) {
@@ -160,7 +164,7 @@ async function announce(summary: Parameters<typeof creditedNotice>[0]): Promise<
 
   try {
     const permission = await Notifications.getPermissionsAsync();
-    if (!permission.granted) {
+    if (!permission.granted || !isCurrentOwner(owner)) {
       return;
     }
 
