@@ -38,14 +38,16 @@ import {
   type EquipmentOutcome,
 } from '@/features/inventory/equipmentActions';
 import { noteEquipmentChanged } from '@/features/inventory/equipmentRevision';
-import { isEquippable, isEquipped, type Inventory, type InventoryLine } from '@/features/inventory/inventory';
-import { INVENTORY_QUERY_KEY, useInventory } from '@/features/inventory/useInventory';
+import { isEquippable, isEquipped, type InventoryLine } from '@/features/inventory/inventory';
+import { inventoryQueryKey, useInventory } from '@/features/inventory/useInventory';
 import { openChest, type ChestOpenOutcome } from '@/features/shop/actions';
-import { useAuth } from '@/features/auth/useAuth';
+import { isCurrentOwner } from '@/features/auth/session';
+import { mutateInventory, updateInventoryForOwner } from '@/features/inventory/inventoryCache';
+import { useSessionOwner, useAuth } from '@/features/auth/useAuth';
 import { salesFor } from '@/features/inventory/sales';
 import type { PendingSale, Sale, SaleInput } from '@/features/inventory/saleRunner';
 import { inventoryAfterSale } from '@/features/inventory/saleInventory';
-import { SHOP_QUERY_KEY } from '@/features/shop/useShop';
+import { shopQueryKey } from '@/features/shop/useShop';
 
 /**
  * Le sac, la doublure et la bourse — #30, poussé depuis l'accueil et depuis l'onglet Combat.
@@ -94,6 +96,7 @@ export default function InventoryScreen() {
   const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const auth = useAuth();
+  const owner = useSessionOwner();
   const userId = auth.status === 'signedIn' ? auth.user.id : null;
   const saleActions = userId === null ? null : salesFor(userId);
   const mutationInFlight = useRef(false);
@@ -117,25 +120,28 @@ export default function InventoryScreen() {
   }, [saleActions]);
 
   const sell = async (body: SaleInput) => {
-    if (mutationInFlight.current || saleActions === null) return;
+    if (!isCurrentOwner(owner) || mutationInFlight.current || saleActions === null) return;
     mutationInFlight.current = true;
     setSaleBusy(true);
     setRefusal(null);
     setSold(null);
     try {
       const outcome = await saleActions.sell(body);
-      setUnresolvedSale(await saleActions.pending());
+      if (!isCurrentOwner(owner)) return;
+      const held = await saleActions.pending();
+      if (!isCurrentOwner(owner)) return;
+      setUnresolvedSale(held);
       if (outcome.kind === 'refused') {
         setRefusal(outcome.failure);
       } else {
         setSold(outcome.sale);
-        queryClient.setQueryData<Inventory>(INVENTORY_QUERY_KEY, (previous) =>
+        updateInventoryForOwner(queryClient, owner, (previous) =>
           previous === undefined ? previous : inventoryAfterSale(previous, outcome.sale));
         noteEquipmentChanged();
       }
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY }),
-        queryClient.invalidateQueries({ queryKey: SHOP_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: inventoryQueryKey(userId) }),
+        queryClient.invalidateQueries({ queryKey: shopQueryKey(userId) }),
       ]);
     } catch {
       setRefusal(OFFLINE);
@@ -161,7 +167,7 @@ export default function InventoryScreen() {
   };
 
   const apply = async (slot: EquipmentSlot, mutate: () => Promise<EquipmentOutcome>) => {
-    if (blocked || mutationInFlight.current) return;
+    if (!isCurrentOwner(owner) || blocked || mutationInFlight.current) return;
     mutationInFlight.current = true;
     // Une fois le geste explicite, cette zone devient la sélection de l'utilisateur. Sans ça,
     // le fallback automatique sautait vers le prochain objet non équipé dès la réponse reçue :
@@ -170,7 +176,8 @@ export default function InventoryScreen() {
     setPending(slot);
     setRefusal(null);
 
-    const outcome = await mutate();
+    const outcome = await mutateInventory(queryClient, owner, mutate);
+    if (outcome === null || !isCurrentOwner(owner)) return;
     mutationInFlight.current = false;
     setPending(null);
 
@@ -179,19 +186,11 @@ export default function InventoryScreen() {
       return;
     }
 
-    // La réponse **est** l'état : elle remplace le cache, sans second `GET` qui gagnerait la
-    // course contre l'écran qu'il est censé mettre à jour.
-    queryClient.setQueryData<Inventory>(INVENTORY_QUERY_KEY, outcome.inventory);
-
-    // Et l'onglet Combat doit relire son combattant : `player` porte les modificateurs
-    // équipés, et cet onglet-là ne se démonte pas. Sur la réponse, jamais sur l'intention —
-    // un refus n'a rien changé.
-    noteEquipmentChanged();
     return true;
   };
 
   const revealChest = async (itemKey: string) => {
-    if (blocked || mutationInFlight.current) return;
+    if (!isCurrentOwner(owner) || blocked || mutationInFlight.current) return;
     mutationInFlight.current = true;
     setPendingChest(itemKey);
     setRefusal(null);
@@ -199,6 +198,7 @@ export default function InventoryScreen() {
     setOpenedChest(null);
 
     const outcome = await openChest(itemKey).catch(() => ({ kind: 'refused', failure: OFFLINE }) as const);
+    if (!isCurrentOwner(owner)) return;
     mutationInFlight.current = false;
     setPendingChest(null);
 
@@ -208,7 +208,7 @@ export default function InventoryScreen() {
     }
 
     setOpenedChest(outcome);
-    void queryClient.invalidateQueries({ queryKey: INVENTORY_QUERY_KEY });
+    void queryClient.invalidateQueries({ queryKey: inventoryQueryKey(userId) });
   };
 
   // Lu une fois, hors du JSX : `inventory.data` est une propriété d'un objet que TypeScript
@@ -259,6 +259,7 @@ export default function InventoryScreen() {
               <Button label="Réessayer" variant="quiet" onPress={() => {
                 if (saleActions === null) return;
                 void saleActions.pending().then((held) => {
+                  if (!isCurrentOwner(owner)) return;
                   setUnresolvedSale(held);
                   setSaleReady(true);
                   setRefusal(null);

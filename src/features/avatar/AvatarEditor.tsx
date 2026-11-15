@@ -7,6 +7,8 @@ import { messageFor, violationsByField, type Failure } from '@/features/auth/pro
 import { serverAvatar, type AvatarEquipment } from '@/features/combat/serverAvatar';
 import { playerQueryKey } from '@/features/community/usePlayer';
 import type { UserProfile } from '@/features/notifications/preferences';
+import { isCurrentOwner } from '@/features/auth/session';
+import { useSessionOwner } from '@/features/auth/useAuth';
 import { saveAvatar } from './api';
 import { AppearanceScene } from './AppearanceScene';
 import { AVATAR_LABELS, avatarOptions, changeAvatar, normalizeAvatar, type AvatarCatalog, type AvatarField } from './avatar';
@@ -19,6 +21,7 @@ export function AvatarEditor({ profile, equipment, catalog, embedded = false }: 
   profile: UserProfile; equipment: AvatarEquipment; catalog: AvatarCatalog; embedded?: boolean;
 }) {
   const client = useQueryClient();
+  const owner = useSessionOwner();
   const [saved, setSaved] = useState(() => normalizeAvatar(profile.avatar, catalog));
   const [draft, setDraft] = useState(saved);
   const [section, setSection] = useState<keyof typeof sections>('Corps');
@@ -26,13 +29,14 @@ export function AvatarEditor({ profile, equipment, catalog, embedded = false }: 
   const [failure, setFailure] = useState<Failure | null>(null);
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const submit = async () => {
-    if (busy || !dirty) return;
+    if (!isCurrentOwner(owner) || owner.id !== profile.id || busy || !dirty) return;
     setBusy(true); setFailure(null);
     const result = await saveAvatar(draft);
+    if (!isCurrentOwner(owner)) return;
     if (result.ok) {
       const accepted = normalizeAvatar(result.profile.avatar, catalog);
       client.setQueryData(avatarProfileKey(profile.id), result.profile);
-      void client.invalidateQueries({ queryKey: playerQueryKey(profile.id) });
+      void client.invalidateQueries({ queryKey: playerQueryKey(owner.id, profile.id) });
       setSaved(accepted); setDraft(accepted);
     } else setFailure(result.failure);
     setBusy(false);

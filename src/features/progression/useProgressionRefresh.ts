@@ -4,17 +4,17 @@ import { focusManager, useQueryClient, type QueryClient } from '@tanstack/react-
 import { nextWeeklyRefreshAt, noteProgressionStale } from './weeklyRefresh.ts';
 
 /** Un seul abonnement dans la coquille connectée, y compris quand l’accueil est masqué. */
-export function useProgressionRefresh() {
+export function useProgressionRefresh(userId: string | null) {
   const client = useQueryClient();
-  useEffect(() => watchProgressionRefresh(client), [client]);
+  useEffect(() => userId === null ? undefined : watchProgressionRefresh(client, userId), [client, userId]);
 }
 
-export function watchProgressionRefresh(client: QueryClient) {
+export function watchProgressionRefresh(client: QueryClient, userId: string) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const refresh = (refetchType: 'active' | 'none' = 'active') => {
     noteProgressionStale();
     void client.invalidateQueries({ refetchType, predicate: ({ queryKey }) =>
-      ['inventory', 'players', 'alam', 'guilds'].includes(String(queryKey[0])) });
+      queryKey[1] === userId && ['inventory', 'players', 'alam', 'guilds'].includes(String(queryKey[0])) });
   };
   const schedule = () => {
     clearTimeout(timer);

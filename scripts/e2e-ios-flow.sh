@@ -13,7 +13,7 @@ METRO_SETTINGS_FILE="${DEV_STATE_DIR}/metro-settings"
 METRO_HOST_FILE="${DEV_STATE_DIR}/metro-host"
 FLOW_PATH="${1:-.maestro/ios-smoke.yaml}"
 STARTED_AT="$(date +%s)"
-EXPECTED_SETTINGS="port=${METRO_PORT};api=${E2E_API_URL_VALUE}"
+EXPECTED_SETTINGS="port=${METRO_PORT};api=${E2E_API_URL_VALUE};dotenv=0"
 trap 'node scripts/e2e-ios-clean.mjs >&2 || true' EXIT
 node scripts/e2e-ios-clean.mjs
 
@@ -47,6 +47,11 @@ METRO_HOST="$(sed -n '1p' "$METRO_HOST_FILE")"
 if [ "${E2E_OFFLINE:-0}" = "1" ]; then
   E2E_EMPTY_EMAIL=""
   E2E_MULTIPLE_EMAIL=""
+elif [ "${E2E_EXISTING_ACCOUNTS:-0}" = "1" ]; then
+  # Comptes QA déjà préparés : même reset local initial, aucune inscription supplémentaire.
+  E2E_EMPTY_EMAIL=""
+  E2E_MULTIPLE_EMAIL=""
+  e2e_reset_state
 else
   # Health/reward has its own flow; other authenticated flows use one empty account.
   case "$FLOW_PATH" in

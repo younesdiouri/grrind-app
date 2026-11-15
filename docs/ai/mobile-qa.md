@@ -23,6 +23,9 @@ Les deux appareils ne partagent ni session ni Keychain. `npm run ios` et `npm ru
 calculent la même empreinte : passer de l’un à l’autre ne régénère pas `ios/`, seul un changement
 natif le fait.
 `npm start` charge le JS de développement sans reconstruire le natif.
+Le Metro E2E utilise `EXPO_NO_DOTENV=1` et exclut les fichiers `.env` de son graphe client :
+SDK57 les fusionne sinon dans `expo/virtual/env`, ce qui peut remplacer l’API QA par celle de
+`.env.local` malgré la variable passée au lancement. Le Metro du téléphone garde sa configuration.
 Les liens du harnais passent `disableFab=1` au dev-client Expo : sa roue d’outils flottante
 interceptait les touchers du HUD. Le menu de développement reste accessible par ses gestes habituels.
 
@@ -68,6 +71,32 @@ manquante. Après un passage vert, ne pas relancer sans changement, échec ou do
 Les flows partagés sont réutilisés, pas tous exécutés à chaque ticket. Ne pas modifier le bundle
 pendant Maestro : même un commentaire dans un module de mock peut le réévaluer et réinitialiser
 son état par Fast Refresh. Terminer les changements avant de lancer la vérification.
+
+Pour l’isolation entre comptes, `session-cache.yaml` joue un seul parcours A → B sous latence
+puis panne → retour A, avec arrêt/relance signé dehors pour vérifier le Keychain. Il utilise
+exactement les deux comptes préparés par la QA back, sans créer de compte ni réinitialiser la
+base. `E2E_EXISTING_ACCOUNTS=1` garde le contrôle de disponibilité du back et le reset initial du
+seul Simulator dédié, puis ne joue aucune inscription ; aucun reset n'intervient entre A et B.
+Le fichier privé contient `A`/`B` (email, password, id, guildName, expectedItemKeys,
+expectedItemNames), `baseUrl` et `toxiproxyControlUrl`, tous deux en loopback. A possède un
+objet distinct et B un sac vide ; les deux emails contiennent `-empty-`.
+
+Précondition iOS de ce scénario contrôlé : après le login B retardé, la feuille système de
+mot de passe apparaît après le HUD visuel et peut le masquer avant sa détection par Maestro.
+Le flow attend donc explicitement « Plus tard » au plus 45 s (connexion retardée incluse),
+la ferme sans enregistrer, exige sa disparition puis vérifie le HUD et l'attente des données B
+avant de couper le réseau. Une feuille absente ou un inventaire déjà reçu fait échouer ce
+scénario ; aucune boucle de clics ne contourne cette précondition.
+
+```sh
+SESSION_CACHE_QA_CREDENTIALS=/chemin/prive/qa-accounts.json node scripts/session-cache-qa-flow.mjs
+```
+
+Metro 8082 doit déjà viser le `baseUrl` du fichier. Le proxy standard Toxiproxy `grrind367`
+appartient à la stack QA isolée ; le flow ne change que sa latence et son activation via
+l’API standard, et le rétablit en fin de flow, même en cas d’échec. Aucun mode avion iOS ni
+changement réseau global : la latence TCP touche toute l’API QA, sans retarder sélectivement
+une réponse A ou un refresh. Ces courses précises restent couvertes par les tests HTTP.
 
 Le smoke utilise un compte `empty`. `health-sync` en utilise deux car il vérifie réellement les
 deux scénarios : l’adresse contenant `-empty-` n’a aucune activité ; l’autre présente quatre
@@ -125,6 +154,8 @@ Placer les nouveaux diagnostics dans le dossier horodaté du run ; éviter les d
 par ticket à côté de l’historique, qui échappent à sa rétention.
 Le nettoyage ne touche pas `artifacts/e2e/dev/` (empreinte, PID/configuration Metro), les fixtures,
 les autres dossiers de travail, les caches Xcode ou les journaux Maestro d’autres projets.
+Maestro reçoit un dossier de sortie daté propre au flow, jamais cette racine partagée : il
+peut remplacer son dossier de sortie sans retirer l’empreinte du binaire et la configuration Metro.
 Les anciens rapports GRRIND dans `~/.maestro/tests` peuvent être retirés une fois identifiés ;
 aucun nettoyage automatique global de ce dossier partagé.
 

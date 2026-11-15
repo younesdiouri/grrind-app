@@ -21,17 +21,20 @@ type SaleStore = {
  * seulement l’UUID perdrait le prix confirmé si le catalogue change entre deux tentatives.
  * Le corps et sa clé sont donc conservés ensemble jusqu’au verdict certain du serveur.
  */
-export function createSaleAction({ store, request }: {
+export function createSaleAction({ store, request, capture = () => () => true }: {
   store: SaleStore;
+  capture?: () => (() => boolean);
   request: (request: { body: SaleInput; params: { header: { 'Idempotency-Key': string } } }) =>
     Promise<{ data?: Sale; error?: unknown }>;
 }) {
   let inFlight: Promise<SaleOutcome> | null = null;
 
   async function run(body: SaleInput): Promise<SaleOutcome> {
+    const current = capture();
     try {
       const pending = await store.read() ?? { body, key: store.mint() };
       await store.write(pending);
+      if (!current()) return { kind: 'refused', failure: OFFLINE };
       const reply = await request({ body: pending.body, params: { header: { 'Idempotency-Key': pending.key } } });
       if (reply.data !== undefined) {
         await store.write(null);

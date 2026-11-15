@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-import { getState, subscribe, type AuthState } from '@/features/auth/session';
+import { getState, getSessionOwner, subscribe, type AuthState } from '@/features/auth/session';
 
 /**
  * L'état d'authentification, vu de React.
@@ -11,4 +11,10 @@ import { getState, subscribe, type AuthState } from '@/features/auth/session';
  */
 export function useAuth(): AuthState {
   return useSyncExternalStore(subscribe, getState);
+}
+
+/** Capture l'owner au rendu pour les callbacks qui peuvent survivre à leur écran. */
+export function useSessionOwner() {
+  const auth = useAuth();
+  return auth.status === 'signedIn' ? getSessionOwner() : null;
 }

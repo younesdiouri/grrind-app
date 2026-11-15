@@ -8,12 +8,13 @@ import { SystemFrame } from '@/components/SystemFrame';
 import { color } from '@/design/tokens';
 import { AlamGauges } from '@/features/alam/AlamGauges';
 import { AlamDifficultyOptions } from '@/features/alam/AlamDifficultyOptions';
-import { ALAM_KEY, alamPreferences, launchAlam, useAlamCurrent } from '@/features/alam/api';
+import { alamQueryKey, alamPreferences, launchAlam, useAlamCurrent } from '@/features/alam/api';
 import { preferenceIsDefinitive, preferenceMessage } from '@/features/alam/preferences';
 import { alamStyles as s } from '@/features/alam/styles';
 import { messageFor, type Failure } from '@/features/auth/problems';
-import { useAuth } from '@/features/auth/useAuth';
-import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
+import { isCurrentOwner } from '@/features/auth/session';
+import { useSessionOwner, useAuth } from '@/features/auth/useAuth';
+import { myGuildQueryKey, useMyGuild } from '@/features/community/useMyGuild';
 import { isGuildGone } from '@/features/community/guildRefresh';
 
 type Preference = { kind: 'registration'; input: Parameters<typeof alamPreferences.register>[0] }
@@ -23,39 +24,43 @@ export default function AlamScreen() {
   const guild = useMyGuild();
   const current = useAlamCurrent(guild.data?.id);
   const auth = useAuth();
+  const owner = useSessionOwner();
+  const userId = auth.status === 'signedIn' ? auth.user.id : null;
   const client = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [preferenceFailure, setPreferenceFailure] = useState<Failure | null>(null);
   const [retry, setRetry] = useState<Preference | null>(null);
   useEffect(() => {
-    if (current.isError && isGuildGone(current.error))
-      void client.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
-  }, [client, current.isError, current.error]);
+    if (userId && current.isError && isGuildGone(current.error))
+      void client.invalidateQueries({ queryKey: myGuildQueryKey(userId) });
+  }, [client, current.isError, current.error, userId]);
   const save = async (preference: Preference) => {
-    if (busy || auth.status !== 'signedIn' || !guild.data || preference.input.playerId !== auth.user.id
+    if (!isCurrentOwner(owner) || busy || auth.status !== 'signedIn' || !guild.data || preference.input.playerId !== auth.user.id
       || preference.input.guildId !== guild.data.id
       || !guild.data.members.some(member => member.id === auth.user.id && member.joinedAt === preference.input.membershipJoinedAt)
       || (preference.kind === 'difficulty' && preference.input.runId !== current.data?.current.id)) return;
     setBusy(true); setPreferenceFailure(null); setRetry(null);
     const result = preference.kind === 'registration'
       ? await alamPreferences.register(preference.input) : await alamPreferences.choose(preference.input);
+    if (!isCurrentOwner(owner)) return;
     if (result.kind === 'refused') {
       setPreferenceFailure(result.failure);
       if (!preferenceIsDefinitive(result.failure)) setRetry(preference);
       if (result.failure.kind === 'problem' && result.failure.problem.type === 'https://grrind.app/problems/guild-not-found')
-        void client.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
+        void client.invalidateQueries({ queryKey: myGuildQueryKey(userId) });
     }
-    await client.invalidateQueries({ queryKey: ALAM_KEY });
+    await client.invalidateQueries({ queryKey: alamQueryKey(owner.id) });
     setBusy(false);
   };
   const launch = async () => {
-    if (busy || auth.status !== 'signedIn' || !guild.data) return;
+    if (!isCurrentOwner(owner) || busy || auth.status !== 'signedIn' || !guild.data) return;
     setBusy(true); setFailure(null);
     const result = await launchAlam(auth.user.id, guild.data.id);
+    if (!isCurrentOwner(owner)) return;
     setBusy(false);
     if (result.kind === 'refused') { setFailure(result.failure); return; }
-    void client.invalidateQueries({ queryKey: ALAM_KEY });
+    void client.invalidateQueries({ queryKey: alamQueryKey(owner.id) });
     router.push({ pathname: '/alam/[id]', params: { id: result.data.id } });
   };
   const run = guild.data && !current.isError ? current.data?.current : undefined;

@@ -8,7 +8,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 
 import { queryClient } from '@/api/queryClient';
 import { color, typography } from '@/design/tokens';
-import { restore } from '@/features/auth/session';
+import { getSessionGeneration, restore } from '@/features/auth/session';
 import { useAuth } from '@/features/auth/useAuth';
 import { purgeChatPhotoCache } from '@/features/community/chatFiles';
 // Importé pour son seul effet de bord — voir son docblock : `setNotificationHandler` doit
@@ -63,7 +63,6 @@ export default function RootLayout() {
 
     if (auth.status === 'signedOut') {
       purgeChatPhotoCache();
-      queryClient.removeQueries({ queryKey: ['appearances'] });
     }
 
     // La pile connectée est rendue sous l'écran de démarrage, donc la synchronisation de
@@ -86,7 +85,8 @@ export default function RootLayout() {
     // consommé pour l'instant que par l'onglet Guilde (#42), mais le fournisseur vit à la
     // racine plutôt que sous `(tabs)` pour qu'un futur écran hors onglets n'ait pas à le
     // redécouvrir.
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}
+      key={auth.status === 'signedIn' ? `${auth.user.id}:${getSessionGeneration()}` : auth.status}>
       <Stack
         screenOptions={{
           statusBarStyle: 'light',

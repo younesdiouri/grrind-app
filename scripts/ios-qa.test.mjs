@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
+import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -100,4 +102,83 @@ test('Expo fingerprint ignores JS tooling but detects Swift and native configura
   config.expo.ios.appleTeamId = 'QA12345678';
   write();
   assert.notEqual(hash(), native);
+});
+
+test('session cache QA reuses two private accounts without exposing credentials in arguments', (t) => {
+  const root = mkdtempSync(resolve(tmpdir(), 'grrind-cache-qa-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(resolve(root, 'bin'));
+  const calls = resolve(root, 'calls.json');
+  writeFileSync(resolve(root, 'bin/rtk'), `#!${process.execPath}
+require('node:fs').writeFileSync(process.env.QA_CALLS, JSON.stringify({
+  args: process.argv.slice(2), offline: process.env.E2E_OFFLINE,
+  existing: process.env.E2E_EXISTING_ACCOUNTS, api: process.env.E2E_API_URL,
+  a: process.env.MAESTRO_CACHE_A_EMAIL, b: process.env.MAESTRO_CACHE_B_EMAIL,
+}));
+`, { mode: 0o755 });
+  const file = resolve(root, 'accounts.json');
+  const account = (id, items) => ({ id, email: `qa-empty-${id}@example.test`, password: 'private-password',
+    guildName: `QA ${id}`, expectedItemKeys: items, expectedItemNames: items });
+  const fixture = { A: account('A', ['item-A']), B: account('B', []),
+    baseUrl: 'http://127.0.0.1:18367', toxiproxyControlUrl: 'http://127.0.0.1:18474' };
+  writeFileSync(file, JSON.stringify(fixture), { mode: 0o600 });
+  const run = () => spawnSync(process.execPath, [resolve('scripts/session-cache-qa-flow.mjs')], {
+    encoding: 'utf8', env: { ...process.env, SESSION_CACHE_QA_CREDENTIALS: file,
+      PATH: `${root}/bin:${process.env.PATH}`, QA_CALLS: calls },
+  });
+  const result = run();
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(calls, 'utf8')), {
+    args: ['proxy', 'npm', 'run', 'e2e:ios:flow', '--', '.maestro/session-cache.yaml'],
+    offline: '0', existing: '1', api: fixture.baseUrl, a: fixture.A.email, b: fixture.B.email,
+  });
+  assert.doesNotMatch(result.stdout + result.stderr, /private-password|qa-empty-/);
+  fixture.baseUrl = 'https://api.grrind.app';
+  writeFileSync(file, JSON.stringify(fixture));
+  assert.notEqual(run().status, 0);
+});
+
+test('Maestro report output cannot erase the installed dev build and Metro metadata', (t) => {
+  const root = mkdtempSync(resolve(tmpdir(), 'grrind-maestro-output-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(resolve(root, 'bin')); mkdirSync(resolve(root, 'artifacts/e2e/dev'), { recursive: true });
+  writeFileSync(resolve(root, 'artifacts/e2e/dev/native-fingerprint'), 'built-fingerprint');
+  writeFileSync(resolve(root, 'bin/maestro'), `#!${process.execPath}
+const fs = require('node:fs'); const path = require('node:path');
+const args = process.argv.slice(2);
+const directory = args[args.indexOf('--test-output-dir') + 1];
+if (!path.resolve(directory).startsWith(path.join(process.cwd(), 'artifacts/e2e'))) process.exit(2);
+fs.rmSync(directory, { recursive: true, force: true });
+fs.mkdirSync(directory, { recursive: true });
+`, { mode: 0o755 });
+  const result = spawnSync('/bin/sh', ['-c', `
+. '${resolve('scripts/e2e-ios-common.sh')}'
+E2E_SIMULATOR_UDID=qa
+E2E_EMPTY_EMAIL=''
+E2E_MULTIPLE_EMAIL=''
+e2e_run_flow .maestro/session-cache.yaml
+`], { cwd: root, encoding: 'utf8', env: { ...process.env, PATH: `${root}/bin:${process.env.PATH}` } });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readFileSync(resolve(root, 'artifacts/e2e/dev/native-fingerprint'), 'utf8'), 'built-fingerprint');
+});
+
+test('Metro without dotenv excludes local API overrides from the SDK57 client graph only when requested', () => {
+  const require = createRequire(import.meta.url);
+  const configPath = resolve('metro.config.js');
+  const previous = process.env.EXPO_NO_DOTENV;
+  const excludesLocalEnv = () => {
+    delete require.cache[configPath];
+    const config = require(configPath);
+    return [config.resolver.blockList].flat().some(pattern => pattern?.test(resolve('.env.local')));
+  };
+  try {
+    delete process.env.EXPO_NO_DOTENV;
+    assert.equal(excludesLocalEnv(), false);
+    process.env.EXPO_NO_DOTENV = '1';
+    assert.equal(excludesLocalEnv(), true);
+  } finally {
+    if (previous === undefined) delete process.env.EXPO_NO_DOTENV;
+    else process.env.EXPO_NO_DOTENV = previous;
+    delete require.cache[configPath];
+  }
 });

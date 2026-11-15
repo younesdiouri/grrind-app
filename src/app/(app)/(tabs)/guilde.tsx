@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -24,7 +24,9 @@ import { GuildWeeklyBoard } from '@/components/GuildWeeklyBoard';
 import { PortraitScrollView } from '@/features/avatar/PortraitScrollView';
 import { color, guildUi, radius, space, type, typography } from '@/design/tokens';
 import { messageFor, violationsByField, type Failure } from '@/features/auth/problems';
-import { useAuth } from '@/features/auth/useAuth';
+import { isCurrentOwner } from '@/features/auth/session';
+import { syncGuild } from '@/features/community/guildCache';
+import { useSessionOwner, useAuth } from '@/features/auth/useAuth';
 import { GuildChat } from '@/features/community/GuildChat';
 import { formatCalendarDate } from '@/features/community/format';
 import { GuildMilestone } from '@/features/community/GuildMilestone';
@@ -34,7 +36,6 @@ import {
   foundGuild,
   joinGuild,
   leaveGuild,
-  refreshGuild,
   renameGuild,
   type Guild,
 } from '@/features/community/guildActions';
@@ -44,9 +45,9 @@ import { isCompleteInviteCode, sanitizeInviteCode } from '@/features/community/i
 import { joinRefusalFrom, type JoinRefusal } from '@/features/community/joinRefusal';
 import { leaveAnnouncementFor } from '@/features/community/leaveAnnouncement';
 import { RisalatBlock } from '@/features/community/RisalatBlock';
-import { MY_GUILD_QUERY_KEY, useMyGuild } from '@/features/community/useMyGuild';
-import { GUILD_WEEKLY_QUERY_KEY, useGuildWeekly } from '@/features/community/useGuildWeekly';
-import { RISALAT_QUERY_KEY, useRisalat } from '@/features/community/useRisalat';
+import { myGuildQueryKey, useMyGuild } from '@/features/community/useMyGuild';
+import { guildWeeklyQueryKey, useGuildWeekly } from '@/features/community/useGuildWeekly';
+import { risalatQueryKey, useRisalat } from '@/features/community/useRisalat';
 import { requestPermissionAndRegister } from '@/features/notifications/registration';
 
 type GuildMemberEntry = GuildDetail['members'][number];
@@ -75,6 +76,7 @@ type GuildMemberEntry = GuildDetail['members'][number];
 export default function GuildeScreen() {
   const { section } = useLocalSearchParams<{ section?: string }>();
   const myGuild = useMyGuild();
+  const owner = useSessionOwner();
   const queryClient = useQueryClient();
 
   // Le résultat d'une fondation ou d'un ralliement réussis. La réponse du serveur est une
@@ -90,13 +92,14 @@ export default function GuildeScreen() {
   // succès — pas d'optimisme, pas de `GuildDetail` inventé avec une liste de membres vide —
   // et on laisse la vraie réponse converger pendant que `justResolved` tient l'écran.
   const resolve = (guild: Guild) => {
+    if (!isCurrentOwner(owner)) return;
     setJustResolved(guild);
-    void queryClient.invalidateQueries({ queryKey: MY_GUILD_QUERY_KEY });
+    void queryClient.invalidateQueries({ queryKey: myGuildQueryKey(owner.id) });
     // Rejoindre ou fonder change de guilde, donc de Risālāt : sans cette invalidation, un
     // joueur qui rallie une guilde déjà active verrait un bloc vide (ou celui d'une guilde
     // précédente, resté en cache) jusqu'à ce qu'un autre geste force le rafraîchissement.
-    void queryClient.invalidateQueries({ queryKey: RISALAT_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
+    void queryClient.invalidateQueries({ queryKey: risalatQueryKey(owner.id) });
+    void queryClient.invalidateQueries({ queryKey: guildWeeklyQueryKey(owner.id) });
     // Un formulaire qu'on vient de faire aboutir n'a plus de raison de rester armé : sans ce
     // reset, `mode` resterait sur `'found'` ou `'join'` pendant tout le séjour dans la guilde,
     // prêt à resurgir si le joueur la quitte ensuite (voir `forgetGuild`, juste en dessous).
@@ -122,13 +125,14 @@ export default function GuildeScreen() {
   // `mode` encore sur `'found'`/`'join'` : `GuildeScreen` rendait ce formulaire au lieu de
   // l'état vide que le ticket #45 demande explicitement.
   const forgetGuild = () => {
-    queryClient.setQueryData(MY_GUILD_QUERY_KEY, null);
+    if (!isCurrentOwner(owner)) return;
+    queryClient.setQueryData(myGuildQueryKey(owner.id), null);
     // Contrairement à `/api/guilds/mine`, cette route n'a pas d'état « pas de guilde » — un
     // départ y rendrait `guild-not-found`, un refus, pas un `null` à garder en cache. On la
     // retire donc plutôt que de la recaler : sans ça, rejoindre une autre guilde plus tard
     // réafficherait un instant les Risālāt de celle qu'on vient de quitter.
-    queryClient.removeQueries({ queryKey: RISALAT_QUERY_KEY });
-    queryClient.removeQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
+    queryClient.removeQueries({ queryKey: risalatQueryKey(owner.id) });
+    queryClient.removeQueries({ queryKey: guildWeeklyQueryKey(owner.id) });
     setJustResolved(null);
     setMode('empty');
   };
@@ -200,35 +204,6 @@ export default function GuildeScreen() {
   return <EmptyState onFound={() => setMode('found')} onJoin={() => setMode('join')} />;
 }
 
-/**
- * Recale le cache sur ce que le serveur rend *maintenant*, jamais sur une épissure locale.
- *
- * Partagée par le tirer-pour-rafraîchir et par l'exclusion (#45, piège relevé par l'architecte :
- * retirer un membre à la main désynchronise `memberCount`, donc `CapacityGauge`). `guild-not-
- * found` — la guilde a disparu pendant l'aller-retour — passe par `onGone`, qui efface les deux
- * sources où elle peut survivre à l'écran (voir `forgetGuild` dans `GuildeScreen`) ; tout autre
- * refus revient tel quel, pour que l'appelant l'affiche.
- */
-async function syncGuild(
-  guildId: string,
-  queryClient: QueryClient,
-  onGone: () => void,
-): Promise<Failure | null> {
-  const outcome = await refreshGuild(guildId);
-
-  if (outcome.ok) {
-    queryClient.setQueryData(MY_GUILD_QUERY_KEY, outcome.guild);
-    return null;
-  }
-
-  if (isGuildGone(outcome.failure)) {
-    onGone();
-    return null;
-  }
-
-  return outcome.failure;
-}
-
 /** Le refus précis d'une exclusion sur un membre déjà parti : un recalage, pas une excuse. */
 function isPlayerNotAMember(failure: Failure): boolean {
   return (
@@ -240,6 +215,7 @@ function isPlayerNotAMember(failure: Failure): boolean {
 /** Le cache reste serveur ; seules la navigation et la présentation des membres changent. */
 function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: () => void; requestedTab?: GuildTab }) {
   const auth = useAuth();
+  const owner = useSessionOwner();
   const [tab, setTab] = useState<GuildTab>(requestedTab ?? 'week');
   const [chatVisited, setChatVisited] = useState(requestedTab === 'chat');
   const [guildHeaderHeight, setGuildHeaderHeight] = useState(0);
@@ -286,7 +262,7 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
     setRefreshFailure(null);
     // Le geste rafraîchit ce qu'on regarde, pas une des deux moitiés : les Risālāt partent en
     // même temps que la guilde, jamais après coup sur un second tirer.
-    const [guildFailure] = await Promise.all([syncGuild(guild.id, queryClient, onGone), risalat.refetch(), weekly.refetch()]);
+    const [guildFailure] = await Promise.all([syncGuild(guild.id, queryClient, owner, onGone), risalat.refetch(), weekly.refetch()]);
     setRefreshFailure(guildFailure);
     setRefreshing(false);
   };
@@ -295,7 +271,9 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
     setExcludingId(playerId);
     setExcludeFailure(null);
 
+    if (!isCurrentOwner(owner)) return;
     const outcome = await excludeMember(guild.id, playerId);
+    if (!isCurrentOwner(owner)) return;
 
     if (!outcome.ok) {
       // Le `404` de cette route couvre **deux** refus distincts, le contrat le dit : le joueur
@@ -318,8 +296,9 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
 
     // Succès, ou `player-is-not-a-member` — il était déjà parti : dans les deux cas la liste
     // se recale sur ce que le serveur rend maintenant, jamais sur une épissure locale.
-    setExcludeFailure(await syncGuild(guild.id, queryClient, onGone));
-    await queryClient.invalidateQueries({ queryKey: GUILD_WEEKLY_QUERY_KEY });
+    setExcludeFailure(await syncGuild(guild.id, queryClient, owner, onGone));
+    if (!isCurrentOwner(owner)) return;
+    await queryClient.invalidateQueries({ queryKey: guildWeeklyQueryKey(owner.id) });
     setExcludingId(null);
   };
 
@@ -338,7 +317,9 @@ function Roster({ guild, onGone, requestedTab }: { guild: GuildDetail; onGone: (
     setLeaving(true);
     setLeaveFailure(null);
 
+    if (!isCurrentOwner(owner)) return;
     const outcome = await leaveGuild();
+    if (!isCurrentOwner(owner)) return;
 
     // Les trois issues du serveur (départ simple, succession, dissolution) retirent toutes
     // la guilde de ce que *ce* joueur voit ; `guild-not-found` — elle a disparu pendant qu'il
@@ -454,6 +435,7 @@ function ManageGuild({
   onDissolved: () => void;
 }) {
   const queryClient = useQueryClient();
+  const owner = useSessionOwner();
 
   const [name, setName] = useState(guild.name);
   const [renaming, setRenaming] = useState(false);
@@ -469,13 +451,15 @@ function ManageGuild({
     setRenaming(true);
     setRenameFailure(null);
 
+    if (!isCurrentOwner(owner)) return;
     const outcome = await renameGuild(guild.id, trimmedName);
+    if (!isCurrentOwner(owner)) return;
 
     if (outcome.ok) {
       // `PATCH /api/guilds/{id}` rend une `Guild`, **pas** un `GuildDetail` : écrire cette
       // réponse telle quelle dans le cache effacerait `members`. On fusionne donc le nom
       // dans le détail déjà en cache, sans toucher au reste (#45, piège relevé par l'archi).
-      queryClient.setQueryData<GuildDetail | null>(MY_GUILD_QUERY_KEY, (previous) =>
+      queryClient.setQueryData<GuildDetail | null>(myGuildQueryKey(owner.id), (previous) =>
         previous === null || previous === undefined
           ? (previous ?? null)
           : { ...previous, name: outcome.guild.name },
@@ -492,7 +476,9 @@ function ManageGuild({
     setDissolving(true);
     setDissolveFailure(null);
 
+    if (!isCurrentOwner(owner)) return;
     const outcome = await dissolveGuild(guild.id);
+    if (!isCurrentOwner(owner)) return;
 
     if (outcome.ok) {
       onDissolved();

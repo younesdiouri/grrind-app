@@ -11,21 +11,35 @@ appId: app.grrind.dev
 # l'alerte arrive parfois après le contrôle qui suit `launchApp` : elle masque alors le formulaire.
 # On attend donc l'un ou l'autre, puis on la referme si c'est elle.
 - extendedWaitUntil:
-    visible: "Ouvrir dans.*|Se connecter"
+    visible: "Ouvrir dans.*|Plus tard|Se connecter"
     timeout: 30000
 - runFlow:
     when:
       visible: "Ouvrir dans.*"
     commands:
-      - tapOn: "Ouvrir"
+      # La préparation et le flow peuvent avoir chacun ouvert le lien Metro : iOS présente
+      # alors plusieurs confirmations consécutives après une première installation.
+      - repeat:
+          times: 3
+          while:
+            visible: "Ouvrir dans.*"
+          commands:
+            - tapOn: "Ouvrir"
+- runFlow:
+    when:
+      visible: "Plus tard"
+    commands:
+      - tapOn: "Plus tard"
 - extendedWaitUntil:
     visible: "Se connecter"
     timeout: 30000
 - tapOn:
     id: "login-email"
+- eraseText
 - inputText: ${EMAIL}
 - tapOn:
     id: "login-password"
+- eraseText
 - inputText: ${PASSWORD}
 - tapOn: "Se connecter"
 

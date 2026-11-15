@@ -1,16 +1,26 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { queryOptions, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useIsFocused } from 'expo-router';
 
 import { api } from '@/api/client';
 import { queryOrFailure } from '@/api/queryOrFailure';
+import { queryForOwner } from '@/api/privateQueries';
 import type { Failure } from '@/features/auth/problems';
-import { INVENTORY_QUERY_KEY } from './inventoryCache.ts';
+import { useAuth } from '@/features/auth/useAuth';
+import { inventoryQueryKey } from './inventoryCache.ts';
 import type { Inventory } from './inventory.ts';
 
-export { INVENTORY_QUERY_KEY } from './inventoryCache.ts';
+export { inventoryQueryKey } from './inventoryCache.ts';
 
-async function fetchInventory(): Promise<Inventory> {
-  return queryOrFailure(() => api.GET('/api/inventory'));
+async function fetchInventory(userId: string | null, signal: AbortSignal): Promise<Inventory> {
+  return queryForOwner(userId, () => queryOrFailure(() => api.GET('/api/inventory', { signal })));
+}
+
+export function inventoryOptions(userId: string | null) {
+  return queryOptions<Inventory, Failure>({
+    queryKey: inventoryQueryKey(userId),
+    queryFn: ({ signal }) => fetchInventory(userId, signal),
+    enabled: userId !== null,
+  });
 }
 
 /**
@@ -27,9 +37,10 @@ async function fetchInventory(): Promise<Inventory> {
  */
 export function useInventory(): UseQueryResult<Inventory, Failure> {
   const focused = useIsFocused();
+  const auth = useAuth();
+  const userId = auth.status === 'signedIn' ? auth.user.id : null;
   return useQuery({
-    queryKey: INVENTORY_QUERY_KEY,
-    queryFn: fetchInventory,
-    enabled: focused,
+    ...inventoryOptions(userId),
+    enabled: focused && userId !== null,
   });
 }

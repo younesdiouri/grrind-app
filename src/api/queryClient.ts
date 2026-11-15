@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { watchSessionQueries } from './privateQueries.ts';
 
 /**
  * Le client React Query — un seul pour tout le process, comme `api` dans `client.ts` et pour
@@ -6,3 +7,4 @@ import { QueryClient } from '@tanstack/react-query';
  * en a besoin, par exemple en revenant sur l'onglet Guilde après l'avoir quitté.
  */
 export const queryClient = new QueryClient();
+watchSessionQueries(queryClient);
