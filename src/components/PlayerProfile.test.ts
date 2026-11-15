@@ -31,13 +31,13 @@ test('le profil public garde identité, défi et avatar seul, sans inventaire ni
 
 test('le nom de guilde long garde son nom accessible complet et déclenche son ouverture', () => {
   const guild = { id: 'guild', name: 'Les sportifs qui continuent au-delà des montagnes',
-    emblem: { symbol: 'HEART' as const, backgroundColor: 'COPPER' as const, symbolColor: 'NIGHT' as const } };
+    emblem: { symbol: 'HEART' as const, backgroundColor: 'MINT' as const, symbolColor: 'BLOSSOM' as const } };
   let opened = 0;
   const props = { player: { ...player, guild }, onGuildPress: () => { opened += 1; } };
   const markup = renderToStaticMarkup(createElement(PlayerProfile, { ...props, equipment: {} }));
   assert.ok(markup.includes(`aria-label="Ouvrir la guilde ${guild.name}"`), 'Le nom accessible est complet');
   assert.ok(markup.includes('role="link"'), 'La guilde est un lien');
-  assert.match(markup, /Emblème · Cardio · Nuit sur Cuivre/);
+  assert.match(markup, /Emblème · Cardio · Rose sur Menthe/);
   const identity = PlayerIdentity(props);
   const link = Children.toArray(identity.props.children).find(child =>
     isValidElement<{ accessibilityRole?: string }>(child) && child.props.accessibilityRole === 'link');

@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GuildEmblem } from '@/components/GuildEmblem';
 import { GuildIdentity } from '@/components/GuildIdentity';
 import { color, control, guildUi, opacity, space, type } from '@/design/tokens';
-import { emblemColors, emblemSymbols, emblemWithColor, type Emblem, type EmblemColor } from '@/features/community/guildEmblem';
+import { emblemColors, emblemSymbols, type Emblem, type EmblemColor } from '@/features/community/guildEmblem';
 
 export function GuildEmblemPicker({ emblem, name, memberCount, disabled = false, onChange }: {
   emblem: Emblem; name: string; memberCount: number; disabled?: boolean; onChange(value: Emblem): void;
@@ -21,10 +21,9 @@ export function GuildEmblemPicker({ emblem, name, memberCount, disabled = false,
       </Pressable>)}
     </View>
     <ColorChoices label="Fond" selected={emblem.backgroundColor} disabled={disabled}
-      onSelect={background => onChange(emblemWithColor(emblem, 'backgroundColor', background))} />
+      onSelect={backgroundColor => onChange({ ...emblem, backgroundColor })} />
     <ColorChoices label="Couleur du symbole" selected={emblem.symbolColor} disabled={disabled}
-      onSelect={symbolColor => onChange(emblemWithColor(emblem, 'symbolColor', symbolColor))} />
-    <Text style={styles.note}>Le fond ou le symbole s’ajuste pour garder le contraste.</Text>
+      onSelect={symbolColor => onChange({ ...emblem, symbolColor })} />
   </View>;
 }
 
@@ -49,7 +48,6 @@ const styles = StyleSheet.create({
   editor: { gap: space.sm },
   heading: { ...type.title, color: color.text },
   label: { ...type.body, color: color.text },
-  note: { ...type.label, color: color.textMuted, letterSpacing: 0 },
   preview: { backgroundColor: color.surface, borderWidth: control.borderWidth, borderColor: color.border, marginBottom: space.sm },
   symbols: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginBottom: space.sm },
   symbol: { width: guildUi.crestSize + space.md, height: guildUi.crestSize + space.md, alignItems: 'center', justifyContent: 'center',

@@ -24,15 +24,6 @@ export const emblemColors: Record<EmblemColor, { label: string; value: string }>
   COPPER: { label: 'Cuivre', value: palette.copper },
 };
 
-/** La couleur choisie s’applique ; l’autre s’ajuste ou s’inverse pour conserver le contraste du contrat. */
-export function emblemWithColor(emblem: Emblem, field: 'backgroundColor' | 'symbolColor', value: EmblemColor): Emblem {
-  const other = field === 'backgroundColor' ? 'symbolColor' : 'backgroundColor';
-  return { ...emblem, [field]: value,
-    [other]: value === 'NIGHT'
-      ? emblem[other] === 'NIGHT' ? emblem[field] : emblem[other]
-      : 'NIGHT' };
-}
-
 export function sameEmblem(a: Emblem, b: Emblem): boolean {
   return a.symbol === b.symbol && a.backgroundColor === b.backgroundColor && a.symbolColor === b.symbolColor;
 }

@@ -356,7 +356,7 @@ export const PREVIEWS: Preview[] = [
       <Specimen label="Profil de coéquipier · guilde ouvrable">
         <PlayerProfile player={{ displayName: 'Nora', title: null, level: 12, avatar: DEFAULT_AVATAR,
           league: LEAGUE_FIXTURE.league, guild: { id: 'guild', name: 'Les Lève-Tôt',
-            emblem: { symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'NIGHT' } } }}
+            emblem: { symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' } } }}
           equipment={{ HEAD: { key: 'BANDEAU_ECLAIR', artworkVersion: null }, WEAPON: { key: 'FER_PLAY', artworkVersion: null } }}
           onGuildPress={() => {}} radar={<PerformanceRadar week={WEEK_FIXTURE} showHeading={false} />}
           action={<Button label="Défier" onPress={() => {}} />} />
@@ -368,7 +368,7 @@ export const PREVIEWS: Preview[] = [
               unlockedAt: null, progress: { current: 1, target: 1, unit: 'LEVELS' } },
             avatar: { ...DEFAULT_AVATAR, body: 'female', hairStyle: 'long' }, league: { ...LEAGUE_FIXTURE.league, tier: 'DIAMOND' },
             guild: { id: 'long-guild', name: 'Les sportifs au-delà des montagnes',
-              emblem: { symbol: 'YOGA', backgroundColor: 'NIGHT', symbolColor: 'AMETHYST' } } }} equipment={{}}
+              emblem: { symbol: 'YOGA', backgroundColor: 'AMETHYST', symbolColor: 'AMETHYST' } } }} equipment={{}}
             onGuildPress={() => {}} onLeaguePress={() => {}}
             radar={<PerformanceRadar week={{ ...WEEK_FIXTURE, previous: null }} showHeading={false} />} />
         </View>
@@ -413,14 +413,22 @@ export const PREVIEWS: Preview[] = [
       <Specimen label="En-tête · 320 pt · ancien emblème absent et nom long">
         <View style={{ width: 288 }}><GuildIdentity name="Les Increvables de la Fontaine du Levant" memberCount={30} /></View>
       </Specimen>
-      <Specimen label="Symboles · dimensions en jeu · fond nuit et inversion">
+      <Specimen label="Symboles · dimensions en jeu">
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.md }}>
           {(Object.keys(emblemSymbols) as Emblem['symbol'][]).map(symbol => <GuildEmblem key={symbol} emblem={{ ...DEFAULT_GUILD_EMBLEM, symbol }} />)}
           <GuildEmblem emblem={{ symbol: 'YOGA', backgroundColor: 'COPPER', symbolColor: 'NIGHT' }} />
         </View>
       </Specimen>
+      <Specimen label="Faible contraste et couleurs identiques · 44 pt">
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.md }}>
+          <GuildEmblem emblem={{ symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' }} />
+          <GuildEmblem emblem={{ symbol: 'DUMBBELL', backgroundColor: 'MINT', symbolColor: 'MINT' }} />
+          <GuildEmblem emblem={{ symbol: 'YOGA', backgroundColor: 'NIGHT', symbolColor: 'NIGHT' }} />
+          <GuildEmblem emblem={{ symbol: 'BOLT', backgroundColor: 'CHALK', symbolColor: 'CHALK' }} />
+        </View>
+      </Specimen>
       <Specimen label="Édition meneur · largeur iPhone compact">
-        <View style={{ width: 288 }}><GuildEmblemPicker emblem={DEFAULT_GUILD_EMBLEM} name="Les Increvables" memberCount={12} onChange={() => {}} /></View>
+        <View style={{ width: 288 }}><GuildEmblemPicker emblem={{ symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' }} name="Les Increvables" memberCount={12} onChange={() => {}} /></View>
       </Specimen>
       <Specimen label="Sauvegarde en cours · choix désactivés">
         <GuildEmblemPicker emblem={{ symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'NIGHT' }} name="Les Increvables" memberCount={12} disabled onChange={() => {}} />

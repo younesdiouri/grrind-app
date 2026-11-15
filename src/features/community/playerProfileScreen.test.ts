@@ -31,7 +31,7 @@ const totals = { xp: 0, sessions: 0, attributes: { strength: 0, endurance: 0, mo
 const profile = {
   id: 'target', displayName: 'Cible serveur', title: null, level: 3, avatar: DEFAULT_AVATAR,
   league: { tier: 'BRONZE', tierOrder: 0, lootLuckPercent: 0 }, guild: { id: 'guild', name: 'Guilde serveur',
-    emblem: { symbol: 'HEART', backgroundColor: 'COPPER', symbolColor: 'NIGHT' } },
+    emblem: { symbol: 'HEART', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' } },
   inventory: { items: [], equipment: { HEAD: null, CHEST: null, LEGS: null, FEET: null, ACCESSORY: null, WEAPON: null } },
   week: { startsAt: '2026-11-08T19:00:00Z', resetsAt: '2026-11-15T19:00:00Z', current: totals, previous: null },
 } satisfies Pick<components['schemas']['PlayerDetail'], 'id' | 'displayName' | 'title' | 'level' | 'avatar' | 'league' | 'guild' | 'inventory' | 'week'>;
@@ -71,7 +71,7 @@ test('une identité de guilde incomplète propose de réessayer au lieu d’inve
 
 test('les données complètes conservent le radar de la cible, la guilde et le défi', () => {
   const markup = render();
-  for (const expected of ['Radar de performance', 'Ouvrir la guilde Guilde serveur', 'Emblème · Cardio · Nuit sur Cuivre', 'Défier Cible serveur']) {
+  for (const expected of ['Radar de performance', 'Ouvrir la guilde Guilde serveur', 'Emblème · Cardio · Rose sur Menthe', 'Défier Cible serveur']) {
     assert.ok(markup.includes(expected), expected);
   }
 });

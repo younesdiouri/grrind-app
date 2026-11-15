@@ -44,7 +44,7 @@ let started = Promise.withResolvers<void>();
 let guildProblem: 'forbidden' | 'guild-not-found' | null = null;
 const savedGuild: components['schemas']['Guild'] = {
   id: 'guild-A', name: 'Nom normalisé serveur', memberCount: 2, capacity: 30, role: 'FOUNDER', createdAt: '2026-11-15T10:00:00Z',
-  emblem: { symbol: 'YOGA', backgroundColor: 'MINT', symbolColor: 'NIGHT' },
+  emblem: { symbol: 'YOGA', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' },
 };
 const requests: Request[] = [];
 mock.method(globalThis, 'fetch', async (input: Request) => {
@@ -69,6 +69,7 @@ mock.method(globalThis, 'fetch', async (input: Request) => {
       status: guildProblem === 'forbidden' ? 403 : 404 }, { status: guildProblem === 'forbidden' ? 403 : 404 });
     return Response.json(savedGuild);
   }
+  if (input.method === 'GET' && path === '/api/guilds/guild-A') return Response.json({ ...savedGuild, members: [] });
   if (status !== 200 && owner !== 'A-new') return Response.json({ type: 'https://grrind.app/problems/access-token-expired', status }, { status });
   const data = { owner, coins: owner === 'A' ? 10 : 20 };
   return Response.json(path === '/api/guilds/mine' ? { guild: data } : data);
@@ -81,7 +82,6 @@ const { myGuildOptions, myGuildQueryKey } = await import('../features/community/
 const { risalatOptions } = await import('../features/community/useRisalat.ts');
 const { guildWeeklyOptions } = await import('../features/community/useGuildWeekly.ts');
 const { playerOptions, playerQueryKey } = await import('../features/community/usePlayer.ts');
-const { emblemWithColor } = await import('../features/community/guildEmblem.ts');
 const { shopOptions } = await import('../features/shop/useShop.ts');
 const { craftingOptions, craftEquipment } = await import('../features/crafting/api.ts');
 const { equipItem } = await import('../features/inventory/equipmentActions.ts');
@@ -192,19 +192,23 @@ test('le rafraîchissement manuel tardif de guilde ne recrée pas A et ne retire
   assert.equal(gone, false);
 });
 
-test('la sauvegarde conserve les membres et adopte le nom et l’emblème reçus du serveur', async () => {
+test('la sauvegarde transmet Menthe/Rose sans ajustement, conserve les membres et relit la même paire serveur', async () => {
   const members: components['schemas']['GuildMember'][] = [];
   client.setQueryData(myGuildQueryKey('A'), { ...savedGuild, name: 'Ancien nom', members });
   client.setQueryData(playerQueryKey('A', 'target'), { marker: 'Profil de la cible à relire' });
   client.setQueryData(playerQueryKey('B', 'target'), { marker: 'Autre connexion' });
-  const changes = { name: 'Saisie', emblem: { ...emblemWithColor(savedGuild.emblem, 'symbolColor', 'BLOSSOM'), symbol: 'BOLT' as const } };
+  const changes = { name: 'Saisie', emblem: savedGuild.emblem };
   const outcome = await saveGuild('guild-A', changes, client, getSessionOwner(), () => assert.fail('Guilde présente'));
   assert.equal(outcome?.ok, true);
-  assert.deepEqual(await requests[0].json(), { name: 'Saisie', emblem: { symbol: 'BOLT', backgroundColor: 'NIGHT', symbolColor: 'BLOSSOM' } });
+  assert.deepEqual(await requests[0].json(), { name: 'Saisie', emblem: { symbol: 'YOGA', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' } });
   assert.deepEqual(client.getQueryData(myGuildOptions('A').queryKey), { ...savedGuild, members });
   assert.equal(client.getQueryState(playerQueryKey('A', 'target'))?.isInvalidated, true);
   assert.deepEqual(client.getQueryData(playerQueryKey('A', 'target')), { marker: 'Profil de la cible à relire' });
   assert.equal(client.getQueryState(playerQueryKey('B', 'target'))?.isInvalidated, false);
+  client.removeQueries({ queryKey: myGuildQueryKey('A') });
+  assert.equal(await syncGuild('guild-A', client, getSessionOwner(), () => assert.fail('Guilde présente')), null);
+  assert.deepEqual(client.getQueryData<components['schemas']['GuildDetail']>(myGuildQueryKey('A'))?.emblem,
+    { symbol: 'YOGA', backgroundColor: 'MINT', symbolColor: 'BLOSSOM' });
 });
 
 test('une coupure ne change pas le cache et le retry renvoie les mêmes choix', async () => {
