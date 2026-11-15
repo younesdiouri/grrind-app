@@ -34,17 +34,17 @@ export default function JoueurScreen() {
         <View style={styles.centered}>
           <ActivityIndicator color={color.accent} />
         </View>
-      ) : player.isError ? (
+      ) : player.isError || !player.data.week || player.data.guild === undefined ? (
         <ScrollView contentContainerStyle={styles.screen}>
-          <Text style={styles.title}>Ce joueur est introuvable</Text>
-          <Text style={styles.body}>{messageFor(player.error)}</Text>
+          <Text style={styles.title}>{player.isError ? 'Ce joueur est introuvable' : 'Profil indisponible'}</Text>
+          <Text style={styles.body}>{player.isError ? messageFor(player.error) : 'Ce profil ne peut pas encore être affiché. Réessaie dans un instant.'}</Text>
           <Button label="Réessayer" onPress={() => void player.refetch()} variant="quiet" />
         </ScrollView>
       ) : (
         <ScrollView contentContainerStyle={styles.screen}>
           <PlayerProfile player={{ ...player.data, league: own && league.data ? league.data.league : player.data.league }}
             equipment={player.data.inventory.equipment} action={<Challenge id={id} name={player.data.displayName} />}
-            radar={player.data.week && <PerformanceRadar week={player.data.week} compact />}
+            radar={<PerformanceRadar week={player.data.week} compact />}
             onGuildPress={() => router.navigate('/guilde')}
             onLeaguePress={own ? () => { setWeekOpen(true); void league.refetch(); } : undefined}
             motion={<LeagueMotion tier={own && league.data ? league.data.league.tier : player.data.league.tier} />} />

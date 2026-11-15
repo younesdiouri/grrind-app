@@ -43,7 +43,7 @@ export function PlayerIdentity({ player, equipment = {}, onLeaguePress, onGuildP
     {player.guild ? <Pressable onPress={onGuildPress} accessibilityRole="link" accessibilityLabel={`Ouvrir la guilde ${player.guild.name}`}
       style={({ pressed }) => [styles.guildButton, pressed && styles.pressed]}>
       <Text style={styles.guild}>{player.guild.name} ›</Text>
-    </Pressable> : <Text style={styles.level}>Sans guilde</Text>}
+    </Pressable> : player.guild === null ? <Text style={styles.level}>Sans guilde</Text> : null}
     <View style={styles.status}>
       <Text style={styles.level}>Niveau {player.level}</Text>
     </View>
