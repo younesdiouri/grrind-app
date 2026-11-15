@@ -39,10 +39,10 @@ import type { SyncSummary } from '@/features/reward/timeline';
  *
  * ————— Pourquoi un fichier et pas le trousseau ————————————————————————————————————————
  *
- * `expo-secure-store` porte déjà la clé d'idempotence et le jeton de rafraîchissement, mais sa
- * limite est de 2048 octets. Un lot de quinze séances pèse 11 Ko, et le contrat en autorise
- * deux cents — et la file peut en porter plusieurs. Ce n'est pas non plus un secret : c'est une
- * note que le client se laisse.
+ * Les gros corps peuvent être refusés par `expo-secure-store` (historiquement dès environ
+ * 2048 octets sur iOS). Un lot de quinze séances pèse 11 Ko, et le contrat en autorise deux
+ * cents — et la file peut en porter plusieurs. Comme l'intention d'import, le reçu reste
+ * dans les documents privés de l'app ; les jetons restent au Keychain.
  *
  * ————— La lecture est synchrone, et c'est le point ————————————————————————————————————
  *
@@ -65,7 +65,8 @@ function file(ownerId: string): File {
   return new File(Paths.document, `pending-reward-${encodeURIComponent(ownerId)}.json`);
 }
 
-const queues = new Map<string, SyncSummary[]>();
+type PendingState = { queue: SyncSummary[]; importKey: string | null };
+const queues = new Map<string, PendingState>();
 const listeners = new Set<() => void>();
 
 function notify(): void {
@@ -75,79 +76,61 @@ function notify(): void {
 }
 
 /**
- * Écrit la file entière sur le disque. Une file vide efface le fichier plutôt que d'y laisser
- * un tableau vide : rien à relire ne doit pas dépendre d'un parseur.
+ * Le fichier précédent protège les reçus si le processus s'arrête pendant le remplacement.
+ * File.write n'est pas atomique dans SDK57 : on écrit d'abord un nouveau fichier complet.
  */
-function persist(ownerId: string, queue: SyncSummary[]): void {
-  try {
-    const handle = file(ownerId);
-
-    if (queue.length === 0) {
-      if (handle.exists) {
-        handle.delete();
-      }
-      return;
-    }
-
-    if (!handle.exists) {
-      handle.create();
-    }
-    handle.write(JSON.stringify(queue));
-  } catch {
-    // Dégradation, pas panne : voir `enqueuePending` plus bas.
+function persist(ownerId: string, state: PendingState): void {
+  const target = file(ownerId);
+  const previous = new File(`${target.uri}.previous`);
+  const next = new File(`${target.uri}.next`);
+  if (state.queue.length === 0 && state.importKey === null) {
+    if (previous.exists) previous.delete();
+    if (target.exists) target.delete();
+    return;
   }
+  next.write(JSON.stringify(state));
+  if (target.exists) {
+    if (previous.exists) previous.delete();
+    target.move(previous);
+  }
+  next.move(file(ownerId));
+  try { if (previous.exists) previous.delete(); } catch { /* Le nouveau reçu est déjà durable. */ }
 }
 
-/**
- * Relit le disque, sans lui faire confiance.
- *
- * Idempotent : les appels suivants rendent le cache mémoire. C'est ce qui autorise à
- * l'appeler depuis un rendu.
- */
-function loadQueue(ownerId: string): SyncSummary[] {
+/** Ne jamais effacer un reçu illisible : l'import doit garder son intention dans ce cas. */
+function loadState(ownerId: string): PendingState {
   const cached = queues.get(ownerId);
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  let queue: SyncSummary[] = [];
-
-  try {
-    const handle = file(ownerId);
-    if (!handle.exists) {
-      queues.set(ownerId, queue);
-      return queue;
-    }
-
+  if (cached !== undefined) return cached;
+  let handle = file(ownerId);
+  if (!handle.exists) handle = new File(`${handle.uri}.previous`);
+  let state: PendingState = { queue: [], importKey: null };
+  if (handle.exists) {
     const parsed: unknown = JSON.parse(handle.textSync());
-    queue = parsePendingQueue(parsed);
-
-    if (queue.length === 0) {
-      // La forme n'a pas été reconnue : rien à garder, et rien à relire non plus la
-      // prochaine fois.
-      handle.delete();
-    }
-  } catch {
-    queue = [];
-    try {
-      const handle = file(ownerId);
-      if (handle.exists) {
-        handle.delete();
+    if (typeof parsed === 'object' && parsed !== null && 'queue' in parsed) {
+      const stored = parsed as PendingState;
+      if (!Array.isArray(stored.queue) ||
+          (stored.importKey !== null && typeof stored.importKey !== 'string')) {
+        throw new Error('Reçu d’import illisible');
       }
-    } catch {
-      // Rien à faire : au pire le fichier reste et la prochaine lecture le rejettera.
+      state = { queue: parsePendingQueue(stored.queue), importKey: stored.importKey };
+      if (state.queue.length !== stored.queue.length) throw new Error('File de reçus illisible');
+    } else {
+      // Formats antérieurs PAR COMPTE seulement ; le legacy global reste en quarantaine.
+      const queue = parsePendingQueue(parsed);
+      if (queue.length === 0 && !(Array.isArray(parsed) && parsed.length === 0)) {
+        throw new Error('File de reçus illisible');
+      }
+      state = { queue, importKey: null };
     }
   }
-
-  queues.set(ownerId, queue);
-  return queue;
+  queues.set(ownerId, state);
+  return state;
 }
 
 /** La progression en tête de file — celle qui doit se jouer maintenant, ou rien. */
 export function getPending(owner: SessionOwner | null = getSessionOwner()): SyncSummary | null {
   if (!isCurrentOwner(owner)) return null;
-  const current = loadQueue(owner.id);
-  return current.length > 0 ? current[0] : null;
+  try { return loadState(owner.id).queue[0] ?? null; } catch { return null; }
 }
 
 export function subscribeToPending(listener: () => void): () => void {
@@ -184,25 +167,28 @@ export function subscribeToPending(listener: () => void): () => void {
 const solicited = new WeakMap<SyncSummary, SessionOwner>();
 
 /**
- * Ajoute une progression en fin de file. **Aucune fusion** : voir `pendingQueue.ts`.
- *
- * L'écriture échouant — disque plein, permissions — ne doit rien casser : le résumé reste en
- * mémoire et sera joué normalement dans cette session. On perd seulement la garantie qu'il
- * survive à la mort de l'app, ce qui est exactement ce qu'on avait avant ce module.
- *
- * `asked` dit que le joueur a **demandé** cette progression — le seul déclencheur explicite
- * est `manual` (`syncCoordinator.ts`). Voir `wasSolicited`.
+ * La clé du dernier import suffit : une seule intention existe par compte, libérée après
+ * cette écriture. Elle reste après ACK pour dédoublonner un nettoyage d'intention refusé.
+ * `asked` conserve le geste dans sa génération ; aucune fusion ni calcul de récompense.
  */
-export function enqueuePending(summary: SyncSummary, owner: SessionOwner, asked = false): void {
+export function enqueuePending(summary: SyncSummary, owner: SessionOwner, asked = false, importKey?: string): void {
   if (!isCurrentOwner(owner)) return;
-  const queue = enqueue(loadQueue(owner.id), summary);
-  queues.set(owner.id, queue);
-
-  if (asked) {
-    solicited.set(summary, owner);
+  const current = loadState(owner.id);
+  if (importKey !== undefined && current.importKey === importKey) {
+    const queued = current.queue.at(-1);
+    if (asked && summary.imported.length > 0 && queued) {
+      solicited.set(queued, owner);
+      notify();
+    }
+    return;
   }
-
-  persist(owner.id, queue);
+  const state = {
+    queue: importKey !== undefined && summary.imported.length === 0 ? current.queue : enqueue(current.queue, summary),
+    importKey: importKey ?? current.importKey,
+  };
+  persist(owner.id, state);
+  queues.set(owner.id, state);
+  if (asked && summary.imported.length > 0) solicited.set(summary, owner);
   notify();
 }
 
@@ -225,12 +211,12 @@ export function wasSolicited(summary: SyncSummary): boolean {
  */
 export function markPlayed(summary: SyncSummary, owner: SessionOwner | null): boolean {
   if (!isCurrentOwner(owner)) return false;
-  const current = loadQueue(owner.id);
-  if (current[0] !== summary) return false;
+  const current = loadState(owner.id);
+  if (current.queue[0] !== summary) return false;
 
-  const queue = dequeuePending(current);
-  queues.set(owner.id, queue);
-  persist(owner.id, queue);
+  const state = { ...current, queue: dequeuePending(current.queue) };
+  try { persist(owner.id, state); } catch { return false; }
+  queues.set(owner.id, state);
   notify();
   return true;
 }

@@ -1,11 +1,9 @@
 import { api } from '@/api/client';
 import { getSessionOwner, isCurrentOwner, subscribe as subscribeToSession, type SessionOwner } from '@/features/auth/session';
 import { failureFrom, type Failure } from '@/features/auth/problems';
-import { fingerprintOf } from '@/features/health/batchKey';
 import { noteRunStarted, noteSettled } from '@/features/diagnostics/journal';
 import { healthProvider } from '@/features/health/current';
-import { batchKeys } from '@/features/health/keyStore';
-import type { WorkoutData } from '@/features/health/provider';
+import { forgetImport, prepareImport, readImport } from '@/features/health/keyStore';
 import { sendUntilAnswered, type Reply } from '@/features/health/replay';
 import { retryDelaysFor, runBudgetMsFor } from '@/features/health/retryPolicy';
 import { BudgetExceeded, withinBudget } from '@/features/health/runBudget';
@@ -19,12 +17,14 @@ import type { SyncSummary } from '@/features/reward/timeline';
  *
  * L'enchaînement tient en cinq temps, et chacun a son fichier :
  *
- * 1. `GET /api/workouts/sync-state` — depuis quand ? Le curseur vient du serveur (`syncState.ts`).
+ * 1. Reprendre l’intention persistée par compte, avant toute reconstruction (`keyStore.ts`).
+ *    Sinon `GET /api/workouts/sync-state` — le curseur vient du serveur (`syncState.ts`).
  * 2. Le fournisseur rend ce qui a bougé depuis (`provider.ts`, `current.ts`).
- * 3. Le lot obtient sa clé d'idempotence, appariée à son empreinte (`batchKey.ts`, `keyStore.ts`).
+ * 3. Persister le corps exact et sa clé avant l’envoi (`keyStore.ts`).
  * 4. `POST /api/workouts/import`, rejoué tant que l'issue est inconnue (`replay.ts`), selon un
  *    nombre de rejeux qui dépend du déclencheur (`retryPolicy.ts`).
- * 5. Le `SyncSummary` part se faire jouer — ou pas, voir plus bas (`src/features/reward/`).
+ * 5. Le `SyncSummary` devient durable avant de libérer l’intention, puis part se faire jouer
+ *    — ou pas, voir plus bas (`src/features/reward/`).
  *
  * Le tout est sérialisé par `syncCoordinator.ts` : **une seule synchronisation à la fois**, et
  * pas deux à trente secondes d'intervalle.
@@ -224,54 +224,30 @@ async function perform(trigger: SyncTrigger, owner: SessionOwner): Promise<SyncR
   };
 
   try {
-    if (!(await healthProvider.isAvailable())) {
-      return { kind: 'unavailable' };
+    // Une intention incertaine passe avant le curseur et même avant HealthKit : le serveur
+    // a pu commettre, et de nouvelles séances ne doivent jamais changer ce corps.
+    let intent = readImport(owner);
+    if (intent === null) {
+      if (!(await healthProvider.isAvailable())) return { kind: 'unavailable' };
+      requireOwner(owner);
+
+      const state = await withinBudget(
+        api.GET('/api/workouts/sync-state', { signal: deadline.signal, fetch: fetchForOwner }),
+        deadline.signal,
+      );
+      requireOwner(owner);
+      if (state.data === undefined) return { kind: 'failed', failure: failureFrom(state.error) };
+
+      const found = await healthProvider.workoutsSince(windowStart(state.data, new Date()));
+      requireOwner(owner);
+      if (exceeded(deadline)) return { kind: 'budgetExceeded' };
+      if (found.length === 0) return { kind: 'nothingToSend' };
+
+      // Le découpage au-delà de 200 reste celui d'avant (#411 le traite séparément).
+      intent = prepareImport(owner, { workouts: found.slice(-MAX_BATCH) });
     }
-    requireOwner(owner);
-
-    // 1. Depuis quand. Le cache local évite un aller-retour, mais il n'est pas la vérité : ce
-    //    n'est pas une optimisation qu'on peut se permettre au prix d'un curseur faux.
-    //
-    // Couru contre le budget, pas seulement bordé par lui : voir `withinBudget()`
-    // (`runBudget.ts`) et le docblock en tête de fichier — un point de contrôle posé après
-    // cet `await` ne s'exécuterait jamais si le budget expire pendant l'attente elle-même.
-    const state = await withinBudget(
-      api.GET('/api/workouts/sync-state', { signal: deadline.signal, fetch: fetchForOwner }),
-      deadline.signal,
-    );
-    requireOwner(owner);
-
-    if (state.data === undefined) {
-      return { kind: 'failed', failure: failureFrom(state.error) };
-    }
-
-    // 2. Ce qui a bougé depuis. Non annulable — voir `runBudgetMsFor` — donc pas de point de
-    //    contrôle avant, seulement après.
-    const since = windowStart(state.data, new Date());
-    const found = await healthProvider.workoutsSince(since);
-    requireOwner(owner);
-
-    if (exceeded(deadline)) {
-      return { kind: 'budgetExceeded' };
-    }
-
-    if (found.length === 0) {
-      return { kind: 'nothingToSend' };
-    }
-
-    // Le contrat borne le lot à 200. On garde les **plus récents** : c'est ce que le joueur a
-    // dans la tête en ouvrant l'app, et le reste n'est pas perdu — le curseur n'avancera que de
-    // ce qui est passé, donc la synchronisation suivante reprendra où celle-ci s'est arrêtée.
-    const workouts: WorkoutData[] = found.slice(-MAX_BATCH);
-
-    // 3. La clé, appariée au lot. Même lot qu'à la tentative d'avant → même clé → le serveur
-    //    ressort la réponse d'origine plutôt qu'une synchronisation vide.
-    const key = await batchKeys.keyFor(fingerprintOf(workouts.map((w) => w.externalId)));
-    requireOwner(owner);
-
-    if (exceeded(deadline)) {
-      return { kind: 'budgetExceeded' };
-    }
+    if (exceeded(deadline)) return { kind: 'budgetExceeded' };
+    const { key, body } = intent;
 
     // 4. L'envoi, rejoué tant qu'on ignore ce que le serveur a fait, et couru contre le même
     //    budget que le `GET` — le rejeu post-refresh d'un 401 sur ce `POST` a la même faiblesse
@@ -285,7 +261,7 @@ async function perform(trigger: SyncTrigger, owner: SessionOwner): Promise<SyncR
           requireOwner(owner);
           return api.POST('/api/workouts/import', {
             params: { header: { 'Idempotency-Key': key } },
-            body: { workouts },
+            body,
             signal: deadline.signal,
             fetch: fetchForOwner,
           }) as unknown as Promise<Reply<SyncSummary>>;
@@ -307,24 +283,13 @@ async function perform(trigger: SyncTrigger, owner: SessionOwner): Promise<SyncR
       return { kind: 'failed', failure: failureFrom(answer.refusal) };
     }
 
-    // Le lot a son verdict : la clé n'a plus rien à protéger, et la garder ferait rejouer une
-    // clé périmée sur un lot différent — un 409 `idempotency-key-reused` gratuit.
-    await batchKeys.forget();
-    requireOwner(owner);
-
-    // Une progression qui n'a rien crédité n'est pas un moment : `imported` vide veut dire que
-    // tout était déjà compté ou écarté, et ouvrir un plein écran là-dessus serait une fausse
-    // joie. C'est aussi ce que dit `totals === null`.
-    if (answer.data.imported.length > 0) {
-      // **Avant** de rendre le résultat, et sur le disque : à partir d'ici la progression est
-      // due au joueur, même si l'app meurt dans la seconde. Le serveur, lui, la considère déjà
-      // comptée et ne la renverra jamais. En file, pas en valeur : un réveil qui tombe pendant
-      // qu'un résumé précédent attend encore de se jouer ne doit pas l'effacer.
-      //
-      // `manual` est le seul déclencheur qui vienne d'un **geste** : le bouton de
-      // synchronisation, le tirer-pour-rafraîchir. Une progression qu'on vient de demander n'a
-      // pas à attendre le prochain lancement à froid — voir `wasSolicited` (#97).
-      enqueuePending(answer.data, owner, trigger === 'manual');
+    // Le reçu et sa clé sont durables ensemble AVANT de libérer l'intention. Même vide,
+    // le dernier reçu reste identifié ; un rejeu après ACK ne rouvre pas son animation.
+    enqueuePending(answer.data, owner, trigger === 'manual', key);
+    try {
+      forgetImport(owner, intent);
+    } catch {
+      // Le reçu est sauvé : un nettoyage refusé sera repris sans ajouter de second bilan.
     }
 
     return { kind: 'summary', summary: answer.data, replayed: answer.replayed };
