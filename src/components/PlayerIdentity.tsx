@@ -12,22 +12,27 @@ import { leagueLabel } from '@/features/league/league';
 
 export type IdentityPlayer = Pick<components['schemas']['PlayerDetail'], 'displayName' | 'title' | 'level' | 'avatar' | 'league'>;
 
-export function PlayerIdentity({ player, equipment = {}, onLeaguePress, motion }: {
-  player: IdentityPlayer; equipment?: AvatarEquipment; onLeaguePress?(): void; motion?: ReactNode;
+export function PlayerIdentity({ player, equipment = {}, onLeaguePress, motion, radar }: {
+  player: IdentityPlayer; equipment?: AvatarEquipment; onLeaguePress?(): void; motion?: ReactNode; radar?: ReactNode;
 }) {
   const avatar = serverAvatar(player.avatar, equipment);
   const label = `Portrait de ${player.displayName} · ${AVATAR_FIELDS.map(field =>
     (AVATAR_LABELS[field] as Record<string, string>)[player.avatar[field]]).join(' · ')}${avatar.headband ? ' · Bandeau éclair' : avatar.moumoutivation ? ' · La Moumoutivation' : ''}${avatar.cyclopes ? ' · Les Cyclopes' : ''}`;
   const league = `Ligue ${leagueLabel[player.league.tier]}`;
   const tint = leagueArt.presets[player.league.tier].metal;
-  return <SystemFrame contentStyle={styles.identity}>
-    <View style={styles.stage}>
-      <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <LeagueBackdrop tier={player.league.tier} />{motion}
+  return <SystemFrame contentStyle={[styles.identity, !!radar && styles.withRadar]}>
+    <View style={styles.overview}>
+      <View style={styles.rank}>
+        <View style={styles.stage}>
+          <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <LeagueBackdrop tier={player.league.tier} />{motion}
+          </View>
+          <View style={styles.portrait}>
+            <AvatarPreview avatar={avatar} framing="portrait" fallbackName={player.displayName} label={label} />
+          </View>
+        </View>
       </View>
-      <View style={styles.portrait}>
-        <AvatarPreview avatar={avatar} framing="portrait" fallbackName={player.displayName} label={label} />
-      </View>
+      {radar && <View style={styles.radar}>{radar}</View>}
     </View>
     <Text style={styles.name} accessibilityRole="header">{player.displayName}</Text>
     {player.title !== null && <View style={styles.title}><TitleBadge name={player.title.name} /></View>}
@@ -43,6 +48,10 @@ export function PlayerIdentity({ player, equipment = {}, onLeaguePress, motion }
 
 const styles = StyleSheet.create({
   identity: { minHeight: leagueArt.cardMinHeight, alignItems: 'center', paddingHorizontal: space.sm, paddingBottom: space.md, gap: space.xs },
+  withRadar: { minHeight: 0, paddingTop: space.md },
+  overview: { flexDirection: 'row', alignItems: 'center', width: '100%', gap: space.sm },
+  rank: { flex: 1, minWidth: 0, alignItems: 'center' },
+  radar: { flex: 1, minWidth: 0 },
   stage: { width: '100%', maxWidth: leagueArt.stageWidth, aspectRatio: leagueArt.stageWidth / leagueArt.stageHeight },
   portrait: { position: 'absolute', top: leagueArt.portraitTop, left: leagueArt.portraitLeft,
     width: leagueArt.portraitWidth, aspectRatio: 1, borderRadius: radius.sm, overflow: 'hidden', backgroundColor: color.background },
